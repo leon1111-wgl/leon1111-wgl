@@ -4,6 +4,8 @@
 
 [EN](AI-START.en.md) · [中文](AI-START.zh.md)
 
+![Guoliang — Learning roadmap](../assets/maps/start.en.svg)
+
 New to programming or AI mathematics? Begin with eight gentle lessons. Read a story, follow the numbers, and run a small Python program.
 
 ### Run the Python examples
@@ -115,6 +117,12 @@ print(fahrenheit)
 print(fahrenheit == 68)
 ```
 
+**Run it locally**
+
+```sh
+python python-values-first-steps.py
+```
+
 **Expected output**
 
 ```text
@@ -212,6 +220,12 @@ for value in values:
     print("running total:", total)
 print("first:", values[0])
 print("mean:", total / len(values))
+```
+
+**Run it locally**
+
+```sh
+python lists-loops-first-steps.py
 ```
 
 **Expected output**
@@ -320,6 +334,12 @@ for reading in [24, 25, 29]:
     print(reading, label_temperature(reading))
 ```
 
+**Run it locally**
+
+```sh
+python functions-tests-first-steps.py
+```
+
 **Expected output**
 
 ```text
@@ -421,6 +441,12 @@ for position in range(len(features)):
     score = score + contribution
     print("contribution:", contribution)
 print("score:", score)
+```
+
+**Run it locally**
+
+```sh
+python vectors-dot-products-first-steps.py
 ```
 
 **Expected output**
@@ -530,6 +556,12 @@ print("shape:", len(rows), "by", len(weights))
 print("scores:", scores)
 ```
 
+**Run it locally**
+
+```sh
+python matrices-shapes-first-steps.py
+```
+
 **Expected output**
 
 ```text
@@ -632,6 +664,12 @@ print("rain given alert:", rainy_alerted_days / alerted_days)
 print("alert given rain:", rainy_alerted_days / rainy_days)
 ```
 
+**Run it locally**
+
+```sh
+python probability-counts-first-steps.py
+```
+
 **Expected output**
 
 ```text
@@ -731,6 +769,12 @@ print("reverse:", math.log2(8))
 for probability in [0.8, 0.2, 1.0]:
     loss = -math.log(probability)
     print(f"p={probability:.1f}, loss={loss:.4f}")
+```
+
+**Run it locally**
+
+```sh
+python powers-logarithms-first-steps.py
 ```
 
 **Expected output**
@@ -842,6 +886,12 @@ print(f"estimated slope: {approx_slope:.3f}")
 print(f"before: w={weight:.2f}, loss={loss(weight):.2f}")
 print(f"after: w={new_weight:.2f}, loss={loss(new_weight):.2f}")
 assert loss(new_weight) < loss(weight)
+```
+
+**Run it locally**
+
+```sh
+python slopes-gradients-first-steps.py
 ```
 
 **Expected output**

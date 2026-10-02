@@ -14,7 +14,7 @@ if __name__=='__main__':
  files=list(selected())
  for p in files:
   relative=p.relative_to(ROOT)
-  if re.search(r'BUSS|assignment|exam.?solution|source-review|Guoliang_Wang_CV',str(relative),re.I):raise SystemExit('Unexpected file: '+str(relative))
+  if re.search(r'BUSS|(?<![a-z])assignments?(?![a-z])|exam.?solution|source-review|Guoliang_Wang_CV',str(relative),re.I):raise SystemExit('Unexpected file: '+str(relative))
   if p.suffix=='.pdf' and not (p.name.endswith('-cheatsheet.pdf') or p.name=='guoliang-cheatsheet-collection.pdf'):raise SystemExit('Unexpected PDF: '+str(relative))
  with ZipFile(archive,'w',ZIP_DEFLATED,compresslevel=9) as z:
   for p in files:z.write(p,Path(ROOT.name)/p.relative_to(ROOT))

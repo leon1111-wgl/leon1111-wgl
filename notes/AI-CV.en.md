@@ -4,6 +4,8 @@
 
 [EN](AI-CV.en.md) · [中文](AI-CV.zh.md)
 
+![Guoliang — Learning roadmap](../site/assets/maps/cv.en.svg)
+
 Sixteen connected lessons start with pixels and simple Python lists, then build toward recognition, detection, tracking, OCR and reliable image systems. Every lesson includes a story, explained arithmetic, runnable code, answered questions and two practice cases.
 
 ### Run the Python examples
@@ -137,6 +139,12 @@ print(f"scaled={scaled:.1f}; standardized={standardized:.1f}")
 print("stored numbers:", 4 * 6 * 3)
 ```
 
+**Run it locally**
+
+```sh
+python pixels-contracts-pixel-scale.py
+```
+
 **Expected output**
 
 ```text
@@ -237,6 +245,12 @@ pixels = {"marker": (200, 40, 30), "paper": (220, 220, 220), "shade": (60, 20, 2
 for name, (red, green, blue) in pixels.items():
     margin = red - max(green, blue)
     print(name, "margin:", margin, "selected:", margin > 50)
+```
+
+**Run it locally**
+
+```sh
+python colour-channels-red-channel-rule.py
 ```
 
 **Expected output**
@@ -348,6 +362,12 @@ print(f"mean={mean:.1f}")
 print("edge response:", response)
 ```
 
+**Run it locally**
+
+```sh
+python filters-neighborhoods-local-filter.py
+```
+
 **Expected output**
 
 ```text
@@ -452,6 +472,12 @@ eroded = local_rule(mask, min)
 opened = local_rule(eroded, max)
 print("eroded:", eroded)
 print("opened:", opened)
+```
+
+**Run it locally**
+
+```sh
+python edges-morphology-binary-opening.py
 ```
 
 **Expected output**
@@ -559,6 +585,12 @@ moved = [(2 * x + 5, 2 * y - 3) for x, y in corners]
 print("corners:", moved)
 print("area:", (x2 - x1) * (y2 - y1))
 print("clipped bottom:", min(y2, 80))
+```
+
+**Run it locally**
+
+```sh
+python geometry-augmentation-move-box.py
 ```
 
 **Expected output**
@@ -670,6 +702,12 @@ print("ranked:", ranked)
 print(f"ratio={ratio:.2f}; accept={ratio < 0.8}")
 ```
 
+**Run it locally**
+
+```sh
+python classical-features-descriptor-distance.py
+```
+
 **Expected output**
 
 ```text
@@ -779,6 +817,12 @@ probabilities = [v / sum(exp_scores) for v in exp_scores]
 print("scores:", scores)
 print("probabilities:", [round(p, 4) for p in probabilities])
 print(f"loss={-math.log(probabilities[1]):.4f}")
+```
+
+**Run it locally**
+
+```sh
+python recognition-transfer-classification-head.py
 ```
 
 **Expected output**
@@ -895,6 +939,12 @@ for threshold in [0.3, 0.5]:
     print(threshold, "suppress B" if iou > threshold else "keep B")
 ```
 
+**Run it locally**
+
+```sh
+python detection-overlap-box-overlap.py
+```
+
 **Expected output**
 
 ```text
@@ -1004,6 +1054,12 @@ for rank, correct in enumerate(matches, start=1):
         ap += precision / reference_count
     print(f"rank={rank}: precision={precision:.4f}, recall={recall:.4f}")
 print(f"toy AP={ap:.4f}")
+```
+
+**Run it locally**
+
+```sh
+python detection-average-precision-ranked-ap.py
 ```
 
 **Expected output**
@@ -1118,6 +1174,12 @@ print("shared:", shared, "union:", union)
 print(f"IoU={iou:.4f}; Dice={dice:.4f}")
 ```
 
+**Run it locally**
+
+```sh
+python segmentation-regions-mask-counts.py
+```
+
 **Expected output**
 
 ```text
@@ -1226,6 +1288,12 @@ print("predicted:", predicted)
 print("nearest:", nearest, "accepted:", accepted)
 ```
 
+**Run it locally**
+
+```sh
+python tracking-identity-track-gate.py
+```
+
 **Expected output**
 
 ```text
@@ -1326,6 +1394,12 @@ for label, template in templates.items():
     distances[label] = sum(a != b for a, b in zip(observed, template))
 print("distances:", distances)
 print("closest:", min(distances, key=distances.get))
+```
+
+**Run it locally**
+
+```sh
+python ocr-reading-ocr-template.py
 ```
 
 **Expected output**
@@ -1437,6 +1511,12 @@ for patch_size in [8, 4]:
     print(f"P={patch_size}: patches={patches}, values={values}, pairs={tokens ** 2}")
 ```
 
+**Run it locally**
+
+```sh
+python visual-tokens-patch-budget.py
+```
+
 **Expected output**
 
 ```text
@@ -1542,6 +1622,12 @@ flagged = [i for i, value in enumerate(differences) if value > 5]
 print("differences:", differences)
 print("flagged positions:", flagged)
 print("image score:", max(differences))
+```
+
+**Run it locally**
+
+```sh
+python defect-inspection-difference-inspection.py
 ```
 
 **Expected output**
@@ -1654,6 +1740,12 @@ sessions = {"train": {"morning-A", "evening-A"}, "test": {"morning-B"}}
 print("shared sessions:", len(sessions["train"] & sessions["test"]))
 ```
 
+**Run it locally**
+
+```sh
+python evaluation-shift-evaluate-alerts.py
+```
+
 **Expected output**
 
 ```text
@@ -1764,6 +1856,12 @@ print("encoded:", encoded)
 print("restored:", [round(x, 2) for x in restored])
 print(f"largest error={max(errors):.2f}")
 print("serial latency ms:", sum([4, 7, 2]))
+```
+
+**Run it locally**
+
+```sh
+python inference-pipelines-pipeline-budget.py
 ```
 
 **Expected output**

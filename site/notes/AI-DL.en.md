@@ -4,6 +4,8 @@
 
 [EN](AI-DL.en.md) · [中文](AI-DL.zh.md)
 
+![Guoliang — Learning roadmap](../assets/maps/dl.en.svg)
+
 Build deep-learning understanding in sixteen patient chapters. Begin with arrays and functions. Trace shapes, losses, gradients, and a complete small training loop. Then assemble convolution, embeddings, attention, a toy Transformer block, and adaptation. Every chapter includes explained Python, answered questions, and two practice cases.
 
 ### Run the Python examples
@@ -135,6 +137,12 @@ print('mean per feature:', out.mean(axis=0).tolist())
 print('mean per recording:', out.mean(axis=1).tolist())
 ```
 
+**Run it locally**
+
+```sh
+python dl-tensors-dl-dense-axis-check.py
+```
+
 **Expected output**
 
 ```text
@@ -237,6 +245,12 @@ for z in [-2.,0.,2.]:
     sigmoid = 1/(1+exp(-z))
     slope = sigmoid*(1-sigmoid)
     print(f'z={z:.0f}: ReLU={relu:.1f}, sigmoid={sigmoid:.6f}, slope={slope:.6f}')
+```
+
+**Run it locally**
+
+```sh
+python dl-activations-dl-activation-values.py
 ```
 
 **Expected output**
@@ -348,6 +362,12 @@ for values in [[3.,1.], [1.,3.], [2.,2.]]:
 print('parameters:', w1.size + b1.size + w2.size + 1)
 ```
 
+**Run it locally**
+
+```sh
+python dl-representations-dl-mlp-gauges.py
+```
+
 **Expected output**
 
 ```text
@@ -454,6 +474,12 @@ loss = -np.log(probabilities[target])
 print('probabilities:', np.round(probabilities,6).tolist())
 print(f'sum: {probabilities.sum():.6f}; loss: {loss:.6f}')
 print('shift unchanged:', bool(np.allclose(probabilities,softmax(logits+1000))))
+```
+
+**Run it locally**
+
+```sh
+python dl-softmax-loss-dl-stable-softmax-loss.py
 ```
 
 **Expected output**
@@ -564,6 +590,12 @@ for name, array in [('images',images),('flat',flat),('hidden',hidden),('logits',
     print(name, array.shape)
 print('first flattened image:', flat[0].tolist())
 print('parameters:', w1.size+b1.size+w2.size+b2.size)
+```
+
+**Run it locally**
+
+```sh
+python dl-shape-tracing-dl-shape-path.py
 ```
 
 **Expected output**
@@ -683,6 +715,12 @@ w, b, v = w-0.05*gw, b-0.05*gb, v-0.05*gv
 print(f'new loss: {loss(w,b,v):.7f}')
 ```
 
+**Run it locally**
+
+```sh
+python dl-autograd-dl-chain-rule-check.py
+```
+
 **Expected output**
 
 ```text
@@ -793,6 +831,12 @@ adam = theta-rate*m_hat/(np.sqrt(v_hat)+1e-8)
 for name, value in [('SGD',sgd), ('Adam',adam)]:
     loss = np.mean(0.5*(value-targets)**2)
     print(f'{name}: parameter {value:.6f}; loss {loss:.6f}')
+```
+
+**Run it locally**
+
+```sh
+python dl-optimization-dl-sgd-adam-first-step.py
 ```
 
 **Expected output**
@@ -908,6 +952,12 @@ for epoch in range(1,6):
 print(f'best weight: {best_weight:.5f}')
 ```
 
+**Run it locally**
+
+```sh
+python dl-training-loop-dl-one-weight-training-loop.py
+```
+
 **Expected output**
 
 ```text
@@ -1020,6 +1070,12 @@ print('training:', np.round(mask*vector/(1-probability),6).tolist())
 print('evaluation:', vector.tolist())
 ```
 
+**Run it locally**
+
+```sh
+python dl-regularization-dl-dropout-expectation.py
+```
+
 **Expected output**
 
 ```text
@@ -1127,6 +1183,12 @@ print('means:', mean.ravel().tolist())
 print('variances:', variance.ravel().tolist())
 print('normalized:', np.round(normalized,6).tolist())
 print('row means:', np.round(normalized.mean(axis=1),6).tolist())
+```
+
+**Run it locally**
+
+```sh
+python dl-normalization-dl-row-layernorm.py
 ```
 
 **Expected output**
@@ -1240,6 +1302,12 @@ print('residual sum:', residual_sum.tolist())
 print('after ReLU:', np.maximum(0,residual_sum).tolist())
 ```
 
+**Run it locally**
+
+```sh
+python dl-convolution-dl-filter-residual.py
+```
+
 **Expected output**
 
 ```text
@@ -1348,6 +1416,12 @@ print('vectors:', vectors.tolist())
 print('real-token count:', int(mask.sum()))
 print('masked mean:', pooled.tolist())
 print('reversed mean:', reversed_mean.tolist())
+```
+
+**Run it locally**
+
+```sh
+python dl-token-embeddings-dl-embedding-mask-mean.py
 ```
 
 **Expected output**
@@ -1461,6 +1535,12 @@ masked = softmax(scores + np.array([[0.,-np.inf]]))
 print('weights:', np.round(weights,6).tolist())
 print('output:', np.round(weights @ v,6).tolist())
 print('masked output:', (masked @ v).tolist())
+```
+
+**Run it locally**
+
+```sh
+python dl-attention-dl-attention-mask.py
 ```
 
 **Expected output**
@@ -1577,6 +1657,12 @@ print('first residual:', np.round(y,6).tolist())
 print('block output:', np.round(z,6).tolist())
 ```
 
+**Run it locally**
+
+```sh
+python dl-transformer-block-dl-tiny-transformer-block.py
+```
+
 **Expected output**
 
 ```text
@@ -1690,6 +1776,12 @@ print(f'loss before: {-np.log(p):.6f}; after: {-np.log(new_p):.6f}')
 print('fixed features:', z.tolist())
 ```
 
+**Run it locally**
+
+```sh
+python dl-transfer-dl-frozen-feature-head.py
+```
+
 **Expected output**
 
 ```text
@@ -1800,6 +1892,12 @@ merged = (base+scale*b @ a) @ x
 print('full entries:', base.size, 'adapter entries:', a.size+b.size)
 print('output:', np.round(separate,6).tolist())
 print('merged agrees:', bool(np.allclose(separate,merged)))
+```
+
+**Run it locally**
+
+```sh
+python dl-efficient-adaptation-dl-low-rank-merge.py
 ```
 
 **Expected output**

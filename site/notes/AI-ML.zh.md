@@ -4,6 +4,8 @@
 
 [EN](AI-ML.en.md) · [中文](AI-ML.zh.md)
 
+![Guoliang — 学习路线图](../assets/maps/ml.zh.svg)
+
 通过十六个循序渐进的章节学习机器学习。从行与标签开始，构建小模型、检查误差，再走向文本过滤、推荐与可靠性检查。每章都有原创故事、带答案的引导问题、两个练习案例与可运行 Python。
 
 ### 运行 Python 示例
@@ -136,6 +138,12 @@ print('predictions:', predictions)
 print(f'test accuracy: {correct / len(test_y):.2f}')
 ```
 
+**在本地运行**
+
+```sh
+python features-labels-baselines-ml-majority-baseline.py
+```
+
 **预期输出**
 
 ```text
@@ -239,6 +247,12 @@ test_devices = {groups[i] for i in test}
 print('rows:', len(train), len(valid), len(test))
 print('shared devices:', sorted(train_devices & test_devices))
 print('test error:', 2 / len(test))
+```
+
+**在本地运行**
+
+```sh
+python framing-splits-leakage-ml-group-split.py
 ```
 
 **预期输出**
@@ -351,6 +365,12 @@ print('filled training:', filled_train.tolist())
 print('filled test:', filled_test.tolist())
 ```
 
+**在本地运行**
+
+```sh
+python missing-data-eda-ml-median-imputation.py
+```
+
 **预期输出**
 
 ```text
@@ -455,6 +475,12 @@ print('columns:', vocabulary + ['unknown'])
 for value in ['wood', 'paper', 'metal']:
     row = encode(value)
     print(value, row, 'sum:', sum(row))
+```
+
+**在本地运行**
+
+```sh
+python categorical-preprocessing-ml-category-columns.py
 ```
 
 **预期输出**
@@ -565,6 +591,12 @@ baseline_mse = np.mean((y.mean() - y) ** 2)
 print('prediction:', prediction.tolist())
 print(f'MSE: {mse:.6f}; RMSE: {np.sqrt(mse):.6f}')
 print(f'constant MSE: {baseline_mse:.6f}')
+```
+
+**在本地运行**
+
+```sh
+python linear-regression-mse-ml-line-loss.py
 ```
 
 **预期输出**
@@ -678,6 +710,12 @@ print(f'weights: {w:.1f}, {b:.1f}')
 print(f'loss: {np.mean((w * z + b - y) ** 2):.3f}')
 ```
 
+**在本地运行**
+
+```sh
+python gradient-descent-scaling-ml-gradient-step.py
+```
+
 **预期输出**
 
 ```text
@@ -786,6 +824,12 @@ print(f'score: {score:.4f}; probability: {probability:.4f}')
 for threshold in [0.50, 0.65]:
     label = int(probability >= threshold)
     print(f'threshold {threshold:.2f}: class {label}')
+```
+
+**在本地运行**
+
+```sh
+python logistic-thresholds-ml-sigmoid-cutoffs.py
 ```
 
 **预期输出**
@@ -899,6 +943,12 @@ for name, value in [('accuracy', accuracy), ('precision', precision),
 print('clips to review:', tp + fp)
 ```
 
+**在本地运行**
+
+```sh
+python metrics-imbalance-ml-confusion-counts.py
+```
+
 **预期输出**
 
 ```text
@@ -1007,6 +1057,12 @@ print('squared distances:', np.round(squared, 2).tolist())
 for k in [1,3]:
     labels = y[order[:k]]
     print('k:', k, 'labels:', labels.tolist(), 'prediction:', int(labels.mean() > 0.5))
+```
+
+**在本地运行**
+
+```sh
+python nearest-neighbours-ml-knn-vote.py
 ```
 
 **预期输出**
@@ -1118,6 +1174,12 @@ print('class probabilities:', np.round(probabilities, 3).tolist())
 print('class:', ['spam','ordinary'][int(np.argmax(probabilities))])
 ```
 
+**在本地运行**
+
+```sh
+python text-naive-bayes-ml-naive-bayes-counts.py
+```
+
 **预期输出**
 
 ```text
@@ -1222,6 +1284,12 @@ probabilities = [0.2, 0.7, 0.9]
 print(f'parent: {parent:.2f}; children: {children:.2f}')
 print(f'gain: {parent - children:.2f}')
 print(f'forest probability: {sum(probabilities) / len(probabilities):.2f}')
+```
+
+**在本地运行**
+
+```sh
+python trees-ensembles-ml-gini-forest.py
 ```
 
 **预期输出**
@@ -1331,6 +1399,12 @@ print('residual:', residual.tolist())
 print('updated:', updated.tolist())
 print(f'MSE before: {np.mean((prediction-y)**2):.2f}')
 print(f'MSE after: {np.mean((updated-y)**2):.2f}')
+```
+
+**在本地运行**
+
+```sh
+python boosting-residuals-ml-residual-stump.py
 ```
 
 **预期输出**
@@ -1443,6 +1517,12 @@ print('covariance:', covariance.tolist())
 print(f'first variance share: {values[-1] / values.sum():.2f}')
 ```
 
+**在本地运行**
+
+```sh
+python clustering-pca-ml-cluster-pca-geometry.py
+```
+
 **预期输出**
 
 ```text
@@ -1549,6 +1629,12 @@ for index in order:
     print(f'{names[index]}: {scores[index]:.3f}')
 ```
 
+**在本地运行**
+
+```sh
+python content-recommendations-ml-cosine-recommendations.py
+```
+
 **预期输出**
 
 ```text
@@ -1652,6 +1738,12 @@ means = {value: sum(errors) / len(errors) for value, errors in folds.items()}
 for value, score in means.items():
     print(f'lambda {value:.1f}: validation MSE {score:.1f}')
 print('chosen lambda:', min(means, key=means.get))
+```
+
+**在本地运行**
+
+```sh
+python validation-regularization-shift-ml-regularization-validation.py
 ```
 
 **预期输出**
@@ -1763,6 +1855,12 @@ print('bin count:', len(label))
 print(f'mean probability: {probability.mean():.2f}')
 print(f'observed positive fraction: {label.mean():.2f}')
 print(f'Brier score: {brier:.2f}')
+```
+
+**在本地运行**
+
+```sh
+python calibration-monitoring-ml-calibration-bin.py
 ```
 
 **预期输出**

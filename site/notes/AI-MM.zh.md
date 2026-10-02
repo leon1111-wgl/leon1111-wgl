@@ -4,6 +4,8 @@
 
 [EN](AI-MM.en.md) · [中文](AI-MM.zh.md)
 
+![Guoliang — 学习路线图](../assets/maps/mm.zh.svg)
+
 十六课解释文字、图像、声音与视频如何共同提供有用证据。从词元编号和小型数值列表出发，逐步进入搜索、文档问答、语音、视频时序及依据证据生成。每课都有可运行 Python 与已解答教学问题。
 
 ### 运行 Python 示例
@@ -138,6 +140,12 @@ print("IDs:", ids)
 print("pooled:", pooled)
 ```
 
+**在本地运行**
+
+```sh
+python tokens-embeddings-toy-token-table.py
+```
+
 **预期输出**
 
 ```text
@@ -252,6 +260,12 @@ for name, values in [("A", [0, 2]), ("B", [2, 0])]:
     print(f"{name}: {similarity:.2f}")
 ```
 
+**在本地运行**
+
+```sh
+python modalities-alignment-cosine-alignment.py
+```
+
 **预期输出**
 
 ```text
@@ -357,6 +371,12 @@ def fuse(available):
 print(f"both={fuse(scores):.2f}")
 print(f"image only={fuse({'image': 0.8}):.2f}")
 print("early feature list:", [0.2, 0.9] + [0.6, 0.1])
+```
+
+**在本地运行**
+
+```sh
+python early-late-fusion-weighted-fusion.py
 ```
 
 **预期输出**
@@ -468,6 +488,12 @@ print("wrong relabelled duration:", original_count / new_rate)
 audio = [0.8, 0.6]
 text = [0.6, 0.8]
 print(f"similarity={sum(a * b for a, b in zip(audio, text)):.2f}")
+```
+
+**在本地运行**
+
+```sh
+python audio-text-alignment-audio-duration.py
 ```
 
 **预期输出**
@@ -590,6 +616,12 @@ print(f"text to image={column_loss:.4f}")
 print(f"combined={(row_loss + column_loss) / 2:.4f}")
 ```
 
+**在本地运行**
+
+```sh
+python clip-contrastive-contrastive-table.py
+```
+
 **预期输出**
 
 ```text
@@ -705,6 +737,12 @@ print("weights:", [round(w, 4) for w in weights])
 print("output:", [round(x, 4) for x in output])
 ```
 
+**在本地运行**
+
+```sh
+python cross-attention-fusion-attention-mix.py
+```
+
 **预期输出**
 
 ```text
@@ -811,6 +849,12 @@ relevant = {"kite", "kite-detail"}
 recall = len(set(top_two) & relevant) / len(relevant)
 print("ranking:", ranked)
 print(f"Recall@2={recall:.2f}")
+```
+
+**在本地运行**
+
+```sh
+python image-text-search-search-ranking.py
 ```
 
 **预期输出**
@@ -920,6 +964,12 @@ mean_loss = -sum(math.log(p) for p in correct) / len(correct)
 print(f"correct probability={probability:.3f}")
 print(f"incorrect probability={math.prod(incorrect):.3f}")
 print(f"mean loss={mean_loss:.4f}")
+```
+
+**在本地运行**
+
+```sh
+python conditional-generation-response-probability.py
 ```
 
 **预期输出**
@@ -1033,6 +1083,12 @@ print("row:", [text for left, text in selected])
 print("normalized x:", 1000 * 100 / 500)
 ```
 
+**在本地运行**
+
+```sh
+python document-ocr-qa-document-row.py
+```
+
 **预期输出**
 
 ```text
@@ -1138,6 +1194,12 @@ print("reference words:", len(reference))
 print(f"WER={wer:.2f}")
 short_reference_count = 2
 print(f"three insertions WER={3 / short_reference_count:.2f}")
+```
+
+**在本地运行**
+
+```sh
+python speech-tasks-word-error-rate.py
 ```
 
 **预期输出**
@@ -1253,6 +1315,12 @@ print("shift scores:", scores)
 print(f"audio delay seconds={best_shift * 0.1:.1f}")
 ```
 
+**在本地运行**
+
+```sh
+python audio-video-sync-sync-offset.py
+```
+
 **预期输出**
 
 ```text
@@ -1362,6 +1430,12 @@ union = (predicted[1] - predicted[0]) + (reference[1] - reference[0]) - intersec
 print("sample times:", timestamps)
 print("short event sampled:", seen)
 print(f"temporal IoU={intersection / union:.2f}")
+```
+
+**在本地运行**
+
+```sh
+python video-temporal-grounding-temporal-overlap.py
 ```
 
 **预期输出**
@@ -1474,6 +1548,12 @@ for weight in [1.0, 0.75]:
     error = output - target
     loss = error ** 2 / 2
     print(f"weight={weight:.2f}; feature={fixed_feature:.1f}; loss={loss:.3f}")
+```
+
+**在本地运行**
+
+```sh
+python visual-instruction-tuning-frozen-feature.py
 ```
 
 **预期输出**
@@ -1592,6 +1672,12 @@ else:
     print("No checked answer in the retrieved evidence")
 ```
 
+**在本地运行**
+
+```sh
+python multimodal-rag-retrieve-cite.py
+```
+
 **预期输出**
 
 ```text
@@ -1702,6 +1788,12 @@ print(f"unsupported mention rate={unsupported / mentions:.2f}")
 print(f"captions with errors={captions_with_error / captions:.2f}")
 print(f"target coverage={correct_distinct / target_objects:.2f}")
 print(f"short revision coverage={19 / target_objects:.2f}")
+```
+
+**在本地运行**
+
+```sh
+python evaluation-hallucination-claim-audit.py
 ```
 
 **预期输出**
@@ -1822,6 +1914,12 @@ for index, count in enumerate(evidence_tokens):
         kept.append(index)
         used += count
 print("kept evidence indices:", kept, "tokens:", used)
+```
+
+**在本地运行**
+
+```sh
+python efficient-evidence-systems-cascade-budget.py
 ```
 
 **预期输出**

@@ -4,6 +4,8 @@
 
 [EN](AI-ML.en.md) · [中文](AI-ML.zh.md)
 
+![Guoliang — Learning roadmap](../assets/maps/ml.en.svg)
+
 Learn machine learning in sixteen guided chapters. Start with rows and labels. Build small models, inspect their errors, and work toward text filtering, recommendation, and reliability checks. Each chapter includes an original story, answered questions, two practice cases, and runnable Python.
 
 ### Run the Python examples
@@ -136,6 +138,12 @@ print('predictions:', predictions)
 print(f'test accuracy: {correct / len(test_y):.2f}')
 ```
 
+**Run it locally**
+
+```sh
+python features-labels-baselines-ml-majority-baseline.py
+```
+
 **Expected output**
 
 ```text
@@ -239,6 +247,12 @@ test_devices = {groups[i] for i in test}
 print('rows:', len(train), len(valid), len(test))
 print('shared devices:', sorted(train_devices & test_devices))
 print('test error:', 2 / len(test))
+```
+
+**Run it locally**
+
+```sh
+python framing-splits-leakage-ml-group-split.py
 ```
 
 **Expected output**
@@ -351,6 +365,12 @@ print('filled training:', filled_train.tolist())
 print('filled test:', filled_test.tolist())
 ```
 
+**Run it locally**
+
+```sh
+python missing-data-eda-ml-median-imputation.py
+```
+
 **Expected output**
 
 ```text
@@ -455,6 +475,12 @@ print('columns:', vocabulary + ['unknown'])
 for value in ['wood', 'paper', 'metal']:
     row = encode(value)
     print(value, row, 'sum:', sum(row))
+```
+
+**Run it locally**
+
+```sh
+python categorical-preprocessing-ml-category-columns.py
 ```
 
 **Expected output**
@@ -565,6 +591,12 @@ baseline_mse = np.mean((y.mean() - y) ** 2)
 print('prediction:', prediction.tolist())
 print(f'MSE: {mse:.6f}; RMSE: {np.sqrt(mse):.6f}')
 print(f'constant MSE: {baseline_mse:.6f}')
+```
+
+**Run it locally**
+
+```sh
+python linear-regression-mse-ml-line-loss.py
 ```
 
 **Expected output**
@@ -678,6 +710,12 @@ print(f'weights: {w:.1f}, {b:.1f}')
 print(f'loss: {np.mean((w * z + b - y) ** 2):.3f}')
 ```
 
+**Run it locally**
+
+```sh
+python gradient-descent-scaling-ml-gradient-step.py
+```
+
 **Expected output**
 
 ```text
@@ -786,6 +824,12 @@ print(f'score: {score:.4f}; probability: {probability:.4f}')
 for threshold in [0.50, 0.65]:
     label = int(probability >= threshold)
     print(f'threshold {threshold:.2f}: class {label}')
+```
+
+**Run it locally**
+
+```sh
+python logistic-thresholds-ml-sigmoid-cutoffs.py
 ```
 
 **Expected output**
@@ -899,6 +943,12 @@ for name, value in [('accuracy', accuracy), ('precision', precision),
 print('clips to review:', tp + fp)
 ```
 
+**Run it locally**
+
+```sh
+python metrics-imbalance-ml-confusion-counts.py
+```
+
 **Expected output**
 
 ```text
@@ -1007,6 +1057,12 @@ print('squared distances:', np.round(squared, 2).tolist())
 for k in [1,3]:
     labels = y[order[:k]]
     print('k:', k, 'labels:', labels.tolist(), 'prediction:', int(labels.mean() > 0.5))
+```
+
+**Run it locally**
+
+```sh
+python nearest-neighbours-ml-knn-vote.py
 ```
 
 **Expected output**
@@ -1118,6 +1174,12 @@ print('class probabilities:', np.round(probabilities, 3).tolist())
 print('class:', ['spam','ordinary'][int(np.argmax(probabilities))])
 ```
 
+**Run it locally**
+
+```sh
+python text-naive-bayes-ml-naive-bayes-counts.py
+```
+
 **Expected output**
 
 ```text
@@ -1222,6 +1284,12 @@ probabilities = [0.2, 0.7, 0.9]
 print(f'parent: {parent:.2f}; children: {children:.2f}')
 print(f'gain: {parent - children:.2f}')
 print(f'forest probability: {sum(probabilities) / len(probabilities):.2f}')
+```
+
+**Run it locally**
+
+```sh
+python trees-ensembles-ml-gini-forest.py
 ```
 
 **Expected output**
@@ -1331,6 +1399,12 @@ print('residual:', residual.tolist())
 print('updated:', updated.tolist())
 print(f'MSE before: {np.mean((prediction-y)**2):.2f}')
 print(f'MSE after: {np.mean((updated-y)**2):.2f}')
+```
+
+**Run it locally**
+
+```sh
+python boosting-residuals-ml-residual-stump.py
 ```
 
 **Expected output**
@@ -1443,6 +1517,12 @@ print('covariance:', covariance.tolist())
 print(f'first variance share: {values[-1] / values.sum():.2f}')
 ```
 
+**Run it locally**
+
+```sh
+python clustering-pca-ml-cluster-pca-geometry.py
+```
+
 **Expected output**
 
 ```text
@@ -1549,6 +1629,12 @@ for index in order:
     print(f'{names[index]}: {scores[index]:.3f}')
 ```
 
+**Run it locally**
+
+```sh
+python content-recommendations-ml-cosine-recommendations.py
+```
+
 **Expected output**
 
 ```text
@@ -1652,6 +1738,12 @@ means = {value: sum(errors) / len(errors) for value, errors in folds.items()}
 for value, score in means.items():
     print(f'lambda {value:.1f}: validation MSE {score:.1f}')
 print('chosen lambda:', min(means, key=means.get))
+```
+
+**Run it locally**
+
+```sh
+python validation-regularization-shift-ml-regularization-validation.py
 ```
 
 **Expected output**
@@ -1763,6 +1855,12 @@ print('bin count:', len(label))
 print(f'mean probability: {probability.mean():.2f}')
 print(f'observed positive fraction: {label.mean():.2f}')
 print(f'Brier score: {brier:.2f}')
+```
+
+**Run it locally**
+
+```sh
+python calibration-monitoring-ml-calibration-bin.py
 ```
 
 **Expected output**

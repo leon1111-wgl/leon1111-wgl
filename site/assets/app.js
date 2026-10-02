@@ -66,6 +66,9 @@
   let language;
   try { language = localStorage.getItem('guoliang-language'); } catch (_) {}
   if (language === 'zh') {
+    document.querySelectorAll('[data-course-base]').forEach(link => {
+      link.href = `${link.dataset.courseBase}.zh.html`;
+    });
     document.querySelectorAll('[data-guide-base]').forEach(link => {
       link.href = `${link.dataset.guideBase}.zh.html`;
     });

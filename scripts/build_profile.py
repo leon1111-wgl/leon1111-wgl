@@ -89,9 +89,9 @@ def build_profile(root, profile, courses, guides):
 
 ## Learning portals
 
-Choose a card to enter the teaching website. Follow **story → concept → formula → worked example**. AI guides and data structures include runnable Python, expected outputs and step-by-step explanations.
+Choose a card to enter the teaching website. Follow **story → concept → formula → worked example**. All five courses have English and Chinese editions. Follow algorithms in Python, objects in Java and systems in C. Trace the output, work through the mathematics and compare alternatives.
 
-**New to Python or AI?** [Start here in English]({site}ai/start.en.html) · [Start here in Chinese]({site}ai/start.zh.html) · [Download Python examples]({site}downloads/guoliang-python-examples.zip)
+**New to Python or AI?** [Start here in English]({site}ai/start.en.html) · [Start here in Chinese]({site}ai/start.zh.html) · [Python examples]({site}downloads/guoliang-python-examples.zip) · [All Python, Java and C examples]({site}downloads/guoliang-code-examples.zip)
 
 <table>
 <tr>
@@ -105,11 +105,11 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 ### Computer science foundations
 
-| Course | Open the teaching page | Reference |
-| :--- | :--- | :--- |
+| Course | English | Chinese | Reference |
+| :--- | :--- | :--- | :--- |
 '''
     for c in courses:
-        text += f'| {c["code"]} | [{c["title"]}]({site}courses/{c["code"].lower()}.html) | [One-page PDF]({site}downloads/{c["code"]}-cheatsheet.pdf) |\n'
+        text += f'| {c["code"]} | [{c["title"]}]({site}courses/{c["code"].lower()}.html) | [Read ZH]({site}courses/{c["code"].lower()}.zh.html) | [One-page PDF]({site}downloads/{c["code"]}-cheatsheet.pdf) |\n'
     text += '\n### AI field guides\n\n| Guide | English | Chinese |\n| :--- | :--- | :--- |\n'
     for g in guides:
         text += f'| {g["title"]["en"]} | [Read EN]({site}ai/{g["id"]}.en.html) | [Read ZH]({site}ai/{g["id"]}.zh.html) |\n'

@@ -29,9 +29,15 @@ def style(size,bold=False,color=INK):return ParagraphStyle('s',fontName='GuideBo
 def draw_p(c,text,x,y,width,size=9,bold=False,color=INK):
  p=Paragraph(html.escape(normalized(text)).replace('\n','<br/>'),style(size,bold,color));_,h=p.wrap(width,1000);p.drawOn(c,x,y-h);return h
 metadata=[]
+ROUTES={
+ 'INFO1113':['Trace execution','Object contracts','Data and types','Change and failure','Application design'],
+ 'COMP2017':['Memory and C','Processes and IPC','Threads and safety','Parallel performance'],
+ 'COMP2123':['Analysis and structures','Graph algorithms','Greedy proofs','Divide and randomize'],
+ 'COMP2022':['Finite automata','Grammars and parsing','Computability','Logic and inference'],
+ 'COMP3308':['Search and games','Learning from data','Neural models','Probability and clusters']}
 for code in ORDER:
  course=json.loads((ROOT/'content'/f'{code}.json').read_text());items=course['cheatsheet']
- rows=math.ceil(len(items)/3);gap=10;left=29;right=29;top=H-115;bottom=48
+ rows=math.ceil(len(items)/3);gap=10;left=29;right=29;top=H-134;bottom=48
  cw=(W-left-right-gap*2)/3;ch=(top-bottom-gap*(rows-1))/rows
  path=OUT/f'{code}-cheatsheet.pdf';c=canvas.Canvas(str(path),pagesize=(W,H),pageCompression=1)
  c.setTitle(code+' — '+course['title']+' | Guoliang');c.setAuthor('Guoliang Wang');c.setSubject('One-page original computer science study reference')
@@ -42,7 +48,12 @@ for code in ORDER:
  title_size=22
  while pdfmetrics.stringWidth(course['title'],'GuideBold',title_size)>W-left-right:title_size-=.5
  c.setFont('GuideBold',title_size);c.setFillColor(INK);c.drawString(left,H-72,course['title'])
- c.setFont('Guide',8.5);c.setFillColor(MUTED);c.drawString(left,H-94,'Models, formulas & decision rules. Read the full notes for derivations and worked examples.')
+ route_width=(W-left-right-15*(len(ROUTES[code])-1))/len(ROUTES[code])
+ for stage,label in enumerate(ROUTES[code]):
+  x=left+stage*(route_width+15)
+  c.setFillColor(HexColor('#e5eee6'));c.roundRect(x,H-115,route_width,25,5,fill=1,stroke=0)
+  c.setFont('GuideBold',8.5);c.setFillColor(GREEN);c.drawString(x+8,H-105,f'{stage+1:02d} / '+label)
+  if stage<len(ROUTES[code])-1:c.drawString(x+route_width+3,H-105,'→')
  # Print-friendly original-brand watermark, beneath the foreground content.
  c.saveState();c.translate(W/2,H/2);c.rotate(18);c.setFillColor(Color(.2,.4,.27,alpha=.035));c.setFont('GuideBold',95);c.drawCentredString(0,-30,'Guoliang');c.restoreState()
  minfont=20

@@ -57,11 +57,15 @@ for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=('ai' in f.relative_to(ROOT).parts or f.name.startswith('AI-') or f.name=='app.js')
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))
   check('TODO' not in s and 'Lorem ipsum' not in s,'Placeholder '+str(f))
 for f in [ROOT/'README.md']+list((ROOT/'notes').glob('*.md')):
- for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)',f.read_text()):
+ # Generated notes use triple-backtick blocks and single-backtick code spans.
+ # C calls such as operations[index](17, 6) inside code are not links.
+ prose=re.sub(r'^```[^\n]*\n.*?^```[^\n]*(?:\n|$)','',f.read_text(),flags=re.M|re.S)
+ prose=re.sub(r'`[^`\n]*`','',prose)
+ for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)',prose):
   parsed=urlparse(target)
   if parsed.scheme or target.startswith('#'):continue
   check((f.parent/unquote(parsed.path)).exists(),f'{f.name} broken Markdown target {target}')
@@ -70,6 +74,16 @@ check(len(collection.pages)==5,'Collection must contain five single-page referen
 from validate_paths import validate_paths
 path_errors,guides=validate_paths()
 errors.extend(path_errors)
+from validate_courses import validate_courses
+course_errors,counts=validate_courses()
+errors.extend(course_errors)
+for folder in ('courses','ai'):
+ for f in (SITE/folder).glob('*.html'):
+  page=f.read_text()
+  check('class="learning-route"' in page,f.name+' missing opening roadmap')
+  check(page.index('class="learning-route"')<page.index('class="course-layout"'),f.name+' roadmap is too late')
+for f in (SITE/'notes').glob('*.md'):
+ check('assets/maps/' in f.read_text()[:1200],f.name+' missing opening roadmap in downloaded notes')
 if errors:
  print('\n'.join(errors));sys.exit(1)
-print(f'PASS: {len(parsers)} HTML pages, all local links and anchors, five course maps, English original courses and bilingual AI guides, excluded source content, five single-page PDFs and five-page collection; {sum(len(g["topics"]) for g in guides)} bilingual topics including the beginner primer.')
+print(f'PASS: {len(parsers)} HTML pages, local links and anchors, opening roadmaps, five full bilingual courses and bilingual AI guides, excluded source content, five single-page PDFs and collection; course detail: {counts}.')

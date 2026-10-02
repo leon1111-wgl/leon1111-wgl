@@ -1,758 +1,2000 @@
 [
   {
+    "path": "examples/INFO1113/java-execution-types-java-numeric-conversions/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "java-execution-types",
+    "title": "Observe when conversion happens",
+    "output": "late=3.0\nearly=3.5\narea=2500000000\ntruncate=-3\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/java-execution-types-java-parse-and-range/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "java-execution-types",
+    "title": "Separate parsing from accepted range",
+    "output": "12: accepted 12\n-2: negative count\ntwelve: invalid int text\n2147483648: invalid int text\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/control-flow-java-prefix-sum-trace/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "control-flow",
+    "title": "Trace the processed prefix",
+    "output": "processed=1, total=4\nprocessed=2, total=4\nprocessed=3, total=11\nempty total=0\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/control-flow-java-guard-and-search/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "control-flow",
+    "title": "Guard null and stop at the first match",
+    "output": "first length-four index=3\nmatched=pine\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/methods-references-java-mutation-reassignment/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "methods-references",
+    "title": "Compare mutation with reassignment",
+    "output": "after mutation=[10, 8]\nlocal replacement=[1, 2]\ncaller=[10, 8]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/methods-references-java-return-new-reference/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "methods-references",
+    "title": "Return a replacement deliberately",
+    "output": "local count=5\ncaller count=4\noriginal=[2, 5]\nadopted=[4, 10]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/arrays-java-ragged-copy/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "arrays",
+    "title": "Trace shallow and row-wise copies",
+    "output": "original=[[2, 7], [9]]\nshallow=[[2, 7], [4, 6, 8]]\noriginal after isolated edit=[[2, 7], [9]]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/arrays-java-array-store-and-null-rows/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "arrays",
+    "title": "Handle null rows and checked stores",
+    "output": "cells=3\nincompatible store rejected\nsecond slot=null\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/strings-java-string-value-identity/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "strings",
+    "title": "Separate text value from object identity",
+    "output": "identity=false\ncontent=true\nignored result=harbor\nassigned result=HARBOR\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/strings-java-builder-and-unicode/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "strings",
+    "title": "Build labels and count Unicode units",
+    "output": "Day 1, Day 2, Day 3\ncode units=2\ncode points=1\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/classes-invariants-java-dispenser-contract/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "classes-invariants",
+    "title": "Protect a capacity invariant",
+    "output": "after fill=9\nrejected\nafter rejection=9\nother instance=0\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/classes-invariants-java-defensive-array-copies/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "classes-invariants",
+    "title": "Protect an internal array",
+    "output": "supplied=[99, 5]\nexported=[2, 77]\nprotected=[2, 5]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/text-io-java-scanner-line-boundary/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "text-io",
+    "title": "Observe a token followed by a line",
+    "output": "count=12\nremainder length=0\nname=lamp\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/text-io-java-validated-line-records/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "text-io",
+    "title": "Validate complete equipment records",
+    "output": "line 3: bad integer\nline 4: negative count\naccepted total=8\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/binary-io-java-binary-round-trip/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "binary-io",
+    "title": "Write and read a sensor record",
+    "output": "bytes=12\nstation=258\ntemperature=18.5\nat end=true\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/binary-io-java-binary-truncation/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "binary-io",
+    "title": "Inspect exact bytes and reject truncation",
+    "output": "hex=00 00 01 02\ntruncated int rejected\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/collections-java-list-set-map/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "collections",
+    "title": "Represent events, uniqueness, and counts",
+    "output": "events=[Mia, Leo, Mia]\nunique count=2\ncounts={Mia=2, Leo=1}\nafter replacement={Mia=3, Leo=1}, keys=2\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/collections-java-deque-order/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "collections",
+    "title": "Contrast FIFO and LIFO with a deque",
+    "output": "FIFO=oak, pine, elm\nLIFO=elm, pine, oak\nempty poll=null\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/equality-hashing-java-immutable-value-key/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "equality-hashing",
+    "title": "Use immutable seats as value keys",
+    "output": "identity=false\nequal=true\nequal hashes=true\nlogical seats=2\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/equality-hashing-java-legal-hash-collisions/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "equality-hashing",
+    "title": "Keep unequal colliding keys distinct",
+    "output": "keys=2\nkey 1=updated\nkey 2=south\nsame hash=true\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/inheritance-composition-java-composed-reporter/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "inheritance-composition",
+    "title": "Inject a recording collaborator",
+    "output": "[ready, running, done]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/inheritance-composition-java-subclass-initialization/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "inheritance-composition",
+    "title": "Preserve a superclass contract",
+    "output": "samples=5\nnegative rejected\ncount=5\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/overload-override-java-two-stage-dispatch/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "overload-override",
+    "title": "Trace overload then override",
+    "output": "fancy general\ntext\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/overload-override-java-static-and-virtual/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "overload-override",
+    "title": "Separate class methods from instance methods",
+    "output": "base static=base kind\nderived static=derived kind\ninstance=derived instance\ncovariant value=derived label\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/abstractions-java-abstract-state/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "abstractions",
+    "title": "Share construction while requiring behavior",
+    "output": "panel: area=12\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/abstractions-java-interface-default-conflict/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "abstractions",
+    "title": "Resolve two interface defaults",
+    "output": "left+right\ndescription provider\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/generics-java-generic-box-first/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "generics",
+    "title": "Preserve types through a box and a method",
+    "output": "north, 8\nred, 8\nempty rejected\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/generics-java-number-bound/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "generics",
+    "title": "Use a Number bound for a stated conversion",
+    "output": "integers=10.0\ndecimals=3.75\nempty=0.0\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/wildcards-java-wildcard-copy/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "wildcards",
+    "title": "Copy from a producer into a consumer",
+    "output": "source=[3, 7]\ndestination=[2.5, 3, 7]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/wildcards-java-wildcard-mutation-limits/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "wildcards",
+    "title": "Separate type knowledge from mutability",
+    "output": "read number=3\nafter removal=[7]\nearlier=note\ndestination=[note, 9]\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/iteration-memory-java-independent-iterators/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "iteration-memory",
+    "title": "Give each traversal its own cursor",
+    "output": "a=oak\na=pine\nb=oak\na=elm\na has next=false\na exhausted\nb=pine\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/iteration-memory-java-iterator-remove-alias/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "iteration-memory",
+    "title": "Remove safely and keep reachability visible",
+    "output": "remaining through alias=[2, 4]\noriginal variable null=true\nalias size=2\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/exceptions-java-exception-state-guarantee/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "exceptions",
+    "title": "Reject before mutating state",
+    "output": "rejected: capacity exceeded\nafter failure=5\nafter success=6\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/exceptions-java-resource-close-order/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "exceptions",
+    "title": "Observe cleanup during exception propagation",
+    "output": "open=first\nopen=second\nuse=first\nuse=second\nclose=second\nclose=first\ncaught=work failed\ncontinued\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/enums-state-java-explicit-state-transitions/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "enums-state",
+    "title": "Accept and reject workflow events",
+    "output": "start -> RUNNING\nstart rejected at RUNNING\nfinish -> DONE\nstart rejected at DONE\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/enums-state-java-enum-stable-codes/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "enums-state",
+    "title": "Decode explicit enum codes",
+    "output": "IDLE: code=10\nACTIVE: code=20\nSTOPPED: code=30\ndecoded=ACTIVE\nunknown code rejected\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/testing-contracts-java-boundary-test-harness/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "testing-contracts",
+    "title": "Run boundary tests without a test dependency",
+    "output": "four contract cases passed\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/testing-contracts-java-average-regression-check/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "testing-contracts",
+    "title": "Keep a focused arithmetic regression test",
+    "output": "fractional average=4.5\nempty input rejected=true\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/recursion-memoization-java-memoized-staircase/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "recursion-memoization",
+    "title": "Cache each staircase state once",
+    "output": "ways(4)=5\ncomputed states=5\nrepeat=5\ncomputed after repeat=5\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/recursion-memoization-java-iterative-big-staircase/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "recursion-memoization",
+    "title": "Replace deep recursion with an iterative exact count",
+    "output": "ways(0)=1\nways(4)=5\nways(100)=573147844013817084101\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/lambdas-java-lambda-capture/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "lambdas",
+    "title": "Capture a threshold and a mutable log",
+    "output": "oak accepted=true\nox accepted=false\nlog size=0\nlog size=1\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/lambdas-java-lambda-this/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "lambdas",
+    "title": "See which object this names",
+    "output": "lambda=outer\nanonymous=inner\nenclosing=outer\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/debugging-documentation-java-debug-intermediate-types/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "debugging-documentation",
+    "title": "Locate the first wrong intermediate value",
+    "output": "integer quotient=4\nlate conversion=4.0\nearly conversion=4.5\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/debugging-documentation-java-documented-distance-contract/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "debugging-documentation",
+    "title": "Turn documentation into executable checks",
+    "output": "distance=7\nrejected negative position\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/application-design-java-headless-event-flow/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "application-design",
+    "title": "Follow a command through a small application",
+    "output": "water 2 -> accepted\nmoisture=6\nwater 8 -> rejected\nmoisture=6\nwater many -> rejected\nmoisture=6\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/application-design-java-injected-watering-policy/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "application-design",
+    "title": "Replace one policy without rewriting the controller",
+    "output": "gentle=6\ndry day=8\nunsafe policy rejected\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/COMP2017/representation-control-c-defined-integer-arithmetic.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "representation-control",
+    "title": "Observe defined wrap and guard signed addition",
+    "output": "unsigned wrap=0\nsigned addition rejected\ninteger quotient=4\nfloating quotient=4.3333\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread representation-control-c-defined-integer-arithmetic.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/representation-control-c-prefix-and-pass-by-value.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "representation-control",
+    "title": "Trace a prefix sum and a copied parameter",
+    "output": "processed=1 sum=2\nprocessed=2 sum=6\nprocessed=3 sum=13\nreturned=9\ncaller=5\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread representation-control-c-prefix-and-pass-by-value.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/pointers-arrays-c-pointer-range.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "pointers-arrays",
+    "title": "Traverse with a begin and end pointer",
+    "output": "elements=3\nsum=16\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pointers-arrays-c-pointer-range.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/pointers-arrays-c-row-aware-grid.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "pointers-arrays",
+    "title": "Use the actual row type",
+    "output": "row 0 sum=12\nrow 1 sum=30\nsecond row last=12\nrow elements=3\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pointers-arrays-c-row-aware-grid.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/strings-parsing-c-string-capacity.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "strings-parsing",
+    "title": "Separate text length from storage capacity",
+    "output": "text=Lamp length=4 capacity=5\nstored=Map required=5\ntruncated=yes\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread strings-parsing-c-string-capacity.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/strings-parsing-c-strict-integer-parser.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "strings-parsing",
+    "title": "Validate the entire integer input",
+    "output": "input 0 rejected\ninput 1 accepted=42\ninput 2 rejected\ninput 3 rejected\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread strings-parsing-c-strict-integer-parser.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/structured-data-c-structure-copy-and-alias.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "structured-data",
+    "title": "Copy embedded data and share pointed-to data",
+    "output": "original label=oak value=9\ncopy label=Oak value=9\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread structured-data-c-structure-copy-and-alias.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/structured-data-c-tagged-measurement.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "structured-data",
+    "title": "Read a union through its tag",
+    "output": "count=7\ntemperature=18.5\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread structured-data-c-tagged-measurement.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/file-streams-c-byte-input-and-eof.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "file-streams",
+    "title": "Read bytes until the operation reports the end",
+    "output": "byte 0=65\nbyte 1=0\nbyte 2=66\ncount=3 ended=yes\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread file-streams-c-byte-input-and-eof.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/file-streams-c-partial-record-units.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "file-streams",
+    "title": "Count bytes and complete records separately",
+    "output": "complete records=0\nreceived bytes=7\ntruncated record rejected\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread file-streams-c-partial-record-units.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/allocation-ownership-c-owned-dynamic-array.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "allocation-ownership",
+    "title": "Allocate, initialize, use and release",
+    "output": "count=6 sum=21\nowner cleared\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread allocation-ownership-c-owned-dynamic-array.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/allocation-ownership-c-realloc-commit.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "allocation-ownership",
+    "title": "Commit a resize only after success",
+    "output": "1 2 3 4 5\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread allocation-ownership-c-realloc-commit.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/linked-structures-c-list-remove-link.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "linked-structures",
+    "title": "Remove both a middle node and the head",
+    "output": "4 -> 7 -> 9 -> NULL\n4 -> 9 -> NULL\n9 -> NULL\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread linked-structures-c-list-remove-link.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/linked-structures-c-list-reverse.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "linked-structures",
+    "title": "Reverse links without losing the suffix",
+    "output": "9 -> 7 -> 4 -> NULL\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread linked-structures-c-list-reverse.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/callbacks-c-checked-dispatch-table.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "callbacks",
+    "title": "Select behavior through a checked table",
+    "output": "operation 0=23\noperation 1=11\ninvalid operation\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread callbacks-c-checked-dispatch-table.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/callbacks-c-safe-qsort-comparator.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "callbacks",
+    "title": "Sort without subtracting arbitrary integers",
+    "output": "extreme comparison=-1\n-7 -7 0 4\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread callbacks-c-safe-qsort-comparator.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/preprocessing-c-macro-grouping.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "preprocessing",
+    "title": "Compare token substitution with a function call",
+    "output": "ungrouped=9\ngrouped=25\nfunction=16 next i=5\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread preprocessing-c-macro-grouping.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/preprocessing-c-conditional-macro-value.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "preprocessing",
+    "title": "Distinguish presence from numeric truth",
+    "output": "macro exists\ncache disabled\nactive function=main\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread preprocessing-c-conditional-macro-value.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/compilation-linkage-c-declarations-and-definitions.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "compilation-linkage",
+    "title": "Use an interface before its definition",
+    "output": "total=13\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread compilation-linkage-c-declarations-and-definitions.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/compilation-linkage-c-scope-and-storage-duration.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "compilation-linkage",
+    "title": "Separate local scope from storage duration",
+    "output": "automatic=1 persistent=1\nautomatic=1 persistent=2\nautomatic=1 persistent=3\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread compilation-linkage-c-scope-and-storage-duration.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/signals-c-minimal-signal-handler.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "signals",
+    "title": "Record a signal and handle it in normal flow",
+    "output": "request observed=yes\ncleanup in normal flow\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread signals-c-minimal-signal-handler.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/signals-c-blocked-signal-wait.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "signals",
+    "title": "Accept a pending signal synchronously",
+    "output": "pending before wait=yes\naccepted expected signal=yes\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread signals-c-blocked-signal-wait.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/process-fork-c-fork-separate-state.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "process-fork",
+    "title": "Change two copies of ordinary state",
+    "output": "parent value=8\nchild reported=12\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread process-fork-c-fork-separate-state.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/process-fork-c-parent-only-creation.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "process-fork",
+    "title": "Count a parent-only creation loop",
+    "output": "children created=3\ndistinct processes=4\nstatus sum=6\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread process-fork-c-parent-only-creation.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/exec-wait-c-exec-self-replacement.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "exec-wait",
+    "title": "Replace a child with a fresh copy of this program",
+    "output": "replacement image running\nreplacement exit=7\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread exec-wait-c-exec-self-replacement.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/exec-wait-c-exec-failure-status.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "exec-wait",
+    "title": "Handle an exec failure without duplicating buffers",
+    "output": "launcher failure status=127\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread exec-wait-c-exec-failure-status.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/pipes-fifos-c-pipe-bytes-and-eof.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "pipes-fifos",
+    "title": "Drain a pipe after closing the writer",
+    "output": "received=hello bytes=5\nEOF after writer closed\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pipes-fifos-c-pipe-bytes-and-eof.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/pipes-fifos-c-pipe-length-framing.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "pipes-fifos",
+    "title": "Reconstruct two length-prefixed frames",
+    "output": "frame=cat\nframe=bird\nframes=2\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pipes-fifos-c-pipe-length-framing.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/queues-sockets-c-system-v-message-boundary.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "queues-sockets",
+    "title": "Send only the defined payload bytes",
+    "output": "type=2 bytes=5 text=hello\nqueue removed\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread queues-sockets-c-system-v-message-boundary.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/queues-sockets-c-local-datagram-boundaries.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "queues-sockets",
+    "title": "Preserve two local datagram boundaries",
+    "output": "datagram 0 bytes=3 text=cat\ndatagram 1 bytes=4 text=bird\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread queues-sockets-c-local-datagram-boundaries.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/shared-memory-semaphores-c-shared-segment-handoff.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "shared-memory-semaphores",
+    "title": "Observe explicit shared storage after a child completes",
+    "output": "shared=17 parent local=4\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread shared-memory-semaphores-c-shared-segment-handoff.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/shared-memory-semaphores-c-semaphore-permit-accounting.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "shared-memory-semaphores",
+    "title": "Consume and return semaphore permits",
+    "output": "two permits acquired\nthird request has no permit\nreturned permit acquired again\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread shared-memory-semaphores-c-semaphore-permit-accounting.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/thread-lifecycle-c-stable-thread-arguments.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "thread-lifecycle",
+    "title": "Keep one argument record per worker",
+    "output": "first=10 second=35 total=45\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread thread-lifecycle-c-stable-thread-arguments.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/thread-lifecycle-c-thread-result-ownership.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "thread-lifecycle",
+    "title": "Transfer a heap result through join",
+    "output": "result=49\nresult released by joiner\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread thread-lifecycle-c-thread-result-ownership.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/data-races-mutexes-c-lost-update-model.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "data-races-mutexes",
+    "title": "Model a lost update without a C data race",
+    "output": "after A writes=9\nafter B writes=9\ntwo completed decrements should give=8\nsequential model, not an executed data race\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread data-races-mutexes-c-lost-update-model.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/data-races-mutexes-c-mutex-check-and-update.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "data-races-mutexes",
+    "title": "Protect the complete final-item transaction",
+    "output": "successful requests=1\nremaining stock=0\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread data-races-mutexes-c-mutex-check-and-update.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/thread-safe-design-c-independent-tokenizers.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "thread-safe-design",
+    "title": "Give concurrent parsers independent state",
+    "output": "first total=6 second total=15\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread thread-safe-design-c-independent-tokenizers.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/thread-safe-design-c-reader-writer-snapshots.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "thread-safe-design",
+    "title": "Return copies from a protected configuration",
+    "output": "first snapshot=blue second snapshot=blue\ncurrent=green\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread thread-safe-design-c-reader-writer-snapshots.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/condition-variables-c-condition-predicate-handoff.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "condition-variables",
+    "title": "Publish one value through a protected predicate",
+    "output": "consumed=42\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread condition-variables-c-condition-predicate-handoff.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/condition-variables-c-bounded-queue-shutdown.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "condition-variables",
+    "title": "Drain a bounded queue and then shut down",
+    "output": "consumed=5 sum=15\nremaining=0 closed=1\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread condition-variables-c-bounded-queue-shutdown.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/deadlock-progress-c-global-lock-order.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "deadlock-progress",
+    "title": "Use one lock order for both directions",
+    "output": "left=100 right=100 total=200\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread deadlock-progress-c-global-lock-order.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/deadlock-progress-c-trylock-rollback.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "deadlock-progress",
+    "title": "Release a partial acquisition after a failed try",
+    "output": "first lock available after rollback\nbusy path taken=1\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread deadlock-progress-c-trylock-rollback.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/parallel-performance-c-amdahl-model.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "parallel-performance",
+    "title": "Calculate an ideal bound and explicit overhead",
+    "output": "p=1 ideal speedup=1.000 efficiency=1.000\np=2 ideal speedup=1.667 efficiency=0.833\np=4 ideal speedup=2.500 efficiency=0.625\np=8 ideal speedup=3.333 efficiency=0.417\nfour-worker model seconds=4.0 with overhead=4.5\noverhead model speedup=2.222 limit=5.0\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread parallel-performance-c-amdahl-model.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/parallel-performance-c-equivalent-parallel-work.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "parallel-performance",
+    "title": "Check equivalent work before benchmarking",
+    "output": "serial=5050 parallel=5050\nsame result=yes workers=4\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread parallel-performance-c-equivalent-parallel-work.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/parallel-patterns-c-two-block-prefix-scan.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "parallel-patterns",
+    "title": "Join local prefixes before applying offsets",
+    "output": "block totals=6 11\n2 3 6 10 12 17\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread parallel-patterns-c-two-block-prefix-scan.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/parallel-patterns-c-matrix-row-ownership.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "parallel-patterns",
+    "title": "Give each matrix row one writer",
+    "output": "row 0: 4 10\nrow 1: 10 20\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread parallel-patterns-c-matrix-row-ownership.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/debugging-evidence-c-terminator-boundary-regression.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "debugging-evidence",
+    "title": "Test the last payload byte and its terminator",
+    "output": "length=0 accepted=1 stored=''\nlength=7 accepted=1 stored='1234567'\nlength=8 accepted=0 stored='kept'\nlength=11 accepted=0 stored='kept'\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread debugging-evidence-c-terminator-boundary-regression.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/debugging-evidence-c-injected-resize-failure.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "debugging-evidence",
+    "title": "Inject allocation failure and verify preserved ownership",
+    "output": "injected accepted=0 length=2 capacity=2 values=4,7\nreal accepted=1 length=3 capacity=4 values=4,7,9\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread debugging-evidence-c-injected-resize-failure.c -lm -o demo\n./demo"
+  },
+  {
     "path": "examples/COMP2123/analysis-correctness-prefix-total-trace.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "analysis-correctness",
     "title": "A running total and its invariant",
-    "output": "4 4\n-1 3\n6 9\n2 11\n[4, 3, 9, 11]\n"
+    "output": "4 4\n-1 3\n6 9\n2 11\n[4, 3, 9, 11]\n",
+    "run": "python analysis-correctness-prefix-total-trace.py"
+  },
+  {
+    "path": "examples/COMP2123/analysis-correctness-doubling-array-cost.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "analysis-correctness",
+    "title": "Count the cost of growing storage",
+    "output": "size: 1 capacity: 1 copies: 0\nsize: 2 capacity: 2 copies: 1\nsize: 3 capacity: 4 copies: 3\nsize: 4 capacity: 4 copies: 3\nsize: 5 capacity: 8 copies: 7\nwrites plus copies: 12\n",
+    "run": "python analysis-correctness-doubling-array-cost.py"
   },
   {
     "path": "examples/COMP2123/lists-representations-array-insert-shifts.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "lists-representations",
     "title": "See an array insertion shift values",
-    "output": "['L', 'X', 'M', 'N', 'P']\nshifts: 3\n"
+    "output": "['L', 'X', 'M', 'N', 'P']\nshifts: 3\n",
+    "run": "python lists-representations-array-insert-shifts.py"
   },
   {
     "path": "examples/COMP2123/lists-representations-linked-node-splice.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "lists-representations",
     "title": "Insert a real node into a linked chain",
-    "output": "['L', 'M', 'X', 'N']\nX still links to N: True\n"
+    "output": "['L', 'M', 'X', 'N']\nX still links to N: True\n",
+    "run": "python lists-representations-linked-node-splice.py"
   },
   {
     "path": "examples/COMP2123/stacks-queues-stack-bracket-check.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "stacks-queues",
     "title": "Match brackets with a stack",
-    "output": "True\nFalse\nFalse\n"
+    "output": "True\nFalse\nFalse\n",
+    "run": "python stacks-queues-stack-bracket-check.py"
   },
   {
     "path": "examples/COMP2123/stacks-queues-deque-fifo-service.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "stacks-queues",
     "title": "Serve waiting jobs with deque",
-    "output": "served: Ada\nwaiting: ['Bo', 'Cy']\nleft end: urgent\nwaiting: ['Bo', 'Cy']\n"
+    "output": "served: Ada\nwaiting: ['Bo', 'Cy']\nleft end: urgent\nwaiting: ['Bo', 'Cy']\n",
+    "run": "python stacks-queues-deque-fifo-service.py"
   },
   {
     "path": "examples/COMP2123/trees-traversal-tree-three-orders.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "trees-traversal",
     "title": "Compare three traversal orders",
-    "output": "pre ['R', 'A', 'C', 'B']\nin ['C', 'A', 'R', 'B']\npost ['C', 'A', 'B', 'R']\n"
+    "output": "pre ['R', 'A', 'C', 'B']\nin ['C', 'A', 'R', 'B']\npost ['C', 'A', 'B', 'R']\n",
+    "run": "python trees-traversal-tree-three-orders.py"
   },
   {
     "path": "examples/COMP2123/trees-traversal-tree-size-height.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "trees-traversal",
     "title": "Calculate size and height together",
-    "output": "size: 4\nheight: 2\nempty: (0, -1)\n"
+    "output": "size: 4\nheight: 2\nempty: (0, -1)\n",
+    "run": "python trees-traversal-tree-size-height.py"
   },
   {
     "path": "examples/COMP2123/bst-range-queries-bst-build-search.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "bst-range-queries",
     "title": "Insert keys and record the search route",
-    "output": "route: [18, 27, 22]\nfound: True\n"
+    "output": "route: [18, 27, 22]\nfound: True\n",
+    "run": "python bst-range-queries-bst-build-search.py"
   },
   {
     "path": "examples/COMP2123/bst-range-queries-bst-pruned-range.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "bst-range-queries",
     "title": "Report a range without visiting every branch",
-    "output": "[13, 18, 22, 27]\n"
+    "output": "[13, 18, 22, 27]\n",
+    "run": "python bst-range-queries-bst-pruned-range.py"
   },
   {
     "path": "examples/COMP2123/avl-balance-avl-single-rotation.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "avl-balance",
     "title": "Rotate an outer-heavy branch right",
-    "output": "before height: 2\nkeys: 10 20 30\nafter height: 1\n"
+    "output": "before height: 2\nkeys: 10 20 30\nafter height: 1\n",
+    "run": "python avl-balance-avl-single-rotation.py"
   },
   {
     "path": "examples/COMP2123/avl-balance-avl-double-rotation.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "avl-balance",
     "title": "Repair an inner-heavy branch",
-    "output": "after first: 30 20 10\nafter second: 10 20 30\n"
+    "output": "after first: 30 20 10\nafter second: 10 20 30\n",
+    "run": "python avl-balance-avl-double-rotation.py"
   },
   {
     "path": "examples/COMP2123/priority-queues-heaps-heapq-priority-service.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "priority-queues-heaps",
     "title": "Use heapq to serve priorities",
-    "output": "minimum: 3\nserved: [3, 4, 5, 8, 10, 12]\n"
+    "output": "minimum: 3\nserved: [3, 4, 5, 8, 10, 12]\n",
+    "run": "python priority-queues-heaps-heapq-priority-service.py"
   },
   {
     "path": "examples/COMP2123/priority-queues-heaps-heap-bubble-up.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "priority-queues-heaps",
     "title": "Write the heap insertion repair",
-    "output": "[3, 8, 4, 12, 10, 5]\nswaps: 1\nvalid: True\n"
+    "output": "[3, 8, 4, 12, 10, 5]\nswaps: 1\nvalid: True\n",
+    "run": "python priority-queues-heaps-heap-bubble-up.py"
   },
   {
     "path": "examples/COMP2123/sorting-baselines-insertion-sort-trace.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "sorting-baselines",
     "title": "Watch insertion sort grow a prefix",
-    "output": "[2, 5, 4, 1]\n[2, 4, 5, 1]\n[1, 2, 4, 5]\nshifts: 5\n"
+    "output": "[2, 5, 4, 1]\n[2, 4, 5, 1]\n[1, 2, 4, 5]\nshifts: 5\n",
+    "run": "python sorting-baselines-insertion-sort-trace.py"
   },
   {
     "path": "examples/COMP2123/sorting-baselines-heap-sort-output.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "sorting-baselines",
     "title": "Sort by repeatedly removing a heap minimum",
-    "output": "input: [5, 2, 4, 1]\nsorted: [1, 2, 4, 5]\n"
+    "output": "input: [5, 2, 4, 1]\nsorted: [1, 2, 4, 5]\n",
+    "run": "python sorting-baselines-heap-sort-output.py"
   },
   {
     "path": "examples/COMP2123/hashing-collisions-hash-chaining-buckets.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "hashing-collisions",
     "title": "Store colliding keys in one bucket",
-    "output": "bucket 3: [(10, 'ten'), (17, 'seventeen'), (24, 'twenty-four')]\n24: twenty-four\n31: None\n"
+    "output": "bucket 3: [(10, 'ten'), (17, 'seventeen'), (24, 'twenty-four')]\n24: twenty-four\n31: None\n",
+    "run": "python hashing-collisions-hash-chaining-buckets.py"
   },
   {
     "path": "examples/COMP2123/hashing-collisions-linear-probe-tombstone.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "hashing-collisions",
     "title": "Delete without breaking a probe chain",
-    "output": "(True, [3, 4, 5])\n(False, [3, 4])\n"
+    "output": "(True, [3, 4, 5])\n(False, [3, 4])\n",
+    "run": "python hashing-collisions-linear-probe-tombstone.py"
   },
   {
     "path": "examples/COMP2123/cuckoo-maps-sets-cuckoo-two-home-demo.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "cuckoo-maps-sets",
     "title": "Follow a bounded cuckoo insertion",
-    "output": "first: [6, None, None]\nsecond: [0, 3, None]\n3 found: True\n"
+    "output": "first: [6, None, None]\nsecond: [0, 3, None]\n3 found: True\n",
+    "run": "python cuckoo-maps-sets-cuckoo-two-home-demo.py"
   },
   {
     "path": "examples/COMP2123/cuckoo-maps-sets-set-and-counter-contracts.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "cuckoo-maps-sets",
     "title": "Separate membership from multiplicity",
-    "output": "red present: True\ndistinct: 2\nred count: 2\ntotal: 3\n"
+    "output": "red present: True\ndistinct: 2\nred count: 2\ntotal: 3\n",
+    "run": "python cuckoo-maps-sets-set-and-counter-contracts.py"
   },
   {
     "path": "examples/COMP2123/graph-models-adjacency-list-degree-check.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "graph-models",
     "title": "Build an undirected adjacency list",
-    "output": "A ['B', 'C']\nB ['A', 'D']\nC ['A', 'D']\nD ['B', 'C']\nE []\ndegree sum: 8\ntwice edges: 8\n"
+    "output": "A ['B', 'C']\nB ['A', 'D']\nC ['A', 'D']\nD ['B', 'C']\nE []\ndegree sum: 8\ntwice edges: 8\n",
+    "run": "python graph-models-adjacency-list-degree-check.py"
+  },
+  {
+    "path": "examples/COMP2123/graph-models-matrix-edge-tests.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "graph-models",
+    "title": "Trade matrix space for direct edge tests",
+    "output": "A to B: True\nB to A: False\nB neighbors: ['C']\ncells: 9\n",
+    "run": "python graph-models-matrix-edge-tests.py"
   },
   {
     "path": "examples/COMP2123/dfs-bridges-dfs-low-bridge-trace.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "dfs-bridges",
     "title": "Find a bridge with discovery and low values",
-    "output": "discovery: {'A': 0, 'B': 1, 'C': 2, 'D': 3}\nlow: {'A': 0, 'B': 0, 'C': 0, 'D': 3}\nbridges: [('C', 'D')]\n"
+    "output": "discovery: {'A': 0, 'B': 1, 'C': 2, 'D': 3}\nlow: {'A': 0, 'B': 0, 'C': 0, 'D': 3}\nbridges: [('C', 'D')]\n",
+    "run": "python dfs-bridges-dfs-low-bridge-trace.py"
+  },
+  {
+    "path": "examples/COMP2123/dfs-bridges-dfs-explicit-stack.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "dfs-bridges",
+    "title": "Explore without recursive calls",
+    "output": "order: ['A', 'B', 'D', 'C']\nX reachable: False\n",
+    "run": "python dfs-bridges-dfs-explicit-stack.py"
   },
   {
     "path": "examples/COMP2123/bfs-distance-bfs-distance-and-route.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "bfs-distance",
     "title": "Use a queue to find distance and a route",
-    "output": "distance to E: 3\nroute: ['S', 'A', 'C', 'E']\ndistance to X: None\n"
+    "output": "distance to E: 3\nroute: ['S', 'A', 'C', 'E']\ndistance to X: None\n",
+    "run": "python bfs-distance-bfs-distance-and-route.py"
+  },
+  {
+    "path": "examples/COMP2123/bfs-distance-multi-source-bfs.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "bfs-distance",
+    "title": "Find distance to the nearest starting point",
+    "output": "nearest distances: [0, 1, 2, 1, 0]\n",
+    "run": "python bfs-distance-multi-source-bfs.py"
   },
   {
     "path": "examples/COMP2123/dijkstra-relaxation-dijkstra-lazy-heap.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "dijkstra-relaxation",
     "title": "Trace shorter routes with a lazy heap",
-    "output": "distances: [('S', 0), ('A', 3), ('B', 2), ('C', 6)]\nroute: ['S', 'B', 'A', 'C']\n"
+    "output": "distances: [('S', 0), ('A', 3), ('B', 2), ('C', 6)]\nroute: ['S', 'B', 'A', 'C']\n",
+    "run": "python dijkstra-relaxation-dijkstra-lazy-heap.py"
+  },
+  {
+    "path": "examples/COMP2123/dijkstra-relaxation-dijkstra-array-choice.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "dijkstra-relaxation",
+    "title": "Choose a minimum without a heap",
+    "output": "settled: S 0\nsettled: A 0\nsettled: B 2\nX: inf\n",
+    "run": "python dijkstra-relaxation-dijkstra-array-choice.py"
   },
   {
     "path": "examples/COMP2123/minimum-spanning-trees-kruskal-union-find.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "minimum-spanning-trees",
     "title": "Build an MST with union-find",
-    "output": "edges: [('A', 'B', 1), ('B', 'C', 2), ('C', 'D', 3)]\ntotal: 6\n"
+    "output": "edges: [('A', 'B', 1), ('B', 'C', 2), ('C', 'D', 3)]\ntotal: 6\n",
+    "run": "python minimum-spanning-trees-kruskal-union-find.py"
+  },
+  {
+    "path": "examples/COMP2123/minimum-spanning-trees-prim-cut-frontier.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "minimum-spanning-trees",
+    "title": "Grow a minimum spanning tree across a cut",
+    "output": "edges: [('A', 'B', 1), ('B', 'C', 2), ('C', 'D', 3)]\ntotal: 6\nspans graph: True\n",
+    "run": "python minimum-spanning-trees-prim-cut-frontier.py"
   },
   {
     "path": "examples/COMP2123/greedy-fractional-fractional-knapsack-trace.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "greedy-fractional",
     "title": "Fill a capacity by density",
-    "output": "A weight: 4 fraction: 1.0\nB weight: 5 fraction: 1.0\nC weight: 1 fraction: 0.167\ntotal value: 56.0\n"
+    "output": "A weight: 4 fraction: 1.0\nB weight: 5 fraction: 1.0\nC weight: 1 fraction: 0.167\ntotal value: 56.0\n",
+    "run": "python greedy-fractional-fractional-knapsack-trace.py"
+  },
+  {
+    "path": "examples/COMP2123/greedy-fractional-indivisible-knapsack-counterexample.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "greedy-fractional",
+    "title": "Check where a greedy proof stops working",
+    "output": "density choice: ['A']\nbest whole items: ['B', 'C']\nbest value: 6\n",
+    "run": "python greedy-fractional-indivisible-knapsack-counterexample.py"
   },
   {
     "path": "examples/COMP2123/interval-partitioning-interval-room-heap.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "interval-partitioning",
     "title": "Assign every session to a room",
-    "output": "A room 1\nB room 2\nC room 1\nD room 2\nrooms: 2\n"
+    "output": "A room 1\nB room 2\nC room 1\nD room 2\nrooms: 2\n",
+    "run": "python interval-partitioning-interval-room-heap.py"
+  },
+  {
+    "path": "examples/COMP2123/interval-partitioning-interval-depth-sweep.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "interval-partitioning",
+    "title": "Independently certify the room lower bound",
+    "output": "1 1 1\n2 1 2\n4 -1 1\n4 1 2\n5 -1 1\n5 1 2\n6 -1 1\n7 -1 0\nminimum rooms: 2\n",
+    "run": "python interval-partitioning-interval-depth-sweep.py"
   },
   {
     "path": "examples/COMP2123/huffman-coding-huffman-tree-codebook.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "huffman-coding",
     "title": "Build the tree and read its codewords",
-    "output": "A 0\nB 11\nC 101\nD 100\nmerges: [6, 13, 25]\nbits: 44\n"
+    "output": "A 0\nB 11\nC 101\nD 100\nmerges: [6, 13, 25]\nbits: 44\n",
+    "run": "python huffman-coding-huffman-tree-codebook.py"
+  },
+  {
+    "path": "examples/COMP2123/huffman-coding-prefix-code-decode.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "huffman-coding",
+    "title": "Decode by waiting for a complete codeword",
+    "output": "encoded: 010110111\ndecoded: ABCD\nrejected: incomplete codeword\n",
+    "run": "python huffman-coding-prefix-code-decode.py"
   },
   {
     "path": "examples/COMP2123/recurrences-merge-sort-merge-sort-real-merge.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "recurrences-merge-sort",
     "title": "Implement merge sort from its stopping case",
-    "output": "[1, 3, 7, 8]\n[]\n[2, 4, 4]\n"
+    "output": "[1, 3, 7, 8]\n[]\n[2, 4, 4]\n",
+    "run": "python recurrences-merge-sort-merge-sort-real-merge.py"
   },
   {
     "path": "examples/COMP2123/recurrences-merge-sort-binary-search-indices.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "recurrences-merge-sort",
     "title": "Halve a search interval without copying data",
-    "output": "checked: [12, 23, 16]\nindex: 4\n"
+    "output": "checked: [12, 23, 16]\nindex: 4\n",
+    "run": "python recurrences-merge-sort-binary-search-indices.py"
   },
   {
     "path": "examples/COMP2123/quicksort-lower-bound-quicksort-three-way.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "quicksort-lower-bound",
     "title": "Partition and recursively sort both sides",
-    "output": "[2, 4, 4, 6, 7, 9]\n[5, 5, 5]\n"
+    "output": "[2, 4, 4, 6, 7, 9]\n[5, 5, 5]\n",
+    "run": "python quicksort-lower-bound-quicksort-three-way.py"
+  },
+  {
+    "path": "examples/COMP2123/quicksort-lower-bound-quicksort-inplace-partition.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "quicksort-lower-bound",
+    "title": "Partition inside one array",
+    "output": "pivot: 2 index: 1 state: [1, 2, 3, 4]\npivot: 4 index: 3 state: [1, 2, 3, 4]\nsorted: [1, 2, 3, 4]\n",
+    "run": "python quicksort-lower-bound-quicksort-inplace-partition.py"
   },
   {
     "path": "examples/COMP2123/pareto-maxima-pareto-descending-scan.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "pareto-maxima",
     "title": "Keep points that improve the best second score",
-    "output": "E best y: 2\nD best y: 4\nC best y: 7\nB best y: 7\nA best y: 8\nfrontier: ['E', 'D', 'C', 'A']\n"
+    "output": "E best y: 2\nD best y: 4\nC best y: 7\nB best y: 7\nA best y: 8\nfrontier: ['E', 'D', 'C', 'A']\n",
+    "run": "python pareto-maxima-pareto-descending-scan.py"
+  },
+  {
+    "path": "examples/COMP2123/pareto-maxima-pareto-pairwise-oracle.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "pareto-maxima",
+    "title": "Check ties with the dominance definition",
+    "output": "frontier: ['A', 'B', 'D']\nA dominates B: False\nA dominates C: True\n",
+    "run": "python pareto-maxima-pareto-pairwise-oracle.py"
   },
   {
     "path": "examples/COMP2123/karatsuba-master-karatsuba-three-products.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "karatsuba-master",
     "title": "Multiply using three recursive products",
-    "output": "1081\n7006652\n0\n"
+    "output": "1081\n7006652\n0\n",
+    "run": "python karatsuba-master-karatsuba-three-products.py"
+  },
+  {
+    "path": "examples/COMP2123/karatsuba-master-schoolbook-digit-products.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "karatsuba-master",
+    "title": "See the four products Karatsuba avoids",
+    "output": "high-high 8 place: 100 running: 800\nhigh-low 14 place: 10 running: 940\nlow-high 12 place: 10 running: 1060\nlow-low 21 place: 1 running: 1081\nproduct: 1081\nordinary leaves at depth 3: 64\nKaratsuba leaves at depth 3: 27\n",
+    "run": "python karatsuba-master-schoolbook-digit-products.py"
   },
   {
     "path": "examples/COMP2123/selection-pivots-quickselect-one-branch.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "selection-pivots",
     "title": "Find a rank without sorting both sides",
-    "output": "fourth: 7\nsixth: 10\nduplicates: 7\n"
+    "output": "fourth: 7\nsixth: 10\nduplicates: 7\n",
+    "run": "python selection-pivots-quickselect-one-branch.py"
+  },
+  {
+    "path": "examples/COMP2123/selection-pivots-median-of-medians-select.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "selection-pivots",
+    "title": "Choose a pivot from small-group medians",
+    "output": "sixth: 6\nlast: 12\nduplicates: 4\n",
+    "run": "python selection-pivots-median-of-medians-select.py"
   },
   {
     "path": "examples/COMP2123/random-permutations-fisher-yates-enumerate.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "random-permutations",
     "title": "Check every shuffle path for three cards",
-    "output": "ABC 1\nACB 1\nBAC 1\nBCA 1\nCAB 1\nCBA 1\npaths: 6\n"
+    "output": "ABC 1\nACB 1\nBAC 1\nBCA 1\nCAB 1\nCBA 1\npaths: 6\n",
+    "run": "python random-permutations-fisher-yates-enumerate.py"
+  },
+  {
+    "path": "examples/COMP2123/random-permutations-biased-shuffle-audit.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "random-permutations",
+    "title": "Expose a nearly plausible biased shuffle",
+    "output": "ABC 4\nACB 5\nBAC 5\nBCA 5\nCAB 4\nCBA 4\npaths: 27\nequal frequencies: False\n",
+    "run": "python random-permutations-biased-shuffle-audit.py"
   },
   {
     "path": "examples/COMP2123/skip-lists-skip-list-links-and-insert.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "skip-lists",
     "title": "Build real forward-link towers",
-    "output": "level 2 [11]\nlevel 1 [3, 11, 24]\nlevel 0 [3, 8, 11, 17, 24, 29]\nright moves: [(2, 11)]\nfound 17: True\nafter insert: [3, 8, 11, 17, 20, 24, 29]\n"
+    "output": "level 2 [11]\nlevel 1 [3, 11, 24]\nlevel 0 [3, 8, 11, 17, 24, 29]\nright moves: [(2, 11)]\nfound 17: True\nafter insert: [3, 8, 11, 17, 20, 24, 29]\n",
+    "run": "python skip-lists-skip-list-links-and-insert.py"
+  },
+  {
+    "path": "examples/COMP2123/skip-lists-skip-list-delete-links.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "skip-lists",
+    "title": "Remove a key from every level it occupies",
+    "output": "delete 3: True\nbase: [8, 11]\nupper: [11]\ndelete 7: False\n",
+    "run": "python skip-lists-skip-list-delete-links.py"
   },
   {
     "path": "examples/COMP2123/cryptography-complexity-modular-power-and-toy-agreement.py",
+    "language": "python",
     "group": "COMP2123",
     "topic": "cryptography-complexity",
     "title": "Compute powers by repeated squaring",
-    "output": "public: 10 4\nshared: 18 18\nrecovered a: 3\n"
+    "output": "public: 10 4\nshared: 18 18\nrecovered a: 3\n",
+    "run": "python cryptography-complexity-modular-power-and-toy-agreement.py"
+  },
+  {
+    "path": "examples/COMP2123/cryptography-complexity-trial-division-bit-length.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "cryptography-complexity",
+    "title": "Count divisibility tests and input bits",
+    "output": "number: 221 bits: 8 factor: 13 checks: 12\nnumber: 257 bits: 9 factor: None checks: 15\n",
+    "run": "python cryptography-complexity-trial-division-bit-length.py"
+  },
+  {
+    "path": "examples/COMP2022/logical-consequence-entailment-countermodels.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "logical-consequence",
+    "title": "Find every countermodel",
+    "output": "Countermodels: [(False, False)]",
+    "run": "python logical-consequence-entailment-countermodels.py"
+  },
+  {
+    "path": "examples/COMP3308/learning-neighbors-nearest-two-trace.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "learning-neighbors",
+    "title": "Find and average two neighbors",
+    "output": "Neighbors: [(1, 4, 10), (2, 7, 16)]\nPrediction: 13.0",
+    "run": "python learning-neighbors-nearest-two-trace.py"
+  },
+  {
+    "path": "examples/COMP3308/backpropagation-sigmoid-one-update.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "backpropagation",
+    "title": "Check one sigmoid update",
+    "output": "Old output: 0.500000\nNew weight: 0.025000\nNew bias: 0.012500\nNew score: 0.062500",
+    "run": "python backpropagation-sigmoid-one-update.py"
+  },
+  {
+    "path": "examples/COMP3308/kmeans-lloyd-two-clusters.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "kmeans",
+    "title": "Trace two Lloyd steps",
+    "output": "Step 1: centers=[2.0, 10.0], SSE=4.0\nStep 2: centers=[2.0, 10.0], SSE=4.0",
+    "run": "python kmeans-lloyd-two-clusters.py"
   },
   {
     "path": "examples/AI-ML/features-labels-baselines-ml-majority-baseline.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "features-labels-baselines",
     "title": "Build a majority-label baseline",
-    "output": "baseline class: 0\npredictions: [0, 0, 0, 0]\ntest accuracy: 0.50\n"
+    "output": "baseline class: 0\npredictions: [0, 0, 0, 0]\ntest accuracy: 0.50\n",
+    "run": "python features-labels-baselines-ml-majority-baseline.py"
   },
   {
     "path": "examples/AI-ML/framing-splits-leakage-ml-group-split.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "framing-splits-leakage",
     "title": "Keep complete devices together",
-    "output": "rows: 80 20 20\nshared devices: []\ntest error: 0.1\n"
+    "output": "rows: 80 20 20\nshared devices: []\ntest error: 0.1\n",
+    "run": "python framing-splits-leakage-ml-group-split.py"
   },
   {
     "path": "examples/AI-ML/missing-data-eda-ml-median-imputation.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "missing-data-eda",
     "title": "Fit a median, then reuse it",
-    "output": "training missing fraction: 0.25\ntraining flag: [0, 1, 0, 0]\nfilled training: [2.0, 4.0, 6.0, 4.0]\nfilled test: [4.0, 10.0]\n"
+    "output": "training missing fraction: 0.25\ntraining flag: [0, 1, 0, 0]\nfilled training: [2.0, 4.0, 6.0, 4.0]\nfilled test: [4.0, 10.0]\n",
+    "run": "python missing-data-eda-ml-median-imputation.py"
   },
   {
     "path": "examples/AI-ML/categorical-preprocessing-ml-category-columns.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "categorical-preprocessing",
     "title": "Encode known and unseen categories",
-    "output": "columns: ['paper', 'wood', 'unknown']\nwood [0, 1, 0] sum: 1\npaper [1, 0, 0] sum: 1\nmetal [0, 0, 1] sum: 1\n"
+    "output": "columns: ['paper', 'wood', 'unknown']\nwood [0, 1, 0] sum: 1\npaper [1, 0, 0] sum: 1\nmetal [0, 0, 1] sum: 1\n",
+    "run": "python categorical-preprocessing-ml-category-columns.py"
   },
   {
     "path": "examples/AI-ML/linear-regression-mse-ml-line-loss.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "linear-regression-mse",
     "title": "Compare a line and a constant",
-    "output": "prediction: [3.0, 5.0, 7.0]\nMSE: 0.333333; RMSE: 0.577350\nconstant MSE: 4.222222\n"
+    "output": "prediction: [3.0, 5.0, 7.0]\nMSE: 0.333333; RMSE: 0.577350\nconstant MSE: 4.222222\n",
+    "run": "python linear-regression-mse-ml-line-loss.py"
   },
   {
     "path": "examples/AI-ML/gradient-descent-scaling-ml-gradient-step.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "gradient-descent-scaling",
     "title": "Standardize and take one step",
-    "output": "scaled inputs: [-1.0, 1.0]\ngradients: -2.0, -4.0\nweights: 0.2, 0.4\nloss: 3.200\n"
+    "output": "scaled inputs: [-1.0, 1.0]\ngradients: -2.0, -4.0\nweights: 0.2, 0.4\nloss: 3.200\n",
+    "run": "python gradient-descent-scaling-ml-gradient-step.py"
   },
   {
     "path": "examples/AI-ML/logistic-thresholds-ml-sigmoid-cutoffs.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "logistic-thresholds",
     "title": "One probability, two decisions",
-    "output": "score: 0.4000; probability: 0.5987\nthreshold 0.50: class 1\nthreshold 0.65: class 0\n"
+    "output": "score: 0.4000; probability: 0.5987\nthreshold 0.50: class 1\nthreshold 0.65: class 0\n",
+    "run": "python logistic-thresholds-ml-sigmoid-cutoffs.py"
   },
   {
     "path": "examples/AI-ML/metrics-imbalance-ml-confusion-counts.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "metrics-imbalance",
     "title": "Compute four metrics from counts",
-    "output": "accuracy: 0.860\nprecision: 0.400\nrecall: 0.800\nF1: 0.533\nclips to review: 20\n"
+    "output": "accuracy: 0.860\nprecision: 0.400\nrecall: 0.800\nF1: 0.533\nclips to review: 20\n",
+    "run": "python metrics-imbalance-ml-confusion-counts.py"
   },
   {
     "path": "examples/AI-ML/nearest-neighbours-ml-knn-vote.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "nearest-neighbours",
     "title": "Inspect every nearest-neighbour vote",
-    "output": "squared distances: [2.56, 0.36, 0.16, 5.76]\nk: 1 labels: [1] prediction: 1\nk: 3 labels: [1, 0, 0] prediction: 0\n"
+    "output": "squared distances: [2.56, 0.36, 0.16, 5.76]\nk: 1 labels: [1] prediction: 1\nk: 3 labels: [1, 0, 0] prediction: 0\n",
+    "run": "python nearest-neighbours-ml-knn-vote.py"
   },
   {
     "path": "examples/AI-ML/text-naive-bayes-ml-naive-bayes-counts.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "text-naive-bayes",
     "title": "Compute a two-word classifier",
-    "output": "word probabilities: [[0.667, 0.333], [0.333, 0.667]]\nclass probabilities: [0.667, 0.333]\nclass: spam\n"
+    "output": "word probabilities: [[0.667, 0.333], [0.333, 0.667]]\nclass probabilities: [0.667, 0.333]\nclass: spam\n",
+    "run": "python text-naive-bayes-ml-naive-bayes-counts.py"
   },
   {
     "path": "examples/AI-ML/trees-ensembles-ml-gini-forest.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "trees-ensembles",
     "title": "Score a split and average trees",
-    "output": "parent: 0.48; children: 0.40\ngain: 0.08\nforest probability: 0.60\n"
+    "output": "parent: 0.48; children: 0.40\ngain: 0.08\nforest probability: 0.60\n",
+    "run": "python trees-ensembles-ml-gini-forest.py"
   },
   {
     "path": "examples/AI-ML/boosting-residuals-ml-residual-stump.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "boosting-residuals",
     "title": "Fit one residual stump",
-    "output": "residual: [-1.0, -1.0, 1.0, 1.0]\nupdated: [1.5, 1.5, 2.5, 2.5]\nMSE before: 1.00\nMSE after: 0.25\n"
+    "output": "residual: [-1.0, -1.0, 1.0, 1.0]\nupdated: [1.5, 1.5, 2.5, 2.5]\nMSE before: 1.00\nMSE after: 0.25\n",
+    "run": "python boosting-residuals-ml-residual-stump.py"
   },
   {
     "path": "examples/AI-ML/clustering-pca-ml-cluster-pca-geometry.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "clustering-pca",
     "title": "Measure groups and PCA variance",
-    "output": "cluster loss: 4.0\ncovariance: [[4.0, 0.0], [0.0, 1.0]]\nfirst variance share: 0.80\n"
+    "output": "cluster loss: 4.0\ncovariance: [[4.0, 0.0], [0.0, 1.0]]\nfirst variance share: 0.80\n",
+    "run": "python clustering-pca-ml-cluster-pca-geometry.py"
   },
   {
     "path": "examples/AI-ML/content-recommendations-ml-cosine-recommendations.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "content-recommendations",
     "title": "Rank three tagged videos",
-    "output": "mixed: 1.000\nastronomy: 0.707\nrobotics: 0.707\n"
+    "output": "mixed: 1.000\nastronomy: 0.707\nrobotics: 0.707\n",
+    "run": "python content-recommendations-ml-cosine-recommendations.py"
   },
   {
     "path": "examples/AI-ML/validation-regularization-shift-ml-regularization-validation.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "validation-regularization-shift",
     "title": "Separate fitting objective and validation",
-    "output": "A objective: 1.9\nB objective: 1.5\nlambda 0.0: validation MSE 1.2\nlambda 0.1: validation MSE 1.0\nchosen lambda: 0.1\n"
+    "output": "A objective: 1.9\nB objective: 1.5\nlambda 0.0: validation MSE 1.2\nlambda 0.1: validation MSE 1.0\nchosen lambda: 0.1\n",
+    "run": "python validation-regularization-shift-ml-regularization-validation.py"
   },
   {
     "path": "examples/AI-ML/calibration-monitoring-ml-calibration-bin.py",
+    "language": "python",
     "group": "AI-ML",
     "topic": "calibration-monitoring",
     "title": "Inspect a probability bin",
-    "output": "bin count: 4\nmean probability: 0.80\nobserved positive fraction: 0.50\nBrier score: 0.34\n"
+    "output": "bin count: 4\nmean probability: 0.80\nobserved positive fraction: 0.50\nBrier score: 0.34\n",
+    "run": "python calibration-monitoring-ml-calibration-bin.py"
   },
   {
     "path": "examples/AI-DL/dl-tensors-dl-dense-axis-check.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-tensors",
     "title": "Name the axes of a dense layer",
-    "output": "shape: (2, 2)\noutput: [[4.5, -2.5], [6.5, 2.5]]\nmean per feature: [5.5, 0.0]\nmean per recording: [1.0, 4.5]\n"
+    "output": "shape: (2, 2)\noutput: [[4.5, -2.5], [6.5, 2.5]]\nmean per feature: [5.5, 0.0]\nmean per recording: [1.0, 4.5]\n",
+    "run": "python dl-tensors-dl-dense-axis-check.py"
   },
   {
     "path": "examples/AI-DL/dl-activations-dl-activation-values.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-activations",
     "title": "Print values and slopes",
-    "output": "z=-2: ReLU=0.0, sigmoid=0.119203, slope=0.104994\nz=0: ReLU=0.0, sigmoid=0.500000, slope=0.250000\nz=2: ReLU=2.0, sigmoid=0.880797, slope=0.104994\n"
+    "output": "z=-2: ReLU=0.0, sigmoid=0.119203, slope=0.104994\nz=0: ReLU=0.0, sigmoid=0.500000, slope=0.250000\nz=2: ReLU=2.0, sigmoid=0.880797, slope=0.104994\n",
+    "run": "python dl-activations-dl-activation-values.py"
   },
   {
     "path": "examples/AI-DL/dl-representations-dl-mlp-gauges.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-representations",
     "title": "Trace two hidden units",
-    "output": "input: [3.0, 1.0] hidden: [1.0, 0.0] output: 1.0\ninput: [1.0, 3.0] hidden: [0.0, 1.0] output: 1.0\ninput: [2.0, 2.0] hidden: [0.0, 0.0] output: 0.0\nparameters: 9\n"
+    "output": "input: [3.0, 1.0] hidden: [1.0, 0.0] output: 1.0\ninput: [1.0, 3.0] hidden: [0.0, 1.0] output: 1.0\ninput: [2.0, 2.0] hidden: [0.0, 0.0] output: 0.0\nparameters: 9\n",
+    "run": "python dl-representations-dl-mlp-gauges.py"
   },
   {
     "path": "examples/AI-DL/dl-softmax-loss-dl-stable-softmax-loss.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-softmax-loss",
     "title": "Compute stable probabilities and cross-entropy",
-    "output": "probabilities: [0.665241, 0.244728, 0.090031]\nsum: 1.000000; loss: 0.407606\nshift unchanged: True\n"
+    "output": "probabilities: [0.665241, 0.244728, 0.090031]\nsum: 1.000000; loss: 0.407606\nshift unchanged: True\n",
+    "run": "python dl-softmax-loss-dl-stable-softmax-loss.py"
   },
   {
     "path": "examples/AI-DL/dl-shape-tracing-dl-shape-path.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-shape-tracing",
     "title": "Print the shape at every layer",
-    "output": "images (2, 2, 2)\nflat (2, 4)\nhidden (2, 3)\nlogits (2, 2)\nfirst flattened image: [0.0, 1.0, 2.0, 3.0]\nparameters: 23\n"
+    "output": "images (2, 2, 2)\nflat (2, 4)\nhidden (2, 3)\nlogits (2, 2)\nfirst flattened image: [0.0, 1.0, 2.0, 3.0]\nparameters: 23\n",
+    "run": "python dl-shape-tracing-dl-shape-path.py"
   },
   {
     "path": "examples/AI-DL/dl-autograd-dl-chain-rule-check.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-autograd",
     "title": "Check a gradient and update the network",
-    "output": "gradient w: 4.000000; finite difference: 4.000000\nnew loss: 0.0003125\n"
+    "output": "gradient w: 4.000000; finite difference: 4.000000\nnew loss: 0.0003125\n",
+    "run": "python dl-autograd-dl-chain-rule-check.py"
   },
   {
     "path": "examples/AI-DL/dl-optimization-dl-sgd-adam-first-step.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-optimization",
     "title": "Compare the first SGD and Adam steps",
-    "output": "SGD: parameter 0.300000; loss 4.145000\nAdam: parameter 0.100000; loss 4.705000\n"
+    "output": "SGD: parameter 0.300000; loss 4.145000\nAdam: parameter 0.100000; loss 4.705000\n",
+    "run": "python dl-optimization-dl-sgd-adam-first-step.py"
   },
   {
     "path": "examples/AI-DL/dl-training-loop-dl-one-weight-training-loop.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-training-loop",
     "title": "Run five transparent training steps",
-    "output": "epoch 1: w=0.8000, train=0.9600, valid=3.2400\nepoch 2: w=1.2800, train=0.3456, valid=1.1664\nepoch 3: w=1.5680, train=0.1244, valid=0.4199\nepoch 4: w=1.7408, train=0.0448, valid=0.1512\nepoch 5: w=1.8445, train=0.0161, valid=0.0544\nbest weight: 1.84448\n"
+    "output": "epoch 1: w=0.8000, train=0.9600, valid=3.2400\nepoch 2: w=1.2800, train=0.3456, valid=1.1664\nepoch 3: w=1.5680, train=0.1244, valid=0.4199\nepoch 4: w=1.7408, train=0.0448, valid=0.1512\nepoch 5: w=1.8445, train=0.0161, valid=0.0544\nbest weight: 1.84448\n",
+    "run": "python dl-training-loop-dl-one-weight-training-loop.py"
   },
   {
     "path": "examples/AI-DL/dl-regularization-dl-dropout-expectation.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-regularization",
     "title": "Calculate dropout outcomes exactly",
-    "output": "expectation: 4.000000; variance: 5.333333\ntraining: [2.666667, 0.0]\nevaluation: [2.0, 4.0]\n"
+    "output": "expectation: 4.000000; variance: 5.333333\ntraining: [2.666667, 0.0]\nevaluation: [2.0, 4.0]\n",
+    "run": "python dl-regularization-dl-dropout-expectation.py"
   },
   {
     "path": "examples/AI-DL/dl-normalization-dl-row-layernorm.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-normalization",
     "title": "Normalize features within each row",
-    "output": "means: [2.0, 12.0]\nvariances: [1.0, 4.0]\nnormalized: [[-0.999995, 0.999995], [-0.999999, 0.999999]]\nrow means: [0.0, 0.0]\n"
+    "output": "means: [2.0, 12.0]\nvariances: [1.0, 4.0]\nnormalized: [[-0.999995, 0.999995], [-0.999999, 0.999999]]\nrow means: [0.0, 0.0]\n",
+    "run": "python dl-normalization-dl-row-layernorm.py"
   },
   {
     "path": "examples/AI-DL/dl-convolution-dl-filter-residual.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-convolution",
     "title": "Slide a filter and add a shortcut",
-    "output": "filter output: [[0.0, 0.0], [-1.0, 0.0]]\nresidual sum: [2.5, -0.75]\nafter ReLU: [2.5, 0.0]\n"
+    "output": "filter output: [[0.0, 0.0], [-1.0, 0.0]]\nresidual sum: [2.5, -0.75]\nafter ReLU: [2.5, 0.0]\n",
+    "run": "python dl-convolution-dl-filter-residual.py"
   },
   {
     "path": "examples/AI-DL/dl-token-embeddings-dl-embedding-mask-mean.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-token-embeddings",
     "title": "Look up tokens and ignore padding",
-    "output": "vectors: [[1.0, 0.0], [0.0, 2.0], [0.0, 0.0]]\nreal-token count: 2\nmasked mean: [0.5, 1.0]\nreversed mean: [0.5, 1.0]\n"
+    "output": "vectors: [[1.0, 0.0], [0.0, 2.0], [0.0, 0.0]]\nreal-token count: 2\nmasked mean: [0.5, 1.0]\nreversed mean: [0.5, 1.0]\n",
+    "run": "python dl-token-embeddings-dl-embedding-mask-mean.py"
   },
   {
     "path": "examples/AI-DL/dl-attention-dl-attention-mask.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-attention",
     "title": "Compare allowed and masked context",
-    "output": "weights: [[0.731059, 0.268941]]\noutput: [[1.462117, 1.075766]]\nmasked output: [[2.0, 0.0]]\n"
+    "output": "weights: [[0.731059, 0.268941]]\noutput: [[1.462117, 1.075766]]\nmasked output: [[2.0, 0.0]]\n",
+    "run": "python dl-attention-dl-attention-mask.py"
   },
   {
     "path": "examples/AI-DL/dl-transformer-block-dl-tiny-transformer-block.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-transformer-block",
     "title": "Run a complete toy pre-norm block",
-    "output": "attention: [[1.0, 0.0], [0.5, 0.5]]\nfirst residual: [[2.0, -2.0], [2.0, -2.0]]\nblock output: [[2.5, -2.0], [2.5, -2.0]]\n"
+    "output": "attention: [[1.0, 0.0], [0.5, 0.5]]\nfirst residual: [[2.0, -2.0], [2.0, -2.0]]\nblock output: [[2.5, -2.0], [2.5, -2.0]]\n",
+    "run": "python dl-transformer-block-dl-tiny-transformer-block.py"
   },
   {
     "path": "examples/AI-DL/dl-transfer-dl-frozen-feature-head.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-transfer",
     "title": "Train a head on fixed features",
-    "output": "new weights: [0.2, 0.15]\nnew bias: 0.050; new probability: 0.574443\nloss before: 0.693147; after: 0.554355\nfixed features: [2.0, -1.0]\n"
+    "output": "new weights: [0.2, 0.15]\nnew bias: 0.050; new probability: 0.574443\nloss before: 0.693147; after: 0.554355\nfixed features: [2.0, -1.0]\n",
+    "run": "python dl-transfer-dl-frozen-feature-head.py"
   },
   {
     "path": "examples/AI-DL/dl-efficient-adaptation-dl-low-rank-merge.py",
+    "language": "python",
     "group": "AI-DL",
     "topic": "dl-efficient-adaptation",
     "title": "Compare separate and merged adapter paths",
-    "output": "full entries: 12 adapter entries: 7\noutput: [0.8, 1.6, 2.4]\nmerged agrees: True\n"
+    "output": "full entries: 12 adapter entries: 7\noutput: [0.8, 1.6, 2.4]\nmerged agrees: True\n",
+    "run": "python dl-efficient-adaptation-dl-low-rank-merge.py"
   },
   {
     "path": "examples/AI-CV/pixels-contracts-pixel-scale.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "pixels-contracts",
     "title": "Follow one channel",
-    "output": "RGB: [0, 0, 255]\nscaled=0.6; standardized=0.4\nstored numbers: 72\n"
+    "output": "RGB: [0, 0, 255]\nscaled=0.6; standardized=0.4\nstored numbers: 72\n",
+    "run": "python pixels-contracts-pixel-scale.py"
   },
   {
     "path": "examples/AI-CV/colour-channels-red-channel-rule.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "colour-channels",
     "title": "Test three known colours",
-    "output": "marker margin: 160 selected: True\npaper margin: 0 selected: False\nshade margin: 40 selected: False\n"
+    "output": "marker margin: 160 selected: True\npaper margin: 0 selected: False\nshade margin: 40 selected: False\n",
+    "run": "python colour-channels-red-channel-rule.py"
   },
   {
     "path": "examples/AI-CV/filters-neighborhoods-local-filter.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "filters-neighborhoods",
     "title": "Average a small patch",
-    "output": "mean=11.0\nedge response: 6\n"
+    "output": "mean=11.0\nedge response: 6\n",
+    "run": "python filters-neighborhoods-local-filter.py"
   },
   {
     "path": "examples/AI-CV/edges-morphology-binary-opening.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "edges-morphology",
     "title": "Remove an isolated speck",
-    "output": "eroded: [0, 0, 0, 0, 0, 1, 0, 0]\nopened: [0, 0, 0, 0, 1, 1, 1, 0]\n"
+    "output": "eroded: [0, 0, 0, 0, 0, 1, 0, 0]\nopened: [0, 0, 0, 0, 1, 1, 1, 0]\n",
+    "run": "python edges-morphology-binary-opening.py"
   },
   {
     "path": "examples/AI-CV/geometry-augmentation-move-box.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "geometry-augmentation",
     "title": "Move both box corners",
-    "output": "corners: [(25, 37), (65, 97)]\narea: 2400\nclipped bottom: 80\n"
+    "output": "corners: [(25, 37), (65, 97)]\narea: 2400\nclipped bottom: 80\n",
+    "run": "python geometry-augmentation-move-box.py"
   },
   {
     "path": "examples/AI-CV/classical-features-descriptor-distance.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "classical-features",
     "title": "Compare two patch descriptions",
-    "output": "ranked: [(1.0, 'A'), (5.0, 'B')]\nratio=0.20; accept=True\n"
+    "output": "ranked: [(1.0, 'A'), (5.0, 'B')]\nratio=0.20; accept=True\n",
+    "run": "python classical-features-descriptor-distance.py"
   },
   {
     "path": "examples/AI-CV/recognition-transfer-classification-head.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "recognition-transfer",
     "title": "Turn features into three scores",
-    "output": "scores: [1, 2, 0]\nprobabilities: [0.2447, 0.6652, 0.09]\nloss=0.4076\n"
+    "output": "scores: [1, 2, 0]\nprobabilities: [0.2447, 0.6652, 0.09]\nloss=0.4076\n",
+    "run": "python recognition-transfer-classification-head.py"
   },
   {
     "path": "examples/AI-CV/detection-overlap-box-overlap.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "detection-overlap",
     "title": "Measure two proposed boxes",
-    "output": "intersection=9; IoU=0.3913\n0.3 suppress B\n0.5 keep B\n"
+    "output": "intersection=9; IoU=0.3913\n0.3 suppress B\n0.5 keep B\n",
+    "run": "python detection-overlap-box-overlap.py"
   },
   {
     "path": "examples/AI-CV/detection-average-precision-ranked-ap.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "detection-average-precision",
     "title": "Read three ranked detections",
-    "output": "rank=1: precision=1.0000, recall=0.5000\nrank=2: precision=0.5000, recall=0.5000\nrank=3: precision=0.6667, recall=1.0000\ntoy AP=0.8333\n"
+    "output": "rank=1: precision=1.0000, recall=0.5000\nrank=2: precision=0.5000, recall=0.5000\nrank=3: precision=0.6667, recall=1.0000\ntoy AP=0.8333\n",
+    "run": "python detection-average-precision-ranked-ap.py"
   },
   {
     "path": "examples/AI-CV/segmentation-regions-mask-counts.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "segmentation-regions",
     "title": "Count foreground overlap",
-    "output": "shared: 2 union: 4\nIoU=0.5000; Dice=0.6667\n"
+    "output": "shared: 2 union: 4\nIoU=0.5000; Dice=0.6667\n",
+    "run": "python segmentation-regions-mask-counts.py"
   },
   {
     "path": "examples/AI-CV/tracking-identity-track-gate.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "tracking-identity",
     "title": "Predict and gate one track",
-    "output": "predicted: 8\nnearest: 8 accepted: True\n"
+    "output": "predicted: 8\nnearest: 8 accepted: True\n",
+    "run": "python tracking-identity-track-gate.py"
   },
   {
     "path": "examples/AI-CV/ocr-reading-ocr-template.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "ocr-reading",
     "title": "Count symbol mismatches",
-    "output": "distances: {'H': 1, 'I': 5}\nclosest: H\n"
+    "output": "distances: {'H': 1, 'I': 5}\nclosest: H\n",
+    "run": "python ocr-reading-ocr-template.py"
   },
   {
     "path": "examples/AI-CV/visual-tokens-patch-budget.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "visual-tokens",
     "title": "Count patches and comparisons",
-    "output": "P=8: patches=16, values=192, pairs=289\nP=4: patches=64, values=48, pairs=4225\n"
+    "output": "P=8: patches=16, values=192, pairs=289\nP=4: patches=64, values=48, pairs=4225\n",
+    "run": "python visual-tokens-patch-budget.py"
   },
   {
     "path": "examples/AI-CV/defect-inspection-difference-inspection.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "defect-inspection",
     "title": "Locate the largest change",
-    "output": "differences: [1, 1, 15, 0]\nflagged positions: [2]\nimage score: 15\n"
+    "output": "differences: [1, 1, 15, 0]\nflagged positions: [2]\nimage score: 15\n",
+    "run": "python defect-inspection-difference-inspection.py"
   },
   {
     "path": "examples/AI-CV/evaluation-shift-evaluate-alerts.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "evaluation-shift",
     "title": "Count alerts and misses",
-    "output": "precision=0.60; recall=0.75; F1=0.6667\nshared sessions: 0\n"
+    "output": "precision=0.60; recall=0.75; F1=0.6667\nshared sessions: 0\n",
+    "run": "python evaluation-shift-evaluate-alerts.py"
   },
   {
     "path": "examples/AI-CV/inference-pipelines-pipeline-budget.py",
+    "language": "python",
     "group": "AI-CV",
     "topic": "inference-pipelines",
     "title": "Inspect rounding and total delay",
-    "output": "encoded: [1, 3, 9]\nrestored: [0.1, 0.3, 0.9]\nlargest error=0.04\nserial latency ms: 13\n"
+    "output": "encoded: [1, 3, 9]\nrestored: [0.1, 0.3, 0.9]\nlargest error=0.04\nserial latency ms: 13\n",
+    "run": "python inference-pipelines-pipeline-budget.py"
   },
   {
     "path": "examples/AI-MM/tokens-embeddings-toy-token-table.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "tokens-embeddings",
     "title": "Look up and pool two tokens",
-    "output": "tokens: ['red', 'kite']\nIDs: [0, 1]\npooled: [0.5, 1.0]\n"
+    "output": "tokens: ['red', 'kite']\nIDs: [0, 1]\npooled: [0.5, 1.0]\n",
+    "run": "python tokens-embeddings-toy-token-table.py"
   },
   {
     "path": "examples/AI-MM/modalities-alignment-cosine-alignment.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "modalities-alignment",
     "title": "Compare two descriptions",
-    "output": "A: 0.80\nB: 0.60\n"
+    "output": "A: 0.80\nB: 0.60\n",
+    "run": "python modalities-alignment-cosine-alignment.py"
   },
   {
     "path": "examples/AI-MM/early-late-fusion-weighted-fusion.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "early-late-fusion",
     "title": "Combine only available evidence",
-    "output": "both=0.70\nimage only=0.80\nearly feature list: [0.2, 0.9, 0.6, 0.1]\n"
+    "output": "both=0.70\nimage only=0.80\nearly feature list: [0.2, 0.9, 0.6, 0.1]\n",
+    "run": "python early-late-fusion-weighted-fusion.py"
   },
   {
     "path": "examples/AI-MM/audio-text-alignment-audio-duration.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "audio-text-alignment",
     "title": "Check the time before matching",
-    "output": "counts: 192000 64000\nwrong relabelled duration: 12.0\nsimilarity=0.96\n"
+    "output": "counts: 192000 64000\nwrong relabelled duration: 12.0\nsimilarity=0.96\n",
+    "run": "python audio-text-alignment-audio-duration.py"
   },
   {
     "path": "examples/AI-MM/clip-contrastive-contrastive-table.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "clip-contrastive",
     "title": "Score the correct partners both ways",
-    "output": "image to text=0.0486\ntext to image=0.0543\ncombined=0.0515\n"
+    "output": "image to text=0.0486\ntext to image=0.0543\ncombined=0.0515\n",
+    "run": "python clip-contrastive-contrastive-table.py"
   },
   {
     "path": "examples/AI-MM/cross-attention-fusion-attention-mix.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "cross-attention-fusion",
     "title": "Let a query mix two values",
-    "output": "weights: [0.8044, 0.1956]\noutput: [8.0443, 0.7823]\n"
+    "output": "weights: [0.8044, 0.1956]\noutput: [8.0443, 0.7823]\n",
+    "run": "python cross-attention-fusion-attention-mix.py"
   },
   {
     "path": "examples/AI-MM/image-text-search-search-ranking.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "image-text-search",
     "title": "Find and check the top two",
-    "output": "ranking: ['umbrella', 'kite', 'kite-detail']\nRecall@2=0.50\n"
+    "output": "ranking: ['umbrella', 'kite', 'kite-detail']\nRecall@2=0.50\n",
+    "run": "python image-text-search-search-ranking.py"
   },
   {
     "path": "examples/AI-MM/conditional-generation-response-probability.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "conditional-generation",
     "title": "Compare two possible responses",
-    "output": "correct probability=0.180\nincorrect probability=0.315\nmean loss=0.5716\n"
+    "output": "correct probability=0.180\nincorrect probability=0.315\nmean loss=0.5716\n",
+    "run": "python conditional-generation-response-probability.py"
   },
   {
     "path": "examples/AI-MM/document-ocr-qa-document-row.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "document-ocr-qa",
     "title": "Keep a word beside its row",
-    "output": "row: ['Friday', 'Room 3']\nnormalized x: 200.0\n"
+    "output": "row: ['Friday', 'Room 3']\nnormalized x: 200.0\n",
+    "run": "python document-ocr-qa-document-row.py"
   },
   {
     "path": "examples/AI-MM/speech-tasks-word-error-rate.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "speech-tasks",
     "title": "Count a changed word",
-    "output": "reference words: 4\nWER=0.25\nthree insertions WER=1.50\n"
+    "output": "reference words: 4\nWER=0.25\nthree insertions WER=1.50\n",
+    "run": "python speech-tasks-word-error-rate.py"
   },
   {
     "path": "examples/AI-MM/audio-video-sync-sync-offset.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "audio-video-sync",
     "title": "Find a delayed clap",
-    "output": "shift scores: {-1: 0, 0: 0, 1: 1}\naudio delay seconds=0.1\n"
+    "output": "shift scores: {-1: 0, 0: 0, 1: 1}\naudio delay seconds=0.1\n",
+    "run": "python audio-video-sync-sync-offset.py"
   },
   {
     "path": "examples/AI-MM/video-temporal-grounding-temporal-overlap.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "video-temporal-grounding",
     "title": "Sample a video and compare intervals",
-    "output": "sample times: [0, 2, 4, 6, 8, 10]\nshort event sampled: False\ntemporal IoU=0.60\n"
+    "output": "sample times: [0, 2, 4, 6, 8, 10]\nshort event sampled: False\ntemporal IoU=0.60\n",
+    "run": "python video-temporal-grounding-temporal-overlap.py"
   },
   {
     "path": "examples/AI-MM/visual-instruction-tuning-frozen-feature.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "visual-instruction-tuning",
     "title": "Adjust a connector, keep the feature",
-    "output": "weight=1.00; feature=2.0; loss=0.500\nweight=0.75; feature=2.0; loss=0.125\n"
+    "output": "weight=1.00; feature=2.0; loss=0.500\nweight=0.75; feature=2.0; loss=0.125\n",
+    "run": "python visual-instruction-tuning-frozen-feature.py"
   },
   {
     "path": "examples/AI-MM/multimodal-rag-retrieve-cite.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "multimodal-rag",
     "title": "Return an answer with its evidence ID",
-    "output": "retrieval score: 3\nanswer: arrow-marked opening\nevidence: sheet-A page 2 diagram-A\n"
+    "output": "retrieval score: 3\nanswer: arrow-marked opening\nevidence: sheet-A page 2 diagram-A\n",
+    "run": "python multimodal-rag-retrieve-cite.py"
   },
   {
     "path": "examples/AI-MM/evaluation-hallucination-claim-audit.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "evaluation-hallucination",
     "title": "Count unsupported mentions and coverage",
-    "output": "unsupported mention rate=0.15\ncaptions with errors=0.40\ntarget coverage=0.68\nshort revision coverage=0.38\n"
+    "output": "unsupported mention rate=0.15\ncaptions with errors=0.40\ntarget coverage=0.68\nshort revision coverage=0.38\n",
+    "run": "python evaluation-hallucination-claim-audit.py"
   },
   {
     "path": "examples/AI-MM/efficient-evidence-systems-cascade-budget.py",
+    "language": "python",
     "group": "AI-MM",
     "topic": "efficient-evidence-systems",
     "title": "Compare a full pass and a shortlist",
-    "output": "costs: 1000 150\nsaved fraction=0.85\nkept evidence indices: [0, 1] tokens: 140\n"
+    "output": "costs: 1000 150\nsaved fraction=0.85\nkept evidence indices: [0, 1] tokens: 140\n",
+    "run": "python efficient-evidence-systems-cascade-budget.py"
   },
   {
     "path": "examples/AI-START/python-values-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "python-values",
     "title": "Numbers, names and a first program",
-    "output": "68.0\nTrue"
+    "output": "68.0\nTrue",
+    "run": "python python-values-first-steps.py"
   },
   {
     "path": "examples/AI-START/lists-loops-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "lists-loops",
     "title": "Lists, positions and repeated steps",
-    "output": "running total: 18\nrunning total: 39\nrunning total: 63\nfirst: 18\nmean: 21.0"
+    "output": "running total: 18\nrunning total: 39\nrunning total: 63\nfirst: 18\nmean: 21.0",
+    "run": "python lists-loops-first-steps.py"
   },
   {
     "path": "examples/AI-START/functions-tests-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "functions-tests",
     "title": "Functions, choices and small checks",
-    "output": "24 cool\n25 warm\n29 warm"
+    "output": "24 cool\n25 warm\n29 warm",
+    "run": "python functions-tests-first-steps.py"
   },
   {
     "path": "examples/AI-START/vectors-dot-products-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "vectors-dot-products",
     "title": "Vectors and the dot product",
-    "output": "contribution: 6\ncontribution: -4\nscore: 2"
+    "output": "contribution: 6\ncontribution: -4\nscore: 2",
+    "run": "python vectors-dot-products-first-steps.py"
   },
   {
     "path": "examples/AI-START/matrices-shapes-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "matrices-shapes",
     "title": "Matrices: several examples at once",
-    "output": "shape: 2 by 2\nscores: [0, 2]"
+    "output": "shape: 2 by 2\nscores: [0, 2]",
+    "run": "python matrices-shapes-first-steps.py"
   },
   {
     "path": "examples/AI-START/probability-counts-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "probability-counts",
     "title": "Probability: choose the denominator",
-    "output": "rain: 0.4\nrain given alert: 0.6\nalert given rain: 0.75"
+    "output": "rain: 0.4\nrain given alert: 0.6\nalert given rain: 0.75",
+    "run": "python probability-counts-first-steps.py"
   },
   {
     "path": "examples/AI-START/powers-logarithms-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "powers-logarithms",
     "title": "Powers and logarithms without mystery",
-    "output": "power: 8\nreverse: 3.0\np=0.8, loss=0.2231\np=0.2, loss=1.6094\np=1.0, loss=-0.0000"
+    "output": "power: 8\nreverse: 3.0\np=0.8, loss=0.2231\np=0.2, loss=1.6094\np=1.0, loss=-0.0000",
+    "run": "python powers-logarithms-first-steps.py"
   },
   {
     "path": "examples/AI-START/slopes-gradients-first-steps.py",
+    "language": "python",
     "group": "AI-START",
     "topic": "slopes-gradients",
     "title": "Slopes, gradients and one learning step",
-    "output": "estimated slope: -6.000\nbefore: w=0.00, loss=9.00\nafter: w=0.60, loss=5.76"
+    "output": "estimated slope: -6.000\nbefore: w=0.00, loss=9.00\nafter: w=0.60, loss=5.76",
+    "run": "python slopes-gradients-first-steps.py"
   }
 ]

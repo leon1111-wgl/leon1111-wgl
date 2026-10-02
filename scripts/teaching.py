@@ -19,7 +19,9 @@ def paragraphs(value):
 
 
 def example_path(group, topic, example):
-    return f'examples/{group}/{topic["id"]}-{example["id"]}.py'
+    base = f'examples/{group}/{topic["id"]}-{example["id"]}'
+    language = example.get('language', 'python')
+    return base + ('/Main.java' if language == 'java' else '.c' if language == 'c' else '.py')
 
 
 def glossary_html(topic, lang='en'):
@@ -30,25 +32,71 @@ def glossary_html(topic, lang='en'):
     return f'<section class="glossary"><h3>{LABELS[lang]["terms"]}</h3><dl>{items}</dl></section>'
 
 
+DETAIL_LABELS = {
+    'en': dict(code='Run a complete example', syntax='Read the syntax', trace='Follow the changing state', problems='Work through a problem', strategy='Choose the method', answer='Interpret the answer', check='Check the reasoning', insights="Guoliang's further thinking", walk='Follow the execution', download='Download source', command='Run it locally', scroll='Scroll sideways for long lines. Copy or download keeps the original code.'),
+    'zh': dict(code='运行一个完整示例', syntax='读懂这里的语法', trace='跟踪状态的变化', problems='完整推导一道题', strategy='先选择方法', answer='解释最终答案', check='检验推理', insights='Guoliang 的进一步思考', walk='按执行顺序理解', download='下载源代码', command='在本地运行', scroll='长代码行可左右滚动。复制或下载会保留原始代码。')}
+
+
+def code_html(code, language='python', id=None):
+    from pygments import highlight
+    from pygments.lexers import get_lexer_by_name
+    from pygments.formatters import HtmlFormatter
+    rendered = highlight(code.rstrip(), get_lexer_by_name(language, stripnl=False, ensurenl=False), HtmlFormatter(nowrap=True))
+    identity = f' id="{E(id)}"' if id else ''
+    return f'<pre class="code highlighted" tabindex="0"><code{identity} class="language-{E(language)}">{rendered}</code></pre>'
+
+
+def command_for(path, language):
+    name = Path(path).name
+    if language == 'java':
+        return 'javac -encoding UTF-8 Main.java\njava -ea Main'
+    if language == 'c':
+        return f'cc -std=c11 -Wall -Wextra -pedantic -pthread {name} -lm -o demo\n./demo'
+    return 'python ' + name
+
+
+def trace_html(trace, lang):
+    if not trace:
+        return ''
+    head = ''.join('<th scope="col">'+E(local(x,lang))+'</th>' for x in trace['columns'])
+    rows = ''.join('<tr>'+''.join('<td>'+E(local(x,lang))+'</td>' for x in row)+'</tr>' for row in trace['rows'])
+    return f'<div class="trace-wrap" tabindex="0"><table class="trace-table"><caption>{DETAIL_LABELS[lang]["trace"]}</caption><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table></div>'
+
+
 def teaching_html(topic, group, lang='en'):
-    lab = LABELS[lang]
+    lab = LABELS[lang]; detail = DETAIL_LABELS[lang]
     pieces = []
     questions = topic.get('guided_questions', [])
     if questions:
         items = ''.join(f'<li><h4>{E(local(x["question"],lang))}</h4>{paragraphs(local(x["answer"],lang))}</li>' for x in questions)
         pieces.append(f'<section class="guided"><h3>{lab["steps"]}</h3><ol>{items}</ol></section>')
-    for example in topic.get('code_examples', []):
+    for i, problem in enumerate(topic.get('worked_problems', []), 1):
+        steps = ''.join('<li>'+paragraphs(local(x,lang))+'</li>' for x in problem['steps'])
+        pieces.append(f'<section class="worked-problem"><h3>{detail["problems"]} · {i:02d}</h3><h4>{E(local(problem["title"],lang))}</h4><div class="problem-question">{paragraphs(local(problem["question"],lang))}</div><h4>{detail["strategy"]}</h4>{paragraphs(local(problem["strategy"],lang))}<ol class="calculation-steps">{steps}</ol><div class="problem-answer"><h4>{detail["answer"]}</h4>{paragraphs(local(problem["answer"],lang))}</div><div class="sanity-check"><h4>{detail["check"]}</h4>{paragraphs(local(problem["sanity_check"],lang))}</div></section>')
+    for i, example in enumerate(topic.get('code_examples', []), 1):
         id = f'code-{topic["id"]}-{example["id"]}'
-        pieces.append(f'''<section class="code-example"><h3>{lab['code']}</h3><h4>{E(local(example['title'],lang))}</h4>{paragraphs(local(example['intro'],lang))}<div class="code-actions"><span>Python 3</span><button type="button" data-copy-code="{id}">{lab['copy']}</button><a href="../{example_path(group,topic,example)}" download>{lab['download']} ↓</a></div><pre class="code"><code id="{id}" class="language-python">{E(example['code'])}</code></pre><h4>{lab['output']}</h4><pre class="code code-output">{E(example['output'])}</pre><h4>{lab['explain']}</h4>{paragraphs(local(example['explanation'],lang))}</section>''')
+        language = example.get('language','python')
+        name = {'python':'Python 3','java':'Java 8+','c':'C11 / POSIX'}[language]
+        path = example_path(group,topic,example)
+        syntax = ''
+        if example.get('syntax_notes'):
+            syntax = '<section class="syntax-notes"><h4>'+detail['syntax']+'</h4><dl>'+''.join('<div><dt><code>'+E(x['syntax'])+'</code></dt><dd>'+E(local(x['meaning'],lang))+'</dd></div>' for x in example['syntax_notes'])+'</dl></section>'
+        walk = ''
+        if example.get('walkthrough'):
+            walk = '<h4>'+detail['walk']+'</h4><ol class="execution-steps">'+''.join('<li>'+paragraphs(local(x,lang))+'</li>' for x in example['walkthrough'])+'</ol>'
+        pieces.append(f'''<section class="code-example"><h3>{detail['code']} · {i:02d}</h3><h4>{E(local(example['title'],lang))}</h4>{paragraphs(local(example['intro'],lang))}<div class="code-actions"><span>{name}</span><button type="button" data-copy-code="{id}">{lab['copy']}</button><a href="../{path}" download>{detail['download']} ↓</a><p class="code-hint">{detail['scroll']}</p></div>{code_html(example['code'],language,id)}<details class="example-run"><summary>{detail['command']}</summary><pre class="code">{E(command_for(path,language))}</pre></details><div class="output-block"><h4>{lab['output']}</h4><pre class="code code-output">{E(example['output'])}</pre></div>{syntax}{walk}{trace_html(example.get('trace'),lang)}<h4>{lab['explain']}</h4>{paragraphs(local(example['explanation'],lang))}</section>''')
     cases = topic.get('practice_cases', [])
     if cases:
         items = ''.join(f'<article><h4>{E(local(x["title"],lang))}</h4>{paragraphs(local(x["body"],lang))}</article>' for x in cases)
         pieces.append(f'<section class="practice-cases"><h3>{lab["cases"]}</h3>{items}</section>')
+    if topic.get('instructor_notes'):
+        notes = ''.join('<article><h4>'+E(local(x['title'],lang))+'</h4>'+paragraphs(local(x['body'],lang))+'</article>' for x in topic['instructor_notes'])
+        pieces.append('<section class="instructor-notes"><h3>'+detail['insights']+'</h3>'+notes+'</section>')
     return ''.join(pieces)
 
 
 def teaching_markdown(topic, group, lang='en'):
-    lab = LABELS[lang]
+    lab = LABELS[lang]; detail = DETAIL_LABELS[lang]
     parts = []
     if topic.get('glossary'):
         parts.append('### ' + lab['terms'])
@@ -57,12 +105,31 @@ def teaching_markdown(topic, group, lang='en'):
         parts.append('### ' + lab['steps'])
         for x in topic['guided_questions']:
             parts.extend(['**' + local(x['question'],lang) + '**', local(x['answer'],lang)])
+    for problem in topic.get('worked_problems', []):
+        parts.extend(['### '+local(problem['title'],lang), local(problem['question'],lang), '**'+detail['strategy']+'**',local(problem['strategy'],lang)])
+        parts.extend(f'{i}. {local(x,lang)}' for i,x in enumerate(problem['steps'],1))
+        parts.extend(['**'+detail['answer']+'**',local(problem['answer'],lang),'**'+detail['check']+'**',local(problem['sanity_check'],lang)])
     for example in topic.get('code_examples', []):
-        parts.extend(['### '+local(example['title'],lang), local(example['intro'],lang), '```python\n'+example['code'].rstrip()+'\n```', '**'+lab['output']+'**', '```text\n'+example['output'].rstrip()+'\n```', '**'+lab['explain']+'**', local(example['explanation'],lang)])
+        language = example.get('language','python')
+        parts.extend(['### '+local(example['title'],lang), local(example['intro'],lang), '```'+language+'\n'+example['code'].rstrip()+'\n```', '**'+detail['command']+'**', '```sh\n'+command_for(example_path(group,topic,example),language)+'\n```', '**'+lab['output']+'**', '```text\n'+example['output'].rstrip()+'\n```'])
+        if example.get('syntax_notes'):
+            parts.append('**'+detail['syntax']+'**')
+            parts.extend('- `'+x['syntax']+'`: '+local(x['meaning'],lang) for x in example['syntax_notes'])
+        if example.get('walkthrough'):
+            parts.append('**'+detail['walk']+'**')
+            parts.extend(f'{i}. {local(x,lang)}' for i,x in enumerate(example['walkthrough'],1))
+        if example.get('trace'):
+            trace=example['trace']; cell=lambda x: local(x,lang).replace('|','\\|').replace('\n','<br>')
+            table=['| '+' | '.join(cell(x) for x in trace['columns'])+' |','| '+' | '.join('---' for _ in trace['columns'])+' |']
+            table.extend('| '+' | '.join(cell(x) for x in row)+' |' for row in trace['rows'])
+            parts.extend(['**'+detail['trace']+'**','\n'.join(table)])
+        parts.extend(['**'+lab['explain']+'**',local(example['explanation'],lang)])
     if topic.get('practice_cases'):
         parts.append('### '+lab['cases'])
-        for x in topic['practice_cases']:
-            parts.extend(['**'+local(x['title'],lang)+'**',local(x['body'],lang)])
+        for x in topic['practice_cases']:parts.extend(['**'+local(x['title'],lang)+'**',local(x['body'],lang)])
+    if topic.get('instructor_notes'):
+        parts.append('### '+detail['insights'])
+        for x in topic['instructor_notes']:parts.extend(['**'+local(x['title'],lang)+'**',local(x['body'],lang)])
     return '\n\n'.join(parts)
 
 
@@ -99,20 +166,50 @@ def export_examples(documents):
                 relative = example_path(group,topic,example)
                 path = ROOT/'site'/relative
                 path.parent.mkdir(parents=True,exist_ok=True)
-                header = '# Guoliang | Original learning example\n# '+local(example['title'],'en')+'\n# Python 3.12+ | Run: python '+path.name+'\n'
-                if 'numpy' in example['code']:
-                    header += '# Install once with the same Python: python -m pip install numpy\n'
+                language = example.get('language','python')
+                prefix = '#' if language == 'python' else '//'
+                header = f'{prefix} Guoliang | Original learning example\n{prefix} '+local(example['title'],'en')+'\n'
+                if language=='python':
+                    header += '# Python 3.12+ | Run: python '+path.name+'\n'
+                    if 'numpy' in example['code']:header += '# Install once with the same Python: python -m pip install numpy\n'
                 path.write_text(header+example['code'].rstrip()+'\n')
-                manifest.append({'path':relative,'group':group,'topic':topic['id'],'title':local(example['title'],'en'),'output':example['output']})
+                manifest.append({'path':relative,'language':language,'group':group,'topic':topic['id'],'title':local(example['title'],'en'),'output':example['output'],'run':command_for(relative,language)})
     folder = ROOT/'site'/'examples'
     folder.mkdir(exist_ok=True)
-    (folder/'manifest.json').write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n')
-    (folder/'README.md').write_text('# Guoliang Python examples\n\nUse Python 3.12 or newer. Most examples use only the standard library. Examples that import NumPy need `python -m pip install numpy`. No data downloads or trained model weights are needed.\n\nRun a file with `python path/to/example.py`. Its topic page explains the input, expected output and limitations. These small examples explain mechanisms. They are not complete production systems.\n\n'+ '\n'.join(f'- [{x["group"]}: {x["title"]}]({x["path"].removeprefix("examples/")})' for x in manifest)+'\n')
-    destination = ROOT/'site'/'downloads'/'guoliang-python-examples.zip'
-    with ZipFile(destination,'w',ZIP_DEFLATED) as z:
-        for path in [folder/'README.md',folder/'manifest.json']+[ROOT/'site'/x['path'] for x in manifest]:
-            info = ZipInfo(str(path.relative_to(ROOT/'site')), date_time=(2026,1,1,0,0,0))
-            info.compress_type = ZIP_DEFLATED
-            info.external_attr = 0o100644 << 16
-            z.writestr(info,path.read_bytes())
+    manifest_text=json.dumps(manifest,indent=2,ensure_ascii=False)+'\n'
+    (folder/'manifest.json').write_text(manifest_text)
+    readme = '# Guoliang code examples\n\nEach example has a complete program, expected output and a step-by-step explanation on its topic page. These small examples explain mechanisms; they are not complete production systems.\n\n## Python\n\nUse Python 3.12+. Run `python filename.py`. If the file imports NumPy, first run `python -m pip install numpy` using the same Python. No model or dataset downloads are needed.\n\n## Java\n\nUse JDK 8 or newer. Open one example folder, then run `javac -encoding UTF-8 Main.java` and `java -ea Main`. Each folder is an independent program; do not compile all Main.java files together.\n\n## C\n\nUse a C11 compiler on macOS or a POSIX system such as Linux. Open an example folder and compile the chosen file with `cc -std=c11 -Wall -Wextra -pedantic -pthread filename.c -lm -o demo`, then run `./demo`. Windows needs a POSIX environment such as WSL for the process and thread examples. Programs create only temporary/local demo data.\n\n## Index\n\n' + '\n'.join(f'- [{x["group"]}: {x["title"]}]({x["path"].removeprefix("examples/")})' for x in manifest)+'\n'
+    (folder/'README.md').write_text(readme)
+    for filename, entries in [('guoliang-code-examples.zip',manifest),('guoliang-python-examples.zip',[x for x in manifest if x['language']=='python'])]:
+        destination=ROOT/'site'/'downloads'/filename
+        with ZipFile(destination,'w',ZIP_DEFLATED) as z:
+            archive_readme=readme.split('## Index\n\n')[0]+'## Index\n\n'+'\n'.join(f'- [{x["group"]}: {x["title"]}]({x["path"].removeprefix("examples/")})' for x in entries)+'\n'
+            files={'examples/README.md':archive_readme.encode(),'examples/manifest.json':(json.dumps(entries,indent=2,ensure_ascii=False)+'\n').encode()}
+            files.update({x['path']:(ROOT/'site'/x['path']).read_bytes() for x in entries})
+            for name,data in files.items():
+                info=ZipInfo(name,date_time=(2026,1,1,0,0,0));info.compress_type=ZIP_DEFLATED;info.external_attr=0o100644 << 16
+                z.writestr(info,data)
     return manifest
+
+
+def course_reading_tools(code, lang='en'):
+    if code not in ('COMP2017','INFO1113'):
+        return reading_tools(lang)
+    zh=lang=='zh'
+    lab=LABELS[lang]
+    language='Java' if code=='INFO1113' else 'C'
+    if language=='Java':
+        helptext=('JDK 是 Java Development Kit，即 Java 开发工具包。使用 JDK 8 或更新版本。它包含 javac 编译器和 java 启动命令。JVM 是 Java 虚拟机，负责执行编译后的字节码。\n\n每个可下载示例都是独立的 Main.java。将它保存在单独文件夹中，保持文件名为 Main.java。在这个文件夹中打开终端，再输入下方两行命令。终端是输入命令、查看文字结果的窗口。\n\njavac 把源代码编译成 .class 文件；java 启动程序。-encoding UTF-8 指定源文件编码；-ea 启用 assert 检查。把结果与页面的预期输出比较。'
+                  if zh else
+                  'JDK means Java Development Kit. Use JDK 8 or newer. It includes the javac compiler and the java launcher. JVM means Java Virtual Machine. It runs the compiled bytecode.\n\nEach downloadable example is a separate Main.java program. Save it in its own folder and keep that exact file name. Open a terminal in that folder, then enter the two lines below. A terminal is a window for typing commands and reading text results.\n\njavac compiles the source into .class files. java starts the program. -encoding UTF-8 sets the source encoding; -ea enables assert checks. Compare the result with the expected output on the page.')
+        commands='javac -encoding UTF-8 Main.java\njava -ea Main'
+        reference='<a href="https://dev.java/learn/first-steps/">'+('Java 官方入门与安装指引' if zh else 'Official Java setup and first steps')+' ↗</a>'
+    else:
+        helptext=('编译器把 C 源代码转换成可执行程序。使用 macOS 或 Linux 上的 C11 编译器。进程、信号和线程示例需要 POSIX 系统接口；Windows 可使用 WSL 中的 Linux 环境。\n\n下载一个示例，在它所在的文件夹中打开终端。终端是输入命令、查看文字结果的窗口。把 filename.c 换成实际文件名。先编译，再运行 ./demo：./ 表示当前文件夹，demo 是生成的程序。\n\n-std=c11 选择 C11；-Wall、-Wextra 和 -pedantic 打开更多诊断；-pthread 启用线程支持；-lm 链接数学库；-o demo 指定输出程序名称。结果应与页面的预期输出一致。'
+                  if zh else
+                  'A compiler turns C source text into an executable program. Use a C11 compiler on macOS or Linux. Process, signal and thread examples need POSIX system interfaces. On Windows, use a Linux environment such as WSL.\n\nDownload one example and open a terminal in its folder. A terminal is a window for commands and text results. Replace filename.c with the actual name. Compile first, then run ./demo. The ./ means the current folder; demo is the program you built.\n\n-std=c11 selects C11. -Wall, -Wextra and -pedantic enable more diagnostics. -pthread enables thread support; -lm links the maths library; -o demo names the output program. Compare its result with the expected output.')
+        commands='cc -std=c11 -Wall -Wextra -pedantic -pthread filename.c -lm -o demo\n./demo'
+        reference='<a href="https://clang.llvm.org/get_started.html">'+('Clang 官方编译器说明' if zh else 'Official Clang compiler guide')+' ↗</a>'
+    title='第一次运行这些示例？' if zh else 'Running these examples for the first time?'
+    download='下载全部 Python、Java 和 C 示例' if zh else 'Download all Python, Java and C examples'
+    return f'<div class="reading-tools"><div role="group" aria-label="{lab["size"]}"><span>{lab["size"]}</span><button type="button" data-reading-size="normal" aria-pressed="true">A · {lab["normal"]}</button><button type="button" data-reading-size="large" aria-pressed="false">A+ · {lab["large"]}</button></div><a href="../downloads/guoliang-code-examples.zip" download>{download} ↓</a><details class="run-help"><summary>{title}</summary>{paragraphs(helptext)}<pre class="code">{E(commands)}</pre><p>{reference}</p></details></div>'

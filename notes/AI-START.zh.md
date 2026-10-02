@@ -4,6 +4,8 @@
 
 [EN](AI-START.en.md) · [中文](AI-START.zh.md)
 
+![Guoliang — 学习路线图](../site/assets/maps/start.zh.svg)
+
 刚开始学习编程或 AI 数学？先读这八节循序渐进的入门课。听一个故事，跟着数字计算，再运行一个小 Python 程序。
 
 ### 运行 Python 示例
@@ -115,6 +117,12 @@ print(fahrenheit)
 print(fahrenheit == 68)
 ```
 
+**在本地运行**
+
+```sh
+python python-values-first-steps.py
+```
+
 **预期输出**
 
 ```text
@@ -212,6 +220,12 @@ for value in values:
     print("running total:", total)
 print("first:", values[0])
 print("mean:", total / len(values))
+```
+
+**在本地运行**
+
+```sh
+python lists-loops-first-steps.py
 ```
 
 **预期输出**
@@ -320,6 +334,12 @@ for reading in [24, 25, 29]:
     print(reading, label_temperature(reading))
 ```
 
+**在本地运行**
+
+```sh
+python functions-tests-first-steps.py
+```
+
 **预期输出**
 
 ```text
@@ -421,6 +441,12 @@ for position in range(len(features)):
     score = score + contribution
     print("contribution:", contribution)
 print("score:", score)
+```
+
+**在本地运行**
+
+```sh
+python vectors-dot-products-first-steps.py
 ```
 
 **预期输出**
@@ -530,6 +556,12 @@ print("shape:", len(rows), "by", len(weights))
 print("scores:", scores)
 ```
 
+**在本地运行**
+
+```sh
+python matrices-shapes-first-steps.py
+```
+
 **预期输出**
 
 ```text
@@ -632,6 +664,12 @@ print("rain given alert:", rainy_alerted_days / alerted_days)
 print("alert given rain:", rainy_alerted_days / rainy_days)
 ```
 
+**在本地运行**
+
+```sh
+python probability-counts-first-steps.py
+```
+
 **预期输出**
 
 ```text
@@ -731,6 +769,12 @@ print("reverse:", math.log2(8))
 for probability in [0.8, 0.2, 1.0]:
     loss = -math.log(probability)
     print(f"p={probability:.1f}, loss={loss:.4f}")
+```
+
+**在本地运行**
+
+```sh
+python powers-logarithms-first-steps.py
 ```
 
 **预期输出**
@@ -842,6 +886,12 @@ print(f"estimated slope: {approx_slope:.3f}")
 print(f"before: w={weight:.2f}, loss={loss(weight):.2f}")
 print(f"after: w={new_weight:.2f}, loss={loss(new_weight):.2f}")
 assert loss(new_weight) < loss(weight)
+```
+
+**在本地运行**
+
+```sh
+python slopes-gradients-first-steps.py
 ```
 
 **预期输出**

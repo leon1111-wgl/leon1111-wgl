@@ -4,6 +4,8 @@
 
 [EN](AI-CV.en.md) · [中文](AI-CV.zh.md)
 
+![Guoliang — 学习路线图](../site/assets/maps/cv.zh.svg)
+
 十六课从像素与简单 Python 列表出发，逐步进入识别、检测、跟踪、OCR 和可靠图像系统。每课都有故事、逐步计算、可运行代码、已解答问题及两个练习情境。
 
 ### 运行 Python 示例
@@ -137,6 +139,12 @@ print(f"scaled={scaled:.1f}; standardized={standardized:.1f}")
 print("stored numbers:", 4 * 6 * 3)
 ```
 
+**在本地运行**
+
+```sh
+python pixels-contracts-pixel-scale.py
+```
+
 **预期输出**
 
 ```text
@@ -239,6 +247,12 @@ pixels = {"marker": (200, 40, 30), "paper": (220, 220, 220), "shade": (60, 20, 2
 for name, (red, green, blue) in pixels.items():
     margin = red - max(green, blue)
     print(name, "margin:", margin, "selected:", margin > 50)
+```
+
+**在本地运行**
+
+```sh
+python colour-channels-red-channel-rule.py
 ```
 
 **预期输出**
@@ -350,6 +364,12 @@ print(f"mean={mean:.1f}")
 print("edge response:", response)
 ```
 
+**在本地运行**
+
+```sh
+python filters-neighborhoods-local-filter.py
+```
+
 **预期输出**
 
 ```text
@@ -454,6 +474,12 @@ eroded = local_rule(mask, min)
 opened = local_rule(eroded, max)
 print("eroded:", eroded)
 print("opened:", opened)
+```
+
+**在本地运行**
+
+```sh
+python edges-morphology-binary-opening.py
 ```
 
 **预期输出**
@@ -561,6 +587,12 @@ moved = [(2 * x + 5, 2 * y - 3) for x, y in corners]
 print("corners:", moved)
 print("area:", (x2 - x1) * (y2 - y1))
 print("clipped bottom:", min(y2, 80))
+```
+
+**在本地运行**
+
+```sh
+python geometry-augmentation-move-box.py
 ```
 
 **预期输出**
@@ -672,6 +704,12 @@ print("ranked:", ranked)
 print(f"ratio={ratio:.2f}; accept={ratio < 0.8}")
 ```
 
+**在本地运行**
+
+```sh
+python classical-features-descriptor-distance.py
+```
+
 **预期输出**
 
 ```text
@@ -781,6 +819,12 @@ probabilities = [v / sum(exp_scores) for v in exp_scores]
 print("scores:", scores)
 print("probabilities:", [round(p, 4) for p in probabilities])
 print(f"loss={-math.log(probabilities[1]):.4f}")
+```
+
+**在本地运行**
+
+```sh
+python recognition-transfer-classification-head.py
 ```
 
 **预期输出**
@@ -899,6 +943,12 @@ for threshold in [0.3, 0.5]:
     print(threshold, "suppress B" if iou > threshold else "keep B")
 ```
 
+**在本地运行**
+
+```sh
+python detection-overlap-box-overlap.py
+```
+
 **预期输出**
 
 ```text
@@ -1010,6 +1060,12 @@ for rank, correct in enumerate(matches, start=1):
         ap += precision / reference_count
     print(f"rank={rank}: precision={precision:.4f}, recall={recall:.4f}")
 print(f"toy AP={ap:.4f}")
+```
+
+**在本地运行**
+
+```sh
+python detection-average-precision-ranked-ap.py
 ```
 
 **预期输出**
@@ -1124,6 +1180,12 @@ print("shared:", shared, "union:", union)
 print(f"IoU={iou:.4f}; Dice={dice:.4f}")
 ```
 
+**在本地运行**
+
+```sh
+python segmentation-regions-mask-counts.py
+```
+
 **预期输出**
 
 ```text
@@ -1234,6 +1296,12 @@ print("predicted:", predicted)
 print("nearest:", nearest, "accepted:", accepted)
 ```
 
+**在本地运行**
+
+```sh
+python tracking-identity-track-gate.py
+```
+
 **预期输出**
 
 ```text
@@ -1334,6 +1402,12 @@ for label, template in templates.items():
     distances[label] = sum(a != b for a, b in zip(observed, template))
 print("distances:", distances)
 print("closest:", min(distances, key=distances.get))
+```
+
+**在本地运行**
+
+```sh
+python ocr-reading-ocr-template.py
 ```
 
 **预期输出**
@@ -1445,6 +1519,12 @@ for patch_size in [8, 4]:
     print(f"P={patch_size}: patches={patches}, values={values}, pairs={tokens ** 2}")
 ```
 
+**在本地运行**
+
+```sh
+python visual-tokens-patch-budget.py
+```
+
 **预期输出**
 
 ```text
@@ -1550,6 +1630,12 @@ flagged = [i for i, value in enumerate(differences) if value > 5]
 print("differences:", differences)
 print("flagged positions:", flagged)
 print("image score:", max(differences))
+```
+
+**在本地运行**
+
+```sh
+python defect-inspection-difference-inspection.py
 ```
 
 **预期输出**
@@ -1662,6 +1748,12 @@ sessions = {"train": {"morning-A", "evening-A"}, "test": {"morning-B"}}
 print("shared sessions:", len(sessions["train"] & sessions["test"]))
 ```
 
+**在本地运行**
+
+```sh
+python evaluation-shift-evaluate-alerts.py
+```
+
 **预期输出**
 
 ```text
@@ -1772,6 +1864,12 @@ print("encoded:", encoded)
 print("restored:", [round(x, 2) for x in restored])
 print(f"largest error={max(errors):.2f}")
 print("serial latency ms:", sum([4, 7, 2]))
+```
+
+**在本地运行**
+
+```sh
+python inference-pipelines-pipeline-budget.py
 ```
 
 **预期输出**
