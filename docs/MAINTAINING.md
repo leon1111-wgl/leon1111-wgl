@@ -41,6 +41,7 @@ python3 scripts/build_pdfs.py
 python3 scripts/validate.py
 python3 scripts/verify_examples.py
 python3 scripts/validate_exports.py
+python3 scripts/verify_projects.py
 ```
 
 Portable fonts are bundled in `scripts/fonts/` with their license. PDF generation stops if the text cannot fit at a readable size. Edit overly long reference blocks instead of shrinking them indefinitely.
@@ -68,3 +69,13 @@ Output and rendered-code comparisons allow one optional final newline because a 
 Every foundational topic includes original instructor insights. Programming topics contrast complete examples. Theory topics explain method choice, intermediate steps, the answer and a sanity check. COMP2123 is Algorithm Design and Analysis; data structures are tools used to implement algorithms.
 
 Original course URLs keep the English `.html` route. Chinese editions use `.zh.html`; both share topic anchors. Keep these anchors stable when renaming a title. Single-page PDFs remain English; web cheatsheets have both languages.
+
+## COMP2017 engineering path
+
+`content/comp2017-path.json` adds a bilingual six-pass route and a specific coach for each of the 24 chapters. Six smaller standalone C examples bridge difficult topics before the existing examples. The course now has 54 standalone C programs.
+
+`content/projects/comp2017-*.json` contains the three bilingual workshop guides. The actual multi-file C projects live in `projects/`. `scripts/build_projects.py` publishes their guides, maps, exact source files, individual ZIPs and a combined ZIP. Keep the manifest in each JSON aligned with every project file. Whitespace-only and CRLF fixtures are intentional: preserve bytes, even when a text editor makes them look empty. The small log analyzer fixtures are explicitly exempted from the general log-file exclusion.
+
+Run `scripts/verify_projects.py` for isolated strict builds, each project's behavior tests and every documented run (stdout and exit status). `scripts/validate_projects.py`, also called by the main validator, checks bilingual prose, source rendering, raw export bytes and archive contents. `make test` inside a downloaded project runs that project's own tests; Python 3 is the test runner, while the taught implementation is C. Default Makefiles use Clang. These POSIX projects were executed on macOS; Linux/WSL instructions do not imply a separate Linux verification.
+
+Workshop milestones use `milestone-` anchors so they cannot collide with shared sections. File-level language switching uses each source article's anchor; the outer source section must not compete as a reading anchor. Downloaded Markdown must include the project archive link and the same build prerequisites as HTML. Root Markdown links use `../site/` for published assets and `../projects/` for project source.

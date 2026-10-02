@@ -2,8 +2,8 @@
   "code": "COMP2017",
   "title": "Systems Programming: C, Processes & Concurrency",
   "subtitle": "Reason about bytes, ownership and coordination from a C program to a parallel system.",
-  "description": "Build a precise model of C memory, program construction and Unix process behavior. Original worked examples explain how resources move through programs and how synchronization turns concurrent activity into correct results.",
-  "coverage": "A complete C11 and POSIX path through data representation, pointers, allocation, files, linked structures, build stages, signals, processes, communication, threads and parallel patterns. All 24 chapters include two complete runnable programs, exact output, guided syntax, traced behavior and engineering discussion. Platform-specific facilities are identified where used.",
+  "description": "Learn C and systems programming in manageable steps. Start with small programs, draw memory and resource ownership, then build complete tools with files, processes and threads.",
+  "coverage": "A complete C11 and POSIX path with 24 chapters and 54 standalone programs. A six-pass study plan leads to three fully worked engineering projects. Follow requirements, interfaces, complete source, debugging and tests. Deeper branches remain available as reference.",
   "color": "#38bdf8",
   "prerequisites": [
     "Basic programming with variables, loops and functions",
@@ -249,6 +249,54 @@
       ],
       "code_examples": [
         {
+          "id": "c-warmup-copy-and-alias",
+          "title": "Start here: a copy and an address",
+          "intro": "Follow one integer before learning array pointer arithmetic. Predict every printed value first.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nstatic void change_copy(int value) {\n    value = 9;\n    printf(\"inside copy=%d\\n\", value);\n}\nstatic void change_object(int *address) {\n    *address = 9;\n}\nint main(void) {\n    int original = 4;\n    int copy = original;\n    int *alias = &original;\n    change_copy(original);\n    printf(\"after value call: original=%d copy=%d\\n\", original, copy);\n    change_object(alias);\n    printf(\"after address call: original=%d copy=%d\\n\", original, copy);\n    return 0;\n}\n",
+          "output": "inside copy=9\nafter value call: original=4 copy=4\nafter address call: original=9 copy=4\n",
+          "explanation": "Imagine two paper notes. Copying the number onto a second note does not link the notes. A pointer instead carries the location of the first note. Both function parameters are passed by value. The second function receives a copied address and uses it to change the original object.\n\n&original means the address of original. *address means the integer at that valid address. In int *alias, the star is part of a declaration; in *address = 9, it is a dereference expression. The original object is still alive during both calls. This helper requires a valid non-null pointer to an int.",
+          "walkthrough": [
+            "Create two independent int objects with the same initial value.",
+            "Pass a copied number; only the function parameter changes.",
+            "Pass a copied address; dereferencing reaches the caller’s original object."
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "int *alias = &original",
+              "meaning": "Store the address, not another integer value."
+            },
+            {
+              "syntax": "*address = 9",
+              "meaning": "Write the object reached through this valid pointer."
+            },
+            {
+              "syntax": "change_copy(original)",
+              "meaning": "Copy the argument value into the parameter."
+            }
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "State"
+            ],
+            "rows": [
+              [
+                "Before either call",
+                "original=4, copy=4"
+              ],
+              [
+                "After change_copy",
+                "original=4, copy=4"
+              ],
+              [
+                "After change_object",
+                "original=9, copy=4"
+              ]
+            ]
+          }
+        },
+        {
           "id": "c-pointer-range",
           "title": "Traverse with a begin and end pointer",
           "intro": "Use the end as a sentinel, never as an element.",
@@ -360,6 +408,98 @@
         }
       ],
       "code_examples": [
+        {
+          "id": "c-warmup-string-bytes",
+          "title": "Start here: a string needs an ending byte",
+          "intro": "Look at a short character array before using a parser.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\nint main(void) {\n    char message[6] = \"Hi\";\n    size_t length = strlen(message);\n    printf(\"capacity=%zu length=%zu\\n\", sizeof message, length);\n    for (size_t i = 0; i < length; i++)\n        printf(\"character %zu=%c\\n\", i, message[i]);\n    printf(\"terminator is zero=%s\\n\", message[length] == '\\0' ? \"yes\" : \"no\");\n    message[1] = 'o';\n    printf(\"after edit=%s\\n\", message);\n    return 0;\n}\n",
+          "output": "capacity=6 length=2\ncharacter 0=H\ncharacter 1=i\nterminator is zero=yes\nafter edit=Ho\n",
+          "explanation": "A six-seat row can hold two people and still have empty seats. Capacity is the storage available; string length counts characters before the first zero byte. The string literal initializes H, i, and the terminator. The remaining array elements are also zero-initialized.\n\nstrlen assumes that a terminator is reachable in valid storage. It does not check a buffer’s capacity for you. Changing message[1] changes i to o without moving the terminator. sizeof message works here because message is the array object in this scope. A function parameter written char message[] would be adjusted to a pointer.",
+          "walkthrough": [
+            "Separate the capacity six from the payload length two.",
+            "Inspect only the two characters and their in-bounds terminator.",
+            "Edit one character while preserving the terminator."
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "char message[6] = \"Hi\"",
+              "meaning": "Reserve six bytes and initialize a terminated string."
+            },
+            {
+              "syntax": "strlen(message)",
+              "meaning": "Count bytes before the first zero, assuming valid terminated storage."
+            },
+            {
+              "syntax": "'\\0'",
+              "meaning": "The zero character used to end a C string; it is not the printed digit zero."
+            }
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "State"
+            ],
+            "rows": [
+              [
+                "Initialize",
+                "H i \\0 \\0 \\0 \\0"
+              ],
+              [
+                "Change index 1",
+                "H o \\0 \\0 \\0 \\0"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "c-warmup-status-and-output",
+          "title": "Return success separately from the result",
+          "intro": "Build a tiny parser with an explicit failure guarantee before reading strtol.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nstatic int parse_digit(const char *text, int *result) {\n    if (text[0] < '0' || text[0] > '9')\n        return 0;\n    if (text[1] != '\\0')\n        return 0;\n    *result = text[0] - '0';\n    return 1;\n}\nint main(void) {\n    const char *inputs[] = {\"0\", \"7\", \"12\", \"\", \"x\"};\n    for (size_t i = 0; i < sizeof inputs / sizeof inputs[0]; i++) {\n        int result = -1;\n        int accepted = parse_digit(inputs[i], &result);\n        printf(\"text='%s' accepted=%d result=%d\\n\", inputs[i], accepted, result);\n    }\n    return 0;\n}\n",
+          "output": "text='0' accepted=1 result=0\ntext='7' accepted=1 result=7\ntext='12' accepted=0 result=-1\ntext='' accepted=0 result=-1\ntext='x' accepted=0 result=-1\n",
+          "explanation": "A valid result can itself be zero. Therefore zero cannot mean both “the parsed value is zero” and “parsing failed”. This interface returns a success flag and writes the number through a separate pointer only on success. Invalid text leaves the caller’s result unchanged.\n\nThe first guard also handles an empty string: its first byte is zero, outside the digit range, so the function returns before reading text[1]. If the first byte is a digit, a valid terminated input string has a following byte to inspect. C guarantees that decimal digit characters are consecutive, so subtracting the character zero gives the numeric digit. The contract accepts exactly one digit, not signs or spaces. Both pointers must be valid; text must be terminated.",
+          "walkthrough": [
+            "Write the accepted language first: one digit and then a terminator.",
+            "Run all guards before touching the output object.",
+            "Check both the success flag and the preserved value on rejected input."
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "int *result",
+              "meaning": "A caller-owned output object, not a return status."
+            },
+            {
+              "syntax": "return 0",
+              "meaning": "Reject without changing *result."
+            },
+            {
+              "syntax": "text[0] - '0'",
+              "meaning": "Convert one validated digit character into its integer value."
+            }
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "State"
+            ],
+            "rows": [
+              [
+                "'0'",
+                "accepted=1, result=0"
+              ],
+              [
+                "'12'",
+                "accepted=0, result=-1"
+              ],
+              [
+                "''",
+                "accepted=0, result=-1"
+              ]
+            ]
+          }
+        },
         {
           "id": "c-string-capacity",
           "title": "Separate text length from storage capacity",
@@ -708,6 +848,54 @@
       ],
       "code_examples": [
         {
+          "id": "c-warmup-owner-release",
+          "title": "Start here: one allocation, one owner, one release",
+          "intro": "Follow a three-element allocation before adding resizing or linked structures.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nstatic void release_values(int **owner) {\n    free(*owner);\n    *owner = NULL;\n}\nint main(void) {\n    size_t count = 3;\n    int *values = malloc(count * sizeof *values);\n    if (values == NULL) {\n        fputs(\"allocation failed\\n\", stderr);\n        return 1;\n    }\n    for (size_t i = 0; i < count; i++)\n        values[i] = (int)(i + 1) * 10;\n    printf(\"values=%d,%d,%d\\n\", values[0], values[1], values[2]);\n    release_values(&values);\n    printf(\"owner cleared=%s\\n\", values == NULL ? \"yes\" : \"no\");\n    release_values(&values);\n    puts(\"releasing a null owner is allowed\");\n    return 0;\n}\n",
+          "output": "values=10,20,30\nowner cleared=yes\nreleasing a null owner is allowed\n",
+          "explanation": "The program reserves room, checks success, initializes every element, uses the data and releases it. malloc returns uninitialized storage. The fixed count three makes the byte multiplication safe here; a general allocator must also check multiplication bounds.\n\nrelease_values receives the address of the caller’s pointer. One star reads that pointer; another level would reach an int. The helper frees the allocation and then clears the caller’s owner. Calling free on NULL is allowed. Clearing one owner does not clear other aliases: this example deliberately creates none. The helper requires a valid address of a pointer that is NULL or owns an allocation accepted by free.",
+          "walkthrough": [
+            "Count elements and use sizeof the pointed-to type.",
+            "Check allocation before initializing or reading the elements.",
+            "Release through the owner and observe the cleared pointer without accessing freed data."
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "sizeof *values",
+              "meaning": "Measure one int without evaluating an uninitialized element."
+            },
+            {
+              "syntax": "int **owner",
+              "meaning": "Point to the caller’s int pointer so the helper can reset it."
+            },
+            {
+              "syntax": "free(*owner)",
+              "meaning": "Return this allocation; it is also valid when *owner is NULL."
+            }
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "State"
+            ],
+            "rows": [
+              [
+                "After malloc",
+                "Allocated, contents not initialized"
+              ],
+              [
+                "After the loop",
+                "10,20,30"
+              ],
+              [
+                "After release",
+                "values=NULL"
+              ]
+            ]
+          }
+        },
+        {
           "id": "c-owned-dynamic-array",
           "title": "Allocate, initialize, use and release",
           "intro": "Check size arithmetic and allocation as two separate conditions.",
@@ -939,6 +1127,54 @@
         }
       ],
       "code_examples": [
+        {
+          "id": "c-warmup-behavior-parameter",
+          "title": "Start here: pass one operation into a loop",
+          "intro": "Separate visiting each element from deciding what to do with it.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\ntypedef int (*Transform)(int);\nstatic int double_small(int value) {\n    return value * 2;\n}\nstatic int add_one_small(int value) {\n    return value + 1;\n}\nstatic void print_transformed(const int *values, size_t count, Transform action) {\n    for (size_t i = 0; i < count; i++)\n        printf(\"%s%d\", i == 0 ? \"\" : \" \", action(values[i]));\n    putchar('\\n');\n}\nint main(void) {\n    const int values[] = {1, 2, 3};\n    print_transformed(values, 3, double_small);\n    print_transformed(values, 3, add_one_small);\n    printf(\"original=%d,%d,%d\\n\", values[0], values[1], values[2]);\n    return 0;\n}\n",
+          "output": "2 4 6\n2 3 4\noriginal=1,2,3\n",
+          "explanation": "The loop is a mail carrier visiting three addresses. The callback is the instruction about what to do at each address. The loop calls the supplied function with one integer and prints its result. The original array stays unchanged.\n\nTransform names a pointer to a function taking int and returning int. Parentheses around *Transform distinguish a pointer to function from other declarations. Both callbacks match that type. The caller supplies a non-null compatible function and a valid array range. The arithmetic is safe for the fixed small inputs; these callbacks are not overflow-safe transformations for every int.",
+          "walkthrough": [
+            "Define the exact function signature required by the loop.",
+            "Run the same visiting logic with two different behaviors.",
+            "Print the unchanged input to distinguish transformation from mutation."
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "typedef int (*Transform)(int)",
+              "meaning": "Give this compatible function-pointer type a readable name."
+            },
+            {
+              "syntax": "action(values[i])",
+              "meaning": "Call the supplied function with the current element."
+            },
+            {
+              "syntax": "const int *values",
+              "meaning": "This function reads through this pointer without writing the input."
+            }
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "State"
+            ],
+            "rows": [
+              [
+                "Double each element",
+                "2 4 6"
+              ],
+              [
+                "Add one to each",
+                "2 3 4"
+              ],
+              [
+                "Inspect input",
+                "1 2 3"
+              ]
+            ]
+          }
+        },
         {
           "id": "c-checked-dispatch-table",
           "title": "Select behavior through a checked table",
@@ -2312,6 +2548,54 @@
         }
       ],
       "code_examples": [
+        {
+          "id": "c-warmup-ring-state",
+          "title": "Before threads: understand the queue state",
+          "intro": "Trace a capacity-two queue in one thread. Synchronization will protect this same state later.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nenum { CAPACITY = 2 };\nstruct Queue {\n    int data[CAPACITY];\n    size_t head, tail, count;\n};\nstatic int push(struct Queue *q, int value) {\n    if (q->count == CAPACITY)\n        return 0;\n    q->data[q->tail] = value;\n    q->tail = (q->tail + 1) % CAPACITY;\n    q->count++;\n    return 1;\n}\nstatic int pop(struct Queue *q, int *value) {\n    if (q->count == 0)\n        return 0;\n    *value = q->data[q->head];\n    q->head = (q->head + 1) % CAPACITY;\n    q->count--;\n    return 1;\n}\nstatic void show(const struct Queue *q) {\n    printf(\"head=%zu tail=%zu count=%zu\\n\", q->head, q->tail, q->count);\n}\nint main(void) {\n    struct Queue q = {{0}, 0, 0, 0};\n    int value = -1;\n    printf(\"push 10=%d\\n\", push(&q, 10));\n    printf(\"push 20=%d\\n\", push(&q, 20));\n    show(&q);\n    printf(\"push full=%d\\n\", push(&q, 30));\n    if (pop(&q, &value))\n        printf(\"pop=%d\\n\", value);\n    printf(\"push 30=%d\\n\", push(&q, 30));\n    show(&q);\n    while (pop(&q, &value))\n        printf(\"pop=%d\\n\", value);\n    show(&q);\n    return 0;\n}\n",
+          "output": "push 10=1\npush 20=1\nhead=0 tail=0 count=2\npush full=0\npop=10\npush 30=1\nhead=1 tail=1 count=2\npop=20\npop=30\nhead=1 tail=1 count=0\n",
+          "explanation": "Picture two reusable trays. head tells us which tray to remove next; tail tells us where to insert next. Modulo arithmetic wraps an index back to zero. head equals tail both when full and when empty, so count tells those states apart. The invariant is 0 ≤ count ≤ CAPACITY.\n\nA rejected push or pop changes nothing. A successful operation changes the data and the relevant index/count as one logical action. This version is deliberately single-threaded. In the concurrent project a mutex protects the whole action, and condition variables let a worker wait for count > 0 or a producer wait for count < CAPACITY. A persistent closed flag is also needed to stop waiting when no more jobs will arrive.",
+          "walkthrough": [
+            "Fill both slots and observe equal head/tail with count two.",
+            "Reject a third push, remove ten and reuse its slot for thirty.",
+            "Drain in FIFO order and observe equal head/tail with count zero."
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "(tail + 1) % CAPACITY",
+              "meaning": "Move to the next slot, wrapping at the fixed capacity."
+            },
+            {
+              "syntax": "count == CAPACITY",
+              "meaning": "A full predicate; check before writing a new element."
+            },
+            {
+              "syntax": "count == 0",
+              "meaning": "An empty predicate; check before reading an element."
+            }
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "State"
+            ],
+            "rows": [
+              [
+                "Full",
+                "head=0, tail=0, count=2"
+              ],
+              [
+                "Remove then replace",
+                "head=1, tail=1, count=2"
+              ],
+              [
+                "Drained",
+                "head=1, tail=1, count=0"
+              ]
+            ]
+          }
+        },
         {
           "id": "c-condition-predicate-handoff",
           "title": "Publish one value through a protected predicate",

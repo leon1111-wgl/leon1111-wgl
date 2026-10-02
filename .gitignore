@@ -4,3 +4,7 @@ __pycache__/
 tmp/
 *.log
 output/previews/
+
+# Log files are intentional, tiny teaching fixtures.
+!projects/comp2017-log-analyzer/fixtures/*.log
+!site/project-code/comp2017-log-analyzer/fixtures/*.log

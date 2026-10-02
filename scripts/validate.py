@@ -57,7 +57,7 @@ for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))
   check('TODO' not in s and 'Lorem ipsum' not in s,'Placeholder '+str(f))
 for f in [ROOT/'README.md']+list((ROOT/'notes').glob('*.md')):
@@ -77,7 +77,10 @@ errors.extend(path_errors)
 from validate_courses import validate_courses
 course_errors,counts=validate_courses()
 errors.extend(course_errors)
-for folder in ('courses','ai'):
+from validate_projects import validate_projects
+project_errors,project_counts=validate_projects()
+errors.extend(project_errors)
+for folder in ('courses','ai','projects'):
  for f in (SITE/folder).glob('*.html'):
   page=f.read_text()
   check('class="learning-route"' in page,f.name+' missing opening roadmap')
@@ -86,4 +89,4 @@ for f in (SITE/'notes').glob('*.md'):
  check('assets/maps/' in f.read_text()[:1200],f.name+' missing opening roadmap in downloaded notes')
 if errors:
  print('\n'.join(errors));sys.exit(1)
-print(f'PASS: {len(parsers)} HTML pages, local links and anchors, opening roadmaps, five full bilingual courses and bilingual AI guides, excluded source content, five single-page PDFs and collection; course detail: {counts}.')
+print(f'PASS: {len(parsers)} HTML pages, local links and anchors, opening roadmaps, five full bilingual courses and bilingual AI guides, excluded source content, five single-page PDFs and collection; course detail: {counts}; project detail: {project_counts}.')

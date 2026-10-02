@@ -432,6 +432,15 @@
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread representation-control-c-prefix-and-pass-by-value.c -lm -o demo\n./demo"
   },
   {
+    "path": "examples/COMP2017/pointers-arrays-c-warmup-copy-and-alias.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "pointers-arrays",
+    "title": "Start here: a copy and an address",
+    "output": "inside copy=9\nafter value call: original=4 copy=4\nafter address call: original=9 copy=4\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pointers-arrays-c-warmup-copy-and-alias.c -lm -o demo\n./demo"
+  },
+  {
     "path": "examples/COMP2017/pointers-arrays-c-pointer-range.c",
     "language": "c",
     "group": "COMP2017",
@@ -448,6 +457,24 @@
     "title": "Use the actual row type",
     "output": "row 0 sum=12\nrow 1 sum=30\nsecond row last=12\nrow elements=3\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pointers-arrays-c-row-aware-grid.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/strings-parsing-c-warmup-string-bytes.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "strings-parsing",
+    "title": "Start here: a string needs an ending byte",
+    "output": "capacity=6 length=2\ncharacter 0=H\ncharacter 1=i\nterminator is zero=yes\nafter edit=Ho\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread strings-parsing-c-warmup-string-bytes.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/strings-parsing-c-warmup-status-and-output.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "strings-parsing",
+    "title": "Return success separately from the result",
+    "output": "text='0' accepted=1 result=0\ntext='7' accepted=1 result=7\ntext='12' accepted=0 result=-1\ntext='' accepted=0 result=-1\ntext='x' accepted=0 result=-1\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread strings-parsing-c-warmup-status-and-output.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/strings-parsing-c-string-capacity.c",
@@ -504,6 +531,15 @@
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread file-streams-c-partial-record-units.c -lm -o demo\n./demo"
   },
   {
+    "path": "examples/COMP2017/allocation-ownership-c-warmup-owner-release.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "allocation-ownership",
+    "title": "Start here: one allocation, one owner, one release",
+    "output": "values=10,20,30\nowner cleared=yes\nreleasing a null owner is allowed\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread allocation-ownership-c-warmup-owner-release.c -lm -o demo\n./demo"
+  },
+  {
     "path": "examples/COMP2017/allocation-ownership-c-owned-dynamic-array.c",
     "language": "c",
     "group": "COMP2017",
@@ -538,6 +574,15 @@
     "title": "Reverse links without losing the suffix",
     "output": "9 -> 7 -> 4 -> NULL\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread linked-structures-c-list-reverse.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/callbacks-c-warmup-behavior-parameter.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "callbacks",
+    "title": "Start here: pass one operation into a loop",
+    "output": "2 4 6\n2 3 4\noriginal=1,2,3\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread callbacks-c-warmup-behavior-parameter.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/callbacks-c-checked-dispatch-table.c",
@@ -754,6 +799,15 @@
     "title": "Return copies from a protected configuration",
     "output": "first snapshot=blue second snapshot=blue\ncurrent=green\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread thread-safe-design-c-reader-writer-snapshots.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/condition-variables-c-warmup-ring-state.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "condition-variables",
+    "title": "Before threads: understand the queue state",
+    "output": "push 10=1\npush 20=1\nhead=0 tail=0 count=2\npush full=0\npop=10\npush 30=1\nhead=1 tail=1 count=2\npop=20\npop=30\nhead=1 tail=1 count=0\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread condition-variables-c-warmup-ring-state.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/condition-variables-c-condition-predicate-handoff.c",

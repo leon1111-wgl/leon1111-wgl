@@ -1,0 +1,586 @@
+{
+  "title": {
+    "en": "A gentler path from C to complete systems",
+    "zh": "从 C 入门到完整系统的循序路径"
+  },
+  "intro": {
+    "en": "Do not try to memorize 24 chapters in one pass. Follow six passes. Read the small example, predict its output, run it, explain a change, then build a complete tool. The projects use original synthetic data and are fully worked teaching examples.",
+    "zh": "不必一次记住 24 章。按六轮学习：阅读小例子、预测输出、实际运行、解释一次修改，再完成一个工具。工程使用原创模拟数据，并提供完整讲解。"
+  },
+  "sessions": [
+    {
+      "id": "first-run",
+      "title": {
+        "en": "Make one program run",
+        "zh": "先让一个程序运行"
+      },
+      "topics": [
+        "representation-control",
+        "compilation-linkage",
+        "preprocessing"
+      ],
+      "goal": {
+        "en": "Build, run and change one small program. Learn the difference between source text, object files and an executable.",
+        "zh": "构建、运行并修改一个小程序。区分源文件、目标文件和可执行文件。"
+      },
+      "checkpoint": {
+        "en": "You can explain why changing a .c file requires another build and why a nonzero exit status signals failure.",
+        "zh": "你能解释为什么修改 .c 文件后要重新构建，以及非零退出状态为什么表示失败。"
+      },
+      "project": null
+    },
+    {
+      "id": "memory",
+      "title": {
+        "en": "Draw memory before using it",
+        "zh": "使用内存前先画清楚"
+      },
+      "topics": [
+        "pointers-arrays",
+        "strings-parsing",
+        "structured-data",
+        "allocation-ownership",
+        "linked-structures",
+        "callbacks"
+      ],
+      "goal": {
+        "en": "Draw objects, arrows and valid ranges. First master arrays and ownership; return to linked lists and callbacks after the first project if needed.",
+        "zh": "画出对象、箭头和有效范围。先掌握数组与所有权；链表和回调可以在第一个工程之后回来补学。"
+      },
+      "checkpoint": {
+        "en": "You can name the owner, capacity, initialized length and release point of a buffer without running the program.",
+        "zh": "不运行程序，你也能指出一个缓冲区的所有者、容量、已初始化长度和释放时机。"
+      },
+      "project": null
+    },
+    {
+      "id": "file-tool",
+      "title": {
+        "en": "Finish a useful file tool",
+        "zh": "完成一个实用文件工具"
+      },
+      "topics": [
+        "file-streams",
+        "debugging-evidence"
+      ],
+      "goal": {
+        "en": "Connect reading, parsing, aggregation and reporting. Keep rejected data separate from I/O failure. Build the log analyzer now.",
+        "zh": "连接读取、解析、统计和输出。把无效数据与输入输出失败分开处理。现在构建日志分析器。"
+      },
+      "checkpoint": {
+        "en": "You can test an empty file, a malformed row, a missing file and the last valid input boundary.",
+        "zh": "你能测试空文件、格式错误的行、不存在的文件和最后一个合法输入边界。"
+      },
+      "project": "comp2017-log-analyzer"
+    },
+    {
+      "id": "processes",
+      "title": {
+        "en": "Draw the process boundary",
+        "zh": "画清进程边界"
+      },
+      "topics": [
+        "process-fork",
+        "exec-wait",
+        "pipes-fifos",
+        "signals",
+        "queues-sockets",
+        "shared-memory-semaphores"
+      ],
+      "goal": {
+        "en": "First combine fork, exec, pipe and wait in the process runner. Then study signals and alternative IPC mechanisms as deeper branches.",
+        "zh": "先在进程运行器里组合 fork、exec、pipe 和 wait，再深入信号与其他进程间通信方式。"
+      },
+      "checkpoint": {
+        "en": "You can list every open pipe end in each process and explain when the reader will receive EOF.",
+        "zh": "你能列出每个进程持有的管道端点，并解释读取者何时收到 EOF。"
+      },
+      "project": "comp2017-process-runner"
+    },
+    {
+      "id": "threads",
+      "title": {
+        "en": "Protect a shared invariant",
+        "zh": "保护一个共享不变量"
+      },
+      "topics": [
+        "thread-lifecycle",
+        "data-races-mutexes",
+        "thread-safe-design",
+        "condition-variables",
+        "deadlock-progress"
+      ],
+      "goal": {
+        "en": "Start with disjoint worker results. Then add a bounded queue, its predicates and its shutdown rule. Build the thread pipeline.",
+        "zh": "先让工作线程各自拥有结果，再加入有界队列、等待条件和关闭规则，完成并发流水线。"
+      },
+      "checkpoint": {
+        "en": "You can explain which lock protects count, why wait uses while, and who wakes up when the queue closes.",
+        "zh": "你能解释哪把锁保护 count、为什么 wait 外层是 while，以及队列关闭时要唤醒谁。"
+      },
+      "project": "comp2017-thread-pipeline"
+    },
+    {
+      "id": "improve",
+      "title": {
+        "en": "Improve only after explaining correctness",
+        "zh": "解释清楚正确性后再改进"
+      },
+      "topics": [
+        "parallel-performance",
+        "parallel-patterns",
+        "debugging-evidence"
+      ],
+      "goal": {
+        "en": "Use a serial reference and equivalent inputs. Change one design choice, measure the whole job, then compare results again.",
+        "zh": "先建立串行参考和相同输入。每次只改变一个设计选择，测量整个任务，再比较结果。"
+      },
+      "checkpoint": {
+        "en": "You can separate a correctness claim, an experimental timing result and a theoretical speedup bound.",
+        "zh": "你能区分正确性结论、实验测量的时间和理论加速比上界。"
+      },
+      "project": null
+    }
+  ],
+  "coaches": {
+    "representation-control": {
+      "model": {
+        "en": "An object has a type, a value and a valid range.",
+        "zh": "对象有类型、数值和有效范围。"
+      },
+      "engineering": {
+        "en": "Before an operation, ask whether its result fits the chosen type. A successful run is not proof that overflow was valid.",
+        "zh": "运算之前先问结果是否在类型范围内。某次成功运行不能证明溢出行为合法。"
+      },
+      "question": {
+        "en": "Why is 7/2 different from 7.0/2?",
+        "zh": "7/2 为什么不同于 7.0/2？"
+      },
+      "answer": {
+        "en": "The first uses integer division and produces 3. The second uses floating arithmetic and produces 3.5.",
+        "zh": "前者使用整数除法，得到 3；后者使用浮点运算，得到 3.5。"
+      }
+    },
+    "pointers-arrays": {
+      "model": {
+        "en": "A pointer is an address value; the pointed-to object is a separate thing.",
+        "zh": "指针是地址值，它指向的对象是另一件事。"
+      },
+      "engineering": {
+        "en": "Draw one box per object. Copying a pointer creates another way to reach the same object; it does not copy that object or extend its lifetime.",
+        "zh": "每个对象画一个方框。复制指针只是多了一个访问同一对象的途径，不会复制对象或延长其生命周期。"
+      },
+      "question": {
+        "en": "If two pointers reach one integer, does writing through one change what the other reads?",
+        "zh": "两个指针指向同一个整数，通过其中一个写入会改变另一个读到的值吗？"
+      },
+      "answer": {
+        "en": "Yes, while the object is alive and both accesses are valid. They share a target, not separate copies.",
+        "zh": "会，前提是对象仍存活且两次访问都有效。它们指向同一目标，不是两个副本。"
+      }
+    },
+    "strings-parsing": {
+      "model": {
+        "en": "Capacity, text length and the terminating zero are different facts.",
+        "zh": "容量、文本长度和结束零字节是三个不同事实。"
+      },
+      "engineering": {
+        "en": "Write down exactly which input strings your parser accepts. Validate before changing the output object, so a failed parse has a clear state.",
+        "zh": "先写明解析器接受哪些字符串。验证通过后再修改输出对象，使解析失败后的状态明确。"
+      },
+      "question": {
+        "en": "Can a four-byte array hold the C string ABCD?",
+        "zh": "四字节数组能装下 C 字符串 ABCD 吗？"
+      },
+      "answer": {
+        "en": "No. Four letters plus the terminating zero need five bytes. A raw four-byte record is a different contract.",
+        "zh": "不能。四个字母加结束零字节需要五个字节。只保存四字节原始记录是另一种契约。"
+      }
+    },
+    "structured-data": {
+      "model": {
+        "en": "A struct groups fields; copying it copies the field values.",
+        "zh": "结构体把字段放在一起，复制结构体会复制字段值。"
+      },
+      "engineering": {
+        "en": "A copied pointer field still points at the same allocation. Decide whether copying means sharing, transferring ownership or making a deep copy.",
+        "zh": "复制后的指针字段仍指向同一分配块。要先决定复制意味着共享、转移所有权，还是深复制。"
+      },
+      "question": {
+        "en": "Does assigning one struct to another duplicate a pointed-to heap buffer?",
+        "zh": "把一个结构体赋给另一个，会复制指向的堆缓冲区吗？"
+      },
+      "answer": {
+        "en": "No. The pointer value is copied. Duplicating the buffer requires explicit allocation and copying.",
+        "zh": "不会，只复制指针值。复制缓冲区需要明确分配并复制内容。"
+      }
+    },
+    "file-streams": {
+      "model": {
+        "en": "A read reports how much data arrived; EOF is a state discovered by a read.",
+        "zh": "读取操作报告实际取得的数据量；EOF 是通过读取发现的状态。"
+      },
+      "engineering": {
+        "en": "Separate complete input, rejected input and read failure. A short read is not enough by itself to tell you whether EOF or an error occurred.",
+        "zh": "区分完整输入、被拒绝的输入和读取失败。仅凭短读，不能判断是文件结束还是错误。"
+      },
+      "question": {
+        "en": "Why not loop on !feof(file) before reading?",
+        "zh": "为什么不在读取前用 !feof(file) 作为循环条件？"
+      },
+      "answer": {
+        "en": "The EOF flag is set only after a read encounters the end. Test the read result, then inspect EOF/error when needed.",
+        "zh": "只有读取遇到文件结尾后才会设置 EOF 标志。应先检查读取结果，再按需区分 EOF 与错误。"
+      }
+    },
+    "allocation-ownership": {
+      "model": {
+        "en": "Separate a pointer variable from the allocation it owns.",
+        "zh": "区分指针变量和它拥有的分配块。"
+      },
+      "engineering": {
+        "en": "Choose who must free the allocation and what each failure path preserves. Successful realloc can move it; failed nonzero realloc preserves the old allocation.",
+        "zh": "明确谁负责释放，以及每条失败路径保留什么。成功的 realloc 可能搬移分配块；非零大小的 realloc 失败会保留原分配块。"
+      },
+      "question": {
+        "en": "Why use a temporary pointer for realloc?",
+        "zh": "为什么 realloc 要先赋给临时指针？"
+      },
+      "answer": {
+        "en": "Assigning failure directly to the only owner loses the old address. Commit the new owner only after success.",
+        "zh": "如果把失败结果直接赋给唯一所有者，就会丢失旧地址。成功后再提交新指针。"
+      }
+    },
+    "linked-structures": {
+      "model": {
+        "en": "A link is a stored address, so changing it changes reachability.",
+        "zh": "链接是保存的地址，改变它就改变了哪些节点可以到达。"
+      },
+      "engineering": {
+        "en": "Save the next needed address before unlinking or freeing a node. Draw the remaining list after every update.",
+        "zh": "解除链接或释放节点之前，先保存之后需要的地址。每次修改后画出剩余链表。"
+      },
+      "question": {
+        "en": "Why save next before freeing the current node?",
+        "zh": "为什么释放当前节点前要保存 next？"
+      },
+      "answer": {
+        "en": "Reading current->next after free accesses an object whose lifetime has ended.",
+        "zh": "free 之后再读 current->next 就是在访问生命周期已经结束的对象。"
+      }
+    },
+    "callbacks": {
+      "model": {
+        "en": "A function pointer carries behavior with an exact signature.",
+        "zh": "函数指针携带具有准确签名的行为。"
+      },
+      "engineering": {
+        "en": "Use a callback when the traversal can stay fixed but one operation varies. Write parameter, result and lifetime assumptions beside the interface.",
+        "zh": "当遍历不变而某个操作需要变化时，可用回调。把参数、结果和生命周期要求写在接口旁边。"
+      },
+      "question": {
+        "en": "May a function with a different signature be forced through a cast and called safely?",
+        "zh": "函数签名不同，强制转换后就能安全调用吗？"
+      },
+      "answer": {
+        "en": "No. A cast does not repair an incompatible call contract. Provide a matching wrapper instead.",
+        "zh": "不能。转换不会修复不兼容的调用契约，应提供签名匹配的包装函数。"
+      }
+    },
+    "preprocessing": {
+      "model": {
+        "en": "The preprocessor changes tokens before the C compiler checks the program.",
+        "zh": "预处理器先处理记号，再由 C 编译器检查程序。"
+      },
+      "engineering": {
+        "en": "Prefer a typed function for behavior. Use macros for guarded declarations or explicit build choices; beware duplicated argument evaluation.",
+        "zh": "行为通常优先写成有类型的函数。宏可用于头文件保护和明确的构建选项，但要注意实参被重复求值。"
+      },
+      "question": {
+        "en": "Does adding parentheses make SQUARE(i++) safe?",
+        "zh": "给 SQUARE(i++) 加括号就安全吗？"
+      },
+      "answer": {
+        "en": "No. Parentheses change grouping; they do not remove the repeated evaluation of an argument used twice.",
+        "zh": "不安全。括号改变分组，不会消除实参被使用两次导致的重复求值。"
+      }
+    },
+    "compilation-linkage": {
+      "model": {
+        "en": "A declaration is a promise; a definition provides the object or function.",
+        "zh": "声明是一项承诺，定义才提供对象或函数。"
+      },
+      "engineering": {
+        "en": "Keep shared interfaces in headers and implementation in .c files. A compiler checks each translation unit; the linker connects the resulting symbols.",
+        "zh": "共享接口放在头文件，实现在 .c 文件。编译器检查各个翻译单元，链接器再连接生成的符号。"
+      },
+      "question": {
+        "en": "Why can compilation succeed but linking fail?",
+        "zh": "为什么编译成功后，链接仍可能失败？"
+      },
+      "answer": {
+        "en": "A declaration may make a call type-correct while no linked definition supplies the named function.",
+        "zh": "声明可以让函数调用类型正确，但参与链接的文件中可能没有该函数的定义。"
+      }
+    },
+    "signals": {
+      "model": {
+        "en": "A handler interrupts ordinary control flow.",
+        "zh": "信号处理器会打断普通控制流程。"
+      },
+      "engineering": {
+        "en": "Keep a handler minimal and move ordinary work to a safe place. Do not assume a function is async-signal-safe because it is familiar.",
+        "zh": "让处理器尽量简单，把普通工作移到合适位置。不能因为熟悉某函数，就假定它在异步信号处理中安全。"
+      },
+      "question": {
+        "en": "Should a minimal handler format a report with printf?",
+        "zh": "最小信号处理器应该用 printf 格式化报告吗？"
+      },
+      "answer": {
+        "en": "No. Use a permitted flag or another valid signal-safe design, then format the report in normal control flow.",
+        "zh": "不应该。使用允许的标志或其他合法的信号安全设计，再在普通流程中格式化报告。"
+      }
+    },
+    "process-fork": {
+      "model": {
+        "en": "fork creates another execution path with its own address space.",
+        "zh": "fork 创建另一条执行路径，并具有独立地址空间。"
+      },
+      "engineering": {
+        "en": "Make parent and child responsibilities explicit immediately. Ordinary variables are separate; inherited descriptors can still refer to shared underlying resources.",
+        "zh": "立即明确父子进程的职责。普通变量彼此独立，但继承的描述符仍可能指向共享的底层资源。"
+      },
+      "question": {
+        "en": "Will changing a normal child variable change its parent copy?",
+        "zh": "改变子进程的普通变量会改变父进程副本吗？"
+      },
+      "answer": {
+        "en": "No. Ordinary memory is separate. Explicit shared-memory mechanisms are a different case.",
+        "zh": "不会。普通内存彼此独立；显式共享内存属于另一种情况。"
+      }
+    },
+    "exec-wait": {
+      "model": {
+        "en": "exec replaces a process image; wait collects a child’s final status.",
+        "zh": "exec 替换进程映像，wait 收集子进程最终状态。"
+      },
+      "engineering": {
+        "en": "Treat successful exec as not returning. In the parent, interpret wait status using its macros and decide how your tool exposes failure.",
+        "zh": "成功的 exec 不会返回。父进程要用对应宏解释 wait 状态，并规定工具如何报告失败。"
+      },
+      "question": {
+        "en": "Does wait status directly equal the child exit code?",
+        "zh": "wait 状态可以直接当成子进程退出码吗？"
+      },
+      "answer": {
+        "en": "No. First test WIFEXITED or WIFSIGNALED; then use the matching extraction macro.",
+        "zh": "不可以。先检查 WIFEXITED 或 WIFSIGNALED，再用对应的提取宏。"
+      }
+    },
+    "pipes-fifos": {
+      "model": {
+        "en": "A pipe is a stream of bytes, not a sequence of message objects.",
+        "zh": "管道是字节流，不是一组消息对象。"
+      },
+      "engineering": {
+        "en": "Draw read/write ownership after fork. Close unused copies, define framing if needed and keep draining output before waiting on a potentially blocked writer.",
+        "zh": "画出 fork 后读写端的归属。关闭无用副本，按需规定分帧方式；若写入者可能阻塞，就要先持续读取输出，再等待其结束。"
+      },
+      "question": {
+        "en": "Why can a reader wait forever after the child closes its writer?",
+        "zh": "子进程关闭写端后，读取者为什么仍可能一直等待？"
+      },
+      "answer": {
+        "en": "Another write-end copy may remain open, including one in the parent. EOF requires that every writer be closed and buffered bytes consumed.",
+        "zh": "可能还有另一个写端副本未关闭，例如父进程自己的副本。所有写端关闭且缓冲数据读完后才会出现 EOF。"
+      }
+    },
+    "queues-sockets": {
+      "model": {
+        "en": "Different IPC tools promise different boundaries and communication directions.",
+        "zh": "不同进程间通信工具提供不同的消息边界和通信方向。"
+      },
+      "engineering": {
+        "en": "Choose a mechanism from requirements: related processes, message boundaries, two-way flow, discovery and cleanup. Familiarity alone is not a design reason.",
+        "zh": "依据需求选择机制：进程关系、消息边界、双向通信、发现方式和清理方式。只因为熟悉某机制，并不足以作为设计理由。"
+      },
+      "question": {
+        "en": "Does a Unix stream socket preserve one write as one read?",
+        "zh": "Unix 流式套接字会把一次 write 保留为一次 read 吗？"
+      },
+      "answer": {
+        "en": "No. A stream needs an application framing rule when messages matter, just like a pipe.",
+        "zh": "不会。若消息边界重要，流通信也需要应用层分帧规则，与管道类似。"
+      }
+    },
+    "shared-memory-semaphores": {
+      "model": {
+        "en": "Sharing bytes and coordinating access are separate jobs.",
+        "zh": "共享字节与协调访问是两件不同的事。"
+      },
+      "engineering": {
+        "en": "State what a semaphore counts. A permit can mean a free slot, an available item or another resource; the shared data still needs a valid ordering protocol.",
+        "zh": "明确一个信号量在数什么。许可可以表示空闲位置、可用任务或其他资源；共享数据仍需要正确的顺序协议。"
+      },
+      "question": {
+        "en": "Does shared memory automatically prevent races?",
+        "zh": "共享内存会自动防止竞争吗？"
+      },
+      "answer": {
+        "en": "No. It supplies shared storage. Synchronization and lifetime rules must be designed separately.",
+        "zh": "不会，它只提供共享存储，同步和生命周期规则需要另外设计。"
+      }
+    },
+    "thread-lifecycle": {
+      "model": {
+        "en": "Threads share memory but each needs a valid argument and a completion rule.",
+        "zh": "线程共享内存，但每个线程都需要有效参数和结束规则。"
+      },
+      "engineering": {
+        "en": "Allocate one stable argument record per worker. Join before reading results or letting argument storage go out of scope.",
+        "zh": "为每个工作线程准备稳定的参数记录。读取结果或让参数存储失效之前，要先 join。"
+      },
+      "question": {
+        "en": "Why not pass every worker the address of one changing loop index?",
+        "zh": "为什么不能把同一个不断变化的循环下标地址传给所有线程？"
+      },
+      "answer": {
+        "en": "Workers may observe different later values, and unsynchronized concurrent access can race. Give each worker its own stable record.",
+        "zh": "工作线程可能读到之后的不同值，未同步的并发访问还可能形成竞争。应各自提供稳定记录。"
+      }
+    },
+    "data-races-mutexes": {
+      "model": {
+        "en": "A shared invariant often spans several reads and writes.",
+        "zh": "共享不变量常常跨越多次读写。"
+      },
+      "engineering": {
+        "en": "Protect the whole check-and-update transaction with the same mutex. Locking only the final write does not make an earlier decision atomic.",
+        "zh": "用同一把互斥锁保护整个检查并更新事务。只锁最后的写入，不能让之前的判断具有原子性。"
+      },
+      "question": {
+        "en": "If one item remains, which operations must stay together?",
+        "zh": "只剩一个物品时，哪些操作必须放在一起？"
+      },
+      "answer": {
+        "en": "Checking availability, deciding success and decrementing stock belong to one protected transaction.",
+        "zh": "检查是否可用、决定成功与否、减少库存，属于同一个受保护事务。"
+      }
+    },
+    "thread-safe-design": {
+      "model": {
+        "en": "Returning a pointer can expose protected state after a lock is released.",
+        "zh": "返回指针可能在解锁后继续暴露受保护状态。"
+      },
+      "engineering": {
+        "en": "Prefer clear ownership or an independent snapshot when callers need stable data. Thread-safe operations do not automatically make every combination safe.",
+        "zh": "调用者需要稳定数据时，优先使用清楚的所有权约定或独立快照。单个操作线程安全，不代表任意组合都安全。"
+      },
+      "question": {
+        "en": "Why return a copied configuration instead of a pointer to a shared buffer?",
+        "zh": "为什么返回配置副本，而不是共享缓冲区的指针？"
+      },
+      "answer": {
+        "en": "A caller can use its own copy without racing with later writes to the original. The copy itself must be made under the required protection.",
+        "zh": "调用者使用自己的副本，就不会与之后对原对象的写入竞争。但复制过程本身仍需要相应保护。"
+      }
+    },
+    "condition-variables": {
+      "model": {
+        "en": "A condition variable helps wait; the protected predicate tells you whether to proceed.",
+        "zh": "条件变量帮助等待，受保护的条件表达式才决定能否继续。"
+      },
+      "engineering": {
+        "en": "Learn the single-thread queue first. Then protect its state, wait in a while loop and include a closed state so empty consumers can finish.",
+        "zh": "先学单线程队列，再保护状态、用 while 循环等待，并加入关闭状态，让空队列上的消费者能够结束。"
+      },
+      "question": {
+        "en": "Why check count again after waking?",
+        "zh": "醒来后为什么还要再次检查 count？"
+      },
+      "answer": {
+        "en": "A wakeup is not a promise that an item is yours. The predicate can still be false because of spurious wakeups or another consumer.",
+        "zh": "唤醒不保证某个任务属于你。虚假唤醒或其他消费者都可能使条件仍为假。"
+      }
+    },
+    "deadlock-progress": {
+      "model": {
+        "en": "Correct values are not enough if every worker is waiting forever.",
+        "zh": "如果所有工作线程都永远等待，仅有数值正确还不够。"
+      },
+      "engineering": {
+        "en": "List who can wait for whom. Use a consistent lock order or an explicit rollback rule, and include queue shutdown in the progress argument.",
+        "zh": "列出谁可能等待谁。使用统一的锁顺序或明确的回退规则，并把队列关闭纳入程序能够前进的解释。"
+      },
+      "question": {
+        "en": "Why can opposite lock orders create a cycle?",
+        "zh": "相反的加锁顺序为什么可能形成环？"
+      },
+      "answer": {
+        "en": "Each thread can hold one lock while waiting for the other. A global order removes this particular circular-wait pattern.",
+        "zh": "每个线程都可能持有一把锁并等待另一把。全局顺序可消除这一类循环等待。"
+      }
+    },
+    "parallel-performance": {
+      "model": {
+        "en": "A faster-looking design still needs equivalent work and measured evidence.",
+        "zh": "看起来更快的设计，仍需要相同工作量与测量证据。"
+      },
+      "engineering": {
+        "en": "Check the result before measuring elapsed time. Include file I/O, creation, synchronization and reporting when they are part of the real job.",
+        "zh": "先检查结果再测量时间。若输入输出、创建、同步与报告属于实际任务，就应计入耗时。"
+      },
+      "question": {
+        "en": "Does four threads imply a fourfold speedup?",
+        "zh": "四个线程就意味着四倍加速吗？"
+      },
+      "answer": {
+        "en": "No. Serial work, contention, I/O and coordination can dominate; a tiny job may get slower.",
+        "zh": "不意味着。串行工作、竞争、输入输出和协调成本可能占主导；小任务甚至可能变慢。"
+      }
+    },
+    "parallel-patterns": {
+      "model": {
+        "en": "Partition output ownership before adding locks.",
+        "zh": "先划分输出归属，再考虑加锁。"
+      },
+      "engineering": {
+        "en": "Independent workers can write disjoint result slots, but the coordinator must wait before combining them. Draw phase dependencies, not just worker boxes.",
+        "zh": "独立工作线程可以写各自结果位置，但协调者合并之前必须等待完成。要画出阶段依赖，而不只是工作线程方框。"
+      },
+      "question": {
+        "en": "When can the coordinator read every result safely?",
+        "zh": "协调者何时可以安全读取所有结果？"
+      },
+      "answer": {
+        "en": "After the required completion synchronization, such as successful joins, establishes that all producing workers have finished.",
+        "zh": "在所需的完成同步之后，例如成功 join，确认所有产生结果的线程都已结束。"
+      }
+    },
+    "debugging-evidence": {
+      "model": {
+        "en": "A failure is useful evidence when you can reproduce and explain it.",
+        "zh": "当失败能够重现并得到解释时，它就是有用证据。"
+      },
+      "engineering": {
+        "en": "Reduce the case, locate the first broken contract and change one cause. Retain a test for the boundary that failed.",
+        "zh": "缩小案例，定位第一个被破坏的契约，每次修正一个原因，并保留能覆盖失败边界的测试。"
+      },
+      "question": {
+        "en": "What should you test after fixing a seven-character buffer limit?",
+        "zh": "修复七字符缓冲区限制后应该测什么？"
+      },
+      "answer": {
+        "en": "Test empty input, seven characters, eight characters and a longer input; check the terminator and the rejection state as well as whether it crashes.",
+        "zh": "测试空输入、七字符、八字符和更长输入。除了是否崩溃，还要检查结束符和拒绝后的状态。"
+      }
+    }
+  },
+  "deeper": [
+    "linked-structures",
+    "callbacks",
+    "signals",
+    "queues-sockets",
+    "shared-memory-semaphores"
+  ]
+}

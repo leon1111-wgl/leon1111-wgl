@@ -2,8 +2,8 @@
   "code": "COMP2017",
   "title": "系统编程：C、进程与并发",
   "subtitle": "从一个 C 程序到并行系统，学会推理字节、资源归属和协作过程。",
-  "description": "建立清晰而准确的模型，理解 C 内存、程序的构建过程和 Unix 进程行为。通过原创完整例子，观察资源如何在程序中流转，以及同步如何让并发活动得到正确结果。",
-  "coverage": "完整的 C11 与 POSIX 学习路径涵盖数据表示、指针、分配、文件、链式结构、构建阶段、信号、进程、通信、线程与并行模式。24 章各含两个完整可运行程序、精确输出、语法引导、行为跟踪与工程讨论。使用平台特定设施时会明确说明。",
+  "description": "把 C 与系统编程拆成能够跟上的小步骤。从小程序开始，画清内存和资源所有权，再用文件、进程和线程完成实用工具。",
+  "coverage": "包含 24 章、54 份独立程序的 C11 与 POSIX 学习路径。六轮学习计划带你完成三个完整讲解的工程，逐步理解需求、接口、完整源码、调试与测试。深入分支可随时回看。",
   "color": "#38bdf8",
   "prerequisites": [
     "掌握变量、循环和函数等基本编程知识。",
@@ -249,6 +249,54 @@
       ],
       "code_examples": [
         {
+          "id": "c-warmup-copy-and-alias",
+          "title": "从这里开始：副本与地址",
+          "intro": "先跟踪一个整数，再学习数组的指针运算。先预测每一行输出。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nstatic void change_copy(int value) {\n    value = 9;\n    printf(\"inside copy=%d\\n\", value);\n}\nstatic void change_object(int *address) {\n    *address = 9;\n}\nint main(void) {\n    int original = 4;\n    int copy = original;\n    int *alias = &original;\n    change_copy(original);\n    printf(\"after value call: original=%d copy=%d\\n\", original, copy);\n    change_object(alias);\n    printf(\"after address call: original=%d copy=%d\\n\", original, copy);\n    return 0;\n}\n",
+          "output": "inside copy=9\nafter value call: original=4 copy=4\nafter address call: original=9 copy=4\n",
+          "explanation": "想象两张纸条。把数字抄到第二张纸上，不会让两张纸自动关联。指针携带的则是第一张纸的位置。两个函数的参数都是按值传递。第二个函数收到的是地址的副本，再通过它改变原对象。\n\n&original 表示 original 的地址。*address 表示该有效地址处的整数。int *alias 中的星号属于声明；*address = 9 中的星号是解引用表达式。两次调用期间原对象都还存在。这个辅助函数要求传入指向 int 的有效非空指针。",
+          "walkthrough": [
+            "创建两个初值相同、彼此独立的 int 对象。",
+            "传入数字副本，只改变函数自己的参数。",
+            "传入地址副本，解引用后访问调用者的原对象。"
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "int *alias = &original",
+              "meaning": "保存地址，而不是另一个整数值。"
+            },
+            {
+              "syntax": "*address = 9",
+              "meaning": "通过有效指针写入它指向的对象。"
+            },
+            {
+              "syntax": "change_copy(original)",
+              "meaning": "把实参值复制给形参。"
+            }
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "状态"
+            ],
+            "rows": [
+              [
+                "调用之前",
+                "original=4, copy=4"
+              ],
+              [
+                "change_copy 之后",
+                "original=4, copy=4"
+              ],
+              [
+                "change_object 之后",
+                "original=9, copy=4"
+              ]
+            ]
+          }
+        },
+        {
           "id": "c-pointer-range",
           "title": "使用起止指针遍历",
           "intro": "把结束指针当哨兵，不当元素。",
@@ -360,6 +408,98 @@
         }
       ],
       "code_examples": [
+        {
+          "id": "c-warmup-string-bytes",
+          "title": "从这里开始：字符串需要结束字节",
+          "intro": "先观察一个短字符数组，再使用解析器。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\nint main(void) {\n    char message[6] = \"Hi\";\n    size_t length = strlen(message);\n    printf(\"capacity=%zu length=%zu\\n\", sizeof message, length);\n    for (size_t i = 0; i < length; i++)\n        printf(\"character %zu=%c\\n\", i, message[i]);\n    printf(\"terminator is zero=%s\\n\", message[length] == '\\0' ? \"yes\" : \"no\");\n    message[1] = 'o';\n    printf(\"after edit=%s\\n\", message);\n    return 0;\n}\n",
+          "output": "capacity=6 length=2\ncharacter 0=H\ncharacter 1=i\nterminator is zero=yes\nafter edit=Ho\n",
+          "explanation": "一排六个座位可以只坐两个人。容量是可用存储空间；字符串长度统计第一个零字节之前的字符。字符串字面量初始化 H、i 和结束符。数组剩余元素也会初始化为零。\n\nstrlen 假设在有效存储范围内能够找到结束符。它不会替你检查缓冲区容量。修改 message[1] 把 i 换成 o，不移动结束符。这里的 sizeof message 有效，因为当前作用域中 message 就是数组对象。写成 char message[] 的函数形参会被调整为指针。",
+          "walkthrough": [
+            "区分容量六和有效字符长度二。",
+            "只检查两个字符及范围内的结束符。",
+            "修改一个字符，同时保留结束符。"
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "char message[6] = \"Hi\"",
+              "meaning": "预留六个字节，并初始化带结束符的字符串。"
+            },
+            {
+              "syntax": "strlen(message)",
+              "meaning": "在有效且有结束符的存储上，计算首个零之前的字节数。"
+            },
+            {
+              "syntax": "'\\0'",
+              "meaning": "用来结束 C 字符串的零字符，不是打印出来的数字字符零。"
+            }
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "状态"
+            ],
+            "rows": [
+              [
+                "初始化",
+                "H i \\0 \\0 \\0 \\0"
+              ],
+              [
+                "修改下标 1",
+                "H o \\0 \\0 \\0 \\0"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "c-warmup-status-and-output",
+          "title": "把成功状态和结果分开返回",
+          "intro": "在学习 strtol 之前，先构建一个明确约定失败行为的小解析器。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nstatic int parse_digit(const char *text, int *result) {\n    if (text[0] < '0' || text[0] > '9')\n        return 0;\n    if (text[1] != '\\0')\n        return 0;\n    *result = text[0] - '0';\n    return 1;\n}\nint main(void) {\n    const char *inputs[] = {\"0\", \"7\", \"12\", \"\", \"x\"};\n    for (size_t i = 0; i < sizeof inputs / sizeof inputs[0]; i++) {\n        int result = -1;\n        int accepted = parse_digit(inputs[i], &result);\n        printf(\"text='%s' accepted=%d result=%d\\n\", inputs[i], accepted, result);\n    }\n    return 0;\n}\n",
+          "output": "text='0' accepted=1 result=0\ntext='7' accepted=1 result=7\ntext='12' accepted=0 result=-1\ntext='' accepted=0 result=-1\ntext='x' accepted=0 result=-1\n",
+          "explanation": "有效结果本身也可能是零。因此零不能同时表示“解析出的数字是零”和“解析失败”。这个接口返回成功标志，只有成功时才通过另一个指针写入数字。无效文本不会改变调用者的结果。\n\n第一个判断也处理空字符串：首字节是零，不在数字字符范围内，所以在读取 text[1] 之前就返回。若首字节是数字，有效的带结束符字符串就还有下一个字节可检查。C 保证十进制数字字符连续排列，因此减去字符零可得到数字值。契约只接受恰好一个数字，不接受正负号或空格。两个指针都必须有效，text 必须有结束符。",
+          "walkthrough": [
+            "先定义接受的格式：一个数字字符，后面紧跟结束符。",
+            "所有检查通过之前，不修改输出对象。",
+            "对于拒绝的输入，同时检查状态标志和保留的原值。"
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "int *result",
+              "meaning": "调用者拥有的输出对象，与返回状态分开。"
+            },
+            {
+              "syntax": "return 0",
+              "meaning": "拒绝输入，并保持 *result 不变。"
+            },
+            {
+              "syntax": "text[0] - '0'",
+              "meaning": "把已验证的一个数字字符转换成整数值。"
+            }
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "状态"
+            ],
+            "rows": [
+              [
+                "'0'",
+                "accepted=1, result=0"
+              ],
+              [
+                "'12'",
+                "accepted=0, result=-1"
+              ],
+              [
+                "''",
+                "accepted=0, result=-1"
+              ]
+            ]
+          }
+        },
         {
           "id": "c-string-capacity",
           "title": "区分文本长度与存储容量",
@@ -708,6 +848,54 @@
       ],
       "code_examples": [
         {
+          "id": "c-warmup-owner-release",
+          "title": "从这里开始：一次分配，一个所有者，一次释放",
+          "intro": "先跟踪三个元素的分配，再加入扩容或链式结构。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nstatic void release_values(int **owner) {\n    free(*owner);\n    *owner = NULL;\n}\nint main(void) {\n    size_t count = 3;\n    int *values = malloc(count * sizeof *values);\n    if (values == NULL) {\n        fputs(\"allocation failed\\n\", stderr);\n        return 1;\n    }\n    for (size_t i = 0; i < count; i++)\n        values[i] = (int)(i + 1) * 10;\n    printf(\"values=%d,%d,%d\\n\", values[0], values[1], values[2]);\n    release_values(&values);\n    printf(\"owner cleared=%s\\n\", values == NULL ? \"yes\" : \"no\");\n    release_values(&values);\n    puts(\"releasing a null owner is allowed\");\n    return 0;\n}\n",
+          "output": "values=10,20,30\nowner cleared=yes\nreleasing a null owner is allowed\n",
+          "explanation": "程序先预留空间，检查成功，初始化每个元素，再使用并释放。malloc 返回的存储尚未初始化。这里固定数量为三，字节数乘法不会溢出；通用分配器还需要检查乘法范围。\n\nrelease_values 收到调用者指针变量的地址。一层星号读取该指针，再多一层才到达 int。辅助函数释放分配块，然后清空调用者的所有者指针。free 可以接收 NULL。清空一个所有者不会清空其他别名；本例有意不创建其他别名。辅助函数要求传入有效的指针变量地址，该变量要么为 NULL，要么拥有可交给 free 的分配块。",
+          "walkthrough": [
+            "计算元素数量，使用指向类型的 sizeof。",
+            "初始化或读取元素之前，先检查分配成功。",
+            "通过所有者释放，只观察清空后的指针，不再访问已释放数据。"
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "sizeof *values",
+              "meaning": "计算一个 int 的大小，不会读取未初始化元素。"
+            },
+            {
+              "syntax": "int **owner",
+              "meaning": "指向调用者的 int 指针，使辅助函数能够将它清空。"
+            },
+            {
+              "syntax": "free(*owner)",
+              "meaning": "归还该分配块；*owner 为 NULL 时也合法。"
+            }
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "状态"
+            ],
+            "rows": [
+              [
+                "malloc 之后",
+                "已分配，内容尚未初始化"
+              ],
+              [
+                "循环之后",
+                "10,20,30"
+              ],
+              [
+                "释放之后",
+                "values=NULL"
+              ]
+            ]
+          }
+        },
+        {
           "id": "c-owned-dynamic-array",
           "title": "分配、初始化、使用与释放",
           "intro": "分别检查大小算术与分配结果。",
@@ -939,6 +1127,54 @@
         }
       ],
       "code_examples": [
+        {
+          "id": "c-warmup-behavior-parameter",
+          "title": "从这里开始：把一个操作传入循环",
+          "intro": "把“逐个访问元素”和“对元素做什么”分开。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\ntypedef int (*Transform)(int);\nstatic int double_small(int value) {\n    return value * 2;\n}\nstatic int add_one_small(int value) {\n    return value + 1;\n}\nstatic void print_transformed(const int *values, size_t count, Transform action) {\n    for (size_t i = 0; i < count; i++)\n        printf(\"%s%d\", i == 0 ? \"\" : \" \", action(values[i]));\n    putchar('\\n');\n}\nint main(void) {\n    const int values[] = {1, 2, 3};\n    print_transformed(values, 3, double_small);\n    print_transformed(values, 3, add_one_small);\n    printf(\"original=%d,%d,%d\\n\", values[0], values[1], values[2]);\n    return 0;\n}\n",
+          "output": "2 4 6\n2 3 4\noriginal=1,2,3\n",
+          "explanation": "循环像依次访问三个地址的邮递员，回调则规定每到一处要做什么。循环把一个整数传给提供的函数，并打印返回值。原数组保持不变。\n\nTransform 表示指向“接收 int、返回 int 的函数”的指针。*Transform 两侧括号把函数指针与其他声明区分开。两个回调都匹配该类型。调用者需要提供非空且类型兼容的函数，以及有效数组范围。固定小输入使算术安全；这些回调并不是对所有 int 都防溢出的变换。",
+          "walkthrough": [
+            "先规定循环需要的准确函数签名。",
+            "让同一遍历逻辑执行两种不同操作。",
+            "打印未变的输入，区分计算新值与修改原数据。"
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "typedef int (*Transform)(int)",
+              "meaning": "给这类兼容函数指针起一个易读名称。"
+            },
+            {
+              "syntax": "action(values[i])",
+              "meaning": "用当前元素调用传入的函数。"
+            },
+            {
+              "syntax": "const int *values",
+              "meaning": "本函数通过此指针读取输入，不修改输入。"
+            }
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "状态"
+            ],
+            "rows": [
+              [
+                "每个元素加倍",
+                "2 4 6"
+              ],
+              [
+                "每个元素加一",
+                "2 3 4"
+              ],
+              [
+                "检查输入",
+                "1 2 3"
+              ]
+            ]
+          }
+        },
         {
           "id": "c-checked-dispatch-table",
           "title": "通过受检查的表选择行为",
@@ -2312,6 +2548,54 @@
         }
       ],
       "code_examples": [
+        {
+          "id": "c-warmup-ring-state",
+          "title": "在线程之前：先理解队列状态",
+          "intro": "先在单线程里跟踪容量为二的队列。之后再用同步保护同一组状态。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\nenum { CAPACITY = 2 };\nstruct Queue {\n    int data[CAPACITY];\n    size_t head, tail, count;\n};\nstatic int push(struct Queue *q, int value) {\n    if (q->count == CAPACITY)\n        return 0;\n    q->data[q->tail] = value;\n    q->tail = (q->tail + 1) % CAPACITY;\n    q->count++;\n    return 1;\n}\nstatic int pop(struct Queue *q, int *value) {\n    if (q->count == 0)\n        return 0;\n    *value = q->data[q->head];\n    q->head = (q->head + 1) % CAPACITY;\n    q->count--;\n    return 1;\n}\nstatic void show(const struct Queue *q) {\n    printf(\"head=%zu tail=%zu count=%zu\\n\", q->head, q->tail, q->count);\n}\nint main(void) {\n    struct Queue q = {{0}, 0, 0, 0};\n    int value = -1;\n    printf(\"push 10=%d\\n\", push(&q, 10));\n    printf(\"push 20=%d\\n\", push(&q, 20));\n    show(&q);\n    printf(\"push full=%d\\n\", push(&q, 30));\n    if (pop(&q, &value))\n        printf(\"pop=%d\\n\", value);\n    printf(\"push 30=%d\\n\", push(&q, 30));\n    show(&q);\n    while (pop(&q, &value))\n        printf(\"pop=%d\\n\", value);\n    show(&q);\n    return 0;\n}\n",
+          "output": "push 10=1\npush 20=1\nhead=0 tail=0 count=2\npush full=0\npop=10\npush 30=1\nhead=1 tail=1 count=2\npop=20\npop=30\nhead=1 tail=1 count=0\n",
+          "explanation": "想象两个可重复使用的托盘。head 指向下一次取出的托盘，tail 指向下一次放入的位置。取模运算让下标绕回零。队列满和空时，head 都可能等于 tail，所以需要 count 区分。不变量是 0 ≤ count ≤ CAPACITY。\n\n拒绝的 push 或 pop 不改变任何状态。成功操作把数据、对应下标和计数作为一个逻辑动作修改。这个版本有意保持单线程。在并发工程里，互斥锁保护整个动作；条件变量让工作线程等待 count > 0，让生产者等待 count < CAPACITY。还需要持久的 closed 标志，表示不会再有新任务，使等待能够结束。",
+          "walkthrough": [
+            "装满两个位置，观察 head 与 tail 相等但 count 为二。",
+            "拒绝第三次入队，取出十，再用空出的位置存三十。",
+            "按先进先出顺序排空，观察 head 与 tail 相等而 count 为零。"
+          ],
+          "syntax_notes": [
+            {
+              "syntax": "(tail + 1) % CAPACITY",
+              "meaning": "移动到下一位置，到固定容量后绕回。"
+            },
+            {
+              "syntax": "count == CAPACITY",
+              "meaning": "表示已满；写入新元素之前检查。"
+            },
+            {
+              "syntax": "count == 0",
+              "meaning": "表示为空；读取元素之前检查。"
+            }
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "状态"
+            ],
+            "rows": [
+              [
+                "满",
+                "head=0, tail=0, count=2"
+              ],
+              [
+                "取出后补入",
+                "head=1, tail=1, count=2"
+              ],
+              [
+                "排空",
+                "head=1, tail=1, count=0"
+              ]
+            ]
+          }
+        },
         {
           "id": "c-condition-predicate-handoff",
           "title": "通过受保护条件发布一个值",

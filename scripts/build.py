@@ -48,6 +48,8 @@ if __name__=='__main__':
   from build_paths import build_one
   build_one(ROOT,profile,primer)
  export_examples([(c['code'],c) for c in courses]+[('AI-'+g['code'],g) for g in guides]+([('AI-START',primer)] if primer else []))
+ from build_projects import build_all as build_projects
+ build_projects()
  home(courses,guides);readme(courses,guides)
  (SITE/'.nojekyll').write_text('')
  print(f'Built {len(courses)} bilingual courses ({sum(len(c["topics"]) for c in courses)} topics) and {len(guides)} bilingual AI guides ({sum(len(g["topics"]) for g in guides)} topics), HTML and Markdown.')

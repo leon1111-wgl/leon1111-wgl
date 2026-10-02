@@ -1,0 +1,1065 @@
+<!doctype html><html lang="zh-Hans" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>流式日志分析器 | Guoliang</title><meta name="description" content="把机器人模拟器的轨迹变成可信的命令行报告。用一个小型 C 程序练习有边界地读行、校验记录、累积统计和解释失败。"><link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css?v=8df55cf946ae"><script defer src="../assets/app.js?v=a47d26b4bea5"></script></head><body class="field-guide project-guide"><a class="skip" href="#main">跳到正文</a><header class="topbar"><div class="wrap"><a class="brand" href="../index.html"><span class="monogram">GW</span>Guoliang</a><nav><a href="../courses/comp2017.zh.html#projects">COMP2017</a><div class="language-switch"><a href="comp2017-log-analyzer.en.html" data-language="en" lang="en">EN</a><a href="comp2017-log-analyzer.zh.html" data-language="zh" lang="zh" aria-current="page">中文</a></div><button type="button" class="theme-button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap"><header class="course-hero"><div class="eyebrow">GUOLIANG / COMP2017 / PROJECT 01</div><h1>流式日志分析器</h1><p>把机器人模拟器的轨迹变成可信的命令行报告。用一个小型 C 程序练习有边界地读行、校验记录、累积统计和解释失败。</p><p class="course-meta">项目 1 · 工程入门 · 先掌握函数、数组和基本指针。按顺序学习五个阶段；先编译完整文件，再研究代码摘录。 · C11 / POSIX · EN / ZH</p><div class="actions"><a class="button primary" href="../downloads/comp2017-log-analyzer.zip" download>下载完整工程 ↓</a><a class="button" href="#source">阅读完整源文件 ↓</a><a class="button" href="../notes/comp2017-log-analyzer.zh.md" download>下载本篇讲义 ↓</a></div></header><section class="learning-route" aria-labelledby="route-title"><div class="route-heading"><div><span class="eyebrow">GUOLIANG / BUILD ROUTE</span><h2 id="route-title">每次完成一个可运行的小部分</h2></div></div><ol class="route-flow"><li><a class="route-node" href="#milestone-one-row"><span class="route-step">01 →</span><h3>1. 跟踪一行文本变成报告</h3><p>先走通最小的完整路径：一条有效记录从 stdin 进入，并生成正确报告。先理解数据形状，再研究错误分支。</p></a></li><li><a class="route-node" href="#milestone-validated-record"><span class="route-step">02 →</span><h3>2. 让校验要么全部成功，要么不提交</h3><p>为单行路径增加严格的解析契约：只有整行完全合法，才能形成记录。</p></a></li><li><a class="route-node" href="#milestone-bounded-stream"><span class="route-step">03 →</span><h3>3. 连续读取时保住行边界</h3><p>将单行输入扩展成连续记录，不把整份文件保存在内存中，也不把损坏行的尾部误认为另一行。</p></a></li><li><a class="route-node" href="#milestone-running-summary"><span class="route-step">04 →</span><h3>4. 用明确约束维护累积统计</h3><p>用固定大小的状态，把多条合法记录变成有用的计数与耗时统计。</p></a></li><li><a class="route-node" href="#milestone-cli-proof"><span class="route-step">05 →</span><h3>5. 完成接口并测试失败路径</h3><p>交付真正的命令行工具，包含清楚的退出规则、资源清理、可复现样本，以及能发现错误结果的测试。</p></a></li></ol></section><div class="reading-tools"><div role="group" aria-label="阅读字号"><span>阅读字号</span><button type="button" data-reading-size="normal" aria-pressed="true">A · 舒适</button><button type="button" data-reading-size="large" aria-pressed="false">A+ · 更大</button></div><a href="#run">构建并运行这个工程 ↓</a></div><div class="course-layout"><aside class="toc"><details open><summary>工程学习目录</summary><ol><li><a href="#story">问题从哪里来</a></li><li><a href="#contract">需求与契约</a></li><li><a href="#architecture">结构与所有权</a></li><li><a href="#milestone-one-row">1. 跟踪一行文本变成报告</a></li><li><a href="#milestone-validated-record">2. 让校验要么全部成功，要么不提交</a></li><li><a href="#milestone-bounded-stream">3. 连续读取时保住行边界</a></li><li><a href="#milestone-running-summary">4. 用明确约束维护累积统计</a></li><li><a href="#milestone-cli-proof">5. 完成接口并测试失败路径</a></li><li><a href="#run">构建与运行</a></li><li><a href="#debug">定位并解释错误</a></li><li><a href="#test">验证契约</a></li><li><a href="#decisions">工程取舍</a></li><li><a href="#source">完整源文件</a></li><li><a href="#next">有计划地扩展</a></li></ol></details></aside><div class="course-body"><section class="project-section" id="story" data-reading-id="story"><h2>从一个完整故事开始</h2><p>Guoliang 正在测试课堂用的机器人模拟器。每个模拟动作都会记录级别与耗时，例如 WARN 40。长日志中的慢动作很容易被漏掉，损坏的记录又可能让平均值失真。我们先让一条有效记录走通，再明确记录规则，加入连续读行和累积统计。完成后的工具能够报告 INFO、WARN、ERROR 的次数、耗时范围与平均值，还能说明丢弃了多少行。所有数据都是人工构造。这是原创工程项目及其概念检查，不是课程提供的作业或答案。</p><h3>开始前先读</h3><ul><li><a href="../courses/comp2017.zh.html#representation-control">位、C 类型与明确的控制流程</a> — 使用比较、循环、无符号值和明确的返回码。单次耗时的范围很小，累积总和需要更宽的类型。</li><li><a href="../courses/comp2017.zh.html#strings-parsing">字符串、有界输入与解析</a> — C 字符串在 NUL 字节处结束。缓冲区要为结束符留空间，数值字段必须整体合法才接受。</li><li><a href="../courses/comp2017.zh.html#structured-data">结构体、对齐、联合体与类型标签</a> — 记录结构体把一个级别和一个耗时放在一起；统计结构体保存每行处理后仍需保持一致的状态。</li><li><a href="../courses/comp2017.zh.html#file-streams">文件流、二进制记录与错误</a> — 通过 FILE 指针读取，区分文件结束和流错误，只关闭自己打开的流。</li><li><a href="../courses/comp2017.zh.html#compilation-linkage">翻译单元、符号与程序库</a> — 头文件描述接口，独立 C 编译单元实现接口，链接器再把目标文件组合起来。</li></ul><h3>完成后你能够</h3><ul><li>把自然语言输入规则转成解析器契约：要么提交完整记录，要么保持输出对象不变。</li><li>用固定大小的应用内存处理输入流，遇到坏数据后仍保住物理行边界。</li><li>根据已证明的边界选择数值类型，独立计算预期结果，同时测试标准输出、错误输出和退出码。</li></ul></section><section class="project-section" id="contract" data-reading-id="contract"><h2>把需求写成可检查的行为</h2><article class="design-card"><h3>恰好接受一个输入参数：文件名，或表示标准输入的 -。</h3><p>明确而单一的接口便于使用和测试，不需要额外交互菜单。</p><p><strong>检查方法：</strong>没有参数或有两个参数时退出码为 2，stdout 为空。复制的示例文件和管道标准输入都能读取。</p></article><article class="design-card"><h3>每行包含 INFO、WARN 或 ERROR，再加一个 0 到 60000 的十进制整数。字段之间只允许空格和制表符。</h3><p>明确语法，避免把 12ms、-1、1.5 或多余字段悄悄转成有效测量值。</p><p><strong>检查方法：</strong>测试两个端点、超出上限一单位的值，以及未知级别、正负号、后缀和极长整数。</p></article><article class="design-card"><h3>每条物理行在 LF 之前最多 127 字节，末尾 CR 也计入。嵌入 NUL 或超长的整行只算一条坏记录。</h3><p>固定缓冲区还要给结束符留一字节。读完坏行的剩余部分，防止尾巴冒充下一行。</p><p><strong>检查方法：</strong>127 字节行成功，128 字节行失败，紧接其后的有效行仍然只计数一次。</p></article><article class="design-card"><h3>最多处理 1,048,576 个输入字节，另允许一个用于探测的字节。输入超限属于致命错误。</h3><p>这限制了字节处理工作量，也便于证明计数和耗时总和不会溢出。</p><p><strong>检查方法：</strong>恰好 1 MiB 的有效填充行成功，再多一个字节则退出码为 1，stdout 为空。</p></article><article class="design-card"><h3>部分行损坏时保留有效行统计，但返回 3 并统计全部坏行。发生致命输入错误时不输出报告。</h3><p>读报告的人能够判断缺失数据的程度，脚本也能识别不完全成功的运行。</p><p><strong>检查方法：</strong>混合样本报告 3 行有效、3 行错误；不存在的文件返回 1 且不生成报告。</p></article><article class="design-card"><h3>报告计数、有效耗时总和、最小值、最大值和均值。没有有效行时，最后三个指标输出 n/a。</h3><p>没有观测值不等于观测到零耗时，而且不能除以零。</p><p><strong>检查方法：</strong>手算示例总和 200、均值 33.333；检查空样本中的全部 n/a。</p></article></section><section class="project-section" id="architecture" data-reading-id="architecture"><h2>追踪数据和它的所有者</h2><ol class="architecture-flow"><li><h3>main.c：命令与资源归属</h3><p>校验 argc，打开文件或借用 stdin，连接读取器 → 解析器 → 统计，关闭自己打开的文件并选择退出码。整体处理策略集中在这里。</p></li><li><h3>reader.c：字节变成完整行</h3><p>将字节流读入调用者的固定缓冲区。区分完整行、行结构错误、正常 EOF、I/O 失败和输入超限。在总字节预算内读完坏行。</p></li><li><h3>record.c：文本变成记录值</h3><p>读取完整 C 字符串，不修改它。校验级别、分隔符、数字、数值边界和文本末尾。所有检查通过后才提交局部候选记录。</p></li><li><h3>stats.c：记录值变成报告</h3><p>无需保存全部记录，逐步维护行数、计数、总和和极值的约束。最后格式化一次报告并刷新输出，以发现缓冲写入错误。</p></li></ol><p>argv → FILE 流 → 有边界的物理行 → 合法记录 → 累积统计 → stdout。坏行转到错误计数与数量受限的 stderr 警告。致命输入错误在输出报告前停止。应用程序不需要线程，也不需要在堆上保存记录。</p><div class="trace-wrap" tabindex="0"><table class="trace-table"><caption>谁负责每一种资源？</caption><thead><tr><th scope="col">资源</th><th scope="col">所有者</th><th scope="col">释放时机</th></tr></thead><tbody><tr><td>fopen 返回的 FILE *</td><td>main 打开文件，把指针借给 analyze 和 read_line。</td><td>分析结束后 main 调用一次 fclose，即使分析因输入错误而失败也会关闭。</td></tr><tr><td>stdin 和 stdout</td><td>C 运行时提供这些流，本项目只是借用。</td><td>不关闭借来的 stdin。stats_print 刷新 stdout；正常进程结束时由运行时收尾。</td></tr><tr><td>128 字节行缓冲区及解析记录</td><td>analyze 拥有局部栈存储。read_line 写缓冲区，parse_record 将数值写入记录。</td><td>当前行处理完成后才重用缓冲区。没有函数保留其指针；离开作用域时局部存储结束。</td></tr><tr><td>统计结构体</td><td>main 拥有零初始化的结构体，借给其他函数更新和打印。</td><td>无需 free：它具有自动存储期，内部只保存数值，不包含动态分配的指针。</td></tr></tbody></table></div></section><section class="project-section" id="milestone-one-row" data-reading-id="milestone-one-row"><h2>01 / 1. 跟踪一行文本变成报告</h2><div class="milestone-goal"><p>先走通最小的完整路径：一条有效记录从 stdin 进入，并生成正确报告。先理解数据形状，再研究错误分支。</p></div><p>从一个能手算的问题开始：INFO 12 应输出什么？它表示一个事件，因此 valid 和 INFO 都为 1；总和、最小值、最大值和均值都对应 12 毫秒。这把输入规则和可观察结果连接起来。先把完整下载文件作为可运行的基线，再一次理解一条路径。结构体把相关值组合起来，传递一条记录时不容易混淆级别与耗时。</p><ol class="execution-steps"><li><p>在项目目录运行 make，再运行 printf &#x27;INFO 12\n&#x27; | ./log_analyzer -。把终端输出与手算预测放在一起比较。短横线是一个参数；管道把 printf 的输出接到程序的 stdin。</p></li><li><p>阅读 record.h 摘录。enum 为三个类别提供易读名字；LEVEL_COUNT 后续用于确定三个计数器组成的数组大小。unsigned 保存非负耗时，但解析器仍要额外限制到 60000。</p></li><li><p>只跟踪 main.c 中成功的调用：read_line 填入文本，parse_record 填入局部记录，stats_accept 更新统计，stats_print 输出报告。圈出文本变成有类型数值的位置。不要把摘录复制成独立程序；请一起编译全部源文件。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-one-row" class="language-c"><span class="k">enum</span><span class="w"> </span><span class="n">log_level</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">LEVEL_INFO</span><span class="p">,</span><span class="w"> </span><span class="n">LEVEL_WARN</span><span class="p">,</span><span class="w"> </span><span class="n">LEVEL_ERROR</span><span class="p">,</span><span class="w"> </span><span class="n">LEVEL_COUNT</span><span class="w"> </span><span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">enum</span><span class="w"> </span><span class="n">log_level</span><span class="w"> </span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre><p>摘自 record.h。记录保存的是值，不是指向输入行的指针。下一次读行可以覆盖原文本，而不会改变已交给统计代码的记录。这已经是一次资源归属设计，尽管没有出现 malloc。</p><details class="check"><summary>如果输入换成 ERROR 12，进程应该报错退出吗？</summary><p>不应该。ERROR 是格式中的合法级别。它让 ERROR 计数变为 1；因为输入本身合法，进程仍返回 0。</p></details></section><section class="project-section" id="milestone-validated-record" data-reading-id="milestone-validated-record"><h2>02 / 2. 让校验要么全部成功，要么不提交</h2><div class="milestone-goal"><p>为单行路径增加严格的解析契约：只有整行完全合法，才能形成记录。</p></div><p>如果转换函数从 12ms 中只读取前缀 12，就会掩盖输入错误。我们的解析器先读取完整级别，要求分隔符，再读至少一个数字，最后确保只剩允许的尾部空白。它先构造局部 candidate，最后一次性赋值给 *out。因此失败时调用者不会收到半条新记录。对每个数字 d，新值应为 10v+d。把 10v+d &lt;= 60000 改写为 v &lt;= (60000-d)/10，就能在乘法之前检查。</p><ol class="execution-steps"><li><p>先读 record.h 中 parse_record 上方的承诺，再读实现。把输入标为借用且 const，把 out 标为调用者拥有的可写存储。函数调用后不保留这两个指针。</p></li><li><p>逐位跟踪 INFO 60000 的 candidate。最后一个零之前 v 为 6000，检查允许继续。对于 INFO 60001，最后一位让阈值成为 5999，因此在写入超范围值之前就停止。</p></li><li><p>运行 make test 并找到数字语法测试。先预测 +1、-1、1.5、12ms、1 2 和 60001 会被拒绝，再读断言。让有效行后面跟一条坏行，确认只有有效耗时进入总和。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-validated-record" class="language-c"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="sc">'0'</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="sc">'9'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">digit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="p">)(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="sc">'0'</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">candidate</span><span class="p">.</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">MAX_DURATION_MS</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">digit</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">10U</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">candidate</span><span class="p">.</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidate</span><span class="p">.</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10U</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">digit</span><span class="p">;</span>
+<span class="w">        </span><span class="o">++</span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">skip_space</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidate</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+</code></pre><p>摘自 record.c，位于级别与首位数字校验之后。边界检查先于乘加运算。最后的 NUL 检查拒绝后缀和额外字段。*out = candidate 是提交点：此前所有失败分支都不修改调用者输出。</p><details class="check"><summary>为什么识别 INFO 后不立即写入 out-&gt;level？</summary><p>因为后续耗时错误会让输出只改变一部分。局部 candidate 让接口更清晰：成功就替换整条记录，失败就什么也不替换。</p></details></section><section class="project-section" id="milestone-bounded-stream" data-reading-id="milestone-bounded-stream"><h2>03 / 3. 连续读取时保住行边界</h2><div class="milestone-goal"><p>将单行输入扩展成连续记录，不把整份文件保存在内存中，也不把损坏行的尾部误认为另一行。</p></div><p>读取器处理字节和换行，解析器处理完整行的含义。分开这两项任务，更容易定位错误。127 字节的内容需要 128 字节数组，因为 C 字符串还需要 NUL 结束符。一旦发现坏行，如果马上停下，尾部仍留在流中。应继续读到 LF 或 EOF，同时继续检查总字节预算。单看 EOF 不能证明成功，还要用 ferror 区分读取失败。</p><ol class="execution-steps"><li><p>先读 reader.h 中五种 line_status，再读循环。main 只能解析 LINE_OK。LINE_BAD 使拒绝次数加一；LINE_END 正常结束；LINE_IO_ERROR 与 LINE_LIMIT 终止且不生成报告。</p></li><li><p>对 127 字节以及第 128 个字节，跟踪摘录中的 used 和 bad。used 永远不超过 127。bad 变为真后停止写入，但继续读取。嵌入 NUL 走同一拒绝路径，避免伪装结束符之后藏着文本。</p></li><li><p>用行长度与二进制字节测试检查恢复行为。再查看 EOF 分支怎样处理缺少 LF 的最后一行，以及去掉 CR 如何支持 CRLF。1 MiB 测试检查另一个边界：总输入大小，而非单行容量。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-bounded-stream" class="language-c"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">MAX_LINE_BYTES</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">bad</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">line</span><span class="p">[</span><span class="n">used</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="n">ch</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="cm">/* Keep consuming a bad line so its tail is not a new record. */</span>
+</code></pre><p>摘自 reader.c 的字节循环。同一循环中用 int 保存 fgetc 返回值，以区分 EOF 与普通字节。缓冲区属于 analyze，read_line 只是借用。LINE_BAD 后不要使用缓冲区内容，因为该路径不承诺提供完整 C 字符串。</p><details class="check"><summary>为什么一条长行即使够填满多次缓冲区，也只能算一次拒绝？</summary><p>输入契约按物理行计数，不按缓冲区大小的分块计数。读到行尾才能保住边界，让下次调用从真正的下一行开始。</p></details></section><section class="project-section" id="milestone-running-summary" data-reading-id="milestone-running-summary"><h2>04 / 4. 用明确约束维护累积统计</h2><div class="milestone-goal"><p>用固定大小的状态，把多条合法记录变成有用的计数与耗时统计。</p></div><p>计算数量、总和、最小值和最大值，不必记住每个耗时。每条完整行处理后，lines = valid + malformed；每条有效行处理后，INFO + WARN + ERROR = valid。只有有效记录影响耗时指标。用第一条有效耗时初始化两个极值，否则零初始化的最小值在全正数数据中会一直为零。计数与总和的保守边界较大，因此用 uint64_t；单条 0–60000 耗时用 unsigned 即可。</p><ol class="execution-steps"><li><p>用 {0} 初始化 totals，再读 stats_accept 和 stats_reject。跟踪示例的前两行：INFO 10 与 WARN 40 之后，数量为 2，总和 50，最小值 10，最大值 40。确认坏行的耗时不会进入此函数。</p></li><li><p>先手算六行结果，再运行示例。总和为 200，200/6 为 33.333… 。在 stats_print 中，先转类型再相除，显示三位小数。均值显示会舍入，但整数累积仍然精确。</p></li><li><p>运行空样本。valid 为零时，没有观测到最小或最大值，也不能做除法。找到 n/a 分支，再运行耗时全为正数的混合样本；它能发现含零示例单独测试时可能漏掉的最小值初始化错误。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-running-summary" class="language-c"><span class="kt">void</span><span class="w"> </span><span class="nf">stats_accept</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="o">*</span><span class="n">record</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">min_ms</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">min_ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">max_ms</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">max_ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">lines</span><span class="p">;</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="p">;</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">by_level</span><span class="p">[</span><span class="n">record</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">];</span>
+<span class="w">    </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">total_ms</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><p>摘自 stats.c。先更新极值，再增加 valid，所以 valid == 0 表示当前是第一条有效记录。record-&gt;level 能安全作为索引，是因为调用者必须传入解析成功的记录。头文件写明此前置条件；这是内部接口，不是接受任意数据的 API。</p><details class="check"><summary>仅靠目前的状态，可以计算精确中位数吗？</summary><p>不能。数量、总和和极值丢失了中位数需要的顺序信息。增加这个功能需要其他表示，例如有限范围的直方图，并重新论证内存与正确性。</p></details></section><section class="project-section" id="milestone-cli-proof" data-reading-id="milestone-cli-proof"><h2>05 / 5. 完成接口并测试失败路径</h2><div class="milestone-goal"><p>交付真正的命令行工具，包含清楚的退出规则、资源清理、可复现样本，以及能发现错误结果的测试。</p></div><p>看起来合理的报告还不够。调用者还要知道是否检查了全部输入、是否排除了记录。main 负责决策：完整且无坏行返回 0，完整但有坏行返回 3，用法错误返回 2，输入、容量或输出函数报告的错误返回 1。即使 analyze 失败也关闭自己打开的文件。输入与关闭成功前不写 stdout；输出错误本身仍可能留下部分结果。测试将真实子进程行为与独立预期比较，并把临时输入放在各自的目录中。</p><ol class="execution-steps"><li><p>从参数校验一直读到 main 的 return。fopen 提供流时标记 owns_input；借用 stdin 时为假。跟踪摘录中成功与失败的清理路径：只有一个 fclose 位置，栈上的 totals 不需要 free。</p></li><li><p>运行混合样本，立即用 echo $? 检查：虽然 stdout 有用，退出码仍为 3。再运行不存在的文件名和缺少参数的情况：预期分别是 1 和 2，stdout 均为空。stderr 是单独诊断通道，脚本可将报告与警告分开。</p></li><li><p>运行 make test。说出每个测试能抓到的错误：均值类型错误、只解析前缀、坏行没有读完、退出码丢失，或总字节边界差一。测试使用五秒子进程超时和写死的手算预期。它们不模拟所有输出或关闭故障，也不等于普通命令行运行自带时限。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-cli-proof" class="language-c"><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="n">totals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">completed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">analyze</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">totals</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">owns_input</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">fclose</span><span class="p">(</span><span class="n">input</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"error: cannot close input</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="n">completed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">completed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_IO</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stats_print</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">totals</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"error: cannot write report</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_IO</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">totals</span><span class="p">.</span><span class="n">malformed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">EXIT_CLEAN</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">EXIT_DATA</span><span class="p">;</span>
+</code></pre><p>摘自 main.c 末尾。completed 表明输入处理是否真正完成。检查该结果之前，先对自己拥有的输入调用 fclose。stats_print 用 fflush 检查缓冲输出；它失败也返回 1。完整读取但存在坏行的情况在最后的 return 区分。</p><details class="check"><summary>既然 stdout 已与预期一致，为什么还要测试 returncode 和 stderr？</summary><p>报告可能对接受的行算得正确，却隐藏了数据损失。退出码 3 和行号警告负责告知调用者有行被拒绝。三个通道一起测试，才能覆盖工具对外的完整契约。</p></details></section><section class="project-section" id="run" data-reading-id="run"><h2>构建、运行并读懂结果</h2><p>使用 macOS 或 Linux 上支持 C11 的 Clang、make 和 Python 3。Windows 可使用 WSL 等 Linux 环境。这里的 Makefile 默认使用 Clang。在下载目录打开终端，解压并进入工程文件夹。make 构建可执行文件；make test 检查程序行为。</p><pre class="code highlighted" tabindex="0"><code class="language-bash">unzip<span class="w"> </span>comp2017-log-analyzer.zip
+<span class="nb">cd</span><span class="w"> </span>comp2017-log-analyzer
+make
+make<span class="w"> </span>test
+</code></pre><article class="code-example"><h3>完整的机器人轨迹</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./log_analyzer<span class="w"> </span>fixtures/demo.log
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">lines=6
+valid=6
+malformed=0
+INFO=3
+WARN=2
+ERROR=1
+total_ms=200
+min_ms=0
+max_ms=100
+mean_ms=33.333
+</pre></div><p class="code-hint">退出状态：0. </p><p>先 make，再在项目目录运行。退出码 0，stderr 为空。六条有效记录总和为 200 毫秒，因此 200/6 显示为 33.333。ERROR=1 是事件计数，不表示进程失败。</p></article><article class="code-example"><h3>有坏行，也有诚实的报告</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./log_analyzer<span class="w"> </span>fixtures/mixed.log
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">lines=6
+valid=3
+malformed=3
+INFO=1
+WARN=1
+ERROR=1
+total_ms=30
+min_ms=5
+max_ms=15
+mean_ms=10.000
+</pre></div><p class="code-hint">退出状态：3. </p><p>退出码 3。stdout 只统计三条有效记录。stderr 分三行输出 warning: line 2: malformed record、warning: line 4: malformed record 和 warning: line 5: malformed record。DEBUG、-1 和 60001 被拒绝。执行后立刻运行 echo $? 可查看退出码。</p></article><article class="code-example"><h3>尚无观测记录</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./log_analyzer<span class="w"> </span>fixtures/empty.log
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">lines=0
+valid=0
+malformed=0
+INFO=0
+WARN=0
+ERROR=0
+total_ms=0
+min_ms=n/a
+max_ms=n/a
+mean_ms=n/a
+</pre></div><p class="code-hint">退出状态：0. </p><p>退出码 0，stderr 为空。零字节样本不含任何物理行。有效数量为零时，n/a 明确表示没有观测到最小值、最大值或平均值。</p></article></section><section class="project-section" id="debug" data-reading-id="debug"><h2>依据现象定位错误</h2><article class="design-card"><h3>输入耗时全部为正，最小值却是 0。</h3><h4>提出假设</h4><p>把初始化的零误当成了实际观测。</p><h4>检查相关状态</h4><p>用耗时 5 和 15 的两行复现，检查第一次 stats_accept 更新前的 s-&gt;valid。</p><h4>修复并验证</h4><p>valid 为零时，先用第一条真实记录设置两个极值，再增加 valid。保留全正数的混合样本测试。</p></article><article class="design-card"><h3>耗时 1、2、2 得到均值 1.000。</h3><h4>提出假设</h4><p>转换成 double 之前，整数除法已经丢掉了小数。</p><h4>检查相关状态</h4><p>先写出 5/3 = 1.666…，再检查 stats_print 中除法操作数的类型，而不只是接收结果的变量类型。</p><h4>修复并验证</h4><p>在除法之前转换：(double)total_ms / (double)valid。小数均值测试要求输出 1.667。</p></article><article class="design-card"><h3>一条长行导致多次拒绝，或弄丢了下一条有效行。</h3><h4>提出假设</h4><p>缓冲区满时读取器立即返回，没有消费完同一物理行。</p><h4>检查相关状态</h4><p>把一条 128 字节行放在 WARN 7 前面。最终报告必须只有两条物理行，其中恰好一条坏行。</p><h4>修复并验证</h4><p>标记坏行后继续读取到 LF 或 EOF，同时仍检查整个输入预算。不要解析 LINE_BAD 的缓冲区。</p></article><article class="design-card"><h3>INFO 12ms 或 INFO 1 2 被接受。</h3><h4>提出假设</h4><p>解析器只验证了数字前缀，没有验证剩余文本。</p><h4>检查相关状态</h4><p>数字循环结束后，查看跳过尾部空白后的字符。它必须是字符串结束符 NUL。</p><h4>修复并验证</h4><p>拒绝任何剩余的非空白文本，最后才赋值给 *out。分别测试后缀与额外字段。</p></article><article class="design-card"><h3>读取失败看起来像成功生成了一份较短的报告。</h3><h4>提出假设</h4><p>只看到 EOF 就断定文件正常结束，没有检查 ferror。</p><h4>检查相关状态</h4><p>在 macOS/Linux 上运行目录输入测试：可能打开就失败，也可能打开后读取失败。两种情况的 stdout 都必须为空。</p><h4>修复并验证</h4><p>fgetc 返回 EOF 时检查 ferror。通过 analyze 传递 LINE_IO_ERROR，使 main 返回 1 且不调用 stats_print。</p></article></section><section class="project-section" id="test" data-reading-id="test"><h2>验证正常行为，也验证失败</h2><div class="test-cases"><article class="design-card"><h3>六条可手算的有效记录</h3><p>退出码 0；INFO 3 次、WARN 2 次、ERROR 1 次；总和 200，范围 0–100，均值 33.333。</p><p>使用独立于程序计算的结果，发现级别索引、遗漏更新或聚合计算错误。</p></article><article class="design-card"><h3>有效与错误记录混合</h3><p>退出码 3；有效 3 行、错误 3 行；总和 30；警告指出第 2、4、5 行。</p><p>验证拒绝数据只增加错误计数，并且后面的有效记录仍能处理。</p></article><article class="design-card"><h3>空输入与二十个空白行</h3><p>空输入：退出码 0，全部计数为零，耗时为 n/a。空白行：退出码 3，拒绝二十行，五条详细警告加一条省略提示。</p><p>区分没有数据和错误数据，并防止诊断信息无限增长。</p></article><article class="design-card"><h3>整数与级别校验</h3><p>接受 0、60000 和前导零；拒绝 60001、正负号、小数、后缀、超大整数、多余字段和不匹配的级别。</p><p>覆盖契约的两个端点，防止宽松的部分转换。</p></article><article class="design-card"><h3>行边界与二进制字节</h3><p>接受 CRLF、制表符和缺少末尾 LF 的最后一行。拒绝 NUL 与 0xff 所在行，同时保留后面的 ERROR 9。</p><p>检查字符串结束、普通字节与 EOF 的区分，以及损坏后的继续处理。</p></article><article class="design-card"><h3>127 字节行、128 字节行，再接有效行</h3><p>恰好 3 行，接受 2 行、拒绝 1 行；耗时总和 8。</p><p>发现缓冲区边界差一错误，并验证读到换行的行为。</p></article><article class="design-card"><h3>一 MiB 与多一字节</h3><p>8192 条填充后的有效行恰好占 1,048,576 字节，能够成功。再加一字节返回 1 且不输出报告。</p><p>同时验证允许的一侧与拒绝的一侧，检查总输入工作量边界。</p></article><article class="design-card"><h3>命令行与真实文件系统错误</h3><p>错误参数数量返回 2；文件不存在或输入是目录时返回 1；所有情况的 stdout 均为空。</p><p>运行真实子进程并操作真实文件系统，不用模拟成功输出来替代测试。</p></article><article class="design-card"><h3>由 1、2、2 计算小数均值</h3><p>退出码 0，mean_ms=1.667。</p><p>发现整数平均值样本容易漏掉的整数除法截断。</p></article></div></section><section class="project-section" id="decisions" data-reading-id="decisions"><h2>Guoliang 的工程取舍</h2><article class="design-card"><h3>固定行缓冲区与总字节预算</h3><p>getline 的可增长缓冲区很方便，但第一个项目用 128 字节固定数组，更容易看清内存与结束符。我们拒绝较长行并读完其余部分。处理 B 个字节用 O(B) 时间，应用状态用 O(1) 空间，超过 1 MiB 后最多再检查一个字节。标准 I/O 另有自己的内部缓冲区。字节预算不是时间期限：stdin 可能等待生产者，建议先读已完成的普通文件。</p></article><article class="design-card"><h3>用边界证明整数安全</h3><p>耗时用 unsigned，最大 60000。解析器先检查再做乘法。计数和总和用 uint64_t；即使用保守边界 1,048,576 × 60,000 = 62,914,560,000 也能容纳。静态断言在常量变化时保护这个边界。完成整数累积后，均值才使用浮点除法；显示三位小数不会改变精确的整数总和。</p></article><article class="design-card"><h3>保留有用数据，也要诚实标记状态</h3><p>错误行不应毁掉其他有效观测。退出码 3 表明完整报告排除了部分行。致命输入错误则禁止输出报告，因为输入尚未完整检查。详细警告最多五条，再加一条省略提示。这既方便终端使用，也便于脚本判断。合法的 ERROR 事件本身不会让程序失败。</p></article><article class="design-card"><h3>按变化原因拆成小模块</h3><p>改变空白规则应修改 record.c；改变行容量应修改 reader.c；增加统计指标应修改 stats.c；改变命令行策略应修改 main.c。头文件注明借用指针与前置条件。解析器承诺不保留文本指针，因此记录不依赖会被重用的缓冲区。实现保持四个源文件，不为每个小辅助函数另建文件。</p></article><article class="design-card"><h3>知道成品的边界</h3><p>格式是人工设计的：没有时间戳、任意消息、实时追踪或百分位数。会检查读、写和关闭函数返回的错误，但写错误可能留下部分 stdout，断开的管道还可能触发 POSIX 默认 SIGPIPE 信号。不重试 stderr 写入失败。测试验证确定性的接口行为，不涵盖每种设备或文件系统故障，也不把耗时或调度顺序当作正确答案。</p></article></section><section class="project-section" id="source"><h2>按顺序阅读完整文件</h2><p>下面是下载包中的完整文件。编号表示建议阅读顺序。点击文件清单可直接跳转到代码。</p><ul class="file-index"><li><a href="#file-record-h">01 / record.h</a></li><li><a href="#file-record-c">02 / record.c</a></li><li><a href="#file-reader-h">03 / reader.h</a></li><li><a href="#file-reader-c">04 / reader.c</a></li><li><a href="#file-stats-h">05 / stats.h</a></li><li><a href="#file-stats-c">06 / stats.c</a></li><li><a href="#file-main-c">07 / main.c</a></li><li><a href="#file-Makefile">08 / Makefile</a></li><li><a href="#file-fixtures-demo-log">09 / fixtures/demo.log</a></li><li><a href="#file-fixtures-mixed-log">10 / fixtures/mixed.log</a></li><li><a href="#file-fixtures-empty-log">11 / fixtures/empty.log</a></li><li><a href="#file-test-py">12 / test.py</a></li><li><a href="#file-README-md">13 / README.md</a></li><li><a href="#file-README-zh-md">14 / README.zh.md</a></li></ul><article class="code-example project-file" id="file-record-h" data-reading-id="file-record-h"><h3>01 / record.h</h3><p>记录接口</p><div class="code-actions"><button type="button" data-copy-code="code-file-record-h">复制文件</button><a href="../project-code/comp2017-log-analyzer/record.h" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-record-h" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#ifndef RECORD_H</span>
+<span class="cp">#define RECORD_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+
+<span class="cp">#define MAX_DURATION_MS 60000U</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="n">log_level</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">LEVEL_INFO</span><span class="p">,</span><span class="w"> </span><span class="n">LEVEL_WARN</span><span class="p">,</span><span class="w"> </span><span class="n">LEVEL_ERROR</span><span class="p">,</span><span class="w"> </span><span class="n">LEVEL_COUNT</span><span class="w"> </span><span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">enum</span><span class="w"> </span><span class="n">log_level</span><span class="w"> </span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cm">/* line: readable NUL-terminated text; out: writable caller-owned record.</span>
+<span class="cm"> * Return true and assign *out only for a complete valid record.</span>
+<span class="cm"> * Neither pointer is retained; a failed parse leaves *out unchanged. */</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">parse_record</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+</code></pre><ol class="execution-steps"><li><p>把 enum 和 struct 一起读：级别是类别，耗时是有范围的非负值。</p></li><li><p>解析器接收借用的文本和调用者拥有的输出地址，用 bool 表示成功。</p></li><li><p>失败承诺很明确：*out 不变。用这个承诺检查实现。</p></li></ol></article><article class="code-example project-file" id="file-record-c" data-reading-id="file-record-c"><h3>02 / record.c</h3><p>严格的整行解析</p><div class="code-actions"><button type="button" data-copy-code="code-file-record-c">复制文件</button><a href="../project-code/comp2017-log-analyzer/record.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-record-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"record.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">is_space</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="n">ch</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">' '</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\t'</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">skip_space</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">is_space</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">++</span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">parse_record</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="n">candidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">LEVEL_INFO</span><span class="p">,</span><span class="w"> </span><span class="mi">0U</span><span class="p">};</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">skip_space</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">start</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\0'</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">is_space</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">++</span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)(</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">memcmp</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="s">"INFO"</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">candidate</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LEVEL_INFO</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">memcmp</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="s">"WARN"</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">candidate</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LEVEL_WARN</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">memcmp</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="s">"ERROR"</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">candidate</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LEVEL_ERROR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_space</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">skip_space</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="sc">'0'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="sc">'9'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="sc">'0'</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="sc">'9'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">digit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="p">)(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="sc">'0'</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">candidate</span><span class="p">.</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">MAX_DURATION_MS</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">digit</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">10U</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">candidate</span><span class="p">.</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidate</span><span class="p">.</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10U</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">digit</span><span class="p">;</span>
+<span class="w">        </span><span class="o">++</span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">skip_space</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidate</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>两个 static 空白辅助函数只接受空格与制表符，让语法不依赖地区设置。</p></li><li><p>数字解析前，先用词长和 memcmp 检查完整级别单词。</p></li><li><p>数字循环在运算前检查范围；最终字符串末尾检查和赋值共同实现整体提交。</p></li></ol></article><article class="code-example project-file" id="file-reader-h" data-reading-id="file-reader-h"><h3>03 / reader.h</h3><p>行与字节预算接口</p><div class="code-actions"><button type="button" data-copy-code="code-file-reader-h">复制文件</button><a href="../project-code/comp2017-log-analyzer/reader.h" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-reader-h" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#ifndef READER_H</span>
+<span class="cp">#define READER_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+
+<span class="cp">#define MAX_LINE_BYTES 127U</span>
+<span class="cp">#define MAX_INPUT_BYTES 1048576U</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="n">line_status</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">LINE_OK</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_BAD</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_END</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_IO_ERROR</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_LIMIT</span><span class="w"> </span><span class="p">};</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">line_reader</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">stream</span><span class="p">;</span><span class="w">       </span><span class="cm">/* Borrowed: only the caller closes this stream. */</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes_read</span><span class="p">;</span><span class="w">  </span><span class="cm">/* Start at zero; includes newline and CR bytes. */</span>
+<span class="p">};</span>
+
+<span class="cm">/* Caller supplies MAX_LINE_BYTES + 1 writable bytes.</span>
+<span class="cm"> * LINE_OK: complete NUL-terminated line, without LF or a final CR.</span>
+<span class="cm"> * LINE_BAD: oversized or NUL-containing line was consumed through LF/EOF.</span>
+<span class="cm"> * LINE_END: clean EOF with no pending line. Other results are fatal.</span>
+<span class="cm"> * LINE_LIMIT may consume one byte beyond the budget to distinguish EOF.</span>
+<span class="cm"> * Do not parse the buffer unless the result is LINE_OK. */</span>
+<span class="k">enum</span><span class="w"> </span><span class="n">line_status</span><span class="w"> </span><span class="nf">read_line</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">line_reader</span><span class="w"> </span><span class="o">*</span><span class="n">reader</span><span class="p">,</span>
+<span class="w">                           </span><span class="kt">char</span><span class="w"> </span><span class="n">line</span><span class="p">[</span><span class="n">MAX_LINE_BYTES</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1U</span><span class="p">]);</span>
+
+<span class="cp">#endif</span>
+</code></pre><ol class="execution-steps"><li><p>MAX_LINE_BYTES 不包含 LF，但包含 CR；分配 C 字符串缓冲区时还要加一字节。</p></li><li><p>line_reader 保存借用的流和累计字节数，每个输入开始时初始化一次计数。</p></li><li><p>每个枚举结果对应不同的调用者动作，只有 LINE_OK 承诺缓冲区可供解析。</p></li></ol></article><article class="code-example project-file" id="file-reader-c" data-reading-id="file-reader-c"><h3>04 / reader.c</h3><p>物理行边界处理</p><div class="code-actions"><button type="button" data-copy-code="code-file-reader-c">复制文件</button><a href="../project-code/comp2017-log-analyzer/reader.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-reader-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"reader.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="n">line_status</span><span class="w"> </span><span class="nf">read_line</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">line_reader</span><span class="w"> </span><span class="o">*</span><span class="n">reader</span><span class="p">,</span>
+<span class="w">                           </span><span class="kt">char</span><span class="w"> </span><span class="n">line</span><span class="p">[</span><span class="n">MAX_LINE_BYTES</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1U</span><span class="p">])</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">seen_byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">bad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">ch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fgetc</span><span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EOF</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ferror</span><span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">stream</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">LINE_IO_ERROR</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">seen_byte</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">LINE_END</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">bytes_read</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">MAX_INPUT_BYTES</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">LINE_LIMIT</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="o">++</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">bytes_read</span><span class="p">;</span>
+<span class="w">        </span><span class="n">seen_byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ch</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">MAX_LINE_BYTES</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">bad</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">line</span><span class="p">[</span><span class="n">used</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="p">)</span><span class="n">ch</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="cm">/* Keep consuming a bad line so its tail is not a new record. */</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bad</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">LINE_BAD</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">used</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">line</span><span class="p">[</span><span class="n">used</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\r'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">--</span><span class="n">used</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">line</span><span class="p">[</span><span class="n">used</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">LINE_OK</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>fgetc 返回 int。遇到 EOF 时先检查 ferror，再判断是否还有未结束的最后一行。</p></li><li><p>每个消费的字节都计入输入预算，包括换行和被丢弃的字节。</p></li><li><p>bad 会停止写缓冲区，但不会停止读流。成功的行在返回前处理末尾 CR，并加 NUL 结束符。</p></li></ol></article><article class="code-example project-file" id="file-stats-h" data-reading-id="file-stats-h"><h3>05 / stats.h</h3><p>状态与统计接口</p><div class="code-actions"><button type="button" data-copy-code="code-file-stats-h">复制文件</button><a href="../project-code/comp2017-log-analyzer/stats.h" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-stats-h" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#ifndef STATS_H</span>
+<span class="cp">#define STATS_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"record.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdint.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">lines</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">valid</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">malformed</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">by_level</span><span class="p">[</span><span class="n">LEVEL_COUNT</span><span class="p">];</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">total_ms</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">min_ms</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">max_ms</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cm">/* Start with struct stats s = {0}. Add at most MAX_INPUT_BYTES records.</span>
+<span class="cm"> * record must come from a successful parse_record call.</span>
+<span class="cm"> * All pointers are borrowed for the duration of each call. */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">stats_accept</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="o">*</span><span class="n">record</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">stats_reject</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">);</span>
+
+<span class="cm">/* Write the final summary; false means a write/flush error.</span>
+<span class="cm"> * A failed output may already contain a prefix. Do not close output here. */</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">stats_print</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+</code></pre><ol class="execution-steps"><li><p>分开 valid 和 malformed，避免把总行数当作有效观测数。</p></li><li><p>重复累积的计数和总和用 uint64_t，极值使用与单次耗时相同的类型。</p></li><li><p>阅读前置条件：状态零初始化，记录已校验，更新次数不超过输入预算。</p></li></ol></article><article class="code-example project-file" id="file-stats-c" data-reading-id="file-stats-c"><h3>06 / stats.c</h3><p>统计更新与报告格式</p><div class="code-actions"><button type="button" data-copy-code="code-file-stats-c">复制文件</button><a href="../project-code/comp2017-log-analyzer/stats.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-stats-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"stats.h"</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"reader.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;inttypes.h&gt;</span>
+
+<span class="k">_Static_assert</span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">MAX_INPUT_BYTES</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">UINT64_MAX</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">MAX_DURATION_MS</span><span class="p">,</span>
+<span class="w">               </span><span class="s">"The byte budget must keep duration totals representable"</span><span class="p">);</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">stats_accept</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="o">*</span><span class="n">record</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">min_ms</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">min_ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">max_ms</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">max_ms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">lines</span><span class="p">;</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="p">;</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">by_level</span><span class="p">[</span><span class="n">record</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">];</span>
+<span class="w">    </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">total_ms</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">record</span><span class="o">-&gt;</span><span class="n">duration_ms</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">stats_reject</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">lines</span><span class="p">;</span>
+<span class="w">    </span><span class="o">++</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">malformed</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">stats_print</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fprintf</span><span class="p">(</span><span class="n">output</span><span class="p">,</span>
+<span class="w">                </span><span class="s">"lines=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">valid=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">malformed=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span>
+<span class="w">                </span><span class="s">"INFO=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">WARN=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">ERROR=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span>
+<span class="w">                </span><span class="s">"total_ms=%"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">                </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">malformed</span><span class="p">,</span>
+<span class="w">                </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">by_level</span><span class="p">[</span><span class="n">LEVEL_INFO</span><span class="p">],</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">by_level</span><span class="p">[</span><span class="n">LEVEL_WARN</span><span class="p">],</span>
+<span class="w">                </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">by_level</span><span class="p">[</span><span class="n">LEVEL_ERROR</span><span class="p">],</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">total_ms</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fputs</span><span class="p">(</span><span class="s">"min_ms=n/a</span><span class="se">\n</span><span class="s">max_ms=n/a</span><span class="se">\n</span><span class="s">mean_ms=n/a</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EOF</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">total_ms</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">valid</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fprintf</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="s">"min_ms=%u</span><span class="se">\n</span><span class="s">max_ms=%u</span><span class="se">\n</span><span class="s">mean_ms=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">min_ms</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">max_ms</span><span class="p">,</span><span class="w"> </span><span class="n">mean</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">fflush</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>静态断言在编译时把输入上限与可表示的耗时总和联系起来。</p></li><li><p>stats_accept 先处理第一条记录的极值，再一起更新相关计数与总和。</p></li><li><p>stats_print 用 PRIu64 可移植地格式化 uint64_t，避免空数据除法，并在报告成功前刷新输出。</p></li></ol></article><article class="code-example project-file" id="file-main-c" data-reading-id="file-main-c"><h3>07 / main.c</h3><p>命令行、流程与清理</p><div class="code-actions"><button type="button" data-copy-code="code-file-main-c">复制文件</button><a href="../project-code/comp2017-log-analyzer/main.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-main-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"reader.h"</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"record.h"</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"stats.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;inttypes.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+
+<span class="k">enum</span><span class="w"> </span><span class="n">exit_status</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">EXIT_CLEAN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">EXIT_IO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">EXIT_USAGE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">EXIT_DATA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">};</span>
+<span class="cp">#define WARNING_LIMIT 5U</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">warn_bad_line</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">malformed</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">WARNING_LIMIT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"warning: line %"</span><span class="w"> </span><span class="n">PRIu64</span><span class="w"> </span><span class="s">": malformed record</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">lines</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">malformed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">WARNING_LIMIT</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1U</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"warning: further malformed lines omitted</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cm">/* Borrow input and caller-owned statistics. Report only complete input. */</span>
+<span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">analyze</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="o">*</span><span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">line_reader</span><span class="w"> </span><span class="n">reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">line</span><span class="p">[</span><span class="n">MAX_LINE_BYTES</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1U</span><span class="p">];</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">enum</span><span class="w"> </span><span class="n">line_status</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read_line</span><span class="p">(</span><span class="o">&amp;</span><span class="n">reader</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LINE_END</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LINE_IO_ERROR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fputs</span><span class="p">(</span><span class="s">"error: cannot read input</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LINE_LIMIT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"error: input exceeds %u bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">MAX_INPUT_BYTES</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">record</span><span class="w"> </span><span class="n">record</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LINE_BAD</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">parse_record</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">record</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">stats_reject</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+<span class="w">            </span><span class="n">warn_bad_line</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">stats_accept</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">record</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"usage: log_analyzer FILE|-</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_USAGE</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">owns_input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"-"</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">owns_input</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">fopen</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"rb"</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">stdin</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"error: cannot open input: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_IO</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">stats</span><span class="w"> </span><span class="n">totals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">completed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">analyze</span><span class="p">(</span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">totals</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">owns_input</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">fclose</span><span class="p">(</span><span class="n">input</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"error: cannot close input</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="n">completed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">completed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_IO</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stats_print</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">totals</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"error: cannot write report</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_IO</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">totals</span><span class="p">.</span><span class="n">malformed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">EXIT_CLEAN</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">EXIT_DATA</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>main 检查参数数量，区分自己打开的文件输入和借用的 stdin。</p></li><li><p>analyze 将读行结果映射成解析、拒绝、正常结束或致命失败。|| 的短路求值避免解析 LINE_BAD 缓冲区。</p></li><li><p>警告输出数量限制与计数分开处理。先清理输入再打印，最后通过返回值传达数据质量。</p></li></ol></article><article class="code-example project-file" id="file-Makefile" data-reading-id="file-Makefile"><h3>08 / Makefile</h3><p>可复现的多文件构建</p><div class="code-actions"><button type="button" data-copy-code="code-file-Makefile">复制文件</button><a href="../project-code/comp2017-log-analyzer/Makefile" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-Makefile" class="language-make"><span class="c"># Guoliang | Original teaching project.</span>
+<span class="nv">CC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>clang
+<span class="nv">CFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-std<span class="o">=</span>c11<span class="w"> </span>-Wall<span class="w"> </span>-Wextra<span class="w"> </span>-Werror<span class="w"> </span>-pedantic<span class="w"> </span>-pthread
+<span class="nv">OBJECTS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>main.o<span class="w"> </span>reader.o<span class="w"> </span>record.o<span class="w"> </span>stats.o
+
+<span class="nf">.PHONY</span><span class="o">:</span><span class="w"> </span><span class="n">all</span> <span class="n">test</span> <span class="n">clean</span>
+<span class="nf">all</span><span class="o">:</span><span class="w"> </span><span class="n">log_analyzer</span>
+
+<span class="nf">log_analyzer</span><span class="o">:</span><span class="w"> </span><span class="k">$(</span><span class="nv">OBJECTS</span><span class="k">)</span>
+<span class="w">	</span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CFLAGS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LDFLAGS<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span><span class="w"> </span><span class="k">$(</span>OBJECTS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LDLIBS<span class="k">)</span>
+
+<span class="nf">main.o</span><span class="o">:</span><span class="w"> </span><span class="n">main</span>.<span class="n">c</span> <span class="n">reader</span>.<span class="n">h</span> <span class="n">record</span>.<span class="n">h</span> <span class="n">stats</span>.<span class="n">h</span>
+<span class="nf">reader.o</span><span class="o">:</span><span class="w"> </span><span class="n">reader</span>.<span class="n">c</span> <span class="n">reader</span>.<span class="n">h</span>
+<span class="nf">record.o</span><span class="o">:</span><span class="w"> </span><span class="n">record</span>.<span class="n">c</span> <span class="n">record</span>.<span class="n">h</span>
+<span class="nf">stats.o</span><span class="o">:</span><span class="w"> </span><span class="n">stats</span>.<span class="n">c</span> <span class="n">stats</span>.<span class="n">h</span> <span class="n">record</span>.<span class="n">h</span> <span class="n">reader</span>.<span class="n">h</span>
+
+<span class="nf">%.o</span><span class="o">:</span><span class="w"> </span>%.<span class="n">c</span>
+<span class="w">	</span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CPPFLAGS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CFLAGS<span class="k">)</span><span class="w"> </span>-c<span class="w"> </span>$&lt;<span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span>
+
+<span class="nf">test</span><span class="o">:</span><span class="w"> </span><span class="n">log_analyzer</span>
+<span class="w">	</span>python3<span class="w"> </span>test.py
+
+<span class="nf">clean</span><span class="o">:</span>
+<span class="w">	</span><span class="err">rm</span><span class="w"> </span><span class="err">-f</span><span class="w"> </span><span class="err">log_analyzer</span><span class="w"> </span><span class="k">$(</span><span class="nv">OBJECTS</span><span class="k">)</span>
+</code></pre><ol class="execution-steps"><li><p>all 指向可执行文件，四个目标文件对应四个 C 实现文件。</p></li><li><p>头文件依赖让接口变化时重新构建相关文件。模式规则负责编译，可执行文件规则负责链接。</p></li><li><p>test 先构建，再运行 python3 test.py。clean 只移除本项目列出的程序和目标文件。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-demo-log" data-reading-id="file-fixtures-demo-log"><h3>09 / fixtures/demo.log</h3><p>有效的模拟机器人记录</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-demo-log">复制文件</button><a href="../project-code/comp2017-log-analyzer/fixtures/demo.log" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-demo-log" class="language-text">INFO 10
+WARN 40
+INFO 20
+ERROR 100
+INFO 0
+WARN 30
+</code></pre><ol class="execution-steps"><li><p>六行全部符合语法，包含合法的零耗时和 ERROR 事件。</p></li><li><p>运行前先算 10 + 40 + 20 + 100 + 0 + 30 = 200。</p></li><li><p>用这个小样本比较终端输出和 test.py 中明确写出的预期报告。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-mixed-log" data-reading-id="file-fixtures-mixed-log"><h3>10 / fixtures/mixed.log</h3><p>三条坏行夹杂的有效数据</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-mixed-log">复制文件</button><a href="../project-code/comp2017-log-analyzer/fixtures/mixed.log" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-mixed-log" class="language-text">INFO 5
+DEBUG 8
+WARN 10
+ERROR -1
+INFO 60001
+ERROR 15
+</code></pre><ol class="execution-steps"><li><p>第 2、4、5 行分别违反级别、正负号和耗时上限规则。</p></li><li><p>剩余的 5、10、15 总和为 30；全部为正数，因此能检查第一条记录的最小值初始化。</p></li><li><p>预期有完整报告和警告，但退出码为 3，体现有报告不等于完全成功。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-empty-log" data-reading-id="file-fixtures-empty-log"><h3>11 / fixtures/empty.log</h3><p>真正的空输入流</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-empty-log">复制文件</button><a href="../project-code/comp2017-log-analyzer/fixtures/empty.log" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-empty-log" class="language-text"></code></pre><p class="code-hint">不可见字节视图（十六进制）：空文件；零字节</p><ol class="execution-steps"><li><p>该文件是零字节，没有表头，也没有换行。</p></li><li><p>它用于测试没有观测值时的正常完成，并非测试坏行。</p></li><li><p>对比发送空白行的测试：空白行确实形成物理行，也产生错误计数。</p></li></ol></article><article class="code-example project-file" id="file-test-py" data-reading-id="file-test-py"><h3>12 / test.py</h3><p>可执行程序的行为测试</p><div class="code-actions"><button type="button" data-copy-code="code-file-test-py">复制文件</button><a href="../project-code/comp2017-log-analyzer/test.py" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-test-py" class="language-python"><span class="c1"># Guoliang | Original teaching project.</span>
+<span class="sd">"""Behavior tests: run `make test`; every generated input stays in a temp dir."""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
+
+<span class="n">ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">PROGRAM</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"log_analyzer"</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AnalyzerTests</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"log-analyzer-test-"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addCleanup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">cleanup</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">work</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">PROGRAM</span><span class="o">.</span><span class="n">is_file</span><span class="p">(),</span> <span class="s2">"Build log_analyzer with make first"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">PROGRAM</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">],</span> <span class="nb">input</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">work</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="mi">10</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_demo_has_hand_calculated_totals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"fixtures/demo.log"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">work</span> <span class="o">/</span> <span class="s2">"demo.log"</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">"demo.log"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">b</span><span class="s2">"lines=6</span><span class="se">\n</span><span class="s2">valid=6</span><span class="se">\n</span><span class="s2">malformed=0</span><span class="se">\n</span><span class="s2">INFO=3</span><span class="se">\n</span><span class="s2">WARN=2</span><span class="se">\n</span><span class="s2">ERROR=1</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">b</span><span class="s2">"total_ms=200</span><span class="se">\n</span><span class="s2">min_ms=0</span><span class="se">\n</span><span class="s2">max_ms=100</span><span class="se">\n</span><span class="s2">mean_ms=33.333</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_mixed_file_keeps_good_rows_and_reports_exit_3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">ROOT</span> <span class="o">/</span> <span class="s2">"fixtures/mixed.log"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">work</span> <span class="o">/</span> <span class="s2">"mixed.log"</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">"mixed.log"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">b</span><span class="s2">"lines=6</span><span class="se">\n</span><span class="s2">valid=3</span><span class="se">\n</span><span class="s2">malformed=3</span><span class="se">\n</span><span class="s2">INFO=1</span><span class="se">\n</span><span class="s2">WARN=1</span><span class="se">\n</span><span class="s2">ERROR=1</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">b</span><span class="s2">"total_ms=30</span><span class="se">\n</span><span class="s2">min_ms=5</span><span class="se">\n</span><span class="s2">max_ms=15</span><span class="se">\n</span><span class="s2">mean_ms=10.000</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="p">))</span>
+        <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"line </span><span class="si">{</span><span class="n">number</span><span class="si">}</span><span class="s2">: malformed record"</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_empty_has_no_invented_latency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">b</span><span class="s2">"lines=0</span><span class="se">\n</span><span class="s2">valid=0</span><span class="se">\n</span><span class="s2">malformed=0</span><span class="se">\n</span><span class="s2">INFO=0</span><span class="se">\n</span><span class="s2">WARN=0</span><span class="se">\n</span><span class="s2">ERROR=0</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">b</span><span class="s2">"total_ms=0</span><span class="se">\n</span><span class="s2">min_ms=n/a</span><span class="se">\n</span><span class="s2">max_ms=n/a</span><span class="se">\n</span><span class="s2">mean_ms=n/a</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_duration_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="sa">b</span><span class="s2">"INFO 0</span><span class="se">\n</span><span class="s2">ERROR 60000</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"total_ms"</span><span class="p">],</span> <span class="s2">"60000"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"min_ms"</span><span class="p">],</span> <span class="s2">"0"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"max_ms"</span><span class="p">],</span> <span class="s2">"60000"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"mean_ms"</span><span class="p">],</span> <span class="s2">"30000.000"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_integer_grammar_rejects_signs_suffixes_and_overflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"+1"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"-1"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"1.5"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"1ms"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"1 2"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"60001"</span><span class="p">,</span>
+               <span class="sa">b</span><span class="s2">"999999999999999999999999"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"0x10"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"1e2"</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">bad</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="sa">b</span><span class="s2">"INFO "</span> <span class="o">+</span> <span class="n">token</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"valid"</span><span class="p">],</span> <span class="s2">"0"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"malformed"</span><span class="p">],</span> <span class="s2">"1"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"mean_ms"</span><span class="p">],</span> <span class="s2">"n/a"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_level_must_match_whole_uppercase_word</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">(</span><span class="sa">b</span><span class="s2">"info"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"DEBUG"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"INF"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"INFOx"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"WARN3"</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">level</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">" 2</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)[</span><span class="s2">"valid"</span><span class="p">],</span> <span class="s2">"0"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_crlf_tabs_leading_zero_and_unterminated_last_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="sa">b</span><span class="s2">" </span><span class="se">\t</span><span class="s2">INFO</span><span class="se">\t</span><span class="s2">0007 </span><span class="se">\r\n</span><span class="s2">WARN 3"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"lines"</span><span class="p">],</span> <span class="s2">"2"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"total_ms"</span><span class="p">],</span> <span class="s2">"10"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"mean_ms"</span><span class="p">],</span> <span class="s2">"5.000"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_line_limit_is_exact_and_drains_one_bad_record</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">exact</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"INFO "</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"0"</span> <span class="o">*</span> <span class="mi">121</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"1"</span>
+        <span class="n">too_long</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"INFO 2"</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">" "</span> <span class="o">*</span> <span class="mi">122</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">exact</span><span class="p">),</span> <span class="mi">127</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">too_long</span><span class="p">),</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">exact</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">too_long</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">WARN 7</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"lines"</span><span class="p">],</span> <span class="s2">"3"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"malformed"</span><span class="p">],</span> <span class="s2">"1"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"valid"</span><span class="p">],</span> <span class="s2">"2"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"total_ms"</span><span class="p">],</span> <span class="s2">"8"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_binary_bytes_do_not_hide_suffix_or_imitate_eof</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="sa">b</span><span class="s2">"INFO 2</span><span class="se">\x00</span><span class="s2">hidden</span><span class="se">\n\xff\n</span><span class="s2">ERROR 9</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"lines"</span><span class="p">],</span> <span class="s2">"3"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"malformed"</span><span class="p">],</span> <span class="s2">"2"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="s2">"total_ms"</span><span class="p">],</span> <span class="s2">"9"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_blank_lines_count_and_diagnostics_are_capped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">*</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)[</span><span class="s2">"malformed"</span><span class="p">],</span> <span class="s2">"20"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="sa">b</span><span class="s2">"malformed record"</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="sa">b</span><span class="s2">"further malformed lines omitted"</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_mean_uses_fractional_division</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="sa">b</span><span class="s2">"INFO 1</span><span class="se">\n</span><span class="s2">INFO 2</span><span class="se">\n</span><span class="s2">INFO 2</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)[</span><span class="s2">"mean_ms"</span><span class="p">],</span> <span class="s2">"1.667"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_byte_budget_accepts_exactly_one_mebibyte</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"INFO 0"</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">" "</span> <span class="o">*</span> <span class="mi">121</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">row</span> <span class="o">*</span> <span class="mi">8192</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)[</span><span class="s2">"valid"</span><span class="p">],</span> <span class="s2">"8192"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="n">result</span><span class="p">)[</span><span class="s2">"total_ms"</span><span class="p">],</span> <span class="s2">"0"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_byte_budget_failure_has_no_partial_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"INFO 0"</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">" "</span> <span class="o">*</span> <span class="mi">121</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">row</span> <span class="o">*</span> <span class="mi">8192</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"x"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="sa">b</span><span class="s2">"input exceeds 1048576 bytes"</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_argument_count_is_a_usage_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="p">([],</span> <span class="p">[</span><span class="s2">"one"</span><span class="p">,</span> <span class="s2">"two"</span><span class="p">]):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="sa">b</span><span class="s2">"usage:"</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_missing_file_is_an_io_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">"missing.log"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="sa">b</span><span class="s2">"cannot open"</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_directory_is_not_a_successful_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_log</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="sa">b</span><span class="s2">"cannot open"</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span> <span class="ow">or</span>
+                        <span class="sa">b</span><span class="s2">"cannot read"</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre><ol class="execution-steps"><li><p>setUp 创建新的临时目录，addCleanup 负责删除。run_log 不经 shell 调用真实程序，并设置超时。</p></li><li><p>样本预期输出使用独立计算的明确常量。其他测试针对具体失败模式或边界。</p></li><li><p>每个限制都测试两侧。文件缺失和目录情况使用真实临时路径；没有穷尽模拟所有输出和关闭故障。</p></li></ol></article><article class="code-example project-file" id="file-README-md" data-reading-id="file-README-md"><h3>13 / README.md</h3><p>完整英文运行指南</p><div class="code-actions"><button type="button" data-copy-code="code-file-README-md">复制文件</button><a href="../project-code/comp2017-log-analyzer/README.md" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-README-md" class="language-text"># Streaming log analyzer
+
+Guoliang | Original teaching project for COMP2017. [中文版](README.zh.md).
+
+Guoliang is testing a small classroom robot simulator. After each simulated action,
+it writes a severity and a duration, such as `WARN 40`. Reading the whole trace by
+eye makes it easy to miss a slow action. Guoliang wants a tool that counts each
+severity and summarizes durations. Some records are broken, so the report must
+also say how much data was rejected. All fixtures are invented teaching data.
+This is an original engineering project, not a supplied course assignment.
+
+## Build, run, test
+
+You need Clang, make, and Python 3 on macOS or Linux. From the repository root:
+
+```sh
+cd projects/comp2017-log-analyzer
+make
+./log_analyzer fixtures/demo.log
+make test
+```
+
+For a downloaded project folder, open a terminal in that folder and start with
+`make`. The Makefile compiles four C files separately and links them. Its default
+flags are `-std=c11 -Wall -Wextra -Werror -pedantic -pthread`; this project creates
+no threads. `make clean` removes only the executable and its object files.
+
+To analyze standard input, use `-` as the only argument:
+
+```sh
+printf 'INFO 12\n' | ./log_analyzer -
+```
+
+The tool prints ten `key=value` lines. `total_ms` is the sum of valid durations;
+`mean_ms = total_ms / valid`, rounded for display to three decimal places. The
+minimum and maximum also use only valid rows. Empty data has `n/a` latency values:
+no observation is different from an observation with a duration of zero.
+
+## Agree on the input before writing the loop
+
+A record is an uppercase `INFO`, `WARN`, or `ERROR`, then one or more spaces or
+tabs, then decimal digits representing **0 through 60000 milliseconds**. Leading
+and trailing spaces/tabs and leading zeroes are allowed. Signs, fractions, units,
+extra columns, comments, and unknown levels are rejected. A blank line is one
+malformed record. `ERROR` is a valid severity; it is not a parser error.
+
+LF ends a physical line. A final CR is removed, which accepts CRLF files and a
+final CR before EOF. The last record does not need LF. At most **127 bytes before
+LF**, including a final CR, are allowed. An embedded NUL or longer line rejects
+the entire physical line. The reader consumes its remaining bytes so they cannot
+be mistaken for another row. The whole input may contain at most **1,048,576
+bytes**, including line endings. One extra byte may be read to detect excess.
+
+| Exit | Meaning | stdout |
+|---|---|---|
+| 0 | Input completed; every record was valid, or input was empty | Complete summary |
+| 3 | Input completed; at least one record was malformed | Summary of valid rows plus rejected count |
+| 2 | Wrong number of arguments | Empty |
+| 1 | Open/read/close failure, byte budget exceeded, or reported output failure | No report for input failures; an output failure may leave a prefix |
+
+Warnings go to stderr, with physical line numbers for the first five bad rows.
+One further message says later warnings were omitted; all bad rows are still
+counted. Run `echo $?` immediately after a command to see its exit status.
+
+## Five learning milestones
+
+1. **Follow one row through a working program.** Run the `INFO 12` command above.
+   Find `main`, `parse_record`, `stats_accept`, and `stats_print`. The text becomes
+   a `struct record`, then changes a `struct stats`, then becomes output text.
+   Draw those four boxes before reading error branches. The checkpoint is
+   `valid=1`, `INFO=1`, `total_ms=12`, and `mean_ms=12.000`.
+2. **Make a parser promise.** Read `record.h` before `record.c`. A successful call
+   assigns the caller's record; failure leaves it unchanged. The local
+   `candidate` makes that promise possible. Trace `INFO 60000`, then `INFO 60001`.
+   Before computing `value * 10 + digit`, the code checks
+   `value &lt;= (60000 - digit) / 10`. This both enforces the range and avoids an
+   overflowing intermediate. Confirm that `INFO 12ms` is rejected even though
+   its beginning looks numeric. The checkpoint is clean separation between
+   valid severity `ERROR` and malformed text.
+3. **Read a stream without losing line boundaries.** Read `reader.h`, then
+   `reader.c`. The buffer needs 128 bytes: 127 data bytes plus `\0`. Keep `fgetc`'s
+   return value in an `int` so EOF remains distinguishable from a byte. A bad
+   line is drained before the next call. Test 127 bytes, 128 bytes, and a valid
+   row after the oversized row. The checkpoint is exactly one rejection, with
+   the later valid record intact. The reader borrows `FILE *`; it never closes it.
+4. **Accumulate a useful report.** Read `stats.h` and `stats.c`. Initialize the
+   struct with `{0}`. For the first accepted value, set both extrema from that
+   value; initializing minimum to zero alone would give wrong results for
+   positive durations. Use `uint64_t` for counts and sums, `unsigned` for a
+   bounded duration, and `double` only when computing the mean. Recalculate the
+   demo by hand: sum 200, count 6, min 0, max 100. The checkpoint is the exact
+   demo output below and the empty-input `n/a` output.
+5. **Finish the command-line contract and prove it.** Revisit `main.c`. Mark every
+   path from `fopen` to `fclose`. A file opened here is closed here; borrowed stdin
+   is left to the runtime. Input errors suppress a misleading partial report.
+   Run `make test`, then read a test that deliberately rejects input. It must
+   inspect the exit code, report, and diagnostics. The checkpoint is all 16
+   tests passing, including the 1 MiB limit and the mixed-data exit status 3.
+
+The website provides longer bilingual steps and extracts from these same final
+files. Extracts are reading aids, not standalone programs. Build the full project.
+These checkpoints are original concept checks, not answers to supplied exercises.
+
+## File reading order
+
+| File | Why it exists |
+|---|---|
+| `record.h`, `record.c` | Record shape and complete text-validation contract |
+| `reader.h`, `reader.c` | Byte budget, line framing, and stream errors |
+| `stats.h`, `stats.c` | State invariants, aggregates, and report formatting |
+| `main.c` | Arguments, resource ownership, pipeline, and exit policy |
+| `Makefile` | Rebuild the needed translation units and link once |
+| `fixtures/demo.log` | Six valid rows with hand-calculable results |
+| `fixtures/mixed.log` | Three valid and three invalid rows |
+| `fixtures/empty.log` | Zero bytes, not one blank line |
+| `test.py` | Sixteen tests against the executable using temporary directories |
+
+Headers are interfaces: read their promises first. Source files implement those
+promises. No parser or statistics function stores a pointer to the line buffer;
+it is safe to reuse the buffer on the next iteration. The main function owns the
+statistics for its whole run. No application heap allocation is required.
+
+## Three actual runs
+
+These stdout blocks were captured from the compiled program. Build once with
+`make` before running them. stderr is described separately.
+
+### Valid robot trace
+
+```sh
+./log_analyzer fixtures/demo.log
+```
+
+```text
+lines=6
+valid=6
+malformed=0
+INFO=3
+WARN=2
+ERROR=1
+total_ms=200
+min_ms=0
+max_ms=100
+mean_ms=33.333
+```
+
+Exit 0; stderr is empty. `ERROR=1` counts a simulated event, not a program failure.
+
+### A trace with damaged records
+
+```sh
+./log_analyzer fixtures/mixed.log
+```
+
+```text
+lines=6
+valid=3
+malformed=3
+INFO=1
+WARN=1
+ERROR=1
+total_ms=30
+min_ms=5
+max_ms=15
+mean_ms=10.000
+```
+
+Exit 3. stderr warns about lines 2, 4, and 5: unknown `DEBUG`, negative `-1`, and
+out-of-range `60001`. Their durations never reach the aggregates.
+
+### No observations
+
+```sh
+./log_analyzer fixtures/empty.log
+```
+
+```text
+lines=0
+valid=0
+malformed=0
+INFO=0
+WARN=0
+ERROR=0
+total_ms=0
+min_ms=n/a
+max_ms=n/a
+mean_ms=n/a
+```
+
+Exit 0; stderr is empty. An empty file has no malformed record.
+
+## Debug with a prediction
+
+If mean `1.667` becomes `1.000` for durations 1, 2, 2, inspect the division's types:
+converting after integer division is too late. If a valid row after a long row is
+lost or counted twice, inspect draining at the reader boundary. If all positive
+inputs report minimum zero, inspect first-record initialization. If a file appears
+successful after a read failure, inspect `ferror`, not just `EOF`. Start with the
+smallest input that demonstrates the problem, and keep it as a regression test.
+
+Tests cover valid/mixed/empty input; numeric and severity grammar; 0 and 60000;
+CRLF, tabs, leading zeroes, and missing final LF; 127/128-byte rows; NUL and 0xff;
+warning suppression; fractional mean; exact/excessive byte budgets; usage; missing
+files; and directories. Expected totals are literal, hand-checked values, not a
+second copy of the C algorithm. Every invocation has a five-second test timeout.
+Generated files live only in each test's temporary directory and are removed.
+The suite does not simulate every filesystem, output, or close failure.
+
+## Decisions, limits, and next steps
+
+Memory used by our state is O(1); time is O(B) for B bytes consumed. Standard I/O
+also maintains its own implementation-managed buffers. The byte cap limits work
+and proves the total fits: at most 1,048,576 accepted records times 60,000 ms is
+62,914,560,000, safely below the `uint64_t` maximum. The actual accepted-record
+limit is smaller because records use multiple bytes. Changing limits requires
+reviewing that proof; a static assertion checks its multiplication bound.
+
+We choose a small explicit grammar and a fixed buffer to make contracts visible.
+This is not a parser for arbitrary real-world logs. There are no timestamps,
+percentiles, live file following, or per-level latency summaries. A byte limit is
+not a wall-clock deadline: stdin may wait for its producer. Use completed files
+for the first project. A broken output pipe may trigger the normal POSIX SIGPIPE
+signal rather than our exit 1 path. File read/write/close errors returned by the C
+library are checked; failures writing diagnostic stderr are not retried.
+
+To extend the project, add per-level duration sums and means. Acceptance: the demo
+must give INFO 30/3 = 10.000, WARN 70/2 = 35.000, ERROR 100/1 = 100.000, and an absent
+level must print `n/a`. Alternatively add a `--strict` mode. Acceptance: the first
+bad row stops processing with exit 3 and no stdout, while default mode remains
+unchanged. Write the new behavior tests before changing the implementation.
+
+## Primary references
+
+- [WG14 N1570: C11 committee draft](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf): sections 7.20, 7.21.7.1, and 7.21.10 explain integer types, `fgetc`, and stream status.
+- [Clang user manual](https://clang.llvm.org/docs/UsersManual.html): language and diagnostic options.
+- [Python subprocess documentation](https://docs.python.org/3/library/subprocess.html): argument lists, captured output, return codes, and timeouts.
+</code></pre><ol class="execution-steps"><li><p>先阅读构建、运行、测试命令和退出码表。</p></li><li><p>把五个阶段和文件顺序当作阅读源码的路线。</p></li><li><p>复现三次实际示例，再阅读取舍和扩展验收标准。</p></li></ol></article><article class="code-example project-file" id="file-README-zh-md" data-reading-id="file-README-zh-md"><h3>14 / README.zh.md</h3><p>完整中文运行指南</p><div class="code-actions"><button type="button" data-copy-code="code-file-README-zh-md">复制文件</button><a href="../project-code/comp2017-log-analyzer/README.zh.md" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-README-zh-md" class="language-text"># 流式日志分析器
+
+Guoliang | 为 COMP2017 编写的原创教学项目。[English](README.md)。
+
+Guoliang 正在测试课堂用的小机器人模拟器。每完成一个模拟动作，它就记录一个
+级别和耗时，例如 `WARN 40`。靠眼睛看完整份记录，很容易漏掉慢动作。因此我们
+制作一个工具：统计各级别的次数，再计算耗时总和、最小值、最大值和平均值。
+有些记录可能损坏，报告必须说明丢弃了多少行。所有示例数据均为人工构造。
+这是原创工程项目，不是课程提供的作业或答案。
+
+## 编译、运行和测试
+
+在 macOS 或 Linux 上需要 Clang、make 和 Python 3。从仓库根目录执行：
+
+```sh
+cd projects/comp2017-log-analyzer
+make
+./log_analyzer fixtures/demo.log
+make test
+```
+
+如果下载的是独立项目文件夹，请在该文件夹内打开终端，从 `make` 开始。
+Makefile 分别编译四个 C 文件，然后链接。默认参数为
+`-std=c11 -Wall -Wextra -Werror -pedantic -pthread`；这个项目本身没有创建线程。
+`make clean` 只删除可执行文件和它的目标文件。
+
+如果从标准输入读取，把唯一的参数写成 `-`：
+
+```sh
+printf 'INFO 12\n' | ./log_analyzer -
+```
+
+程序输出十行 `key=value`。`total_ms` 是有效记录的耗时总和；
+`mean_ms = total_ms / valid`，显示时保留三位小数。最小值和最大值也只使用有效行。
+没有有效记录时，三个耗时指标显示 `n/a`。没有观测值与观测到零毫秒是两回事。
+
+## 先约定输入，再编写循环
+
+每条记录先写大写的 `INFO`、`WARN` 或 `ERROR`，再写至少一个空格或制表符，
+最后写表示 **0 到 60000 毫秒** 的十进制数字。允许前后空格、制表符以及数字前导零。
+不接受正负号、小数、单位、多余字段、注释或未知级别。空白行算一条错误记录。
+`ERROR` 是合法的事件级别，并不表示解析器出错。
+
+LF 字节结束一条物理行。读取器去掉最后一个 CR，因此支持 CRLF，也接受文件末尾
+换行缺失时的最后一个 CR。最后一条记录可以没有 LF。每行在 LF 之前最多有
+**127 字节**，末尾的 CR 也占一个字节。出现嵌入的 NUL 或超长行时，整条物理行
+作废。读取器继续吃掉这一行剩余的字节，避免把尾部误当成下一行。整个输入最多
+**1,048,576 字节**，包含换行。为区分恰好到达文件末尾与超限，可能多读取一个字节。
+
+| 退出码 | 含义 | stdout |
+|---|---|---|
+| 0 | 完成读取；所有行有效，或输入为空 | 完整报告 |
+| 3 | 完成读取；至少有一条错误记录 | 有效行统计及错误行数 |
+| 2 | 参数数量不正确 | 空 |
+| 1 | 打开、读取、关闭失败，输入超限，或输出函数报告失败 | 输入失败时不输出报告；输出失败可能已写出一部分 |
+
+警告写入 stderr。前五条错误显示物理行号，之后只提醒一次省略了更多警告。
+错误行仍全部计数。要查看退出码，在一条命令执行后立刻运行 `echo $?`。
+
+## 五个学习阶段
+
+1. **让一行数据走完整条路径。** 运行上面的 `INFO 12` 命令。找到 `main`、
+   `parse_record`、`stats_accept` 和 `stats_print`。文本先变成 `struct record`，
+   再修改 `struct stats`，最后变成输出文本。先画出这四个方框，再阅读错误分支。
+   检查点是 `valid=1`、`INFO=1`、`total_ms=12` 和 `mean_ms=12.000`。
+2. **给解析器写清楚承诺。** 先读 `record.h`，再读 `record.c`。调用成功才写入调用者
+   的记录，失败则保持它不变。局部变量 `candidate` 实现了这个承诺。手动跟踪
+   `INFO 60000` 和 `INFO 60001`。计算 `value * 10 + digit` 前，先检查
+   `value &lt;= (60000 - digit) / 10`，同时控制范围和避免中间结果溢出。
+   确认 `INFO 12ms` 会被拒绝，即使前面看起来像整数。检查点是能够区分合法的
+   `ERROR` 级别和不合法的文本。
+3. **连续读行，同时保住边界。** 先读 `reader.h`，再读 `reader.c`。缓冲区需要
+   128 字节：127 个数据字节加一个 `\0`。`fgetc` 的返回值用 `int` 保存，才能把
+   EOF 与普通字节区分开。坏行要先读到行尾，再读取下一条。测试 127 字节、128
+   字节，以及超长行之后的合法行。检查点是恰好拒绝一行，后续有效记录仍然保留。
+   读取器只是借用 `FILE *`，不负责关闭它。
+4. **累积出有意义的报告。** 阅读 `stats.h` 和 `stats.c`。用 `{0}` 初始化结构体。
+   第一条有效记录要同时设置最大值和最小值；如果最小值只初始化为零，所有耗时
+   都为正数时就会算错。计数和总和用 `uint64_t`，有限范围的耗时用 `unsigned`，
+   计算平均值时才使用 `double`。手算示例：总和 200，数量 6，最小值 0，最大值
+   100。检查点是得到下方完全一致的示例输出，并让空输入显示 `n/a`。
+5. **完成命令行规则，并用测试证明。** 回到 `main.c`，标出从 `fopen` 到 `fclose`
+   的每条路径。在这里打开的文件，在这里关闭；借来的 stdin 由运行时收尾。
+   输入错误时不能把不完整的统计伪装成完整报告。运行 `make test`，再读一个故意
+   输入错误数据的测试。它必须同时检查退出码、报告和诊断。检查点是全部 16 个
+   测试通过，其中包括 1 MiB 上限和混合数据的退出码 3。
+
+网站提供更详细的双语步骤和来自这些最终文件的代码摘录。摘录用于阅读，不能单独
+编译；请编译完整项目。这些检查点是原创概念练习，不是现成作业的答案。
+
+## 文件阅读顺序
+
+| 文件 | 作用 |
+|---|---|
+| `record.h`、`record.c` | 定义记录形状，约定并实现完整文本校验 |
+| `reader.h`、`reader.c` | 控制字节总量、识别行边界并处理流错误 |
+| `stats.h`、`stats.c` | 维护状态约束，计算统计并格式化报告 |
+| `main.c` | 处理参数、资源归属、流水步骤和退出规则 |
+| `Makefile` | 重新编译需要更新的编译单元，再链接 |
+| `fixtures/demo.log` | 六行有效记录，可以手算 |
+| `fixtures/mixed.log` | 三行有效记录和三行错误记录 |
+| `fixtures/empty.log` | 零字节文件，不是一个空白行 |
+| `test.py` | 在临时目录中测试真实程序，共十六项测试 |
+
+头文件是接口，先读它的承诺；源文件负责实现承诺。解析和统计函数都不保存行缓冲区
+的指针，因此下一次循环可以安全地重用缓冲区。主函数拥有整个运行期间的统计结构体。
+应用程序自身不需要堆分配。
+
+## 三次真实运行
+
+以下 stdout 均来自实际编译后的程序。请先用 `make` 编译一次。stderr 单独说明。
+
+### 完整的机器人轨迹
+
+```sh
+./log_analyzer fixtures/demo.log
+```
+
+```text
+lines=6
+valid=6
+malformed=0
+INFO=3
+WARN=2
+ERROR=1
+total_ms=200
+min_ms=0
+max_ms=100
+mean_ms=33.333
+```
+
+退出码 0，stderr 为空。`ERROR=1` 统计一次模拟事件，并非程序运行失败。
+
+### 含有损坏记录的轨迹
+
+```sh
+./log_analyzer fixtures/mixed.log
+```
+
+```text
+lines=6
+valid=3
+malformed=3
+INFO=1
+WARN=1
+ERROR=1
+total_ms=30
+min_ms=5
+max_ms=15
+mean_ms=10.000
+```
+
+退出码 3。stderr 警告第 2、4、5 行：分别是未知级别 `DEBUG`、负数 `-1`，以及
+超出范围的 `60001`。这些行的耗时不会进入统计。
+
+### 没有观测记录
+
+```sh
+./log_analyzer fixtures/empty.log
+```
+
+```text
+lines=0
+valid=0
+malformed=0
+INFO=0
+WARN=0
+ERROR=0
+total_ms=0
+min_ms=n/a
+max_ms=n/a
+mean_ms=n/a
+```
+
+退出码 0，stderr 为空。空文件没有错误行。
+
+## 先作预测，再调试
+
+如果耗时 1、2、2 的平均值从 `1.667` 变成 `1.000`，检查除法两侧的类型。
+整数除法结束后再转浮点数已经来不及。如果超长行后面的有效行丢失或重复，检查
+读取器是否真正消费到行尾。如果全是正耗时却报告最小值零，检查第一条记录的
+初始化。如果读取失败后仍报告成功，检查 `ferror`，不要只检查 EOF。
+先制作能复现问题的最小输入，再把它留下作为回归测试。
+
+测试覆盖有效、混合和空输入；数字和级别语法；0 和 60000；CRLF、制表符、
+前导零和缺失的末尾 LF；127/128 字节行；NUL 和 0xff；警告数量限制；小数平均值；
+恰好达到和超过字节上限；参数错误；不存在的文件和目录。预期总和是手算的常量，
+并非把 C 算法再写一遍。每次程序调用都有五秒测试超时。生成的输入只保存在每项
+测试自己的临时目录中，结束后删除。测试没有模拟所有文件系统、输出或关闭故障。
+
+## 取舍、限制与后续练习
+
+我们维护的状态使用 O(1) 内存，处理 B 个输入字节的时间为 O(B)。标准 I/O 自己
+还会维护由实现管理的缓冲区。字节上限控制工作量，也给出总和不会溢出的证明：
+即使最多 1,048,576 条记录，每条 60,000 毫秒，总和也只有 62,914,560,000，
+远小于 `uint64_t` 的上限。实际能容纳的记录更少，因为每条记录占多个字节。
+改变上限时要重新检查这个证明；静态断言会检查乘法边界。
+
+小而明确的语法和固定缓冲区便于理解接口。这不是通用真实日志格式解析器，
+也没有时间戳、百分位数、实时跟踪文件或各级别独立耗时统计。字节限制不是运行
+时间限制，stdin 仍可能等待数据生产者。第一个项目建议读取已经写完的普通文件。
+输出管道断开时，POSIX 默认的 SIGPIPE 信号可能终止程序，而不经过退出码 1 的
+路径。C 库返回的读、写和关闭错误会检查；向诊断流 stderr 写入失败时不会重试。
+
+后续可以增加每个级别的耗时总和与均值。验收：示例中 INFO 为 30/3 = 10.000，
+WARN 为 70/2 = 35.000，ERROR 为 100/1 = 100.000；未出现的级别显示 `n/a`。
+也可以增加 `--strict` 模式。验收：首次遇到坏行就停止，退出码 3，stdout 为空；
+默认模式保持不变。先写描述新行为的测试，再修改实现。
+
+## 官方原始参考资料
+
+- [WG14 N1570：C11 委员会草案](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf)：7.20、7.21.7.1 和 7.21.10 节分别介绍整数类型、`fgetc` 与流状态。
+- [Clang 用户手册](https://clang.llvm.org/docs/UsersManual.html)：语言标准与诊断选项。
+- [Python subprocess 文档](https://docs.python.org/3/library/subprocess.html)：参数列表、捕获输出、返回码与超时。
+</code></pre><ol class="execution-steps"><li><p>中文指南提供与英文指南一致的命令和输入契约。</p></li><li><p>把其中的类型、资源归属和调试说明与源码里的英文标识符对照。</p></li><li><p>两种指南中的输出键都保持固定英文，因此切换指南语言不会改变程序和测试。</p></li></ol></article></section><section class="project-section" id="next" data-reading-id="next"><h2>每次只扩展一项契约</h2><article class="design-card"><h3>为各级别增加耗时统计</h3><p>先增加可手算的测试。为每个级别保存数量与总和，只在解析成功后更新，再用一致的空级别规则打印均值。</p><h4>验收检查</h4><p>示例中 INFO 均值为 10.000，WARN 为 35.000，ERROR 为 100.000。缺失级别输出 n/a，错误行不参与统计，原有全局指标保持不变。</p></article><article class="design-card"><h3>增加明确的严格模式</h3><p>把 --strict 加入参数契约。编码前先确定策略：遇到第一条坏行即停止，关闭自己拥有的流，stdout 保持为空。保留当前默认行为。</p><h4>验收检查</h4><p>严格模式读取混合样本时返回 3，只警告第 2 行，且没有报告。不加选项时输出保持原样；有效输入和空输入仍返回 0。</p></article><h3>一手参考资料</h3><ul><li><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf">WG14 N1570 — C11 committee draft: integer types and standard I/O</a></li><li><a href="https://clang.llvm.org/docs/UsersManual.html">Clang Compiler User’s Manual</a></li><li><a href="https://docs.python.org/3/library/subprocess.html">Python documentation — subprocess management</a></li></ul></section></div></div><footer class="footer"><span class="watermark">Guoliang</span><a href="../courses/comp2017.zh.html#projects">返回工程学习路线 ↑</a></footer></main></body></html>

@@ -51,7 +51,7 @@ def build_roadmap(document,lang='en'):
         items.append(f'<circle cx="90" cy="{y+34}" r="24" fill="#abdca0"/><text x="90" y="{y+41}" fill="#14231c" text-anchor="middle" font-size="20" font-weight="700">{i+1:02d}</text>')
         for j,line in enumerate(wrapped(local(stage['title'],lang),62)):
             items.append(f'<text x="150" y="{y+15+j*27}" fill="#f0f4fa" font-size="23">{E(line)}</text>')
-        text=(f'{len(stage["topics"])} 个主题' if lang=='zh' else f'{len(stage["topics"])} topics')
+        text=local(stage['count_label'],lang) if stage.get('count_label') else (f'{len(stage["topics"])} 个主题' if lang=='zh' else f'{len(stage["topics"])} topics')
         items.append(f'<text x="150" y="{y+77}" fill="#b7c9dc" font-size="18">{text}</text>')
     image=f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title"><title id="title">Guoliang — {E(title)}</title><g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">'+''.join(items)+'</g></svg>'
     path=ROOT/'site'/'assets'/'maps'/f'{slug(document)}.{lang}.svg'

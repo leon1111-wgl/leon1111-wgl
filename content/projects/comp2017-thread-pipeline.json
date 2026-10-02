@@ -1,0 +1,1273 @@
+{
+  "id": "comp2017-thread-pipeline",
+  "course": "COMP2017",
+  "number": 3,
+  "title": {
+    "en": "A bounded file-statistics pipeline",
+    "zh": "有界文件统计流水线"
+  },
+  "summary": {
+    "en": "Build a usable pthread worker pool that counts real file bytes, lines, and words. A four-slot queue coordinates the work; one owned result slot per input keeps the final report deterministic.",
+    "zh": "构建可实际使用的 pthread 工作线程池，统计文件的字节、行和单词。四槽队列协调任务，每个输入拥有独立结果槽，使最终报告顺序确定。"
+  },
+  "story": {
+    "en": "Mina volunteers at a school robotics club. At the end of a workshop she receives several small note files and wants a reliable inventory: how many bytes, logical lines, and words are in each? Some notes are empty, one has no final newline, and a copied filename may be wrong. She needs a useful report even when one file cannot be opened.\n\nShe begins with one precise scanner and checks it against tiny synthetic notes. Next she numbers the file arguments and feeds their indices through a queue with four positions. When every position is occupied, her producer waits for space. Several workers can take different jobs, but each worker opens its own file and writes only that job’s result. This makes the ownership rule visible before concurrency becomes complicated.\n\nThe last job being submitted is not the same as the last job being finished. Mina closes the queue to announce that no more jobs will arrive, lets consumers drain the remaining jobs, and joins all workers. Only then does she print the result slots in original input order. A missing file becomes a clearly marked failed slot, not a misleading row of zeros.\n\nFinally, she tests short and long inputs, repeated schedules, and carefully injected failures. The project demonstrates a correct coordination pattern; these small examples make no claim that more threads are faster. All code, fixtures, and explanations are original Guoliang teaching material, independent of supplied assignments.",
+    "zh": "米娜在学校机器人社做志愿者。每次活动结束，她收到几份小笔记，想知道各文件有多少字节、逻辑行和单词。有些笔记是空的，有些末尾没有换行，抄写的文件名也可能有误。即使一个文件打不开，她仍需要有用的报告。\n\n她先做一个定义清楚的单文件扫描器，用很小的合成笔记核对。接着给文件参数编号，把编号放进只有四个位置的队列。位置用完时，生产者等待空位。多个工作线程可以领取不同任务，但每个线程只打开自己的文件，只写该任务的结果。这样先说清所有权，再引入并发。\n\n最后一个任务入队，并不等于最后一个任务已经完成。米娜关闭队列，表示不再有新任务，让消费者处理剩余任务，再等待所有工作线程结束。之后才按输入顺序打印结果槽。打不开的文件会明确标为失败，不会假装得到全零统计。\n\n最后，她用长短不同的输入、重复调度和可控故障检验程序。这个项目展示正确的协调方式，小样例并不证明线程越多越快。代码、样例和说明都是 Guoliang 原创教学内容，与所提供的作业无关。"
+  },
+  "difficulty": {
+    "en": "Intermediate C, introduced in five small stages. Read the ownership rules before reasoning about scheduling.",
+    "zh": "中级 C，分为五个小阶段。先理解所有权，再分析线程调度。"
+  },
+  "prerequisites": [
+    {
+      "topic": "file-streams",
+      "reason": {
+        "en": "Distinguish a successful short read, end of file, and a read error before counting bytes.",
+        "zh": "统计前先区分成功的短读取、文件结束和读取错误。"
+      }
+    },
+    {
+      "topic": "allocation-ownership",
+      "reason": {
+        "en": "Keep main’s stack objects and borrowed argv paths alive until every worker has joined.",
+        "zh": "所有工作线程结束前，主线程栈对象和借用的 argv 路径都必须有效。"
+      }
+    },
+    {
+      "topic": "thread-lifecycle",
+      "reason": {
+        "en": "Create a bounded set of joinable threads and join only the handles that were successfully created.",
+        "zh": "创建数量有上限的可等待线程，只 join 创建成功的句柄。"
+      }
+    },
+    {
+      "topic": "data-races-mutexes",
+      "reason": {
+        "en": "Use a mutex for shared queue state and exclusive ownership for per-job results.",
+        "zh": "共享队列状态用互斥锁保护，每项结果由一个线程独占写入。"
+      }
+    },
+    {
+      "topic": "condition-variables",
+      "reason": {
+        "en": "Wait on a state predicate in a while loop and recheck it after waking.",
+        "zh": "用 while 循环等待状态条件，每次醒来都重新检查。"
+      }
+    },
+    {
+      "topic": "parallel-patterns",
+      "reason": {
+        "en": "Separate a producer, a fixed consumer pool, and an ordered reporting phase.",
+        "zh": "区分生产者、固定消费者池和按序报告阶段。"
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "en": "Define and implement byte, logical-line, and ASCII-separated word counts across read-buffer boundaries.",
+      "zh": "定义并实现字节数、逻辑行数和 ASCII 分隔单词数，正确处理读取缓冲区边界。"
+    },
+    {
+      "en": "Explain the ring-buffer invariant, backpressure, predicate waits, and close-and-drain behavior.",
+      "zh": "解释环形队列不变量、背压、条件等待以及关闭后排空。"
+    },
+    {
+      "en": "Prove why a unique result writer plus successful joins avoids a result data race.",
+      "zh": "说明唯一写入者和成功 join 如何避免结果数据竞争。"
+    },
+    {
+      "en": "Test ordinary runs and startup/I/O failures with bounded fixtures, independent expected results, and timeouts.",
+      "zh": "用有界样例、独立预期结果和超时测试正常运行、启动失败与 I/O 失败。"
+    }
+  ],
+  "requirements": [
+    {
+      "rule": {
+        "en": "Accept WORKERS followed by zero to 128 file paths; bound WORKERS to 1..16.",
+        "zh": "接受 WORKERS 和零到 128 个文件路径，WORKERS 限于 1..16。"
+      },
+      "why": {
+        "en": "A finite pool and bounded job list make resource use understandable. Zero jobs is a normal lifecycle case.",
+        "zh": "有限线程池和有界任务列表便于理解资源用量。零任务也是正常生命周期。"
+      },
+      "check": {
+        "en": "Try 1, 16, 0, 17, 2x, no worker argument, and 129 file arguments. Invalid CLI input exits 2 with no report.",
+        "zh": "尝试 1、16、0、17、2x、不填线程数，以及 129 个文件参数。非法命令行退出码为 2，且不打印报告。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Queue capacity is exactly four indices; use one mutex, not_empty, and not_full.",
+        "zh": "队列容量固定为四个编号，使用一把互斥锁及 not_empty、not_full 条件变量。"
+      },
+      "why": {
+        "en": "The producer must wait when full instead of growing storage. Consumers must sleep when no work can yet be taken.",
+        "zh": "队列满时生产者等待，而非增加存储。暂时没有任务时消费者休眠。"
+      },
+      "check": {
+        "en": "Inspect both predicate while loops and test fewer jobs, more jobs, and 37 jobs across repeated runs.",
+        "zh": "检查两个条件 while 循环，测试少量任务、超过容量的任务和重复执行的 37 个任务。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Each published index is taken once and has exactly one result writer; print only after joining every worker.",
+        "zh": "每个发布的编号只取出一次，每个结果只有一个写入者，所有线程 join 后才打印。"
+      },
+      "why": {
+        "en": "Concurrent completion may change order. Separate result slots and a later reporting phase preserve the input order.",
+        "zh": "并发完成的先后会变化。独立结果槽和之后的报告阶段保持输入顺序。"
+      },
+      "check": {
+        "en": "Compare complete stdout for 1, 2, 4, and 16 workers against an independent sequential oracle.",
+        "zh": "将 1、2、4、16 个线程的完整标准输出与独立顺序算法比较。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Count LF bytes plus a final unterminated logical line; split words only at the six ASCII whitespace bytes.",
+        "zh": "行数计算 LF，加上末尾未终止的逻辑行；单词仅由六种 ASCII 空白字节分隔。"
+      },
+      "why": {
+        "en": "Empty files, final newlines, and buffer boundaries need definitions before they need code.",
+        "zh": "空文件、末尾换行和缓冲区边界，都应先定义语义再写代码。"
+      },
+      "check": {
+        "en": "Empty gives 0/0/0. The evening fixture gives 26 bytes, 2 lines, and 5 words despite having only one LF.",
+        "zh": "空文件三项计数均为 0。晚间样例只有一个 LF，但有 26 字节、2 行、5 个单词。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Accept only ordinary regular files with at most 8 MiB scanned per job; report file failures without discarding other jobs.",
+        "zh": "只接受普通文件，每项扫描最多 8 MiB；文件失败要报告，但不丢弃其他任务。"
+      },
+      "why": {
+        "en": "A teaching run should have explicit storage and work bounds. Partial counts are not a complete result.",
+        "zh": "教学程序应有明确存储和工作量上限。部分计数不是完整结果。"
+      },
+      "check": {
+        "en": "Test the exact byte limit, one byte above it, missing paths, directories, and a FIFO without a writer.",
+        "zh": "测试恰好达到字节上限、多一个字节、缺失路径、目录以及没有写入方的 FIFO。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Close and drain normally; if thread creation fails, close before joining the workers already created.",
+        "zh": "正常路径关闭并排空；线程创建失败时，先关闭队列，再等待已创建线程。"
+      },
+      "why": {
+        "en": "Joining a worker that waits for nonexistent future work can hang forever. Uncreated thread handles are not valid join targets.",
+        "zh": "线程若还在等待永远不会出现的任务，join 会卡住。未成功创建的句柄不能 join。"
+      },
+      "check": {
+        "en": "Temporary test shims force failure before worker 1 and after two workers. Both runs must exit 1 without output or a timeout.",
+        "zh": "临时测试替身强制第一个线程创建前失败，以及创建两个后失败。两者必须退出 1，无报告且不超时。"
+      }
+    }
+  ],
+  "architecture": {
+    "nodes": [
+      {
+        "title": {
+          "en": "Producer and owner: main.c",
+          "zh": "生产者与资源拥有者：main.c"
+        },
+        "body": {
+          "en": "Validate all arguments, initialize storage, create the whole pool, publish each job index once, then close the queue. The same main thread later joins and reports.",
+          "zh": "验证所有参数，初始化存储，创建完整线程池，每个编号只发布一次，然后关闭队列。同一主线程随后执行 join 和报告。"
+        }
+      },
+      {
+        "title": {
+          "en": "Bounded handoff: queue.c",
+          "zh": "有界任务交接：queue.c"
+        },
+        "body": {
+          "en": "A ring stores at most four indices. count, head, closed, and entries are protected by one mutex. not_empty and not_full wake threads that must then recheck their predicates.",
+          "zh": "环形队列最多放四个编号。count、head、closed 和 entries 由一把锁保护。not_empty 和 not_full 唤醒线程后，线程必须重新检查条件。"
+        }
+      },
+      {
+        "title": {
+          "en": "Consumers and scanner: consume + stats.c",
+          "zh": "消费者与扫描器：consume + stats.c"
+        },
+        "body": {
+          "en": "Each worker repeatedly takes one index, releases the queue lock, opens its own regular file, and writes that index’s FileStats. Files may finish in any order.",
+          "zh": "每个工作线程反复取一个编号，释放队列锁，打开自己的普通文件，并写入对应的 FileStats。文件可以按任意顺序完成。"
+        }
+      },
+      {
+        "title": {
+          "en": "Ordered report after joins",
+          "zh": "join 后按序报告"
+        },
+        "body": {
+          "en": "After every successful join, main reads slots from zero through J−1. A failed slot prints its error category, while successful slots print complete counts.",
+          "zh": "所有 join 成功后，主线程从 0 到 J−1 读取结果槽。失败槽打印错误类别，成功槽打印完整计数。"
+        }
+      }
+    ],
+    "flow": {
+      "en": "INITIALIZE → CREATE ALL WORKERS → PRODUCE INDICES → CLOSE → DRAIN → JOIN → REPORT. Consumers may scan while main produces. OPEN+EMPTY means wait; OPEN+FULL means producer waits; CLOSED+NONEMPTY means keep consuming; CLOSED+EMPTY means exit. If creation fails, no indices have been produced: CLOSE → JOIN CREATED WORKERS → DESTROY → EXIT 1.",
+      "zh": "初始化 → 创建全部线程 → 发布编号 → 关闭 → 排空 → JOIN → 报告。主线程生产时，消费者可以同时扫描。未关闭且空：消费者等待；未关闭且满：生产者等待；已关闭且非空：继续消费；已关闭且空：退出。若创建失败，此时尚未发布编号：关闭 → JOIN 已创建线程 → 销毁 → 退出 1。"
+    },
+    "ownership": [
+      {
+        "resource": {
+          "en": "Queue fields and synchronization objects",
+          "zh": "队列字段和同步对象"
+        },
+        "owner": {
+          "en": "Main owns their lifetime. All threads borrow the queue; every live state access holds its mutex.",
+          "zh": "主线程拥有生命周期。各线程借用队列，运行中的状态访问都持有队列锁。"
+        },
+        "release": {
+          "en": "Main destroys both conditions and the mutex only after all created workers join.",
+          "zh": "所有已创建线程 join 后，主线程才销毁两个条件变量和互斥锁。"
+        }
+      },
+      {
+        "resource": {
+          "en": "argv paths and WorkerContext",
+          "zh": "argv 路径和 WorkerContext"
+        },
+        "owner": {
+          "en": "Main lends stable, read-only paths and a fully initialized context to every worker.",
+          "zh": "主线程把稳定只读路径和已初始化上下文借给各工作线程。"
+        },
+        "release": {
+          "en": "The context remains in main’s stack frame through the final join; argv survives until process exit.",
+          "zh": "上下文在最后一次 join 前始终留在主线程栈帧中，argv 在进程退出前有效。"
+        }
+      },
+      {
+        "resource": {
+          "en": "One FileStats slot per job",
+          "zh": "每个任务一个 FileStats 槽"
+        },
+        "owner": {
+          "en": "The worker that pops index i exclusively writes results[i]. Main reads only after joining all workers.",
+          "zh": "取出编号 i 的工作线程独占写入 results[i]。主线程只在所有线程 join 后读取。"
+        },
+        "release": {
+          "en": "Storage is a bounded main-stack array; it needs no free and stays alive throughout worker access.",
+          "zh": "存储是主线程栈中的有界数组，无需 free，工作线程访问期间始终有效。"
+        }
+      },
+      {
+        "resource": {
+          "en": "File descriptor and 4096-byte buffer",
+          "zh": "文件描述符和 4096 字节缓冲区"
+        },
+        "owner": {
+          "en": "Only the scanning worker uses its descriptor, file offset, buffer, and word state.",
+          "zh": "只有扫描它的工作线程使用该描述符、文件偏移、缓冲区和单词状态。"
+        },
+        "release": {
+          "en": "scan_file attempts close on every path after a successful open; its local buffer ends with the call.",
+          "zh": "打开成功后，每条路径都会由 scan_file 尝试关闭，局部缓冲区随调用结束。"
+        }
+      },
+      {
+        "resource": {
+          "en": "Joinable thread handles",
+          "zh": "可等待的线程句柄"
+        },
+        "owner": {
+          "en": "Main stores only successfully created handles in the prefix counted by started.",
+          "zh": "主线程用 started 表示前面多少个句柄创建成功。"
+        },
+        "release": {
+          "en": "Join that prefix on both successful startup and partial startup failure; never join an uncreated handle.",
+          "zh": "启动成功和部分启动失败都 join 该前缀，绝不 join 未创建的句柄。"
+        }
+      }
+    ]
+  },
+  "milestones": [
+    {
+      "id": "precise-counts",
+      "title": {
+        "en": "1. Make one file’s answer precise",
+        "zh": "1. 先精确定义一个文件的答案"
+      },
+      "goal": {
+        "en": "Implement a scanner whose output is correct before adding a worker pool.",
+        "zh": "先实现正确的单文件扫描器，再加入线程池。"
+      },
+      "reasoning": {
+        "en": "Concurrency cannot repair an ambiguous definition. A line is an LF-terminated segment or the final nonempty suffix. A word begins when a non-separator follows either a separator or the start of the stream. These are two small state machines, and their state must survive a short read or a buffer boundary.",
+        "zh": "并发无法修复含糊定义。一行是以 LF 结束的一段，或者末尾非空的未终止片段。单词在非分隔字节跟随分隔字节或流起点时开始。这是两个小状态机，状态必须跨短读取和缓冲区边界保留。"
+      },
+      "steps": [
+        {
+          "en": "Read stats.h first: a result carries counts, a status, and an optional system error. Only SCAN_OK permits complete counts to be reported.",
+          "zh": "先读 stats.h：结果包含计数、状态和可选系统错误。只有 SCAN_OK 才能把计数作为完整结果报告。"
+        },
+        {
+          "en": "Trace empty, a, a\\n, and a b through the counters. Keep in_word and last outside the read loop. Test received < 0 before its size_t conversion.",
+          "zh": "用空文件、a、a\\n 和 a b 追踪计数器。把 in_word 和 last 放在读取循环外。转换为 size_t 前先检查 received < 0。"
+        },
+        {
+          "en": "At EOF, add one logical line only for a nonempty stream whose final byte is not LF. On read failure, preserve the error and suppress partial counts.",
+          "zh": "到达 EOF 时，仅当文件非空且末尾不是 LF 才补一行。读取失败时保留错误，不报告部分计数。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "static void count_stream(int descriptor, FileStats *result) {\n    unsigned char buffer[4096];\n    bool in_word = false;\n    unsigned char last = '\\n';\n    for (;;) {\n        ssize_t received = read(descriptor, buffer, sizeof buffer);\n        if (received < 0) {\n            if (errno == EINTR) {\n                continue;\n            }\n            result->status = SCAN_READ;\n            result->system_error = errno;\n            return;\n        }\n        if (received == 0) {\n            break;\n        }\n        size_t length = (size_t)received;\n        if (length > FILE_BYTE_LIMIT - result->bytes) {\n            result->status = SCAN_TOO_LARGE;\n            return;\n        }\n        result->bytes += length;\n        for (size_t i = 0; i < length; i++) {\n            unsigned char byte = buffer[i];\n            if (byte == '\\n') {\n                result->lines++;\n            }\n            bool space = separator(byte);\n            if (!space && !in_word) {\n                result->words++;\n            }\n            in_word = !space;\n            last = byte;\n        }\n    }\n    if (result->bytes != 0 && last != '\\n') {\n        result->lines++;\n    }\n}\n"
+      },
+      "snippet_explanation": {
+        "en": "This is an extract of the final scanner, not a standalone program. separator and the types come from the full project. result->bytes tracks completed chunks; the subtraction guard prevents counting beyond the 8 MiB contract. The read buffer is reused, while in_word and last survive its reuse.",
+        "zh": "这是最终扫描器的节选，不是独立程序。separator 和相关类型在完整项目中。result->bytes 记录已处理块，减法检查保证统计不超过 8 MiB 约定。缓冲区反复使用，in_word 和 last 则跨缓冲区保留。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why does the six-whitespace-byte fixture have zero words but two logical lines?",
+          "zh": "为什么六个空白字节的样例有零个单词，却有两个逻辑行？"
+        },
+        "answer": {
+          "en": "Every byte is a separator, so no word starts. There is one LF, followed by vertical-tab/form-feed bytes; that nonempty suffix adds the second logical line.",
+          "zh": "每个字节都是分隔符，所以没有单词开始。有一个 LF，之后还有垂直制表和换页字节，这个非空尾段构成第二行。"
+        }
+      }
+    },
+    {
+      "id": "bounded-queue",
+      "title": {
+        "en": "2. Replace a growing list with a bounded queue",
+        "zh": "2. 用有界队列代替不断增长的列表"
+      },
+      "goal": {
+        "en": "Publish a job only when a ring-buffer slot is available.",
+        "zh": "环形队列有空位时才发布任务。"
+      },
+      "reasoning": {
+        "en": "The queue separates storage capacity from total job count. head is the oldest occupied position; count is how many positions are occupied. The next insertion is (head + count) modulo capacity. Holding one mutex makes a check followed by an update one protected transition. Waiting must release that mutex so a consumer can create space.",
+        "zh": "队列容量和总任务数是两回事。head 是最早的占用位置，count 是占用数量。下一插入位置为 (head + count) 对容量取模。一把锁让条件检查和随后的修改成为受保护的状态变化。等待必须释放锁，消费者才能取走任务腾出空位。"
+      },
+      "steps": [
+        {
+          "en": "Draw four boxes and trace push 0, push 1, pop, push 2. Verify the invariant 0 <= count <= 4 before and after each operation.",
+          "zh": "画四个格子，追踪入队 0、入队 1、出队、入队 2。核对每次操作前后 0 <= count <= 4。"
+        },
+        {
+          "en": "Read queue_push beside queue_pop. Producers wait on not_full; consumers wait on not_empty. Both use while with the closed flag.",
+          "zh": "对照阅读 queue_push 和 queue_pop。生产者等待 not_full，消费者等待 not_empty。两者都用包含 closed 的 while 条件。"
+        },
+        {
+          "en": "Signal after the protected count change, then unlock. Keep file reading entirely outside the queue lock.",
+          "zh": "在锁内修改 count 后通知，再解锁。文件读取完全放在队列锁之外。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "bool queue_push(WorkQueue *queue, size_t job) {\n    thread_check(pthread_mutex_lock(&queue->mutex), \"mutex lock\");\n    while (queue->count == QUEUE_CAPACITY && !queue->closed) {\n        thread_check(pthread_cond_wait(&queue->not_full, &queue->mutex),\n                     \"wait not_full\");\n    }\n    if (queue->closed) {\n        thread_check(pthread_mutex_unlock(&queue->mutex), \"mutex unlock\");\n        return false;\n    }\n    size_t tail = (queue->head + queue->count) % QUEUE_CAPACITY;\n    queue->entries[tail] = job;\n    queue->count++;\n    thread_check(pthread_cond_signal(&queue->not_empty), \"signal not_empty\");\n    thread_check(pthread_mutex_unlock(&queue->mutex), \"mutex unlock\");\n    return true;\n}\n"
+      },
+      "snippet_explanation": {
+        "en": "The complete function is extracted from queue.c. A condition wakeup is not a reserved free slot; the while loop rechecks the shared state. A closed queue rejects a new job even if there is room. queue_pop removes one index under the same mutex and signals not_full.",
+        "zh": "这个完整函数节选自 queue.c。条件唤醒并不预留空位，while 会重新检查共享状态。即使仍有空间，已关闭队列也拒绝新任务。queue_pop 在同一把锁下取出一个编号，并通知 not_full。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why would holding the mutex while scanning a file defeat the intended concurrency?",
+          "zh": "为什么扫描文件时仍持有队列锁会破坏预期的并发？"
+        },
+        "answer": {
+          "en": "Other workers could not pop, and main could not push, until the whole file finished. The lock protects brief queue transitions, not the independent scanning work.",
+          "zh": "其他工作线程无法取任务，主线程也无法入队，直到整个文件扫描结束。锁只保护短暂队列变化，不应包住独立扫描工作。"
+        }
+      }
+    },
+    {
+      "id": "owned-results",
+      "title": {
+        "en": "3. Give each job one writer",
+        "zh": "3. 给每个任务唯一写入者"
+      },
+      "goal": {
+        "en": "Connect the queue and scanner with a small worker loop that cannot scramble the report.",
+        "zh": "用小型工作循环连接队列和扫描器，同时保持报告顺序。"
+      },
+      "reasoning": {
+        "en": "A shared result array does not automatically imply a race. Each job index enters the queue once, and one locked pop removes it once. Consequently exactly one worker writes each element. Workers share a read-only context but not a writable counter or file offset. Main waits until all writers finish before observing the array.",
+        "zh": "共享结果数组并不自动产生竞争。每个编号只入队一次，由一次受锁保护的出队取走，因此每个元素恰好有一个写入者。工作线程共享只读上下文，但不共享可变计数器或文件偏移。主线程等待所有写入者结束后才观察数组。"
+      },
+      "steps": [
+        {
+          "en": "Follow job i from argv[i + 2] to queue_push(i), queue_pop(&job), and results[job]. Job numbers printed to users start at one.",
+          "zh": "沿着 argv[i + 2]、queue_push(i)、queue_pop(&job) 和 results[job] 追踪任务 i。打印给用户的编号从一开始。"
+        },
+        {
+          "en": "Keep queue, context, paths, and results alive through every join. Do not pass the address of a changing loop-local job variable to a worker.",
+          "zh": "所有 join 完成前，队列、上下文、路径和结果都要有效。不要把不断变化的循环局部任务变量地址交给线程。"
+        },
+        {
+          "en": "Let scan_file record an error in the same slot on failure. The consumer loop must still take later jobs.",
+          "zh": "scan_file 失败时，把错误写入同一结果槽。消费者循环仍继续领取后续任务。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "static void *consume(void *argument) {\n    WorkerContext *context = argument;\n    size_t job;\n    while (queue_pop(context->queue, &job)) {\n        /* Exactly one pop receives each index. No other worker writes this\n           result, and main waits for all joins before reading any result. */\n        scan_file(context->paths[job], &context->results[job]);\n    }\n    return NULL;\n}\n"
+      },
+      "snippet_explanation": {
+        "en": "This final-program extract uses the WorkerContext declared in main.c. queue_pop returns after releasing the queue mutex, so scans overlap without holding that lock. No worker prints. Distinct FileStats objects have distinct writers, and main’s later joins supply the necessary visibility before reading them.",
+        "zh": "这段最终程序节选使用 main.c 中声明的 WorkerContext。queue_pop 返回前已释放队列锁，扫描能够并发进行。工作线程不打印。不同 FileStats 对象有不同写入者，主线程之后的 join 保证读取前的可见性。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "If job 8 finishes before job 1, where does its result go and when is it printed?",
+          "zh": "任务 8 比任务 1 先结束时，结果放在哪里，何时打印？"
+        },
+        "answer": {
+          "en": "It goes into results[7]. Main prints that slot eighth, after joining every worker. Completion order never selects output order.",
+          "zh": "写入 results[7]。所有工作线程 join 后，主线程第八个打印该槽。输出顺序不由完成顺序决定。"
+        }
+      }
+    },
+    {
+      "id": "close-drain-join",
+      "title": {
+        "en": "4. Finish without losing queued work",
+        "zh": "4. 结束时不丢弃已入队任务"
+      },
+      "goal": {
+        "en": "Distinguish “no work yet” from “no work will ever arrive,” then finish the lifetime of shared objects safely.",
+        "zh": "区分“暂时没任务”和“再也不会有任务”，安全结束共享对象的生命周期。"
+      },
+      "reasoning": {
+        "en": "An empty queue alone cannot tell a consumer whether to wait or leave. The closed flag adds that information. Closing does not erase pending indices. After close, consumers keep popping while count is positive, then return when it reaches zero. A broadcast wakes all sleepers because every idle worker must discover termination, even when the file list was empty.",
+        "zh": "空队列本身无法告诉消费者该等待还是离开，closed 补充这个信息。关闭不会删除待处理编号。关闭后 count 仍大于零就继续取出，直到变为零才返回。广播唤醒所有等待者，因为每个空闲线程都必须知道该结束了，即使文件列表一开始就为空。"
+      },
+      "steps": [
+        {
+          "en": "Read the pop predicate as “wait while empty AND still open.” A closed, nonempty queue is still consumable.",
+          "zh": "把出队条件读成“为空且仍未关闭时等待”。关闭但非空的队列仍然可消费。"
+        },
+        {
+          "en": "After the producer loop, call queue_close exactly as a phase transition. Trace the zero-job case: all workers must eventually see closed and leave.",
+          "zh": "生产循环之后调用 queue_close，完成阶段切换。追踪零任务情况：所有工作线程最终都必须看到 closed 并退出。"
+        },
+        {
+          "en": "Join every created worker, then destroy synchronization objects and print. Never destroy a mutex or condition that a worker may still access.",
+          "zh": "等待每个已创建线程结束，再销毁同步对象并打印。工作线程仍可能访问的互斥锁或条件变量不能销毁。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "void queue_close(WorkQueue *queue) {\n    thread_check(pthread_mutex_lock(&queue->mutex), \"mutex lock\");\n    queue->closed = true;\n    /* All empty-queue consumers must learn that no future job can arrive. */\n    thread_check(pthread_cond_broadcast(&queue->not_empty), \"broadcast not_empty\");\n    thread_check(pthread_cond_broadcast(&queue->not_full), \"broadcast not_full\");\n    thread_check(pthread_mutex_unlock(&queue->mutex), \"mutex unlock\");\n}\n"
+      },
+      "snippet_explanation": {
+        "en": "This queue.c extract changes closed while holding the same mutex used by both waits. not_empty broadcasts end empty-queue waits; not_full also wakes any producer observing closure. In the current program only main closes, after production, so its normal producer is never blocked during that close. queue_pop drains rather than discards.",
+        "zh": "这段 queue.c 节选在两类等待共用的锁内修改 closed。not_empty 广播结束空队列等待，not_full 也会让等待的生产者检查关闭状态。在当前程序中，只有主线程在生产完成后关闭，因此正常生产者不会在这次关闭时被阻塞。queue_pop 会排空而非丢弃任务。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why is signaling just one consumer insufficient when closing a queue with sixteen idle workers?",
+          "zh": "关闭队列时有十六个空闲线程，为什么只通知一个不够？"
+        },
+        "answer": {
+          "en": "The other workers may remain asleep forever because no later job arrival will signal them. Broadcasting lets each reacquire the mutex, observe closed-and-empty, and return.",
+          "zh": "其余线程可能一直睡眠，因为之后不会再有任务到达并通知它们。广播让每个线程重新获取锁，看到已关闭且为空，然后返回。"
+        }
+      }
+    },
+    {
+      "id": "failure-evidence",
+      "title": {
+        "en": "5. Prove the error paths as well as the happy path",
+        "zh": "5. 同时检验失败路径与正常路径"
+      },
+      "goal": {
+        "en": "Check partial startup, per-file failure, malformed CLI input, and deterministic output with bounded automated tests.",
+        "zh": "用有界自动化测试检查部分启动失败、文件失败、非法命令行和确定性输出。"
+      },
+      "reasoning": {
+        "en": "A thread handle is valid only after successful creation. Starting production before the full pool exists would complicate startup failure because some jobs might already be running. This design deliberately creates the pool first. A startup failure can then close an empty queue, join the successful prefix of handles, and return without a misleading partial report.",
+        "zh": "线程创建成功后句柄才有效。如果完整线程池创建前就发布任务，失败时部分任务可能已经运行，使清理更复杂。本设计先创建完整线程池，所以启动失败时能关闭空队列，join 成功的句柄前缀，不打印误导性的部分报告。"
+      },
+      "steps": [
+        {
+          "en": "Trace started = 0 and started = 2 in the creation-failure branch. Only those already created workers are joined; no job indices have been published.",
+          "zh": "把 started 分别取 0 和 2，追踪创建失败分支。只 join 已创建线程，此时还没有发布任何任务编号。"
+        },
+        {
+          "en": "Use make test. It compiles in a temporary copy, calculates expected counts independently, checks negative cases, and repeats 37-job runs with different worker counts.",
+          "zh": "运行 make test。它在临时副本编译，独立计算预期计数，检查负面情况，并用不同线程数重复执行 37 个任务。"
+        },
+        {
+          "en": "Read the temporary fault-injection shims for pthread_create and read. They force rare failures safely. Optionally run python3 test.py --tsan where the Clang runtime supports it.",
+          "zh": "阅读 pthread_create 和 read 的临时故障注入替身。它们安全触发少见失败。Clang 运行环境支持时，可选运行 python3 test.py --tsan。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "    for (; started < workers; started++) {\n        error = pthread_create(&threads[started], NULL, consume, &context);\n        if (error != 0) {\n            fprintf(stderr, \"thread creation failed after %zu workers \"\n                            \"(pthread error %d)\\n\", started, error);\n            /* No jobs are published until the whole pool exists. */\n            queue_close(&queue);\n            join_workers(threads, started);\n            queue_destroy(&queue);\n            return EXIT_FAILURE;\n        }\n    }"
+      },
+      "snippet_explanation": {
+        "en": "This is the actual pool-creation loop from main.c; started, workers, context, queue, threads, and error are declared just above it. Runtime mutex/condition/join errors use a separate documented fail-fast policy. Do not describe that policy as graceful recovery. The full program and its error checks are the runnable unit.",
+        "zh": "这是 main.c 实际的线程池创建循环，started、workers、context、queue、threads 和 error 在上方声明。运行中的互斥锁、条件变量或 join 错误采用另一套明确的快速失败策略，不能把它说成优雅恢复。完整程序及其错误检查才是可运行单元。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Do 48 matching stress runs or one clean ThreadSanitizer run prove every possible schedule is safe?",
+          "zh": "48 次压力运行一致，或一次 ThreadSanitizer 无报告，能证明所有调度安全吗？"
+        },
+        "answer": {
+          "en": "No. They can expose defects in the executions they observe. The stronger reasoning still needs unique job delivery, one writer per slot, protected queue predicates, correct object lifetimes, and joins before reading results.",
+          "zh": "不能。它们只能暴露实际观察到的执行中的缺陷。还需要论证任务唯一交付、每槽唯一写入者、条件受锁保护、对象生命周期正确，以及读取前完成 join。"
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "stats.h",
+      "role": {
+        "en": "The result contract and bounded file size",
+        "zh": "结果约定和文件大小上限"
+      },
+      "read_order": 1,
+      "walkthrough": [
+        {
+          "en": "Read FILE_BYTE_LIMIT as 8 MiB, then separate the three size_t counters from ScanStatus.",
+          "zh": "先读 8 MiB 的 FILE_BYTE_LIMIT，再区分三个 size_t 计数器与 ScanStatus。"
+        },
+        {
+          "en": "system_error stores errno only for operations that actually supply one; logical rejections need no invented system error.",
+          "zh": "只有真实系统调用错误才保存 errno；逻辑拒绝无需伪造系统错误。"
+        },
+        {
+          "en": "The scan_file contract gives the caller one exclusively owned output object. Failed counters are partial and must be hidden.",
+          "zh": "scan_file 约定调用者提供一个独占输出对象，失败时计数不完整，不能展示为完整答案。"
+        }
+      ]
+    },
+    {
+      "path": "stats.c",
+      "role": {
+        "en": "One worker’s independent regular-file scanner",
+        "zh": "单个工作线程的独立普通文件扫描器"
+      },
+      "read_order": 2,
+      "walkthrough": [
+        {
+          "en": "separator defines exactly six whitespace bytes. count_stream maintains word state across every read.",
+          "zh": "separator 精确列出六种空白字节，count_stream 跨每次读取保留单词状态。"
+        },
+        {
+          "en": "read errors are checked before converting the signed result. EINTR retries; EOF triggers the final-line correction.",
+          "zh": "把带符号返回值转换前先判断读取错误。EINTR 重试，EOF 后处理末行补计。"
+        },
+        {
+          "en": "scan_file opens, checks fstat, scans only regular files, and attempts close on all post-open paths. The first failure wins.",
+          "zh": "scan_file 打开、用 fstat 检查、只扫描普通文件，并在所有打开后路径尝试关闭。保留第一个失败。"
+        }
+      ]
+    },
+    {
+      "path": "queue.h",
+      "role": {
+        "en": "The shared state and ownership boundary",
+        "zh": "共享状态和所有权边界"
+      },
+      "read_order": 3,
+      "walkthrough": [
+        {
+          "en": "entries holds four size_t indices, not file descriptors or heap objects.",
+          "zh": "entries 保存四个 size_t 编号，不保存文件描述符或堆对象。"
+        },
+        {
+          "en": "head, count, and closed describe the queue state; one mutex protects them together.",
+          "zh": "head、count 和 closed 描述队列状态，由同一互斥锁一起保护。"
+        },
+        {
+          "en": "The two condition variables name different predicates. The API makes close separate from destruction.",
+          "zh": "两个条件变量对应不同等待条件，接口把关闭与销毁区分开来。"
+        }
+      ]
+    },
+    {
+      "path": "queue.c",
+      "role": {
+        "en": "Locked ring transitions and close-and-drain behavior",
+        "zh": "锁保护的环形变化与关闭后排空"
+      },
+      "read_order": 4,
+      "walkthrough": [
+        {
+          "en": "queue_init initializes components in order and unwinds earlier components if a later initialization fails.",
+          "zh": "queue_init 按序初始化部件；后续初始化失败时撤销先前部件。"
+        },
+        {
+          "en": "Compare push and pop: both lock, wait in while, modify a protected state, notify the opposite side, and unlock.",
+          "zh": "对照入队与出队：都是加锁、while 等待、修改受保护状态、通知另一方、解锁。"
+        },
+        {
+          "en": "queue_close broadcasts without discarding entries. queue_destroy is allowed only after all users have finished; runtime synchronization errors fail fast.",
+          "zh": "queue_close 广播但不丢弃元素。所有使用者结束后才可 queue_destroy；运行中的同步错误快速结束进程。"
+        }
+      ]
+    },
+    {
+      "path": "main.c",
+      "role": {
+        "en": "CLI, lifetime management, worker loop, and ordered output",
+        "zh": "命令行、生命周期、工作循环与按序输出"
+      },
+      "read_order": 5,
+      "walkthrough": [
+        {
+          "en": "parse_workers accepts decimal digits only and rejects as soon as the value exceeds 16. The bounded intermediate value avoids arithmetic overflow.",
+          "zh": "parse_workers 只接受十进制数字，一超过 16 就拒绝。有界中间值避免算术溢出。"
+        },
+        {
+          "en": "Main initializes one context and creates every worker before publishing indices. The started prefix is the only valid join list on failure.",
+          "zh": "主线程初始化一个上下文，创建所有工作线程后才发布编号。失败时只有 started 前缀是有效 join 列表。"
+        },
+        {
+          "en": "consume writes the slot matching its popped index. Main closes, joins, destroys, then print_results reports in input order and returns failure if any file failed.",
+          "zh": "consume 写入取出编号对应的槽。主线程依次关闭、join、销毁，再由 print_results 按输入顺序报告；任一文件失败就返回失败。"
+        }
+      ]
+    },
+    {
+      "path": "Makefile",
+      "role": {
+        "en": "Strict build, isolated tests, and local cleanup",
+        "zh": "严格构建、隔离测试与本地清理"
+      },
+      "read_order": 6,
+      "walkthrough": [
+        {
+          "en": "The default compiler is clang with C11, POSIX feature selection, pthread support, and warnings treated as errors.",
+          "zh": "默认 clang，启用 C11、POSIX 功能、pthread，并把警告当作错误。"
+        },
+        {
+          "en": "Header dependencies rebuild the affected translation units. -pthread is used during compilation and linking.",
+          "zh": "头文件依赖让相关编译单元重新构建，编译与链接阶段都使用 -pthread。"
+        },
+        {
+          "en": "make test delegates to python3 test.py, which builds in a temporary copy. make clean removes only this project’s ordinary local build products.",
+          "zh": "make test 调用 python3 test.py，在临时副本构建。make clean 只删除本项目常规本地构建产物。"
+        }
+      ]
+    },
+    {
+      "path": "test.py",
+      "role": {
+        "en": "Independent oracle, boundary tests, stress, and controlled faults",
+        "zh": "独立预期算法、边界测试、压力测试与可控故障"
+      },
+      "read_order": 7,
+      "walkthrough": [
+        {
+          "en": "TemporaryDirectory plus copytree isolates every build and synthetic generated input. subprocess uses argument lists and explicit timeouts.",
+          "zh": "TemporaryDirectory 与 copytree 隔离构建及生成样例。subprocess 使用参数列表和明确超时。"
+        },
+        {
+          "en": "A byte-oriented regular expression counts words independently of the C state machine. Hard-coded fixture output checks the oracle too.",
+          "zh": "字节正则表达式独立于 C 状态机计算单词，手工固定的样例结果也检查预期算法。"
+        },
+        {
+          "en": "Read the 48-run loop, close-and-drain queue probe, and temporary pthread_create/read shims. --tsan requires a working sanitizer and does not silently skip failures.",
+          "zh": "阅读 48 次循环、关闭排空队列探针和临时 pthread_create/read 替身。--tsan 要求检测器可用，不会静默跳过失败。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/morning.txt",
+      "role": {
+        "en": "Synthetic note with a final LF",
+        "zh": "末尾有 LF 的合成笔记"
+      },
+      "read_order": 8,
+      "walkthrough": [
+        {
+          "en": "The first line is Robotics club.",
+          "zh": "第一行是 Robotics club。"
+        },
+        {
+          "en": "The second line is Build small test often and ends with LF.",
+          "zh": "第二行是 Build small test often，末尾为 LF。"
+        },
+        {
+          "en": "Expect 37 bytes, 2 logical lines, and 6 words; the final LF adds no empty line.",
+          "zh": "预期 37 字节、2 个逻辑行、6 个单词；末尾 LF 不增加空行。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/evening.txt",
+      "role": {
+        "en": "Synthetic note without a final LF",
+        "zh": "末尾没有 LF 的合成笔记"
+      },
+      "read_order": 9,
+      "walkthrough": [
+        {
+          "en": "A tab separates Check from all.",
+          "zh": "Check 和 all 之间是制表符。"
+        },
+        {
+          "en": "The second line Then rest reaches EOF without LF.",
+          "zh": "第二行 Then rest 直接结束，没有 LF。"
+        },
+        {
+          "en": "Expect 26 bytes, 2 logical lines, and 5 words; EOF supplies the second line count.",
+          "zh": "预期 26 字节、2 个逻辑行、5 个单词；EOF 补计第二行。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/blank.txt",
+      "role": {
+        "en": "Two newline bytes and no words",
+        "zh": "两个换行字节且无单词"
+      },
+      "read_order": 10,
+      "walkthrough": [
+        {
+          "en": "The file is exactly LF followed by LF.",
+          "zh": "文件恰好是 LF 后跟 LF。"
+        },
+        {
+          "en": "Each LF finishes a logical line even when that line has no letters.",
+          "zh": "每个 LF 结束一行，即使行内没有字母。"
+        },
+        {
+          "en": "Expect 2 bytes, 2 lines, and 0 words; do not add a third line after EOF.",
+          "zh": "预期 2 字节、2 行、0 个单词；EOF 后不要再加第三行。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/empty.txt",
+      "role": {
+        "en": "A zero-byte fixture",
+        "zh": "零字节样例"
+      },
+      "read_order": 11,
+      "walkthrough": [
+        {
+          "en": "This file deliberately has no content and no author header because any bytes would destroy the test.",
+          "zh": "此文件有意没有内容，也没有作者注释，因为任何字节都会破坏空文件测试。"
+        },
+        {
+          "en": "The scanner sees EOF on its first read and never enters the byte loop.",
+          "zh": "扫描器第一次读取就到 EOF，不进入逐字节循环。"
+        },
+        {
+          "en": "Expect 0 bytes, 0 lines, and 0 words, while the file itself is still a successful job.",
+          "zh": "预期 0 字节、0 行、0 个单词，但文件本身仍是成功任务。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/spaces.txt",
+      "role": {
+        "en": "All six separators in a fixed order",
+        "zh": "按固定顺序放置六种分隔字节"
+      },
+      "read_order": 12,
+      "walkthrough": [
+        {
+          "en": "The bytes are space, tab, CR, LF, vertical tab, and form feed.",
+          "zh": "依次为空格、制表、CR、LF、垂直制表和换页。"
+        },
+        {
+          "en": "The suffix after LF contains bytes, although a terminal may not display them visibly.",
+          "zh": "LF 后有非空字节尾段，终端可能看不见。"
+        },
+        {
+          "en": "Expect 6 bytes, 2 logical lines, and 0 words. This tests the exact separator definition, not locale behavior.",
+          "zh": "预期 6 字节、2 个逻辑行、0 个单词；它检验精确分隔定义，不检验地区设置。"
+        }
+      ]
+    },
+    {
+      "path": "README.md",
+      "role": {
+        "en": "Complete English command-line guide",
+        "zh": "完整英文命令行指南"
+      },
+      "read_order": 13,
+      "walkthrough": [
+        {
+          "en": "Start with the story and exact build/run commands, then check the counting definitions against each fixture.",
+          "zh": "先读故事和精确构建运行命令，再用样例核对计数定义。"
+        },
+        {
+          "en": "Follow the five reading stages and the phase diagram; connect every resource to its owner and end of lifetime.",
+          "zh": "按五个阅读阶段和阶段图学习，把每种资源与拥有者及生命周期结束点联系起来。"
+        },
+        {
+          "en": "Read the failure policy, complexity, test commands, and bounded extensions before changing the design.",
+          "zh": "修改设计前，阅读失败策略、复杂度、测试命令和有界扩展。"
+        }
+      ]
+    },
+    {
+      "path": "README.zh.md",
+      "role": {
+        "en": "Equivalent Chinese command-line guide",
+        "zh": "内容对应的中文命令行指南"
+      },
+      "read_order": 14,
+      "walkthrough": [
+        {
+          "en": "Use the same commands and expected stdout as in the English guide; program output remains English.",
+          "zh": "命令和预期标准输出与英文指南相同，程序输出仍使用英文。"
+        },
+        {
+          "en": "Review the Chinese explanations of predicates, ownership, queue closure, and join-based visibility.",
+          "zh": "阅读条件、所有权、队列关闭和 join 可见性的中文解释。"
+        },
+        {
+          "en": "Keep the two language guides consistent when changing limits, counting semantics, or error behavior.",
+          "zh": "更改上限、计数语义或错误行为时，两种语言指南应同步更新。"
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "title": {
+        "en": "Three notes, three workers",
+        "zh": "三份笔记，三个线程"
+      },
+      "command": "./thread_pipeline 3 fixtures/morning.txt fixtures/evening.txt fixtures/empty.txt",
+      "stdout": "job=1 bytes=37 lines=2 words=6\njob=2 bytes=26 lines=2 words=5\njob=3 bytes=0 lines=0 words=0\nsummary files=3 ok=3 failed=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "The final unterminated evening line is counted and the empty file succeeds. stdout lists file arguments in their original order. Exit status is 0; stderr is empty. Run make once first; compilation output is not included in this stdout panel.",
+        "zh": "晚间文件末尾无换行的行仍被计入，空文件也成功。标准输出按文件参数原顺序排列。退出码为 0，标准错误为空。先运行一次 make；这里的输出面板不包含编译信息。"
+      }
+    },
+    {
+      "title": {
+        "en": "More jobs than the four-slot queue",
+        "zh": "任务数多于四槽队列"
+      },
+      "command": "./thread_pipeline 1 fixtures/morning.txt fixtures/evening.txt fixtures/blank.txt fixtures/empty.txt fixtures/spaces.txt",
+      "stdout": "job=1 bytes=37 lines=2 words=6\njob=2 bytes=26 lines=2 words=5\njob=3 bytes=2 lines=2 words=0\njob=4 bytes=0 lines=0 words=0\njob=5 bytes=6 lines=2 words=0\nsummary files=5 ok=5 failed=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "Five jobs pass through a queue that stores only four indices at once, even with one consumer. Blank lines and whitespace-only content remain meaningful cases. Exit status is 0; stderr is empty. The sample establishes correctness, not throughput.",
+        "zh": "五个任务通过一次只放四个编号的队列，即使只有一个消费者也能完成。空行和纯空白仍是有意义的情况。退出码为 0，标准错误为空。此样例验证正确性，不衡量吞吐量。"
+      }
+    },
+    {
+      "title": {
+        "en": "No files and sixteen waiting consumers",
+        "zh": "零文件与十六个等待消费者"
+      },
+      "command": "./thread_pipeline 16",
+      "stdout": "summary files=0 ok=0 failed=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "An empty job list is valid. Main closes the queue and broadcasts; each consumer observes empty-and-closed and returns. Every worker is joined. Exit status is 0 with no stderr.",
+        "zh": "空任务列表合法。主线程关闭队列并广播，各消费者看到空且关闭后返回，每个线程都被 join。退出码为 0，无标准错误。"
+      }
+    },
+    {
+      "title": {
+        "en": "A missing file keeps its place",
+        "zh": "缺失文件保留自己的位置"
+      },
+      "command": "./thread_pipeline 2 fixtures/morning.txt fixtures/missing.txt fixtures/evening.txt",
+      "stdout": "job=1 bytes=37 lines=2 words=6\njob=2 error=open\njob=3 bytes=26 lines=2 words=5\nsummary files=3 ok=2 failed=1\n",
+      "expected_exit": 1,
+      "explanation": {
+        "en": "The second job reports error=open. The third job still succeeds and prints third. Exit status is 1, and stderr names job 2, the path, and the OS error; the OS wording is platform-dependent. Only exact stdout is shown here.",
+        "zh": "第二项报告 error=open，第三项仍成功且打印在第三位。退出码为 1，标准错误说明任务 2、路径和系统错误；系统文字因平台而异。这里仅显示精确标准输出。"
+      }
+    },
+    {
+      "title": {
+        "en": "Reject an invalid worker count",
+        "zh": "拒绝非法线程数"
+      },
+      "command": "./thread_pipeline 0 fixtures/morning.txt",
+      "stdout": "",
+      "expected_exit": 2,
+      "explanation": {
+        "en": "No report is printed. Exit status is 2 and stderr prints the accepted usage and bounds. Validation happens before any worker is created. Empty stdout is intentional.",
+        "zh": "不打印报告。退出码为 2，标准错误打印用法及上限。验证在线程创建前发生。标准输出有意为空。"
+      }
+    }
+  ],
+  "debugging": [
+    {
+      "symptom": {
+        "en": "The zero-file run never exits.",
+        "zh": "零文件运行一直不退出。"
+      },
+      "hypothesis": {
+        "en": "Consumers are still waiting because closure was not broadcast or closed is missing from the wait predicate.",
+        "zh": "关闭时未广播，或等待条件漏掉 closed，导致消费者继续等待。"
+      },
+      "inspection": {
+        "en": "Run ./thread_pipeline 16 with a timeout. Read queue_pop and queue_close together; check that closed changes under the mutex and all waiting consumers are notified.",
+        "zh": "带超时运行 ./thread_pipeline 16。一起阅读 queue_pop 和 queue_close，检查 closed 是否在锁内修改，所有等待消费者是否被通知。"
+      },
+      "fix": {
+        "en": "Wait while count is zero AND the queue is open; broadcast on close, then join. Never try to repair the hang with a sleep.",
+        "zh": "条件必须为 count 为零且队列未关闭；关闭时广播，之后 join。不要用 sleep 修补卡住。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "Output rows move around between runs.",
+        "zh": "每次运行的输出行顺序变化。"
+      },
+      "hypothesis": {
+        "en": "Workers print on completion, or main reads before joining all workers.",
+        "zh": "工作线程完成时直接打印，或主线程在全部 join 前读取。"
+      },
+      "inspection": {
+        "en": "Search main.c for printf and verify that the per-job printing loop is reached only after join_workers. Repeat the 37-job input with 1 and 16 workers.",
+        "zh": "在 main.c 搜索 printf，确认逐任务打印只在 join_workers 之后执行。用 1 和 16 个线程重复运行 37 个任务。"
+      },
+      "fix": {
+        "en": "Workers write their own indexed slot only. Main joins every worker and then traverses the result array in argument order.",
+        "zh": "工作线程只写自己的编号槽。主线程等待所有线程，再按参数顺序遍历结果数组。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "The evening file reports one line, or the blank file reports three.",
+        "zh": "晚间文件只报告一行，或空行文件报告三行。"
+      },
+      "hypothesis": {
+        "en": "The EOF correction is missing or is applied even after a final LF.",
+        "zh": "EOF 补计遗漏，或末尾已经是 LF 时仍错误补计。"
+      },
+      "inspection": {
+        "en": "Inspect the fixture bytes and count their LF bytes. The evening file has one LF and a nonempty suffix; blank.txt has two LFs and no suffix.",
+        "zh": "检查样例字节并数 LF。晚间文件有一个 LF 和非空尾段；blank.txt 有两个 LF，没有尾段。"
+      },
+      "fix": {
+        "en": "Add one only when bytes != 0 and last != LF. Do not infer a logical line from the fact that a buffer was read.",
+        "zh": "仅在 bytes != 0 且 last != LF 时加一。不能因为读了一个缓冲区就推断多了一行。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "A long word is counted twice near byte 4096.",
+        "zh": "长单词在第 4096 字节附近被算成两个。"
+      },
+      "hypothesis": {
+        "en": "in_word was reinitialized for each chunk instead of each file.",
+        "zh": "in_word 每读一个块都重新初始化，而不是每个文件初始化一次。"
+      },
+      "inspection": {
+        "en": "Use the generated boundary.bin case and trace the final byte of the first read and the first byte of the next. Neither is a separator.",
+        "zh": "使用生成的 boundary.bin，追踪第一次读取最后一个字节与下次第一个字节，它们都不是分隔符。"
+      },
+      "fix": {
+        "en": "Keep in_word outside the read loop. Only a separator changes it to false.",
+        "zh": "把 in_word 放在读取循环外。只有分隔符把它变成 false。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "The process hangs after a thread-creation failure.",
+        "zh": "线程创建失败后进程卡住。"
+      },
+      "hypothesis": {
+        "en": "Main joined waiting workers before closing the queue, or joined an invalid uncreated handle.",
+        "zh": "主线程关闭队列前就 join 等待中的线程，或 join 了未成功创建的无效句柄。"
+      },
+      "inspection": {
+        "en": "Run the injected failure cases in test.py. Track started and confirm that no indices have been published yet.",
+        "zh": "运行 test.py 的注入失败案例，追踪 started，确认此时尚未发布编号。"
+      },
+      "fix": {
+        "en": "Close the empty queue first, join exactly the successful prefix, destroy it, and return 1. Do not proceed to the producer loop.",
+        "zh": "先关闭空队列，只 join 成功的句柄前缀，销毁后返回 1。不要继续进入生产循环。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "A missing file appears as a successful zero-count file.",
+        "zh": "缺失文件被显示为成功且计数全零。"
+      },
+      "hypothesis": {
+        "en": "Reporting ignores ScanStatus and treats initial counters as a finished scan.",
+        "zh": "报告忽略 ScanStatus，把初始化计数当作完成结果。"
+      },
+      "inspection": {
+        "en": "Compare empty.txt with a nonexistent path. The counts may both start at zero, but their status values must differ.",
+        "zh": "比较 empty.txt 与不存在的路径。计数起初都可能为零，但状态必须不同。"
+      },
+      "fix": {
+        "en": "Print numeric counts only for SCAN_OK. Preserve an error row at the failed job index and return a nonzero process status.",
+        "zh": "只有 SCAN_OK 才打印数值计数。在失败编号处保留错误行，进程返回非零退出码。"
+      }
+    }
+  ],
+  "test_plan": [
+    {
+      "case": {
+        "en": "Zero file arguments with sixteen workers",
+        "zh": "十六线程、零文件参数"
+      },
+      "expected": {
+        "en": "One summary line: files=0 ok=0 failed=0; exit 0 within the subprocess timeout.",
+        "zh": "只有 files=0 ok=0 failed=0 的汇总行；在子进程超时前退出 0。"
+      },
+      "reason": {
+        "en": "Tests the close broadcast and the difference between empty and closed.",
+        "zh": "检验关闭广播，以及空与关闭的区别。"
+      }
+    },
+    {
+      "case": {
+        "en": "One job, two jobs, and five jobs with a capacity of four",
+        "zh": "容量为四时分别处理一、二、五个任务"
+      },
+      "expected": {
+        "en": "Each input has exactly one result in input order; all supplied files succeed.",
+        "zh": "每个输入恰好一个结果，按输入顺序排列，所有附带文件都成功。"
+      },
+      "reason": {
+        "en": "Covers fewer and more jobs than queue slots without assuming which thread runs first.",
+        "zh": "覆盖任务少于及多于队列槽的情况，不假设谁先运行。"
+      }
+    },
+    {
+      "case": {
+        "en": "Empty, blank-line, whitespace-only, and unterminated fixtures",
+        "zh": "空文件、空行、纯空白和末尾未换行样例"
+      },
+      "expected": {
+        "en": "Exact hard-coded totals are checked, including empty 0/0/0 and evening 26/2/5.",
+        "zh": "检查固定精确计数，包括空文件 0/0/0 和晚间文件 26/2/5。"
+      },
+      "reason": {
+        "en": "Separates the stated logical-line and word definitions from terminal appearance.",
+        "zh": "把约定的逻辑行和单词定义与终端外观分开。"
+      }
+    },
+    {
+      "case": {
+        "en": "A word crossing the 4096-byte buffer and containing zero/non-ASCII bytes",
+        "zh": "跨越 4096 字节缓冲区且含零字节和非 ASCII 字节的单词"
+      },
+      "expected": {
+        "en": "The independent byte-regex oracle matches the C counts; the word is not split at the chunk boundary.",
+        "zh": "独立字节正则算法与 C 计数一致，单词不会在块边界被拆开。"
+      },
+      "reason": {
+        "en": "Checks stream state retention and avoidance of C-string assumptions.",
+        "zh": "检查流状态保留，并避免误用 C 字符串假设。"
+      }
+    },
+    {
+      "case": {
+        "en": "Invalid worker syntax and job-count bounds",
+        "zh": "非法线程数语法与任务数边界"
+      },
+      "expected": {
+        "en": "0, 17, signs, spaces, suffix text, missing arguments, huge numbers, and 129 jobs exit 2; 128 jobs and 0002 workers are accepted.",
+        "zh": "0、17、正负号、空格、尾随文字、缺失参数、巨数和 129 项任务退出 2；128 项任务与 0002 线程合法。"
+      },
+      "reason": {
+        "en": "Verifies validation before threads start and bounded numeric accumulation.",
+        "zh": "验证线程启动前的参数检查及有界数字累积。"
+      }
+    },
+    {
+      "case": {
+        "en": "Good, missing, good file sequence",
+        "zh": "成功、缺失、成功的文件序列"
+      },
+      "expected": {
+        "en": "The second row is error=open, the third still reports valid counts, summary failed=1, and process exit is 1.",
+        "zh": "第二行为 error=open，第三行仍有有效计数，汇总 failed=1，进程退出 1。"
+      },
+      "reason": {
+        "en": "A per-file failure must not cancel unrelated work or hide its position.",
+        "zh": "单文件失败不能取消其他任务，也不能隐藏其位置。"
+      }
+    },
+    {
+      "case": {
+        "en": "A directory and a FIFO with no writer",
+        "zh": "目录与没有写入者的 FIFO"
+      },
+      "expected": {
+        "en": "Both report error=not-regular without hanging; files are created only in the test’s temporary directory.",
+        "zh": "两者均报告 error=not-regular，不能卡住；文件只创建在测试临时目录。"
+      },
+      "reason": {
+        "en": "Checks type validation and nonblocking FIFO opening before the rejection.",
+        "zh": "检查类型验证，以及拒绝 FIFO 前的非阻塞打开。"
+      }
+    },
+    {
+      "case": {
+        "en": "Exactly 8 MiB and then one byte larger",
+        "zh": "恰好 8 MiB，再多一个字节"
+      },
+      "expected": {
+        "en": "The exact limit succeeds; the larger file reports too-large without numeric partial counts.",
+        "zh": "恰好上限时成功，超过时报告 too-large，不打印部分数值计数。"
+      },
+      "reason": {
+        "en": "Checks the inclusive limit and the subtraction guard.",
+        "zh": "检查包含上限的边界与减法保护。"
+      }
+    },
+    {
+      "case": {
+        "en": "48 repeated runs of 37 synthetic jobs",
+        "zh": "37 个合成任务重复运行 48 次"
+      },
+      "expected": {
+        "en": "Workers 1, 2, 4, and 16 all match an independent oracle and the one-worker stdout, byte for byte.",
+        "zh": "1、2、4、16 个线程都与独立算法及单线程标准输出逐字节一致。"
+      },
+      "reason": {
+        "en": "Exercises varied schedules and queue reuse; it is bounded evidence, not proof of all schedules or a speed benchmark.",
+        "zh": "覆盖不同调度与队列复用；这是有界证据，不是所有调度的证明，也不是速度测试。"
+      }
+    },
+    {
+      "case": {
+        "en": "Queue unit probe: close after filling all four slots",
+        "zh": "队列探针：填满四槽后关闭"
+      },
+      "expected": {
+        "en": "New pushes fail; existing indices drain in FIFO order; the final pop returns false; repeated close remains safe.",
+        "zh": "新入队失败，已有编号按先进先出取完，最后出队返回 false，重复关闭仍安全。"
+      },
+      "reason": {
+        "en": "Directly distinguishes close-and-drain from discard-on-close.",
+        "zh": "直接区分关闭后排空和关闭时丢弃。"
+      }
+    },
+    {
+      "case": {
+        "en": "Injected creation failures and read failures",
+        "zh": "注入创建失败与读取失败"
+      },
+      "expected": {
+        "en": "Failure before any worker or after two workers exits 1 cleanly; a read EIO reports error=read; one EINTR retries successfully.",
+        "zh": "尚无线程或已创建两个时失败都正常退出 1；读取 EIO 报告 error=read；一次 EINTR 后成功重试。"
+      },
+      "reason": {
+        "en": "Tests rare negative paths with temporary build shims rather than exhausting system resources.",
+        "zh": "通过临时编译替身测试少见失败路径，不耗尽系统资源。"
+      }
+    }
+  ],
+  "design_notes": [
+    {
+      "title": {
+        "en": "Why no result mutex is necessary",
+        "zh": "为什么结果不需要互斥锁"
+      },
+      "body": {
+        "en": "Main initializes the shared context before creating workers. Queue transitions are synchronized by one mutex. Each job index is produced once and removed once, giving its slot exactly one writer. Distinct array elements are separate objects. Main never reads any slot during the worker phase; successful joins synchronize with completion before reporting. This is an ownership-and-phase argument, not an assumption about timing. It would stop being valid if workers updated a shared total or if main polled partially written results.",
+        "zh": "主线程在线程创建前初始化共享上下文，队列变化由一把锁同步。每个任务编号只产生和取出一次，因此对应槽只有一个写入者。数组不同元素是不同对象。工作阶段主线程不读任何结果，报告前成功 join 与线程完成同步。这是所有权与阶段的论证，不是对时机的猜测。若工作线程更新共享总数，或主线程轮询未写完结果，此论证就不再成立。"
+      }
+    },
+    {
+      "title": {
+        "en": "Capacity bounds queued work, not the whole process",
+        "zh": "队列容量约束排队任务，不代表整个进程内存"
+      },
+      "body": {
+        "en": "The four-slot queue limits waiting indices and applies backpressure. At most 16 files are actively scanned, and up to 128 result slots are kept for ordered output. Each scanner reuses one 4096-byte buffer, so file length does not increase its memory. Runtime thread stacks also consume memory and are not included in that 4096-byte figure. Counting takes O(B + J) work for B bytes and J jobs, plus scheduling and waiting. Rejecting an oversized file may read one extra buffer to discover the limit was exceeded.",
+        "zh": "四槽队列限制等待编号并形成背压，最多 16 个文件同时扫描，最多保留 128 个结果槽用于按序输出。每个扫描器复用一个 4096 字节缓冲区，内存不随文件长度增长。系统线程栈也占内存，不包括在 4096 字节数字里。B 个字节、J 个任务的计数工作量为 O(B + J)，另有调度与等待。拒绝超大文件时，可能多读一个缓冲区才知道已超限。"
+      }
+    },
+    {
+      "title": {
+        "en": "Recovery is deliberately limited",
+        "zh": "恢复能力有明确限制"
+      },
+      "body": {
+        "en": "Queue initialization unwinds initialized components. Partial thread creation has orderly close/join/destroy cleanup. Per-file open, metadata, type, read, size, and close errors remain visible while unrelated jobs continue. Unexpected runtime synchronization errors instead terminate the process immediately after a diagnostic. That policy does not promise a complete report or graceful cleanup. No thread cancellation, signal shutdown, or file-read deadline is implemented. A slow regular-file filesystem or repeated EINTR can still delay a run.",
+        "zh": "队列初始化会撤销已初始化部件，线程部分创建失败有关闭、join、销毁的正常回收路径。单文件打开、元数据、类型、读取、大小和关闭错误都会显示，其他任务继续。意外的运行时同步错误则在诊断后立即结束进程，不承诺完整报告或优雅清理。未实现线程取消、信号退出和文件读取时限。慢普通文件系统或反复 EINTR 仍可能拖延程序。"
+      }
+    },
+    {
+      "title": {
+        "en": "Stable byte semantics, not a text-language parser",
+        "zh": "稳定字节语义，不是自然语言解析器"
+      },
+      "body": {
+        "en": "Logical lines include a final nonempty suffix, so this line count differs from counting LF alone. Exactly six ASCII whitespace bytes split words; multibyte characters and zero bytes are ordinary non-separators. No Unicode segmentation or locale-sensitive classification is claimed. Input files must stay unchanged for repeatable results. The supplied synthetic regular files are the intended learning inputs; accepting user paths does not make this a secure filesystem sandbox.",
+        "zh": "逻辑行包括末尾非空尾段，所以行数不等于只数 LF。单词仅由六种 ASCII 空白字节分隔，多字节字符和零字节只是普通非分隔字节。不声称实现 Unicode 分词或地区敏感分类。要重复得到相同结果，输入文件必须保持不变。所附合成普通文件是学习输入；接受用户路径不代表它是安全文件系统沙箱。"
+      }
+    },
+    {
+      "title": {
+        "en": "Correctness evidence does not establish a speedup",
+        "zh": "正确性证据不能证明提速"
+      },
+      "body": {
+        "en": "A fixed pool avoids creating one thread per file, but startup, locks, storage bandwidth, and file-cache effects still cost time. These tiny runs deliberately print no timings. Repeated deterministic output and the optional ThreadSanitizer run check observed behavior, not every possible schedule. Tests use independent byte-count and regex expectations, bounded own fixtures, temporary builds, and subprocess timeouts. A genuine performance extension must compare equivalent workloads and report repeated measurements.",
+        "zh": "固定线程池避免每个文件都创建新线程，但启动、锁、存储带宽和文件缓存仍有成本。这些小运行有意不打印耗时。输出重复一致和可选 ThreadSanitizer 仅检查观察到的行为，不覆盖所有可能调度。测试使用独立字节/正则算法、有界自有样例、临时构建及子进程超时。真正的性能扩展必须比较相同工作量，并报告重复测量。"
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "title": {
+        "en": "Make queue capacity a bounded experiment",
+        "zh": "把队列容量变成有界实验参数"
+      },
+      "plan": {
+        "en": "Add a validated capacity argument from 1 through 8, keeping fixed maximum storage and the same mutex/condition rules. Compare capacity with worker count: they control waiting jobs and active consumers separately.",
+        "zh": "增加 1 到 8 的合法容量参数，仍用固定上限存储和相同锁/条件规则。比较容量与线程数：它们分别控制等待任务和活跃消费者。"
+      },
+      "acceptance": {
+        "en": "Capacities 1, 4, and 8 must produce identical output for zero jobs, 37 jobs, and missing files. Invalid capacities must fail before threads start. Explain each updated invariant.",
+        "zh": "容量 1、4、8 在零任务、37 项任务和缺失文件情况下输出必须一致。非法容量在线程启动前失败，并解释修改后的不变量。"
+      }
+    },
+    {
+      "title": {
+        "en": "Measure throughput without changing report semantics",
+        "zh": "测量吞吐量，同时保持报告语义"
+      },
+      "plan": {
+        "en": "Generate bounded larger local fixtures, measure elapsed time outside the result format, and compare 1, 2, 4, and 16 workers with identical bytes. Record compiler settings, repetitions, file sizes, and cache conditions. Throughput is total successful bytes divided by elapsed seconds.",
+        "zh": "生成有界的大一些的本地样例，在结果格式之外测量耗时，用相同字节比较 1、2、4、16 线程。记录编译设置、重复次数、文件大小和缓存条件。吞吐量等于成功处理总字节除以秒数。"
+      },
+      "acceptance": {
+        "en": "Counts remain byte-for-byte identical. Report repeated measurements and their variability; make a speedup claim only if evidence supports it. Keep fixtures bounded and generated inside a temporary test directory.",
+        "zh": "计数保持逐字节一致。报告重复测量及其变化，只有证据支持才声称提速。样例保持有界，并在临时测试目录生成。"
+      }
+    }
+  ],
+  "references": [
+    {
+      "title": "The Open Group POSIX.1-2024 — condition waits, including pthread_cond_wait",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_cond_clockwait.html"
+    },
+    {
+      "title": "The Open Group POSIX.1-2024 — pthread_join",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799.2024edition/functions/pthread_join.html"
+    },
+    {
+      "title": "The Open Group POSIX.1-2024 — General Concepts, Memory Synchronization 4.15.2",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html"
+    },
+    {
+      "title": "The Open Group Base Specifications Issue 6 — pthread_create",
+      "url": "https://pubs.opengroup.org/onlinepubs/000095399/functions/pthread_create.html"
+    },
+    {
+      "title": "The Open Group POSIX.1-2024 — read",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html"
+    }
+  ]
+}

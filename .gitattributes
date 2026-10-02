@@ -1,0 +1,7 @@
+# Teaching fixtures use intentional byte sequences, including CRLF.
+projects/**/fixtures/* -text
+site/project-code/**/fixtures/* -text
+
+# Spaces and tabs are the actual input being taught here.
+projects/comp2017-thread-pipeline/fixtures/spaces.txt -whitespace
+site/project-code/comp2017-thread-pipeline/fixtures/spaces.txt -whitespace

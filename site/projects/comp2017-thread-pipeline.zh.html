@@ -1,0 +1,1005 @@
+<!doctype html><html lang="zh-Hans" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>有界文件统计流水线 | Guoliang</title><meta name="description" content="构建可实际使用的 pthread 工作线程池，统计文件的字节、行和单词。四槽队列协调任务，每个输入拥有独立结果槽，使最终报告顺序确定。"><link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css?v=8df55cf946ae"><script defer src="../assets/app.js?v=a47d26b4bea5"></script></head><body class="field-guide project-guide"><a class="skip" href="#main">跳到正文</a><header class="topbar"><div class="wrap"><a class="brand" href="../index.html"><span class="monogram">GW</span>Guoliang</a><nav><a href="../courses/comp2017.zh.html#projects">COMP2017</a><div class="language-switch"><a href="comp2017-thread-pipeline.en.html" data-language="en" lang="en">EN</a><a href="comp2017-thread-pipeline.zh.html" data-language="zh" lang="zh" aria-current="page">中文</a></div><button type="button" class="theme-button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap"><header class="course-hero"><div class="eyebrow">GUOLIANG / COMP2017 / PROJECT 03</div><h1>有界文件统计流水线</h1><p>构建可实际使用的 pthread 工作线程池，统计文件的字节、行和单词。四槽队列协调任务，每个输入拥有独立结果槽，使最终报告顺序确定。</p><p class="course-meta">中级 C，分为五个小阶段。先理解所有权，再分析线程调度。 · C11 / POSIX · EN / ZH</p><div class="actions"><a class="button primary" href="../downloads/comp2017-thread-pipeline.zip" download>下载完整工程 ↓</a><a class="button" href="#source">阅读完整源文件 ↓</a><a class="button" href="../notes/comp2017-thread-pipeline.zh.md" download>下载本篇讲义 ↓</a></div></header><section class="learning-route" aria-labelledby="route-title"><div class="route-heading"><div><span class="eyebrow">GUOLIANG / BUILD ROUTE</span><h2 id="route-title">每次完成一个可运行的小部分</h2></div></div><ol class="route-flow"><li><a class="route-node" href="#milestone-precise-counts"><span class="route-step">01 →</span><h3>1. 先精确定义一个文件的答案</h3><p>先实现正确的单文件扫描器，再加入线程池。</p></a></li><li><a class="route-node" href="#milestone-bounded-queue"><span class="route-step">02 →</span><h3>2. 用有界队列代替不断增长的列表</h3><p>环形队列有空位时才发布任务。</p></a></li><li><a class="route-node" href="#milestone-owned-results"><span class="route-step">03 →</span><h3>3. 给每个任务唯一写入者</h3><p>用小型工作循环连接队列和扫描器，同时保持报告顺序。</p></a></li><li><a class="route-node" href="#milestone-close-drain-join"><span class="route-step">04 →</span><h3>4. 结束时不丢弃已入队任务</h3><p>区分“暂时没任务”和“再也不会有任务”，安全结束共享对象的生命周期。</p></a></li><li><a class="route-node" href="#milestone-failure-evidence"><span class="route-step">05 →</span><h3>5. 同时检验失败路径与正常路径</h3><p>用有界自动化测试检查部分启动失败、文件失败、非法命令行和确定性输出。</p></a></li></ol></section><div class="reading-tools"><div role="group" aria-label="阅读字号"><span>阅读字号</span><button type="button" data-reading-size="normal" aria-pressed="true">A · 舒适</button><button type="button" data-reading-size="large" aria-pressed="false">A+ · 更大</button></div><a href="#run">构建并运行这个工程 ↓</a></div><div class="course-layout"><aside class="toc"><details open><summary>工程学习目录</summary><ol><li><a href="#story">问题从哪里来</a></li><li><a href="#contract">需求与契约</a></li><li><a href="#architecture">结构与所有权</a></li><li><a href="#milestone-precise-counts">1. 先精确定义一个文件的答案</a></li><li><a href="#milestone-bounded-queue">2. 用有界队列代替不断增长的列表</a></li><li><a href="#milestone-owned-results">3. 给每个任务唯一写入者</a></li><li><a href="#milestone-close-drain-join">4. 结束时不丢弃已入队任务</a></li><li><a href="#milestone-failure-evidence">5. 同时检验失败路径与正常路径</a></li><li><a href="#run">构建与运行</a></li><li><a href="#debug">定位并解释错误</a></li><li><a href="#test">验证契约</a></li><li><a href="#decisions">工程取舍</a></li><li><a href="#source">完整源文件</a></li><li><a href="#next">有计划地扩展</a></li></ol></details></aside><div class="course-body"><section class="project-section" id="story" data-reading-id="story"><h2>从一个完整故事开始</h2><p>米娜在学校机器人社做志愿者。每次活动结束，她收到几份小笔记，想知道各文件有多少字节、逻辑行和单词。有些笔记是空的，有些末尾没有换行，抄写的文件名也可能有误。即使一个文件打不开，她仍需要有用的报告。</p><p>她先做一个定义清楚的单文件扫描器，用很小的合成笔记核对。接着给文件参数编号，把编号放进只有四个位置的队列。位置用完时，生产者等待空位。多个工作线程可以领取不同任务，但每个线程只打开自己的文件，只写该任务的结果。这样先说清所有权，再引入并发。</p><p>最后一个任务入队，并不等于最后一个任务已经完成。米娜关闭队列，表示不再有新任务，让消费者处理剩余任务，再等待所有工作线程结束。之后才按输入顺序打印结果槽。打不开的文件会明确标为失败，不会假装得到全零统计。</p><p>最后，她用长短不同的输入、重复调度和可控故障检验程序。这个项目展示正确的协调方式，小样例并不证明线程越多越快。代码、样例和说明都是 Guoliang 原创教学内容，与所提供的作业无关。</p><h3>开始前先读</h3><ul><li><a href="../courses/comp2017.zh.html#file-streams">文件流、二进制记录与错误</a> — 统计前先区分成功的短读取、文件结束和读取错误。</li><li><a href="../courses/comp2017.zh.html#allocation-ownership">动态分配与对象生命周期</a> — 所有工作线程结束前，主线程栈对象和借用的 argv 路径都必须有效。</li><li><a href="../courses/comp2017.zh.html#thread-lifecycle">创建线程、等待结束与取消</a> — 创建数量有上限的可等待线程，只 join 创建成功的句柄。</li><li><a href="../courses/comp2017.zh.html#data-races-mutexes">数据竞争、互斥锁与原子性</a> — 共享队列状态用互斥锁保护，每项结果由一个线程独占写入。</li><li><a href="../courses/comp2017.zh.html#condition-variables">条件变量与生产者—消费者等待</a> — 用 while 循环等待状态条件，每次醒来都重新检查。</li><li><a href="../courses/comp2017.zh.html#parallel-patterns">并行模式：划分、等待与合并</a> — 区分生产者、固定消费者池和按序报告阶段。</li></ul><h3>完成后你能够</h3><ul><li>定义并实现字节数、逻辑行数和 ASCII 分隔单词数，正确处理读取缓冲区边界。</li><li>解释环形队列不变量、背压、条件等待以及关闭后排空。</li><li>说明唯一写入者和成功 join 如何避免结果数据竞争。</li><li>用有界样例、独立预期结果和超时测试正常运行、启动失败与 I/O 失败。</li></ul></section><section class="project-section" id="contract" data-reading-id="contract"><h2>把需求写成可检查的行为</h2><article class="design-card"><h3>接受 WORKERS 和零到 128 个文件路径，WORKERS 限于 1..16。</h3><p>有限线程池和有界任务列表便于理解资源用量。零任务也是正常生命周期。</p><p><strong>检查方法：</strong>尝试 1、16、0、17、2x、不填线程数，以及 129 个文件参数。非法命令行退出码为 2，且不打印报告。</p></article><article class="design-card"><h3>队列容量固定为四个编号，使用一把互斥锁及 not_empty、not_full 条件变量。</h3><p>队列满时生产者等待，而非增加存储。暂时没有任务时消费者休眠。</p><p><strong>检查方法：</strong>检查两个条件 while 循环，测试少量任务、超过容量的任务和重复执行的 37 个任务。</p></article><article class="design-card"><h3>每个发布的编号只取出一次，每个结果只有一个写入者，所有线程 join 后才打印。</h3><p>并发完成的先后会变化。独立结果槽和之后的报告阶段保持输入顺序。</p><p><strong>检查方法：</strong>将 1、2、4、16 个线程的完整标准输出与独立顺序算法比较。</p></article><article class="design-card"><h3>行数计算 LF，加上末尾未终止的逻辑行；单词仅由六种 ASCII 空白字节分隔。</h3><p>空文件、末尾换行和缓冲区边界，都应先定义语义再写代码。</p><p><strong>检查方法：</strong>空文件三项计数均为 0。晚间样例只有一个 LF，但有 26 字节、2 行、5 个单词。</p></article><article class="design-card"><h3>只接受普通文件，每项扫描最多 8 MiB；文件失败要报告，但不丢弃其他任务。</h3><p>教学程序应有明确存储和工作量上限。部分计数不是完整结果。</p><p><strong>检查方法：</strong>测试恰好达到字节上限、多一个字节、缺失路径、目录以及没有写入方的 FIFO。</p></article><article class="design-card"><h3>正常路径关闭并排空；线程创建失败时，先关闭队列，再等待已创建线程。</h3><p>线程若还在等待永远不会出现的任务，join 会卡住。未成功创建的句柄不能 join。</p><p><strong>检查方法：</strong>临时测试替身强制第一个线程创建前失败，以及创建两个后失败。两者必须退出 1，无报告且不超时。</p></article></section><section class="project-section" id="architecture" data-reading-id="architecture"><h2>追踪数据和它的所有者</h2><ol class="architecture-flow"><li><h3>生产者与资源拥有者：main.c</h3><p>验证所有参数，初始化存储，创建完整线程池，每个编号只发布一次，然后关闭队列。同一主线程随后执行 join 和报告。</p></li><li><h3>有界任务交接：queue.c</h3><p>环形队列最多放四个编号。count、head、closed 和 entries 由一把锁保护。not_empty 和 not_full 唤醒线程后，线程必须重新检查条件。</p></li><li><h3>消费者与扫描器：consume + stats.c</h3><p>每个工作线程反复取一个编号，释放队列锁，打开自己的普通文件，并写入对应的 FileStats。文件可以按任意顺序完成。</p></li><li><h3>join 后按序报告</h3><p>所有 join 成功后，主线程从 0 到 J−1 读取结果槽。失败槽打印错误类别，成功槽打印完整计数。</p></li></ol><p>初始化 → 创建全部线程 → 发布编号 → 关闭 → 排空 → JOIN → 报告。主线程生产时，消费者可以同时扫描。未关闭且空：消费者等待；未关闭且满：生产者等待；已关闭且非空：继续消费；已关闭且空：退出。若创建失败，此时尚未发布编号：关闭 → JOIN 已创建线程 → 销毁 → 退出 1。</p><div class="trace-wrap" tabindex="0"><table class="trace-table"><caption>谁负责每一种资源？</caption><thead><tr><th scope="col">资源</th><th scope="col">所有者</th><th scope="col">释放时机</th></tr></thead><tbody><tr><td>队列字段和同步对象</td><td>主线程拥有生命周期。各线程借用队列，运行中的状态访问都持有队列锁。</td><td>所有已创建线程 join 后，主线程才销毁两个条件变量和互斥锁。</td></tr><tr><td>argv 路径和 WorkerContext</td><td>主线程把稳定只读路径和已初始化上下文借给各工作线程。</td><td>上下文在最后一次 join 前始终留在主线程栈帧中，argv 在进程退出前有效。</td></tr><tr><td>每个任务一个 FileStats 槽</td><td>取出编号 i 的工作线程独占写入 results[i]。主线程只在所有线程 join 后读取。</td><td>存储是主线程栈中的有界数组，无需 free，工作线程访问期间始终有效。</td></tr><tr><td>文件描述符和 4096 字节缓冲区</td><td>只有扫描它的工作线程使用该描述符、文件偏移、缓冲区和单词状态。</td><td>打开成功后，每条路径都会由 scan_file 尝试关闭，局部缓冲区随调用结束。</td></tr><tr><td>可等待的线程句柄</td><td>主线程用 started 表示前面多少个句柄创建成功。</td><td>启动成功和部分启动失败都 join 该前缀，绝不 join 未创建的句柄。</td></tr></tbody></table></div></section><section class="project-section" id="milestone-precise-counts" data-reading-id="milestone-precise-counts"><h2>01 / 1. 先精确定义一个文件的答案</h2><div class="milestone-goal"><p>先实现正确的单文件扫描器，再加入线程池。</p></div><p>并发无法修复含糊定义。一行是以 LF 结束的一段，或者末尾非空的未终止片段。单词在非分隔字节跟随分隔字节或流起点时开始。这是两个小状态机，状态必须跨短读取和缓冲区边界保留。</p><ol class="execution-steps"><li><p>先读 stats.h：结果包含计数、状态和可选系统错误。只有 SCAN_OK 才能把计数作为完整结果报告。</p></li><li><p>用空文件、a、a\n 和 a b 追踪计数器。把 in_word 和 last 放在读取循环外。转换为 size_t 前先检查 received &lt; 0。</p></li><li><p>到达 EOF 时，仅当文件非空且末尾不是 LF 才补一行。读取失败时保留错误，不报告部分计数。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-precise-counts" class="language-c"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">count_stream</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">in_word</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">received</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="w"> </span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_READ</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">received</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">FILE_BYTE_LIMIT</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_TOO_LARGE</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">length</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">lines</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">separator</span><span class="p">(</span><span class="kt">byte</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">space</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">in_word</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">words</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">in_word</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">space</span><span class="p">;</span>
+<span class="w">            </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">byte</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">lines</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre><p>这是最终扫描器的节选，不是独立程序。separator 和相关类型在完整项目中。result-&gt;bytes 记录已处理块，减法检查保证统计不超过 8 MiB 约定。缓冲区反复使用，in_word 和 last 则跨缓冲区保留。</p><details class="check"><summary>为什么六个空白字节的样例有零个单词，却有两个逻辑行？</summary><p>每个字节都是分隔符，所以没有单词开始。有一个 LF，之后还有垂直制表和换页字节，这个非空尾段构成第二行。</p></details></section><section class="project-section" id="milestone-bounded-queue" data-reading-id="milestone-bounded-queue"><h2>02 / 2. 用有界队列代替不断增长的列表</h2><div class="milestone-goal"><p>环形队列有空位时才发布任务。</p></div><p>队列容量和总任务数是两回事。head 是最早的占用位置，count 是占用数量。下一插入位置为 (head + count) 对容量取模。一把锁让条件检查和随后的修改成为受保护的状态变化。等待必须释放锁，消费者才能取走任务腾出空位。</p><ol class="execution-steps"><li><p>画四个格子，追踪入队 0、入队 1、出队、入队 2。核对每次操作前后 0 &lt;= count &lt;= 4。</p></li><li><p>对照阅读 queue_push 和 queue_pop。生产者等待 not_full，消费者等待 not_empty。两者都用包含 closed 的 while 条件。</p></li><li><p>在锁内修改 count 后通知，再解锁。文件读取完全放在队列锁之外。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-bounded-queue" class="language-c"><span class="kt">bool</span><span class="w"> </span><span class="nf">queue_push</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex lock"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">QUEUE_CAPACITY</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span>
+<span class="w">                     </span><span class="s">"wait not_full"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">head</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">QUEUE_CAPACITY</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">job</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">),</span><span class="w"> </span><span class="s">"signal not_empty"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><p>这个完整函数节选自 queue.c。条件唤醒并不预留空位，while 会重新检查共享状态。即使仍有空间，已关闭队列也拒绝新任务。queue_pop 在同一把锁下取出一个编号，并通知 not_full。</p><details class="check"><summary>为什么扫描文件时仍持有队列锁会破坏预期的并发？</summary><p>其他工作线程无法取任务，主线程也无法入队，直到整个文件扫描结束。锁只保护短暂队列变化，不应包住独立扫描工作。</p></details></section><section class="project-section" id="milestone-owned-results" data-reading-id="milestone-owned-results"><h2>03 / 3. 给每个任务唯一写入者</h2><div class="milestone-goal"><p>用小型工作循环连接队列和扫描器，同时保持报告顺序。</p></div><p>共享结果数组并不自动产生竞争。每个编号只入队一次，由一次受锁保护的出队取走，因此每个元素恰好有一个写入者。工作线程共享只读上下文，但不共享可变计数器或文件偏移。主线程等待所有写入者结束后才观察数组。</p><ol class="execution-steps"><li><p>沿着 argv[i + 2]、queue_push(i)、queue_pop(&amp;job) 和 results[job] 追踪任务 i。打印给用户的编号从一开始。</p></li><li><p>所有 join 完成前，队列、上下文、路径和结果都要有效。不要把不断变化的循环局部任务变量地址交给线程。</p></li><li><p>scan_file 失败时，把错误写入同一结果槽。消费者循环仍继续领取后续任务。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-owned-results" class="language-c"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">consume</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">argument</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">WorkerContext</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">argument</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">job</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">queue_pop</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">job</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Exactly one pop receives each index. No other worker writes this</span>
+<span class="cm">           result, and main waits for all joins before reading any result. */</span>
+<span class="w">        </span><span class="n">scan_file</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">paths</span><span class="p">[</span><span class="n">job</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">results</span><span class="p">[</span><span class="n">job</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><p>这段最终程序节选使用 main.c 中声明的 WorkerContext。queue_pop 返回前已释放队列锁，扫描能够并发进行。工作线程不打印。不同 FileStats 对象有不同写入者，主线程之后的 join 保证读取前的可见性。</p><details class="check"><summary>任务 8 比任务 1 先结束时，结果放在哪里，何时打印？</summary><p>写入 results[7]。所有工作线程 join 后，主线程第八个打印该槽。输出顺序不由完成顺序决定。</p></details></section><section class="project-section" id="milestone-close-drain-join" data-reading-id="milestone-close-drain-join"><h2>04 / 4. 结束时不丢弃已入队任务</h2><div class="milestone-goal"><p>区分“暂时没任务”和“再也不会有任务”，安全结束共享对象的生命周期。</p></div><p>空队列本身无法告诉消费者该等待还是离开，closed 补充这个信息。关闭不会删除待处理编号。关闭后 count 仍大于零就继续取出，直到变为零才返回。广播唤醒所有等待者，因为每个空闲线程都必须知道该结束了，即使文件列表一开始就为空。</p><ol class="execution-steps"><li><p>把出队条件读成“为空且仍未关闭时等待”。关闭但非空的队列仍然可消费。</p></li><li><p>生产循环之后调用 queue_close，完成阶段切换。追踪零任务情况：所有工作线程最终都必须看到 closed 并退出。</p></li><li><p>等待每个已创建线程结束，再销毁同步对象并打印。工作线程仍可能访问的互斥锁或条件变量不能销毁。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-close-drain-join" class="language-c"><span class="kt">void</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex lock"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="cm">/* All empty-queue consumers must learn that no future job can arrive. */</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">),</span><span class="w"> </span><span class="s">"broadcast not_empty"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">),</span><span class="w"> </span><span class="s">"broadcast not_full"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre><p>这段 queue.c 节选在两类等待共用的锁内修改 closed。not_empty 广播结束空队列等待，not_full 也会让等待的生产者检查关闭状态。在当前程序中，只有主线程在生产完成后关闭，因此正常生产者不会在这次关闭时被阻塞。queue_pop 会排空而非丢弃任务。</p><details class="check"><summary>关闭队列时有十六个空闲线程，为什么只通知一个不够？</summary><p>其余线程可能一直睡眠，因为之后不会再有任务到达并通知它们。广播让每个线程重新获取锁，看到已关闭且为空，然后返回。</p></details></section><section class="project-section" id="milestone-failure-evidence" data-reading-id="milestone-failure-evidence"><h2>05 / 5. 同时检验失败路径与正常路径</h2><div class="milestone-goal"><p>用有界自动化测试检查部分启动失败、文件失败、非法命令行和确定性输出。</p></div><p>线程创建成功后句柄才有效。如果完整线程池创建前就发布任务，失败时部分任务可能已经运行，使清理更复杂。本设计先创建完整线程池，所以启动失败时能关闭空队列，join 成功的句柄前缀，不打印误导性的部分报告。</p><ol class="execution-steps"><li><p>把 started 分别取 0 和 2，追踪创建失败分支。只 join 已创建线程，此时还没有发布任何任务编号。</p></li><li><p>运行 make test。它在临时副本编译，独立计算预期计数，检查负面情况，并用不同线程数重复执行 37 个任务。</p></li><li><p>阅读 pthread_create 和 read 的临时故障注入替身。它们安全触发少见失败。Clang 运行环境支持时，可选运行 python3 test.py --tsan。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-failure-evidence" class="language-c"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">workers</span><span class="p">;</span><span class="w"> </span><span class="n">started</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">threads</span><span class="p">[</span><span class="n">started</span><span class="p">],</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">consume</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">context</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"thread creation failed after %zu workers "</span>
+<span class="w">                            </span><span class="s">"(pthread error %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">started</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span>
+<span class="w">            </span><span class="cm">/* No jobs are published until the whole pool exists. */</span>
+<span class="w">            </span><span class="n">queue_close</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">            </span><span class="n">join_workers</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span><span class="w"> </span><span class="n">started</span><span class="p">);</span>
+<span class="w">            </span><span class="n">queue_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_FAILURE</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre><p>这是 main.c 实际的线程池创建循环，started、workers、context、queue、threads 和 error 在上方声明。运行中的互斥锁、条件变量或 join 错误采用另一套明确的快速失败策略，不能把它说成优雅恢复。完整程序及其错误检查才是可运行单元。</p><details class="check"><summary>48 次压力运行一致，或一次 ThreadSanitizer 无报告，能证明所有调度安全吗？</summary><p>不能。它们只能暴露实际观察到的执行中的缺陷。还需要论证任务唯一交付、每槽唯一写入者、条件受锁保护、对象生命周期正确，以及读取前完成 join。</p></details></section><section class="project-section" id="run" data-reading-id="run"><h2>构建、运行并读懂结果</h2><p>使用 macOS 或 Linux 上支持 C11 的 Clang、make 和 Python 3。Windows 可使用 WSL 等 Linux 环境。这里的 Makefile 默认使用 Clang。在下载目录打开终端，解压并进入工程文件夹。make 构建可执行文件；make test 检查程序行为。</p><pre class="code highlighted" tabindex="0"><code class="language-bash">unzip<span class="w"> </span>comp2017-thread-pipeline.zip
+<span class="nb">cd</span><span class="w"> </span>comp2017-thread-pipeline
+make
+make<span class="w"> </span>test
+</code></pre><article class="code-example"><h3>三份笔记，三个线程</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./thread_pipeline<span class="w"> </span><span class="m">3</span><span class="w"> </span>fixtures/morning.txt<span class="w"> </span>fixtures/evening.txt<span class="w"> </span>fixtures/empty.txt
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">job=1 bytes=37 lines=2 words=6
+job=2 bytes=26 lines=2 words=5
+job=3 bytes=0 lines=0 words=0
+summary files=3 ok=3 failed=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>晚间文件末尾无换行的行仍被计入，空文件也成功。标准输出按文件参数原顺序排列。退出码为 0，标准错误为空。先运行一次 make；这里的输出面板不包含编译信息。</p></article><article class="code-example"><h3>任务数多于四槽队列</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./thread_pipeline<span class="w"> </span><span class="m">1</span><span class="w"> </span>fixtures/morning.txt<span class="w"> </span>fixtures/evening.txt<span class="w"> </span>fixtures/blank.txt<span class="w"> </span>fixtures/empty.txt<span class="w"> </span>fixtures/spaces.txt
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">job=1 bytes=37 lines=2 words=6
+job=2 bytes=26 lines=2 words=5
+job=3 bytes=2 lines=2 words=0
+job=4 bytes=0 lines=0 words=0
+job=5 bytes=6 lines=2 words=0
+summary files=5 ok=5 failed=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>五个任务通过一次只放四个编号的队列，即使只有一个消费者也能完成。空行和纯空白仍是有意义的情况。退出码为 0，标准错误为空。此样例验证正确性，不衡量吞吐量。</p></article><article class="code-example"><h3>零文件与十六个等待消费者</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./thread_pipeline<span class="w"> </span><span class="m">16</span>
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">summary files=0 ok=0 failed=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>空任务列表合法。主线程关闭队列并广播，各消费者看到空且关闭后返回，每个线程都被 join。退出码为 0，无标准错误。</p></article><article class="code-example"><h3>缺失文件保留自己的位置</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./thread_pipeline<span class="w"> </span><span class="m">2</span><span class="w"> </span>fixtures/morning.txt<span class="w"> </span>fixtures/missing.txt<span class="w"> </span>fixtures/evening.txt
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">job=1 bytes=37 lines=2 words=6
+job=2 error=open
+job=3 bytes=26 lines=2 words=5
+summary files=3 ok=2 failed=1
+</pre></div><p class="code-hint">退出状态：1. </p><p>第二项报告 error=open，第三项仍成功且打印在第三位。退出码为 1，标准错误说明任务 2、路径和系统错误；系统文字因平台而异。这里仅显示精确标准输出。</p></article><article class="code-example"><h3>拒绝非法线程数</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./thread_pipeline<span class="w"> </span><span class="m">0</span><span class="w"> </span>fixtures/morning.txt
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output"></pre></div><p class="code-hint">退出状态：2. 没有标准输出。请查看退出状态以及标准错误中的诊断信息。</p><p>不打印报告。退出码为 2，标准错误打印用法及上限。验证在线程创建前发生。标准输出有意为空。</p></article></section><section class="project-section" id="debug" data-reading-id="debug"><h2>依据现象定位错误</h2><article class="design-card"><h3>零文件运行一直不退出。</h3><h4>提出假设</h4><p>关闭时未广播，或等待条件漏掉 closed，导致消费者继续等待。</p><h4>检查相关状态</h4><p>带超时运行 ./thread_pipeline 16。一起阅读 queue_pop 和 queue_close，检查 closed 是否在锁内修改，所有等待消费者是否被通知。</p><h4>修复并验证</h4><p>条件必须为 count 为零且队列未关闭；关闭时广播，之后 join。不要用 sleep 修补卡住。</p></article><article class="design-card"><h3>每次运行的输出行顺序变化。</h3><h4>提出假设</h4><p>工作线程完成时直接打印，或主线程在全部 join 前读取。</p><h4>检查相关状态</h4><p>在 main.c 搜索 printf，确认逐任务打印只在 join_workers 之后执行。用 1 和 16 个线程重复运行 37 个任务。</p><h4>修复并验证</h4><p>工作线程只写自己的编号槽。主线程等待所有线程，再按参数顺序遍历结果数组。</p></article><article class="design-card"><h3>晚间文件只报告一行，或空行文件报告三行。</h3><h4>提出假设</h4><p>EOF 补计遗漏，或末尾已经是 LF 时仍错误补计。</p><h4>检查相关状态</h4><p>检查样例字节并数 LF。晚间文件有一个 LF 和非空尾段；blank.txt 有两个 LF，没有尾段。</p><h4>修复并验证</h4><p>仅在 bytes != 0 且 last != LF 时加一。不能因为读了一个缓冲区就推断多了一行。</p></article><article class="design-card"><h3>长单词在第 4096 字节附近被算成两个。</h3><h4>提出假设</h4><p>in_word 每读一个块都重新初始化，而不是每个文件初始化一次。</p><h4>检查相关状态</h4><p>使用生成的 boundary.bin，追踪第一次读取最后一个字节与下次第一个字节，它们都不是分隔符。</p><h4>修复并验证</h4><p>把 in_word 放在读取循环外。只有分隔符把它变成 false。</p></article><article class="design-card"><h3>线程创建失败后进程卡住。</h3><h4>提出假设</h4><p>主线程关闭队列前就 join 等待中的线程，或 join 了未成功创建的无效句柄。</p><h4>检查相关状态</h4><p>运行 test.py 的注入失败案例，追踪 started，确认此时尚未发布编号。</p><h4>修复并验证</h4><p>先关闭空队列，只 join 成功的句柄前缀，销毁后返回 1。不要继续进入生产循环。</p></article><article class="design-card"><h3>缺失文件被显示为成功且计数全零。</h3><h4>提出假设</h4><p>报告忽略 ScanStatus，把初始化计数当作完成结果。</p><h4>检查相关状态</h4><p>比较 empty.txt 与不存在的路径。计数起初都可能为零，但状态必须不同。</p><h4>修复并验证</h4><p>只有 SCAN_OK 才打印数值计数。在失败编号处保留错误行，进程返回非零退出码。</p></article></section><section class="project-section" id="test" data-reading-id="test"><h2>验证正常行为，也验证失败</h2><div class="test-cases"><article class="design-card"><h3>十六线程、零文件参数</h3><p>只有 files=0 ok=0 failed=0 的汇总行；在子进程超时前退出 0。</p><p>检验关闭广播，以及空与关闭的区别。</p></article><article class="design-card"><h3>容量为四时分别处理一、二、五个任务</h3><p>每个输入恰好一个结果，按输入顺序排列，所有附带文件都成功。</p><p>覆盖任务少于及多于队列槽的情况，不假设谁先运行。</p></article><article class="design-card"><h3>空文件、空行、纯空白和末尾未换行样例</h3><p>检查固定精确计数，包括空文件 0/0/0 和晚间文件 26/2/5。</p><p>把约定的逻辑行和单词定义与终端外观分开。</p></article><article class="design-card"><h3>跨越 4096 字节缓冲区且含零字节和非 ASCII 字节的单词</h3><p>独立字节正则算法与 C 计数一致，单词不会在块边界被拆开。</p><p>检查流状态保留，并避免误用 C 字符串假设。</p></article><article class="design-card"><h3>非法线程数语法与任务数边界</h3><p>0、17、正负号、空格、尾随文字、缺失参数、巨数和 129 项任务退出 2；128 项任务与 0002 线程合法。</p><p>验证线程启动前的参数检查及有界数字累积。</p></article><article class="design-card"><h3>成功、缺失、成功的文件序列</h3><p>第二行为 error=open，第三行仍有有效计数，汇总 failed=1，进程退出 1。</p><p>单文件失败不能取消其他任务，也不能隐藏其位置。</p></article><article class="design-card"><h3>目录与没有写入者的 FIFO</h3><p>两者均报告 error=not-regular，不能卡住；文件只创建在测试临时目录。</p><p>检查类型验证，以及拒绝 FIFO 前的非阻塞打开。</p></article><article class="design-card"><h3>恰好 8 MiB，再多一个字节</h3><p>恰好上限时成功，超过时报告 too-large，不打印部分数值计数。</p><p>检查包含上限的边界与减法保护。</p></article><article class="design-card"><h3>37 个合成任务重复运行 48 次</h3><p>1、2、4、16 个线程都与独立算法及单线程标准输出逐字节一致。</p><p>覆盖不同调度与队列复用；这是有界证据，不是所有调度的证明，也不是速度测试。</p></article><article class="design-card"><h3>队列探针：填满四槽后关闭</h3><p>新入队失败，已有编号按先进先出取完，最后出队返回 false，重复关闭仍安全。</p><p>直接区分关闭后排空和关闭时丢弃。</p></article><article class="design-card"><h3>注入创建失败与读取失败</h3><p>尚无线程或已创建两个时失败都正常退出 1；读取 EIO 报告 error=read；一次 EINTR 后成功重试。</p><p>通过临时编译替身测试少见失败路径，不耗尽系统资源。</p></article></div></section><section class="project-section" id="decisions" data-reading-id="decisions"><h2>Guoliang 的工程取舍</h2><article class="design-card"><h3>为什么结果不需要互斥锁</h3><p>主线程在线程创建前初始化共享上下文，队列变化由一把锁同步。每个任务编号只产生和取出一次，因此对应槽只有一个写入者。数组不同元素是不同对象。工作阶段主线程不读任何结果，报告前成功 join 与线程完成同步。这是所有权与阶段的论证，不是对时机的猜测。若工作线程更新共享总数，或主线程轮询未写完结果，此论证就不再成立。</p></article><article class="design-card"><h3>队列容量约束排队任务，不代表整个进程内存</h3><p>四槽队列限制等待编号并形成背压，最多 16 个文件同时扫描，最多保留 128 个结果槽用于按序输出。每个扫描器复用一个 4096 字节缓冲区，内存不随文件长度增长。系统线程栈也占内存，不包括在 4096 字节数字里。B 个字节、J 个任务的计数工作量为 O(B + J)，另有调度与等待。拒绝超大文件时，可能多读一个缓冲区才知道已超限。</p></article><article class="design-card"><h3>恢复能力有明确限制</h3><p>队列初始化会撤销已初始化部件，线程部分创建失败有关闭、join、销毁的正常回收路径。单文件打开、元数据、类型、读取、大小和关闭错误都会显示，其他任务继续。意外的运行时同步错误则在诊断后立即结束进程，不承诺完整报告或优雅清理。未实现线程取消、信号退出和文件读取时限。慢普通文件系统或反复 EINTR 仍可能拖延程序。</p></article><article class="design-card"><h3>稳定字节语义，不是自然语言解析器</h3><p>逻辑行包括末尾非空尾段，所以行数不等于只数 LF。单词仅由六种 ASCII 空白字节分隔，多字节字符和零字节只是普通非分隔字节。不声称实现 Unicode 分词或地区敏感分类。要重复得到相同结果，输入文件必须保持不变。所附合成普通文件是学习输入；接受用户路径不代表它是安全文件系统沙箱。</p></article><article class="design-card"><h3>正确性证据不能证明提速</h3><p>固定线程池避免每个文件都创建新线程，但启动、锁、存储带宽和文件缓存仍有成本。这些小运行有意不打印耗时。输出重复一致和可选 ThreadSanitizer 仅检查观察到的行为，不覆盖所有可能调度。测试使用独立字节/正则算法、有界自有样例、临时构建及子进程超时。真正的性能扩展必须比较相同工作量，并报告重复测量。</p></article></section><section class="project-section" id="source"><h2>按顺序阅读完整文件</h2><p>下面是下载包中的完整文件。编号表示建议阅读顺序。点击文件清单可直接跳转到代码。</p><ul class="file-index"><li><a href="#file-stats-h">01 / stats.h</a></li><li><a href="#file-stats-c">02 / stats.c</a></li><li><a href="#file-queue-h">03 / queue.h</a></li><li><a href="#file-queue-c">04 / queue.c</a></li><li><a href="#file-main-c">05 / main.c</a></li><li><a href="#file-Makefile">06 / Makefile</a></li><li><a href="#file-test-py">07 / test.py</a></li><li><a href="#file-fixtures-morning-txt">08 / fixtures/morning.txt</a></li><li><a href="#file-fixtures-evening-txt">09 / fixtures/evening.txt</a></li><li><a href="#file-fixtures-blank-txt">10 / fixtures/blank.txt</a></li><li><a href="#file-fixtures-empty-txt">11 / fixtures/empty.txt</a></li><li><a href="#file-fixtures-spaces-txt">12 / fixtures/spaces.txt</a></li><li><a href="#file-README-md">13 / README.md</a></li><li><a href="#file-README-zh-md">14 / README.zh.md</a></li></ul><article class="code-example project-file" id="file-stats-h" data-reading-id="file-stats-h"><h3>01 / stats.h</h3><p>结果约定和文件大小上限</p><div class="code-actions"><button type="button" data-copy-code="code-file-stats-h">复制文件</button><a href="../project-code/comp2017-thread-pipeline/stats.h" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-stats-h" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#ifndef STATS_H</span>
+<span class="cp">#define STATS_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+
+<span class="cp">#define FILE_BYTE_LIMIT (8u * 1024u * 1024u)</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">SCAN_OK</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SCAN_OPEN</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SCAN_METADATA</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SCAN_NOT_REGULAR</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SCAN_READ</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SCAN_TOO_LARGE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">SCAN_CLOSE</span>
+<span class="p">}</span><span class="w"> </span><span class="n">ScanStatus</span><span class="p">;</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytes</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">lines</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">words</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ScanStatus</span><span class="w"> </span><span class="n">status</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">system_error</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">FileStats</span><span class="p">;</span>
+
+<span class="cm">/* The caller exclusively owns *result until this call returns.</span>
+<span class="cm">   Failure counters are partial and must not be reported as valid counts. */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">scan_file</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">scan_status_name</span><span class="p">(</span><span class="n">ScanStatus</span><span class="w"> </span><span class="n">status</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+</code></pre><ol class="execution-steps"><li><p>先读 8 MiB 的 FILE_BYTE_LIMIT，再区分三个 size_t 计数器与 ScanStatus。</p></li><li><p>只有真实系统调用错误才保存 errno；逻辑拒绝无需伪造系统错误。</p></li><li><p>scan_file 约定调用者提供一个独占输出对象，失败时计数不完整，不能展示为完整答案。</p></li></ol></article><article class="code-example project-file" id="file-stats-c" data-reading-id="file-stats-c"><h3>02 / stats.c</h3><p>单个工作线程的独立普通文件扫描器</p><div class="code-actions"><button type="button" data-copy-code="code-file-stats-c">复制文件</button><a href="../project-code/comp2017-thread-pipeline/stats.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-stats-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"stats.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;errno.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fcntl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/stat.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+
+<span class="cm">/* Fixed ASCII separators make results independent of process locale. */</span>
+<span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">separator</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="kt">byte</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">' '</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\t'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\n'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\r'</span><span class="w"> </span><span class="o">||</span>
+<span class="w">           </span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\v'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\f'</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">count_stream</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">in_word</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">received</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="w"> </span><span class="n">buffer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_READ</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">received</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">FILE_BYTE_LIMIT</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_TOO_LARGE</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">length</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="kt">byte</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">lines</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">separator</span><span class="p">(</span><span class="kt">byte</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">space</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">in_word</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">words</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">in_word</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">space</span><span class="p">;</span>
+<span class="w">            </span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">byte</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">last</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">lines</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">scan_file</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">*</span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">FileStats</span><span class="p">){</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="cm">/* Nonblocking open avoids waiting forever for a FIFO writer. Only a</span>
+<span class="cm">       regular file is accepted after opening; each worker owns its fd. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">descriptor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">O_RDONLY</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">O_NONBLOCK</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">descriptor</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_OPEN</span><span class="p">;</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">stat</span><span class="w"> </span><span class="n">info</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fstat</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_METADATA</span><span class="p">;</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">S_ISREG</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">st_mode</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_NOT_REGULAR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">count_stream</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* Preserve the first error; do not retry close after an uncertain result. */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">close</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCAN_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCAN_CLOSE</span><span class="p">;</span>
+<span class="w">        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">scan_status_name</span><span class="p">(</span><span class="n">ScanStatus</span><span class="w"> </span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_OK</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"ok"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_OPEN</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"open"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_METADATA</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"metadata"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_NOT_REGULAR</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"not-regular"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_READ</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"read"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_TOO_LARGE</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"too-large"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">SCAN_CLOSE</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"close"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="s">"unknown"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>separator 精确列出六种空白字节，count_stream 跨每次读取保留单词状态。</p></li><li><p>把带符号返回值转换前先判断读取错误。EINTR 重试，EOF 后处理末行补计。</p></li><li><p>scan_file 打开、用 fstat 检查、只扫描普通文件，并在所有打开后路径尝试关闭。保留第一个失败。</p></li></ol></article><article class="code-example project-file" id="file-queue-h" data-reading-id="file-queue-h"><h3>03 / queue.h</h3><p>共享状态和所有权边界</p><div class="code-actions"><button type="button" data-copy-code="code-file-queue-h">复制文件</button><a href="../project-code/comp2017-thread-pipeline/queue.h" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-queue-h" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#ifndef QUEUE_H</span>
+<span class="cp">#define QUEUE_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pthread.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+
+<span class="cp">#define QUEUE_CAPACITY 4u</span>
+
+<span class="cm">/* Queue entries are job indices, not owning pointers. Protect all fields</span>
+<span class="cm">   after initialization with mutex. Destroy only after every worker joins. */</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">entries</span><span class="p">[</span><span class="n">QUEUE_CAPACITY</span><span class="p">];</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">head</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">closed</span><span class="p">;</span>
+<span class="w">    </span><span class="n">pthread_mutex_t</span><span class="w"> </span><span class="n">mutex</span><span class="p">;</span>
+<span class="w">    </span><span class="n">pthread_cond_t</span><span class="w"> </span><span class="n">not_empty</span><span class="p">;</span>
+<span class="w">    </span><span class="n">pthread_cond_t</span><span class="w"> </span><span class="n">not_full</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">WorkQueue</span><span class="p">;</span>
+
+<span class="cm">/* Runtime synchronization failures terminate the process; see README. */</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">thread_check</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">operation</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">queue_init</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">);</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">queue_push</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">job</span><span class="p">);</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">queue_pop</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">job</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">queue_destroy</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+</code></pre><ol class="execution-steps"><li><p>entries 保存四个 size_t 编号，不保存文件描述符或堆对象。</p></li><li><p>head、count 和 closed 描述队列状态，由同一互斥锁一起保护。</p></li><li><p>两个条件变量对应不同等待条件，接口把关闭与销毁区分开来。</p></li></ol></article><article class="code-example project-file" id="file-queue-c" data-reading-id="file-queue-c"><h3>04 / queue.c</h3><p>锁保护的环形变化与关闭后排空</p><div class="code-actions"><button type="button" data-copy-code="code-file-queue-c">复制文件</button><a href="../project-code/comp2017-thread-pipeline/queue.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-queue-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"queue.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">thread_check</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">error</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">operation</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"fatal: %s failed (pthread error %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">operation</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span>
+<span class="w">        </span><span class="cm">/* Continuing could access unprotected data or strand a waiter.</span>
+<span class="cm">           This teaching policy exits the process, without orderly cleanup. */</span>
+<span class="w">        </span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">queue_init</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_cond_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex destroy"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_cond_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">),</span><span class="w"> </span><span class="s">"condition destroy"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex destroy"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">queue_push</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex lock"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">QUEUE_CAPACITY</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span>
+<span class="w">                     </span><span class="s">"wait not_full"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">tail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">head</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">QUEUE_CAPACITY</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">job</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">),</span><span class="w"> </span><span class="s">"signal not_empty"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">queue_pop</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex lock"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span>
+<span class="w">                     </span><span class="s">"wait not_empty"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">head</span><span class="p">];</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">head</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">head</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">QUEUE_CAPACITY</span><span class="p">;</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">--</span><span class="p">;</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">),</span><span class="w"> </span><span class="s">"signal not_full"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">queue_close</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex lock"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">closed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="cm">/* All empty-queue consumers must learn that no future job can arrive. */</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">),</span><span class="w"> </span><span class="s">"broadcast not_empty"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">),</span><span class="w"> </span><span class="s">"broadcast not_full"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex unlock"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">queue_destroy</span><span class="p">(</span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_full</span><span class="p">),</span><span class="w"> </span><span class="s">"condition destroy"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_cond_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">not_empty</span><span class="p">),</span><span class="w"> </span><span class="s">"condition destroy"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="o">-&gt;</span><span class="n">mutex</span><span class="p">),</span><span class="w"> </span><span class="s">"mutex destroy"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>queue_init 按序初始化部件；后续初始化失败时撤销先前部件。</p></li><li><p>对照入队与出队：都是加锁、while 等待、修改受保护状态、通知另一方、解锁。</p></li><li><p>queue_close 广播但不丢弃元素。所有使用者结束后才可 queue_destroy；运行中的同步错误快速结束进程。</p></li></ol></article><article class="code-example project-file" id="file-main-c" data-reading-id="file-main-c"><h3>05 / main.c</h3><p>命令行、生命周期、工作循环与按序输出</p><div class="code-actions"><button type="button" data-copy-code="code-file-main-c">复制文件</button><a href="../project-code/comp2017-thread-pipeline/main.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-main-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"queue.h"</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"stats.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+
+<span class="cp">#define MAX_WORKERS 16u</span>
+<span class="cp">#define MAX_JOBS 128u</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">WorkQueue</span><span class="w"> </span><span class="o">*</span><span class="n">queue</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">paths</span><span class="p">;</span>
+<span class="w">    </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">results</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">WorkerContext</span><span class="p">;</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">parse_workers</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">workers</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">text</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">text</span><span class="p">;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">;</span><span class="w"> </span><span class="n">p</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="sc">'0'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="sc">'9'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="sc">'0'</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">MAX_WORKERS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">workers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="nf">consume</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">argument</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">WorkerContext</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">argument</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">job</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">queue_pop</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">job</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Exactly one pop receives each index. No other worker writes this</span>
+<span class="cm">           result, and main waits for all joins before reading any result. */</span>
+<span class="w">        </span><span class="n">scan_file</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">paths</span><span class="p">[</span><span class="n">job</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">results</span><span class="p">[</span><span class="n">job</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">join_workers</span><span class="p">(</span><span class="n">pthread_t</span><span class="w"> </span><span class="o">*</span><span class="n">threads</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">thread_check</span><span class="p">(</span><span class="n">pthread_join</span><span class="p">(</span><span class="n">threads</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="nb">NULL</span><span class="p">),</span><span class="w"> </span><span class="s">"thread join"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">print_results</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">paths</span><span class="p">,</span><span class="w"> </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">results</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">failures</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">FileStats</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SCAN_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">printf</span><span class="p">(</span><span class="s">"job=%zu bytes=%zu lines=%zu words=%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">bytes</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">words</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scan_status_name</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">);</span>
+<span class="w">            </span><span class="n">printf</span><span class="p">(</span><span class="s">"job=%zu error=%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">kind</span><span class="p">);</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"job %zu (%s): %s"</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">paths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">kind</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">": %s"</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">system_error</span><span class="p">));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">fputc</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">            </span><span class="n">failures</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">"summary files=%zu ok=%zu failed=%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">           </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">failures</span><span class="p">,</span><span class="w"> </span><span class="n">failures</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fflush</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ferror</span><span class="p">(</span><span class="n">stdout</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"output failed</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_FAILURE</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">failures</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">EXIT_SUCCESS</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">EXIT_FAILURE</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">workers</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">parse_workers</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">workers</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)(</span><span class="n">argc</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">MAX_JOBS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"usage: thread_pipeline WORKERS [FILE ...]</span><span class="se">\n</span><span class="s">"</span>
+<span class="w">              </span><span class="s">"WORKERS: 1..16; FILE: 0..128 regular files, each &lt;= 8388608 bytes</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">              </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)(</span><span class="n">argc</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">    </span><span class="n">WorkQueue</span><span class="w"> </span><span class="n">queue</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">queue_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"queue initialization failed (pthread error %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_FAILURE</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">FileStats</span><span class="w"> </span><span class="n">results</span><span class="p">[</span><span class="n">MAX_JOBS</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{{</span><span class="mi">0</span><span class="p">}};</span>
+<span class="w">    </span><span class="n">pthread_t</span><span class="w"> </span><span class="n">threads</span><span class="p">[</span><span class="n">MAX_WORKERS</span><span class="p">];</span>
+<span class="w">    </span><span class="n">WorkerContext</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">results</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">workers</span><span class="p">;</span><span class="w"> </span><span class="n">started</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">threads</span><span class="p">[</span><span class="n">started</span><span class="p">],</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">consume</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">context</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">error</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">"thread creation failed after %zu workers "</span>
+<span class="w">                            </span><span class="s">"(pthread error %d)</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">started</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="p">);</span>
+<span class="w">            </span><span class="cm">/* No jobs are published until the whole pool exists. */</span>
+<span class="w">            </span><span class="n">queue_close</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">            </span><span class="n">join_workers</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span><span class="w"> </span><span class="n">started</span><span class="p">);</span>
+<span class="w">            </span><span class="n">queue_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_FAILURE</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">job</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">jobs</span><span class="p">;</span><span class="w"> </span><span class="n">job</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">queue_push</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">,</span><span class="w"> </span><span class="n">job</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fputs</span><span class="p">(</span><span class="s">"internal error: queue closed during production</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">            </span><span class="n">queue_close</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">            </span><span class="n">join_workers</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span><span class="w"> </span><span class="n">started</span><span class="p">);</span>
+<span class="w">            </span><span class="n">queue_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">EXIT_FAILURE</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">queue_close</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">    </span><span class="n">join_workers</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span><span class="w"> </span><span class="n">started</span><span class="p">);</span>
+<span class="w">    </span><span class="n">queue_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">queue</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">print_results</span><span class="p">(</span><span class="n">argv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">results</span><span class="p">,</span><span class="w"> </span><span class="n">jobs</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>parse_workers 只接受十进制数字，一超过 16 就拒绝。有界中间值避免算术溢出。</p></li><li><p>主线程初始化一个上下文，创建所有工作线程后才发布编号。失败时只有 started 前缀是有效 join 列表。</p></li><li><p>consume 写入取出编号对应的槽。主线程依次关闭、join、销毁，再由 print_results 按输入顺序报告；任一文件失败就返回失败。</p></li></ol></article><article class="code-example project-file" id="file-Makefile" data-reading-id="file-Makefile"><h3>06 / Makefile</h3><p>严格构建、隔离测试与本地清理</p><div class="code-actions"><button type="button" data-copy-code="code-file-Makefile">复制文件</button><a href="../project-code/comp2017-thread-pipeline/Makefile" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-Makefile" class="language-make"><span class="c"># Guoliang | Original teaching project.</span>
+<span class="nv">CC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>clang
+<span class="nv">CPPFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-D_POSIX_C_SOURCE<span class="o">=</span>200809L
+<span class="nv">CFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-std<span class="o">=</span>c11<span class="w"> </span>-Wall<span class="w"> </span>-Wextra<span class="w"> </span>-Werror<span class="w"> </span>-pedantic<span class="w"> </span>-O2<span class="w"> </span>-pthread
+<span class="nv">LDFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-pthread
+
+<span class="nf">.PHONY</span><span class="o">:</span><span class="w"> </span><span class="n">all</span> <span class="n">test</span> <span class="n">clean</span>
+<span class="nf">all</span><span class="o">:</span><span class="w"> </span><span class="n">thread_pipeline</span>
+
+<span class="nf">thread_pipeline</span><span class="o">:</span><span class="w"> </span><span class="n">main</span>.<span class="n">o</span> <span class="n">queue</span>.<span class="n">o</span> <span class="n">stats</span>.<span class="n">o</span>
+<span class="w">	</span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LDFLAGS<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span><span class="w"> </span>main.o<span class="w"> </span>queue.o<span class="w"> </span>stats.o
+
+<span class="nf">main.o</span><span class="o">:</span><span class="w"> </span><span class="n">main</span>.<span class="n">c</span> <span class="n">queue</span>.<span class="n">h</span> <span class="n">stats</span>.<span class="n">h</span>
+<span class="nf">queue.o</span><span class="o">:</span><span class="w"> </span><span class="n">queue</span>.<span class="n">c</span> <span class="n">queue</span>.<span class="n">h</span>
+<span class="nf">stats.o</span><span class="o">:</span><span class="w"> </span><span class="n">stats</span>.<span class="n">c</span> <span class="n">stats</span>.<span class="n">h</span>
+
+<span class="nf">test</span><span class="o">:</span>
+<span class="w">	</span>python3<span class="w"> </span>test.py
+
+<span class="nf">clean</span><span class="o">:</span>
+<span class="w">	</span><span class="err">rm</span><span class="w"> </span><span class="err">-f</span><span class="w"> </span><span class="err">thread_pipeline</span><span class="w"> </span><span class="err">main.o</span><span class="w"> </span><span class="err">queue.o</span><span class="w"> </span><span class="err">stats.o</span>
+</code></pre><ol class="execution-steps"><li><p>默认 clang，启用 C11、POSIX 功能、pthread，并把警告当作错误。</p></li><li><p>头文件依赖让相关编译单元重新构建，编译与链接阶段都使用 -pthread。</p></li><li><p>make test 调用 python3 test.py，在临时副本构建。make clean 只删除本项目常规本地构建产物。</p></li></ol></article><article class="code-example project-file" id="file-test-py" data-reading-id="file-test-py"><h3>07 / test.py</h3><p>独立预期算法、边界测试、压力测试与可控故障</p><div class="code-actions"><button type="button" data-copy-code="code-file-test-py">复制文件</button><a href="../project-code/comp2017-thread-pipeline/test.py" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-test-py" class="language-python"><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># Guoliang | Original teaching project.</span>
+<span class="sd">"""Build only in a temporary copy; use independent byte oracles and timeouts."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="n">SOURCE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">FLAGS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-D_POSIX_C_SOURCE=200809L"</span><span class="p">,</span> <span class="s2">"-std=c11"</span><span class="p">,</span> <span class="s2">"-Wall"</span><span class="p">,</span> <span class="s2">"-Wextra"</span><span class="p">,</span>
+         <span class="s2">"-Werror"</span><span class="p">,</span> <span class="s2">"-pedantic"</span><span class="p">,</span> <span class="s2">"-O2"</span><span class="p">,</span> <span class="s2">"-pthread"</span><span class="p">]</span>
+<span class="n">LIMIT</span> <span class="o">=</span> <span class="mi">8</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">command</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">successful</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">expected_line</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># A regular expression oracle, independent of the C in_word state machine.</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">))</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">rb</span><span class="s2">"[^ \t\r\n\v\f]+"</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"job=</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> bytes=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> lines=</span><span class="si">{</span><span class="n">lines</span><span class="si">}</span><span class="s2"> words=</span><span class="si">{</span><span class="n">words</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">workers</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="s2">"thread_pipeline"</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">successful</span><span class="p">([</span><span class="sa">f</span><span class="s2">"./</span><span class="si">{</span><span class="n">binary</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">workers</span><span class="p">),</span> <span class="o">*</span><span class="n">files</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">expected_line</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span>
+                       <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">expected</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"summary files=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2"> ok=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2"> failed=0</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="n">expected</span><span class="p">,</span> <span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span> <span class="o">==</span> <span class="s2">""</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">variant</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">define</span><span class="p">,</span> <span class="n">shim</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+    <span class="c1"># Only a temporary translation unit is instrumented; shipped C is unchanged.</span>
+    <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_shim.c"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">shim</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="n">successful</span><span class="p">([</span><span class="s2">"clang"</span><span class="p">,</span> <span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"-D</span><span class="si">{</span><span class="n">define</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"-c"</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span>
+                <span class="s2">"-o"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.o"</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="n">successful</span><span class="p">([</span><span class="s2">"clang"</span><span class="p">,</span> <span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="s2">"-c"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_shim.c"</span><span class="p">,</span> <span class="s2">"-o"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_shim.o"</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.o"</span> <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="n">source</span> <span class="k">else</span> <span class="n">item</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">".c"</span><span class="p">,</span> <span class="s2">".o"</span><span class="p">)</span>
+               <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"main.c"</span><span class="p">,</span> <span class="s2">"queue.c"</span><span class="p">,</span> <span class="s2">"stats.c"</span><span class="p">)]</span>
+    <span class="n">successful</span><span class="p">([</span><span class="s2">"clang"</span><span class="p">,</span> <span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="o">*</span><span class="n">objects</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_shim.o"</span><span class="p">,</span> <span class="s2">"-o"</span><span class="p">,</span> <span class="n">name</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_tests</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+    <span class="n">successful</span><span class="p">([</span><span class="s2">"make"</span><span class="p">,</span> <span class="s2">"all"</span><span class="p">,</span> <span class="s2">"CFLAGS="</span> <span class="o">+</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flags</span><span class="p">),</span>
+                <span class="s2">"LDFLAGS="</span> <span class="o">+</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flags</span><span class="p">)],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="n">supplied</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"fixtures/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.txt"</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span>
+                <span class="p">(</span><span class="s2">"morning"</span><span class="p">,</span> <span class="s2">"evening"</span><span class="p">,</span> <span class="s2">"blank"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">,</span> <span class="s2">"spaces"</span><span class="p">)]</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="p">[],</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">supplied</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">supplied</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">supplied</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS empty queue, empty file, and fewer/more jobs than capacity"</span><span class="p">)</span>
+
+    <span class="c1"># Hard-coded expected counts catch an error shared by both implementations.</span>
+    <span class="n">exact</span> <span class="o">=</span> <span class="n">successful</span><span class="p">([</span><span class="s2">"./thread_pipeline"</span><span class="p">,</span> <span class="s2">"3"</span><span class="p">,</span> <span class="o">*</span><span class="n">supplied</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">exact</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="p">(</span>
+        <span class="s2">"job=1 bytes=37 lines=2 words=6</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"job=2 bytes=26 lines=2 words=5</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"job=3 bytes=2 lines=2 words=0</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"job=4 bytes=0 lines=0 words=0</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"job=5 bytes=6 lines=2 words=0</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"summary files=5 ok=5 failed=0</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS exact fixture counts including final unterminated line"</span><span class="p">)</span>
+
+    <span class="n">binary_bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"x"</span> <span class="o">*</span> <span class="mi">4095</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">"YZ</span><span class="se">\x00\xff</span><span class="s2"> </span><span class="se">\r\n\t</span><span class="s2">final"</span>
+    <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"boundary.bin"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">binary_bytes</span><span class="p">)</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="p">[</span><span class="s2">"boundary.bin"</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS word crossing read-buffer boundary and non-ASCII bytes"</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="p">([],</span> <span class="p">[</span><span class="s2">"0"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"17"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"-1"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"+2"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"2x"</span><span class="p">],</span> <span class="p">[</span><span class="s2">""</span><span class="p">],</span>
+                 <span class="p">[</span><span class="s2">" 2"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"99999999999999999999999999"</span><span class="p">],</span>
+                 <span class="p">[</span><span class="s2">"1"</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="n">supplied</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="mi">129</span><span class="p">)]):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">([</span><span class="s2">"./thread_pipeline"</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="s2">""</span><span class="p">,</span> <span class="n">result</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"usage: thread_pipeline WORKERS"</span><span class="p">),</span> <span class="n">result</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">supplied</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"0002"</span><span class="p">)</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="p">[</span><span class="n">supplied</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS malformed CLI, accepted leading zeros, and 128-job boundary"</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">([</span><span class="s2">"./thread_pipeline"</span><span class="p">,</span> <span class="s2">"4"</span><span class="p">,</span> <span class="n">supplied</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"missing.txt"</span><span class="p">,</span>
+                      <span class="n">supplied</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">result</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="p">(</span><span class="n">expected_line</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="n">supplied</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span> <span class="o">+</span>
+                             <span class="s2">"job=2 error=open</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span>
+                             <span class="n">expected_line</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="n">supplied</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span> <span class="o">+</span>
+                             <span class="s2">"summary files=3 ok=2 failed=1</span><span class="se">\n</span><span class="s2">"</span><span class="p">),</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="k">assert</span> <span class="s2">"job 2 (missing.txt): open:"</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS missing file preserves other results and returns failure"</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">mkfifo</span><span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"pipe"</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">([</span><span class="s2">"./thread_pipeline"</span><span class="p">,</span> <span class="s2">"2"</span><span class="p">,</span> <span class="s2">"fixtures"</span><span class="p">,</span> <span class="s2">"pipe"</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">result</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"job=1 error=not-regular</span><span class="se">\n</span><span class="s2">"</span>
+                             <span class="s2">"job=2 error=not-regular</span><span class="se">\n</span><span class="s2">"</span>
+                             <span class="s2">"summary files=2 ok=0 failed=2</span><span class="se">\n</span><span class="s2">"</span><span class="p">),</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS directory and FIFO rejected without waiting for a writer"</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"limit.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="sa">b</span><span class="s2">"z"</span> <span class="o">*</span> <span class="n">LIMIT</span><span class="p">)</span>
+    <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="p">[</span><span class="s2">"limit.txt"</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">with</span> <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"limit.txt"</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"ab"</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"z"</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">([</span><span class="s2">"./thread_pipeline"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">,</span> <span class="s2">"limit.txt"</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">result</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"job=1 error=too-large</span><span class="se">\n</span><span class="s2">"</span>
+                             <span class="s2">"summary files=1 ok=0 failed=1</span><span class="se">\n</span><span class="s2">"</span><span class="p">),</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS exact byte limit and oversized input without partial statistics"</span><span class="p">)</span>
+
+    <span class="n">stress</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">37</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"stress-</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2">.txt"</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="sa">b</span><span class="s2">"alpha</span><span class="se">\t</span><span class="s2">beta</span><span class="se">\n\n</span><span class="s2">"</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">71</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="sa">b</span><span class="s2">"tail"</span> <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="k">else</span> <span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">stress</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">reference</span> <span class="o">=</span> <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">stress</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">repeat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">12</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">workers</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">stress</span><span class="p">,</span> <span class="n">workers</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">output</span> <span class="o">==</span> <span class="n">reference</span><span class="p">,</span> <span class="p">(</span><span class="n">repeat</span><span class="p">,</span> <span class="n">workers</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS 48 repeated schedules: 37 jobs, workers 1/2/4/16, stable output"</span><span class="p">)</span>
+
+    <span class="n">probe</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'''/* Guoliang | Original teaching project. */</span>
+<span class="s1">#include "queue.h"</span>
+<span class="s1">#include &lt;assert.h&gt;</span>
+<span class="s1">int main(void) {</span>
+<span class="s1">    WorkQueue queue;</span>
+<span class="s1">    assert(queue_init(&amp;queue) == 0);</span>
+<span class="s1">    for (size_t i = 0; i &lt; QUEUE_CAPACITY; i++) {</span>
+<span class="s1">        assert(queue_push(&amp;queue, i + 10));</span>
+<span class="s1">    }</span>
+<span class="s1">    queue_close(&amp;queue);</span>
+<span class="s1">    assert(!queue_push(&amp;queue, 99));</span>
+<span class="s1">    for (size_t i = 0; i &lt; QUEUE_CAPACITY; i++) {</span>
+<span class="s1">        size_t job;</span>
+<span class="s1">        assert(queue_pop(&amp;queue, &amp;job));</span>
+<span class="s1">        assert(job == i + 10);</span>
+<span class="s1">    }</span>
+<span class="s1">    size_t job;</span>
+<span class="s1">    assert(!queue_pop(&amp;queue, &amp;job));</span>
+<span class="s1">    queue_close(&amp;queue);</span>
+<span class="s1">    queue_destroy(&amp;queue);</span>
+<span class="s1">    return 0;</span>
+<span class="s1">}</span>
+<span class="s1">'''</span>
+    <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"queue_probe.c"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">probe</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="n">successful</span><span class="p">([</span><span class="s2">"clang"</span><span class="p">,</span> <span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="s2">"queue_probe.c"</span><span class="p">,</span> <span class="s2">"queue.o"</span><span class="p">,</span> <span class="s2">"-o"</span><span class="p">,</span> <span class="s2">"queue_probe"</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="n">successful</span><span class="p">([</span><span class="s2">"./queue_probe"</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS queue close drains FIFO entries and rejects new work"</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">after</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">shim</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'''/* Guoliang | Original teaching project. */</span>
+<span class="s1">#include &lt;errno.h&gt;</span>
+<span class="s1">#include &lt;pthread.h&gt;</span>
+<span class="s1">static unsigned int calls;</span>
+<span class="s1">int fixture_create(pthread_t *thread, const pthread_attr_t *attributes,</span>
+<span class="s1">                   void *(*start)(void *), void *argument) {</span>
+<span class="s1">    if (calls++ == FAIL_AFTER) {</span>
+<span class="s1">        return EAGAIN;</span>
+<span class="s1">    }</span>
+<span class="s1">    return pthread_create(thread, attributes, start, argument);</span>
+<span class="s1">}</span>
+<span class="s1">'''</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"FAIL_AFTER"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">after</span><span class="p">))</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"create_failure_</span><span class="si">{</span><span class="n">after</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">variant</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s2">"main.c"</span><span class="p">,</span> <span class="s2">"pthread_create=fixture_create"</span><span class="p">,</span> <span class="n">shim</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">([</span><span class="sa">f</span><span class="s2">"./</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"4"</span><span class="p">,</span> <span class="o">*</span><span class="n">supplied</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="s2">""</span><span class="p">,</span> <span class="n">result</span>
+        <span class="k">assert</span> <span class="sa">f</span><span class="s2">"thread creation failed after </span><span class="si">{</span><span class="n">after</span><span class="si">}</span><span class="s2"> workers"</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">result</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS injected creation failure before first/after two workers; no hang"</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"error"</span><span class="p">,</span> <span class="s2">"interrupt"</span><span class="p">):</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="s2">"errno = EIO; return -1;"</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"error"</span> <span class="k">else</span> <span class="p">(</span>
+            <span class="s2">"static int first = 1; if (first) { first = 0; errno = EINTR; return -1; }"</span>
+            <span class="s2">" return read(descriptor, buffer, count);"</span><span class="p">)</span>
+        <span class="n">shim</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'''/* Guoliang | Original teaching project. */</span>
+<span class="s1">#include &lt;errno.h&gt;</span>
+<span class="s1">#include &lt;stddef.h&gt;</span>
+<span class="s1">#include &lt;unistd.h&gt;</span>
+<span class="s1">ssize_t fixture_read(int descriptor, void *buffer, size_t count) {</span>
+<span class="s1">    (void)descriptor; (void)buffer; (void)count;</span>
+<span class="s1">    BODY</span>
+<span class="s1">}</span>
+<span class="s1">'''</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"BODY"</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"read_</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">variant</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s2">"stats.c"</span><span class="p">,</span> <span class="s2">"read=fixture_read"</span><span class="p">,</span> <span class="n">shim</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"error"</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="p">([</span><span class="sa">f</span><span class="s2">"./</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">,</span> <span class="n">supplied</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">root</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">result</span>
+            <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="o">==</span> <span class="p">(</span><span class="s2">"job=1 error=read</span><span class="se">\n</span><span class="s2">"</span>
+                                     <span class="s2">"summary files=1 ok=0 failed=1</span><span class="se">\n</span><span class="s2">"</span><span class="p">),</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+            <span class="k">assert</span> <span class="s2">"read:"</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expect_files</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">supplied</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"PASS injected read error and interrupted-read retry"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--tsan"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">"require a working clang ThreadSanitizer runtime"</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">FLAGS</span> <span class="o">+</span> <span class="p">([</span><span class="s2">"-O1"</span><span class="p">,</span> <span class="s2">"-g"</span><span class="p">,</span> <span class="s2">"-fsanitize=thread"</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tsan</span> <span class="k">else</span> <span class="p">[])</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"guoliang-thread-test-"</span><span class="p">)</span> <span class="k">as</span> <span class="n">directory</span><span class="p">:</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"project"</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">SOURCE</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="n">shutil</span><span class="o">.</span><span class="n">ignore_patterns</span><span class="p">(</span>
+            <span class="s2">"*.o"</span><span class="p">,</span> <span class="s2">"thread_pipeline"</span><span class="p">,</span> <span class="s2">"__pycache__"</span><span class="p">))</span>
+        <span class="n">run_tests</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"All pipeline tests passed"</span> <span class="o">+</span> <span class="p">(</span><span class="s2">" (ThreadSanitizer)."</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tsan</span> <span class="k">else</span> <span class="s2">"."</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre><ol class="execution-steps"><li><p>TemporaryDirectory 与 copytree 隔离构建及生成样例。subprocess 使用参数列表和明确超时。</p></li><li><p>字节正则表达式独立于 C 状态机计算单词，手工固定的样例结果也检查预期算法。</p></li><li><p>阅读 48 次循环、关闭排空队列探针和临时 pthread_create/read 替身。--tsan 要求检测器可用，不会静默跳过失败。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-morning-txt" data-reading-id="file-fixtures-morning-txt"><h3>08 / fixtures/morning.txt</h3><p>末尾有 LF 的合成笔记</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-morning-txt">复制文件</button><a href="../project-code/comp2017-thread-pipeline/fixtures/morning.txt" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-morning-txt" class="language-text">Robotics club
+Build small test often
+</code></pre><ol class="execution-steps"><li><p>第一行是 Robotics club。</p></li><li><p>第二行是 Build small test often，末尾为 LF。</p></li><li><p>预期 37 字节、2 个逻辑行、6 个单词；末尾 LF 不增加空行。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-evening-txt" data-reading-id="file-fixtures-evening-txt"><h3>09 / fixtures/evening.txt</h3><p>末尾没有 LF 的合成笔记</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-evening-txt">复制文件</button><a href="../project-code/comp2017-thread-pipeline/fixtures/evening.txt" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-evening-txt" class="language-text">Check	all wheels
+Then rest</code></pre><ol class="execution-steps"><li><p>Check 和 all 之间是制表符。</p></li><li><p>第二行 Then rest 直接结束，没有 LF。</p></li><li><p>预期 26 字节、2 个逻辑行、5 个单词；EOF 补计第二行。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-blank-txt" data-reading-id="file-fixtures-blank-txt"><h3>10 / fixtures/blank.txt</h3><p>两个换行字节且无单词</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-blank-txt">复制文件</button><a href="../project-code/comp2017-thread-pipeline/fixtures/blank.txt" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-blank-txt" class="language-text">
+
+</code></pre><p class="code-hint">不可见字节视图（十六进制）：0a 0a</p><ol class="execution-steps"><li><p>文件恰好是 LF 后跟 LF。</p></li><li><p>每个 LF 结束一行，即使行内没有字母。</p></li><li><p>预期 2 字节、2 行、0 个单词；EOF 后不要再加第三行。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-empty-txt" data-reading-id="file-fixtures-empty-txt"><h3>11 / fixtures/empty.txt</h3><p>零字节样例</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-empty-txt">复制文件</button><a href="../project-code/comp2017-thread-pipeline/fixtures/empty.txt" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-empty-txt" class="language-text"></code></pre><p class="code-hint">不可见字节视图（十六进制）：空文件；零字节</p><ol class="execution-steps"><li><p>此文件有意没有内容，也没有作者注释，因为任何字节都会破坏空文件测试。</p></li><li><p>扫描器第一次读取就到 EOF，不进入逐字节循环。</p></li><li><p>预期 0 字节、0 行、0 个单词，但文件本身仍是成功任务。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-spaces-txt" data-reading-id="file-fixtures-spaces-txt"><h3>12 / fixtures/spaces.txt</h3><p>按固定顺序放置六种分隔字节</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-spaces-txt">复制文件</button><a href="../project-code/comp2017-thread-pipeline/fixtures/spaces.txt" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-spaces-txt" class="language-text"> 	&#13;
+</code></pre><p class="code-hint">不可见字节视图（十六进制）：20 09 0d 0a 0b 0c</p><ol class="execution-steps"><li><p>依次为空格、制表、CR、LF、垂直制表和换页。</p></li><li><p>LF 后有非空字节尾段，终端可能看不见。</p></li><li><p>预期 6 字节、2 个逻辑行、0 个单词；它检验精确分隔定义，不检验地区设置。</p></li></ol></article><article class="code-example project-file" id="file-README-md" data-reading-id="file-README-md"><h3>13 / README.md</h3><p>完整英文命令行指南</p><div class="code-actions"><button type="button" data-copy-code="code-file-README-md">复制文件</button><a href="../project-code/comp2017-thread-pipeline/README.md" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-README-md" class="language-text"># Project 3 · A bounded file-statistics pipeline
+
+Guoliang | Original teaching project. [中文说明](README.zh.md)
+
+Mina helps a school robotics club archive its daily notes. She receives a list of small text files and wants a count of their bytes, lines, and words. Some notes are empty. One ends without a newline. A missing file must remain visible in the report while the other notes are still counted. She wants to try several workers, but the report must always follow her original file list.
+
+Her first useful tool counts one file precisely. She then places numbered jobs into a four-slot queue. Workers take those numbers and open their own files. The queue applies backpressure: when all four slots are occupied, Mina's producer waits instead of allocating another slot. A worker's completion time never determines its output position. Main prints the numbered results only after all workers have finished.
+
+This is an original guided engineering project, not a supplied assignment solution. C11, POSIX threads, Clang, Make, and Python 3 are required. The source targets macOS and Linux; no network or third-party Python packages are used.
+
+## Build and run
+
+From this project directory:
+
+```sh
+make
+./thread_pipeline 3 fixtures/morning.txt fixtures/evening.txt fixtures/empty.txt
+```
+
+Program stdout (the compiler commands printed by `make` are separate):
+
+```text
+job=1 bytes=37 lines=2 words=6
+job=2 bytes=26 lines=2 words=5
+job=3 bytes=0 lines=0 words=0
+summary files=3 ok=3 failed=0
+```
+
+An empty file list is valid. Workers wake when main closes the empty queue:
+
+```sh
+./thread_pipeline 16
+```
+
+```text
+summary files=0 ok=0 failed=0
+```
+
+A missing file does not discard completed work:
+
+```sh
+./thread_pipeline 2 fixtures/morning.txt fixtures/missing.txt fixtures/evening.txt
+```
+
+```text
+job=1 bytes=37 lines=2 words=6
+job=2 error=open
+job=3 bytes=26 lines=2 words=5
+summary files=3 ok=2 failed=1
+```
+
+The first two runs exit with 0. The missing-file run exits with 1 and also writes a diagnostic to stderr. Its operating-system error wording may vary. Job 2 means the second file argument, not worker 2. Files may repeat; each argument is a separate job.
+
+```sh
+./thread_pipeline 0 fixtures/morning.txt
+```
+
+This prints usage to stderr, prints no stdout, and exits with 2. WORKERS must contain only decimal digits and represent 1 through 16; leading zeros are accepted. At most 128 file arguments are accepted. There is no option parser: every argument after WORKERS is a file path.
+
+## Decide what is being counted
+
+* Bytes count every byte read, including whitespace and zero bytes. This is not a Unicode character count.
+* Lines count LF bytes (`\n`) plus one when a nonempty file ends with a different byte. Thus empty is 0 lines, `a` is 1, `a\n` is 1, and `\n\n` is 2. A final newline does not invent another empty line. This differs from tools that count only newline characters.
+* Words are maximal runs separated by exactly space, tab, LF, CR, vertical tab, or form feed. The definition is independent of locale. Zero bytes and non-ASCII bytes are ordinary non-separators, not string terminators or decoded letters.
+* Each regular file may contain at most 8,388,608 bytes (8 MiB). A larger file produces `error=too-large`; its partial counters are not presented as a complete answer. `in_word` survives each 4096-byte read, so a word crossing a buffer boundary stays one word.
+
+The synthetic fixtures are 37-byte morning notes, 26-byte evening notes without a final LF, two blank lines, a zero-byte file, and six whitespace bytes. The whitespace fixture has two logical lines because bytes follow its LF. These definitions are the contract against which tests compare the program.
+
+## Read the implementation in five stages
+
+1. **Specify a file result.** Read `stats.h`, then `separator` and `count_stream` in `stats.c`. Track `bytes`, `lines`, `words`, `in_word`, and `last` on `a b\n`. The loop counts word beginnings. EOF finishes the final logical line exactly once. `read` returns a signed count; check for an error before converting it to `size_t`.
+2. **Build the bounded queue.** Read `queue.h` and `queue_push`. `head` identifies the next occupied slot. The next insertion is `(head + count) % 4`. The invariant is `0 &lt;= count &lt;= 4`. A push waits while full and open. A pop waits while empty and open. Every check and every mutation uses the same mutex. `pthread_cond_wait` releases that mutex while waiting and reacquires it before returning. A notification asks a waiter to check again; it does not reserve a slot. Use `while`, including after a spurious wakeup.
+3. **Give workers exclusive results.** Read `WorkerContext` and `consume` in `main.c`. Main gives each input one index exactly once. A pop removes that index while holding the queue lock, so only one worker receives it. The worker owns `results[index]` during scanning and opens/closes its own descriptor. File reads happen outside the queue lock. This lets other workers take jobs while a scan is running.
+4. **Close, drain, and join.** Read `queue_close` and the final half of `main`. Closing forbids future pushes but does not remove queued work. A pop returns false only when the queue is empty and closed. Broadcasting wakes every idle consumer, including all sixteen consumers for zero jobs. Main joins each successfully created worker before printing or destroying shared objects.
+5. **Validate ordinary and failed runs.** Read `parse_workers`, startup cleanup, `print_results`, and `test.py`. No jobs are published until every requested worker exists. If thread creation fails, close the still-empty queue, join only the workers actually created, destroy the queue, and return failure. A file error occupies its own result slot while other jobs continue. Stable output is tested against independent expected values, never against worker timing.
+
+## Ownership and execution phases
+
+```text
+main: initialize queue + context + result storage
+      |
+      +--&gt; create all workers --&gt; publish indices --&gt; close queue
+                 |                    |                  |
+workers:         +--&gt; wait/pop -------+--&gt; scan --&gt; pop --+--&gt; drain --&gt; return
+      |
+main: join every created worker --&gt; destroy queue --&gt; print slots 0..J-1
+
+creation failure: close empty queue --&gt; join created workers --&gt; destroy --&gt; exit 1
+```
+
+The queue, context, and result array live in main's stack frame until after all joins. `argv` paths live throughout the process and are borrowed without mutation. Queue entries own no file or allocation; they are indices. A worker owns its local read buffer and opened file descriptor. `scan_file` attempts to close that descriptor on every post-open path. Main owns all joinable thread handles and joins only successful creations.
+
+Initialization before `pthread_create` makes the initialized context available to workers. The mutex orders queue reads and writes and safely hands an index from producer to consumer. Distinct array elements are distinct objects: workers never write the same `FileStats`. Main does not read any result until successful `pthread_join` calls have synchronized it with every worker's completion. These ownership and phase rules remove the need for a result mutex. Merely promising that main will “probably run later” would not be sufficient.
+
+## Errors and deliberate limits
+
+`scan_file` reports open, metadata, non-regular-file, read, size-limit, and close errors. The first failure is preserved. Interrupted reads (`EINTR`) retry; ordinary short reads are processed and followed by another read. Nonblocking open avoids waiting for a FIFO writer before rejecting non-regular inputs with `fstat`. This is intended for the supplied regular fixtures and other stable regular files, not arbitrary devices, hostile paths, live-changing files, or a secure filesystem sandbox.
+
+Queue initialization returns a checked error and unwinds initialized components. Thread creation has orderly cleanup. Unexpected runtime mutex/condition/join/destroy errors instead use a documented fail-fast policy: print an error and terminate the process, without promising graceful cleanup or a complete report. These pthread functions return their error code directly. The program does not use `errno` to interpret them. An unsuccessful `close` is reported without retrying an uncertain descriptor state.
+
+There is no cancellation, signal-driven shutdown, or per-file wall-clock deadline. A slow filesystem may still delay a regular-file read, and repeated signals may repeatedly interrupt it. Tests have subprocess timeouts; the program itself does not guarantee a time bound. Input files must remain unchanged for reproducible counts. Native Windows is outside this POSIX target. Checked stdout failures return failure; a broken pipe can also terminate the process through the usual SIGPIPE behavior.
+
+Counting costs O(B + J), where B is the bytes scanned and J is the job count. Queue operations use constant storage and constant work apart from waiting. The queue has four indices; result storage has a fixed upper bound of 128 entries; there are at most 16 workers, each with one 4096-byte read buffer plus its runtime thread stack. Storage does not grow with file length. A byte-limit check can read one extra buffer before rejecting an oversized file. Tiny fixtures provide correctness evidence, not evidence of a speedup. Storage contention and thread startup can make extra workers slower.
+
+## Test and investigate
+
+```sh
+make test
+python3 test.py --tsan
+make clean
+```
+
+`make test` builds and runs in a temporary copy, even if the source directory already contains a local build. It never changes source fixtures. Every subprocess has a timeout. The optional second command requires a working Clang ThreadSanitizer compiler and runtime; an unavailable or failing sanitizer run is an error, not a silent pass.
+
+The test suite checks exact fixture output, no jobs, empty files, one and sixteen workers, below/above queue capacity, maximum job count, malformed worker counts, missing files, directory/FIFO rejection, buffer-boundary words, binary bytes, and both sides of the file-size limit. A separate queue probe checks FIFO order, close-and-drain, and push-after-close rejection. Forty-eight repeated runs scan 37 bounded synthetic files with 1, 2, 4, and 16 workers. All compare with an independent byte/regular-expression oracle and one-worker output.
+
+Temporary test-only C shims inject thread creation failure before the first worker and after two workers, a read failure, and one interrupted read. They exercise cleanup without exhausting system resources. These compile-time substitutions are not switches in the shipped program. Stress tests and ThreadSanitizer can expose bugs; neither proves that every possible schedule is correct. The invariant and happens-before argument remain necessary.
+
+If a zero-job run hangs, inspect the close broadcast and the `count == 0 &amp;&amp; !closed` predicate. If a final unterminated line disappears, inspect the EOF correction. If output changes order, look for worker-side printing or a missing join. If words split at a 4096-byte boundary, check whether `in_word` was incorrectly reset inside the read loop. If a missing file appears as zero counts, inspect whether the status is tested before printing counters.
+
+## File map and next experiments
+
+`main.c` owns CLI validation, pool startup, publication, joins, and output. `queue.h` declares the bounded state; `queue.c` implements its locked transitions. `stats.h` defines result/error data; `stats.c` scans one regular file. `Makefile` supplies strict build/test/clean targets. `test.py` provides the independent oracle, stress checks, and fault injection. Both README files explain the same project in different languages. The five files in `fixtures/` are synthetic inputs with intentionally different boundaries.
+
+For a first extension, make queue capacity configurable with a bounded range, then test capacities 1, 4, and 8 against unchanged result output. For a second, add measured performance experiments on fixed, larger local fixtures. Record total bytes, compiler options, worker count, elapsed time, repeated runs, and filesystem-cache conditions; compute throughput as bytes divided by seconds. Accept a speed claim only when measurements support it. Keep timing outside deterministic result output.
+
+## Primary references
+
+The design explanations are original. These official POSIX pages support the API contracts:
+
+* [Condition waits and predicate rechecking](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_cond_clockwait.html)
+* [pthread_join](https://pubs.opengroup.org/onlinepubs/9799919799.2024edition/functions/pthread_join.html)
+* [Memory synchronization, section 4.15.2](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html)
+* [pthread_create, Issue 6 API contract](https://pubs.opengroup.org/onlinepubs/000095399/functions/pthread_create.html)
+* [read](https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html)
+</code></pre><ol class="execution-steps"><li><p>先读故事和精确构建运行命令，再用样例核对计数定义。</p></li><li><p>按五个阅读阶段和阶段图学习，把每种资源与拥有者及生命周期结束点联系起来。</p></li><li><p>修改设计前，阅读失败策略、复杂度、测试命令和有界扩展。</p></li></ol></article><article class="code-example project-file" id="file-README-zh-md" data-reading-id="file-README-zh-md"><h3>14 / README.zh.md</h3><p>内容对应的中文命令行指南</p><div class="code-actions"><button type="button" data-copy-code="code-file-README-zh-md">复制文件</button><a href="../project-code/comp2017-thread-pipeline/README.zh.md" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-README-zh-md" class="language-text"># 项目 3 · 有界文件统计流水线
+
+Guoliang | 原创教学项目。[English guide](README.md)
+
+米娜帮学校机器人社整理每天的笔记。她收到一组小文本文件，需要统计字节数、行数和单词数。有些文件是空的，有些文件末尾没有换行。某个文件不存在时，报告也必须说明问题，并保留其他文件的统计。她想尝试多个工作线程，但报告的顺序必须与输入文件列表一致。
+
+她先做出能准确统计单个文件的工具，然后把编号任务放入只有四个位置的队列。工作线程取出编号，各自打开文件。队列满时，主线程等待空位，不再分配新位置。这就是背压。任务先完成不代表先输出。主线程等所有工作线程结束后，按编号打印结果。
+
+这是原创的引导式工程项目，不是课程作业答案。需要 C11、POSIX 线程、Clang、Make 和 Python 3。源码面向 macOS 与 Linux，不需要网络，也不需要第三方 Python 库。
+
+## 编译与运行
+
+在本项目目录中执行：
+
+```sh
+make
+./thread_pipeline 3 fixtures/morning.txt fixtures/evening.txt fixtures/empty.txt
+```
+
+程序的标准输出如下。`make` 显示的编译命令不属于程序输出。
+
+```text
+job=1 bytes=37 lines=2 words=6
+job=2 bytes=26 lines=2 words=5
+job=3 bytes=0 lines=0 words=0
+summary files=3 ok=3 failed=0
+```
+
+文件列表可以为空。主线程关闭空队列后，等待的线程会醒来并退出。
+
+```sh
+./thread_pipeline 16
+```
+
+```text
+summary files=0 ok=0 failed=0
+```
+
+某个文件不存在，不会丢弃其他结果。
+
+```sh
+./thread_pipeline 2 fixtures/morning.txt fixtures/missing.txt fixtures/evening.txt
+```
+
+```text
+job=1 bytes=37 lines=2 words=6
+job=2 error=open
+job=3 bytes=26 lines=2 words=5
+summary files=3 ok=2 failed=1
+```
+
+前两次运行的退出码为 0。缺少文件的运行退出码为 1，还会向标准错误写入诊断。系统错误文字因平台而异。`job=2` 表示第二个文件参数，不是第二个工作线程。相同路径可以重复出现，每个参数都算独立任务。
+
+```sh
+./thread_pipeline 0 fixtures/morning.txt
+```
+
+该命令只向标准错误打印用法，不产生标准输出，退出码为 2。WORKERS 只能包含十进制数字，数值必须在 1 到 16 之间，可以有前导零。最多接受 128 个文件参数。这里不解析选项，WORKERS 后的每个参数都当作文件路径。
+
+## 先确定统计定义
+
+* 字节数计算读到的每个字节，包括空白和零字节。它不是 Unicode 字符数。
+* 行数等于 LF 字节（`\n`）的数量；若文件非空且最后一个字节不是 LF，再加一。空文件有 0 行，`a` 有 1 行，`a\n` 有 1 行，`\n\n` 有 2 行。末尾的换行不会凭空增加一行。这与只计算换行符数量的工具不同。
+* 单词是由非分隔字节组成的最长连续段。分隔字节仅为空格、制表符、LF、CR、垂直制表符和换页符，定义不受地区设置影响。零字节和非 ASCII 字节都视为普通非分隔字节；不会当作字符串结尾，也不会解码成文字。
+* 每个普通文件最多 8,388,608 字节，即 8 MiB。超过上限时输出 `error=too-large`，不把部分计数冒充完整统计。`in_word` 状态在每次 4096 字节的读取之间保留，因此跨缓冲区的一个单词仍只计算一次。
+
+合成样例包括 37 字节的早间笔记、26 字节且末尾没有 LF 的晚间笔记、两行空行、零字节文件，以及六个空白字节。空白样例的 LF 后还有字节，所以按本项目定义有两行。测试必须以这些约定为准。
+
+## 分五步阅读实现
+
+1. **定义单个文件的结果。** 先读 `stats.h`，再读 `stats.c` 中的 `separator` 和 `count_stream`。用 `a b\n` 手动追踪 `bytes`、`lines`、`words`、`in_word` 和 `last`。循环统计单词的起点。到达文件末尾后，最多补计最后一行。`read` 的返回类型可以表示负数，必须先检查错误，再转换成 `size_t`。
+2. **建立有界队列。** 阅读 `queue.h` 和 `queue_push`。`head` 指向下一个要取出的元素，插入位置为 `(head + count) % 4`。不变量为 `0 &lt;= count &lt;= 4`。队列满且未关闭时，生产者等待；队列空且未关闭时，消费者等待。检查和修改共用同一把互斥锁。`pthread_cond_wait` 在等待时释放锁，返回前重新获得锁。通知只表示需要重新检查条件，并不预留位置，因此必须用 `while`，也要允许虚假唤醒。
+3. **让每个结果只有一个写入者。** 阅读 `main.c` 中的 `WorkerContext` 和 `consume`。主线程给每个输入分配一个编号，并且只入队一次。取出编号时持有队列锁，因此只有一个工作线程能得到它。扫描期间，该线程独占 `results[index]`，并拥有自己打开的文件描述符。文件读取发生在队列锁之外，让其他线程能够继续取任务。
+4. **关闭、排空、等待结束。** 阅读 `queue_close` 和 `main` 后半段。关闭只禁止新任务，不删除队列中的旧任务。队列既空又关闭时，`queue_pop` 才返回 false。广播使所有空闲消费者醒来，包括零任务时的十六个线程。主线程等待每个成功创建的线程结束后，才销毁共享对象并打印。
+5. **验证成功和失败路径。** 阅读 `parse_workers`、启动清理、`print_results` 和 `test.py`。全部工作线程创建成功后才发布任务。若创建失败，关闭仍为空的队列，只等待已经成功创建的线程，然后销毁队列并返回失败。文件错误存入该文件自己的结果槽，其他任务继续。测试比较独立算出的正确结果，不依赖线程的速度或执行先后。
+
+## 所有权和执行阶段
+
+```text
+主线程：初始化队列、上下文、结果数组
+        |
+        +--&gt; 创建全部工作线程 --&gt; 发布编号 --&gt; 关闭队列
+                    |                |            |
+工作线程：          +--&gt; 等待/取任务 -+--&gt; 扫描 --&gt; 取任务 --&gt; 排空 --&gt; 返回
+        |
+主线程：等待每个已创建线程结束 --&gt; 销毁队列 --&gt; 按 0..J-1 打印结果
+
+创建失败：关闭空队列 --&gt; 等待已创建线程 --&gt; 销毁 --&gt; 退出码 1
+```
+
+队列、上下文和结果数组保存在主线程的栈帧中，所有 join 完成后才结束其生命周期。`argv` 中的路径在进程运行期间保持有效，线程只借用，不修改。队列元素只是编号，不拥有文件或动态分配。每个工作线程拥有自己的读取缓冲区和文件描述符。成功打开后，`scan_file` 的每条路径都会尝试关闭描述符。主线程拥有可等待的线程句柄，只 join 成功创建的线程。
+
+`pthread_create` 之前的初始化使工作线程能够访问正确的上下文。互斥锁为队列的读写建立先后关系，也把编号安全地交给消费者。数组的不同元素是不同对象，工作线程不会同时写同一个 `FileStats`。主线程在所有 `pthread_join` 成功后才读取结果，这些同步操作让工作线程完成的写入对主线程可见。所有权和阶段限制共同省去了结果锁。仅仅期待主线程“大概会晚一点运行”不能保证正确。
+
+## 错误与有意保留的限制
+
+`scan_file` 区分打开、元数据查询、非普通文件、读取、超出大小和关闭错误。出现多个问题时保留第一个。读取因 `EINTR` 中断会重试；短读取的有效字节会被处理，然后继续读取。非阻塞打开避免因 FIFO 没有写入方而无限等待，随后用 `fstat` 拒绝非普通文件。本项目用于所附普通样例和其他稳定的普通文件，不是任意设备、恶意路径、持续变化文件的处理器，也不是安全的文件系统沙箱。
+
+队列初始化会检查错误并撤销已初始化的部件。线程创建失败有正常的回收路径。运行过程中若互斥锁、条件变量、join 或销毁操作意外失败，则采用明确的快速失败策略：打印错误并结束整个进程，不承诺完整报告或有序清理。pthread 函数直接返回错误码，不能用 `errno` 解读。关闭失败会报告，不会在描述符状态不确定时盲目重试。
+
+本项目没有线程取消、信号驱动退出或单文件时间限制。慢文件系统仍可能拖延普通文件读取；连续信号也可能不断中断读取。测试给子进程设置超时，但程序本身不保证运行时间上限。要得到可重复的计数，输入文件在扫描期间不能改变。原生 Windows 不属于本 POSIX 目标。能检测到的标准输出错误会返回失败；管道读端关闭时，也可能按默认 SIGPIPE 行为直接结束进程。
+
+计数工作量为 O(B + J)，B 为扫描字节数，J 为任务数。队列操作除等待外只需常数工作和固定存储。队列只放四个编号，结果数组最多 128 项，工作线程最多 16 个，每个线程有一个 4096 字节读取缓冲区以及系统管理的线程栈。内存不会随文件长度增长。判断文件超限时可能额外读取一个缓冲区。小样例只能验证正确性，不能证明多线程更快；存储竞争和线程启动开销反而可能让它更慢。
+
+## 测试和定位问题
+
+```sh
+make test
+python3 test.py --tsan
+make clean
+```
+
+`make test` 始终在临时副本中编译和运行，即使源码目录已有本地构建产物也一样。不会修改样例。每个子进程都有超时。可选的第二条命令要求 Clang 的 ThreadSanitizer 编译器支持和运行环境可用；不可用或检测失败都会报错，不会假装通过。
+
+测试覆盖精确样例输出、零任务、空文件、单线程和十六线程、任务数少于与多于队列容量、任务数上限、非法线程数、缺失文件、目录与 FIFO、跨缓冲区单词、二进制字节，以及文件大小上限的两侧。独立的队列探针检查先进先出、关闭后排空和关闭后拒绝入队。另有 48 次重复运行，使用 37 个有界合成文件以及 1、2、4、16 个工作线程，分别与独立字节/正则表达式算法和单线程输出比较。
+
+测试还在临时目录编译专用 C 替身，注入第一个线程创建前失败、成功创建两个线程后失败、读取失败，以及一次中断读取。这能检验错误路径而不耗尽系统资源。编译期替换只存在于测试副本，不是正式程序的运行开关。压力测试和 ThreadSanitizer 能发现问题，但都不能证明所有调度正确；仍需要不变量与同步关系的论证。
+
+零任务运行卡住时，检查关闭广播和 `count == 0 &amp;&amp; !closed` 条件。末尾无换行的行漏算时，检查 EOF 后补计。输出顺序变化时，检查是否在工作线程中打印，或是否漏了 join。4096 字节边界把单词拆开时，检查 `in_word` 是否错误地放到读取循环内部初始化。缺失文件被打印成零计数时，检查打印计数前是否判断了错误状态。
+
+## 文件导览与后续实验
+
+`main.c` 管理命令行、线程启动、任务发布、join 和报告。`queue.h` 声明有界状态，`queue.c` 实现受锁保护的状态变化。`stats.h` 定义结果与错误，`stats.c` 扫描单个普通文件。`Makefile` 提供严格编译、测试和清理目标。`test.py` 包含独立算法、重复运行和故障注入。两个 README 用不同语言介绍同一个项目。`fixtures/` 的五个文件都是有意设计边界情况的合成输入。
+
+第一个扩展可以把队列容量改成有界参数，并验证容量为 1、4、8 时结果不变。第二个扩展可以对固定、较大的本地样例做性能实验：记录总字节数、编译选项、线程数、耗时、重复次数和文件缓存条件，用字节数除以秒数得到吞吐量。只有测量支持时才能声称提速。时间信息应放在确定性统计输出之外。
+
+## 官方资料
+
+教学解释均为原创，下列官方 POSIX 页面用于核对 API 约定：
+
+* [条件等待与条件重新检查](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_cond_clockwait.html)
+* [pthread_join](https://pubs.opengroup.org/onlinepubs/9799919799.2024edition/functions/pthread_join.html)
+* [第 4.15.2 节：内存同步](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html)
+* [pthread_create：Issue 6 的 API 约定](https://pubs.opengroup.org/onlinepubs/000095399/functions/pthread_create.html)
+* [read](https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html)
+</code></pre><ol class="execution-steps"><li><p>命令和预期标准输出与英文指南相同，程序输出仍使用英文。</p></li><li><p>阅读条件、所有权、队列关闭和 join 可见性的中文解释。</p></li><li><p>更改上限、计数语义或错误行为时，两种语言指南应同步更新。</p></li></ol></article></section><section class="project-section" id="next" data-reading-id="next"><h2>每次只扩展一项契约</h2><article class="design-card"><h3>把队列容量变成有界实验参数</h3><p>增加 1 到 8 的合法容量参数，仍用固定上限存储和相同锁/条件规则。比较容量与线程数：它们分别控制等待任务和活跃消费者。</p><h4>验收检查</h4><p>容量 1、4、8 在零任务、37 项任务和缺失文件情况下输出必须一致。非法容量在线程启动前失败，并解释修改后的不变量。</p></article><article class="design-card"><h3>测量吞吐量，同时保持报告语义</h3><p>生成有界的大一些的本地样例，在结果格式之外测量耗时，用相同字节比较 1、2、4、16 线程。记录编译设置、重复次数、文件大小和缓存条件。吞吐量等于成功处理总字节除以秒数。</p><h4>验收检查</h4><p>计数保持逐字节一致。报告重复测量及其变化，只有证据支持才声称提速。样例保持有界，并在临时测试目录生成。</p></article><h3>一手参考资料</h3><ul><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_cond_clockwait.html">The Open Group POSIX.1-2024 — condition waits, including pthread_cond_wait</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799.2024edition/functions/pthread_join.html">The Open Group POSIX.1-2024 — pthread_join</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html">The Open Group POSIX.1-2024 — General Concepts, Memory Synchronization 4.15.2</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/000095399/functions/pthread_create.html">The Open Group Base Specifications Issue 6 — pthread_create</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html">The Open Group POSIX.1-2024 — read</a></li></ul></section></div></div><footer class="footer"><span class="watermark">Guoliang</span><a href="../courses/comp2017.zh.html#projects">返回工程学习路线 ↑</a></footer></main></body></html>

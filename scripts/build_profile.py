@@ -93,6 +93,8 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 **New to Python or AI?** [Start here in English]({site}ai/start.en.html) · [Start here in Chinese]({site}ai/start.zh.html) · [Python examples]({site}downloads/guoliang-python-examples.zip) · [All Python, Java and C examples]({site}downloads/guoliang-code-examples.zip)
 
+**Build with C:** [COMP2017 guided path]({site}courses/comp2017.html#study-plan) · [Three complete engineering projects]({site}courses/comp2017.html#projects) · [Download project source]({site}downloads/COMP2017-projects.zip)
+
 <table>
 <tr>
 <td width="50%" align="center"><a href="{site}#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="{site}#learning"><strong>Open the course library ↗</strong></a><p>{len(courses)} courses · {sum(len(c["topics"]) for c in courses)} topics</p></td>

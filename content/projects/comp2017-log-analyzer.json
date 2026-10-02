@@ -1,0 +1,1168 @@
+{
+  "id": "comp2017-log-analyzer",
+  "course": "COMP2017",
+  "number": 1,
+  "title": {
+    "en": "A streaming log analyzer",
+    "zh": "流式日志分析器"
+  },
+  "summary": {
+    "en": "Turn a robot simulator trace into a trustworthy command-line report. Build a small C program that reads bounded lines, validates records, accumulates statistics, and explains failures.",
+    "zh": "把机器人模拟器的轨迹变成可信的命令行报告。用一个小型 C 程序练习有边界地读行、校验记录、累积统计和解释失败。"
+  },
+  "story": {
+    "en": "Guoliang is testing a classroom robot simulator. Each simulated action writes a severity and a duration, such as WARN 40. A slow action is easy to miss in a long trace, and a damaged row can make a careless average misleading. Guoliang starts with one good row, defines exactly what a record means, then adds a stream reader and a running summary. The finished tool reports how many INFO, WARN, and ERROR events occurred, their latency range and mean, and how many rows were rejected. All data is synthetic. This is an original engineering project and its own concept checks, not a supplied course exercise or solution.",
+    "zh": "Guoliang 正在测试课堂用的机器人模拟器。每个模拟动作都会记录级别与耗时，例如 WARN 40。长日志中的慢动作很容易被漏掉，损坏的记录又可能让平均值失真。我们先让一条有效记录走通，再明确记录规则，加入连续读行和累积统计。完成后的工具能够报告 INFO、WARN、ERROR 的次数、耗时范围与平均值，还能说明丢弃了多少行。所有数据都是人工构造。这是原创工程项目及其概念检查，不是课程提供的作业或答案。"
+  },
+  "difficulty": {
+    "en": "Project 1 · beginner engineering · functions, arrays, and basic pointers first. Read the five stages in order; compile the complete files before studying extracts.",
+    "zh": "项目 1 · 工程入门 · 先掌握函数、数组和基本指针。按顺序学习五个阶段；先编译完整文件，再研究代码摘录。"
+  },
+  "prerequisites": [
+    {
+      "topic": "representation-control",
+      "reason": {
+        "en": "Use comparisons, loops, unsigned values, and explicit return codes. A duration has a small valid range; a running sum needs a wider type.",
+        "zh": "使用比较、循环、无符号值和明确的返回码。单次耗时的范围很小，累积总和需要更宽的类型。"
+      }
+    },
+    {
+      "topic": "strings-parsing",
+      "reason": {
+        "en": "A C string ends at a NUL byte. Reserve space for that terminator, and accept a number only when the whole field is valid.",
+        "zh": "C 字符串在 NUL 字节处结束。缓冲区要为结束符留空间，数值字段必须整体合法才接受。"
+      }
+    },
+    {
+      "topic": "structured-data",
+      "reason": {
+        "en": "A record groups one severity and one duration. A statistics struct holds state that must stay consistent after each line.",
+        "zh": "记录结构体把一个级别和一个耗时放在一起；统计结构体保存每行处理后仍需保持一致的状态。"
+      }
+    },
+    {
+      "topic": "file-streams",
+      "reason": {
+        "en": "Read through FILE pointers, distinguish EOF from a stream error, and close only streams you opened.",
+        "zh": "通过 FILE 指针读取，区分文件结束和流错误，只关闭自己打开的流。"
+      }
+    },
+    {
+      "topic": "compilation-linkage",
+      "reason": {
+        "en": "Headers describe interfaces; separate C translation units implement them and the linker joins their object files.",
+        "zh": "头文件描述接口，独立 C 编译单元实现接口，链接器再把目标文件组合起来。"
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "en": "Translate a plain-language input rule into a parser contract that either commits a complete record or leaves output untouched.",
+      "zh": "把自然语言输入规则转成解析器契约：要么提交完整记录，要么保持输出对象不变。"
+    },
+    {
+      "en": "Process a stream with constant application memory while preserving physical line boundaries after malformed input.",
+      "zh": "用固定大小的应用内存处理输入流，遇到坏数据后仍保住物理行边界。"
+    },
+    {
+      "en": "Choose numeric types from proven bounds, calculate independent expected results, and test stdout, stderr, and exit status together.",
+      "zh": "根据已证明的边界选择数值类型，独立计算预期结果，同时测试标准输出、错误输出和退出码。"
+    }
+  ],
+  "requirements": [
+    {
+      "rule": {
+        "en": "Accept exactly one input argument: a filename or - for stdin.",
+        "zh": "恰好接受一个输入参数：文件名，或表示标准输入的 -。"
+      },
+      "why": {
+        "en": "One clear interface makes the first CLI easy to use and test; there is no hidden interactive menu.",
+        "zh": "明确而单一的接口便于使用和测试，不需要额外交互菜单。"
+      },
+      "check": {
+        "en": "No argument or two arguments gives exit 2 and no stdout. A copied demo file and piped stdin both work.",
+        "zh": "没有参数或有两个参数时退出码为 2，stdout 为空。复制的示例文件和管道标准输入都能读取。"
+      }
+    },
+    {
+      "rule": {
+        "en": "A row contains INFO, WARN, or ERROR plus one decimal integer from 0 through 60000. Only spaces and tabs separate fields.",
+        "zh": "每行包含 INFO、WARN 或 ERROR，再加一个 0 到 60000 的十进制整数。字段之间只允许空格和制表符。"
+      },
+      "why": {
+        "en": "A precise grammar prevents 12ms, -1, 1.5, or extra columns from silently becoming valid measurements.",
+        "zh": "明确语法，避免把 12ms、-1、1.5 或多余字段悄悄转成有效测量值。"
+      },
+      "check": {
+        "en": "Test both endpoints and one value above the maximum, plus unknown levels, signs, suffixes, and an extremely long integer.",
+        "zh": "测试两个端点、超出上限一单位的值，以及未知级别、正负号、后缀和极长整数。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Limit each physical line to 127 bytes before LF, including any final CR. Reject an embedded NUL or an oversized line as one whole row.",
+        "zh": "每条物理行在 LF 之前最多 127 字节，末尾 CR 也计入。嵌入 NUL 或超长的整行只算一条坏记录。"
+      },
+      "why": {
+        "en": "The fixed buffer needs one extra byte for its terminator. Draining a bad line stops its remaining bytes from pretending to be another row.",
+        "zh": "固定缓冲区还要给结束符留一字节。读完坏行的剩余部分，防止尾巴冒充下一行。"
+      },
+      "check": {
+        "en": "A 127-byte row succeeds; a 128-byte row fails; a valid row immediately after it still counts once.",
+        "zh": "127 字节行成功，128 字节行失败，紧接其后的有效行仍然只计数一次。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Read at most 1,048,576 input bytes plus one lookahead byte. Exceeding the input budget is fatal.",
+        "zh": "最多处理 1,048,576 个输入字节，另允许一个用于探测的字节。输入超限属于致命错误。"
+      },
+      "why": {
+        "en": "This bounds byte-processing work and gives a simple proof that counters and duration totals cannot overflow.",
+        "zh": "这限制了字节处理工作量，也便于证明计数和耗时总和不会溢出。"
+      },
+      "check": {
+        "en": "Exactly 1 MiB of valid padded rows succeeds. One additional byte yields exit 1 and empty stdout.",
+        "zh": "恰好 1 MiB 的有效填充行成功，再多一个字节则退出码为 1，stdout 为空。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Keep valid rows when some rows are malformed, but return exit 3 and count every rejected row. Suppress the report on fatal input errors.",
+        "zh": "部分行损坏时保留有效行统计，但返回 3 并统计全部坏行。发生致命输入错误时不输出报告。"
+      },
+      "why": {
+        "en": "The person reading the report can judge missing data, while scripts can detect a non-clean run.",
+        "zh": "读报告的人能够判断缺失数据的程度，脚本也能识别不完全成功的运行。"
+      },
+      "check": {
+        "en": "The mixed fixture reports 3 valid and 3 malformed rows; a nonexistent file returns 1 with no report.",
+        "zh": "混合样本报告 3 行有效、3 行错误；不存在的文件返回 1 且不生成报告。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Report counts, valid-duration sum, minimum, maximum, and mean. With zero valid rows, print n/a for the last three metrics.",
+        "zh": "报告计数、有效耗时总和、最小值、最大值和均值。没有有效行时，最后三个指标输出 n/a。"
+      },
+      "why": {
+        "en": "No observation is not the same as a zero-duration observation, and dividing by zero would be invalid.",
+        "zh": "没有观测值不等于观测到零耗时，而且不能除以零。"
+      },
+      "check": {
+        "en": "Hand-check the demo sum 200 and mean 33.333; check all n/a values on the empty fixture.",
+        "zh": "手算示例总和 200、均值 33.333；检查空样本中的全部 n/a。"
+      }
+    }
+  ],
+  "architecture": {
+    "nodes": [
+      {
+        "title": {
+          "en": "main.c: command and ownership",
+          "zh": "main.c：命令与资源归属"
+        },
+        "body": {
+          "en": "Validate argc, open a file or borrow stdin, connect reader → parser → statistics, close an owned file, and choose the exit status. This is where policy lives.",
+          "zh": "校验 argc，打开文件或借用 stdin，连接读取器 → 解析器 → 统计，关闭自己打开的文件并选择退出码。整体处理策略集中在这里。"
+        }
+      },
+      {
+        "title": {
+          "en": "reader.c: bytes become complete lines",
+          "zh": "reader.c：字节变成完整行"
+        },
+        "body": {
+          "en": "Read a byte stream into the caller’s fixed buffer. Distinguish complete line, malformed framing, clean EOF, I/O failure, and input limit. Drain bad lines within the total byte budget.",
+          "zh": "将字节流读入调用者的固定缓冲区。区分完整行、行结构错误、正常 EOF、I/O 失败和输入超限。在总字节预算内读完坏行。"
+        }
+      },
+      {
+        "title": {
+          "en": "record.c: text becomes a value",
+          "zh": "record.c：文本变成记录值"
+        },
+        "body": {
+          "en": "Read a complete C string without changing it. Validate level, separators, digits, numeric bound, and end of text. Commit the local candidate only after every check passes.",
+          "zh": "读取完整 C 字符串，不修改它。校验级别、分隔符、数字、数值边界和文本末尾。所有检查通过后才提交局部候选记录。"
+        }
+      },
+      {
+        "title": {
+          "en": "stats.c: values become a report",
+          "zh": "stats.c：记录值变成报告"
+        },
+        "body": {
+          "en": "Maintain line/count/sum/extrema invariants without storing records. Format one final report and flush it so buffered output errors can be noticed.",
+          "zh": "无需保存全部记录，逐步维护行数、计数、总和和极值的约束。最后格式化一次报告并刷新输出，以发现缓冲写入错误。"
+        }
+      }
+    ],
+    "flow": {
+      "en": "argv → FILE stream → bounded physical line → validated record → running statistics → stdout. Bad records take a side path to malformed count and bounded stderr warnings. Fatal input errors stop before stdout. No application thread or heap-owned record is needed.",
+      "zh": "argv → FILE 流 → 有边界的物理行 → 合法记录 → 累积统计 → stdout。坏行转到错误计数与数量受限的 stderr 警告。致命输入错误在输出报告前停止。应用程序不需要线程，也不需要在堆上保存记录。"
+    },
+    "ownership": [
+      {
+        "resource": {
+          "en": "FILE * returned by fopen",
+          "zh": "fopen 返回的 FILE *"
+        },
+        "owner": {
+          "en": "main opens the file and lends the pointer to analyze and read_line.",
+          "zh": "main 打开文件，把指针借给 analyze 和 read_line。"
+        },
+        "release": {
+          "en": "main calls fclose exactly once after analysis, including after an input failure.",
+          "zh": "分析结束后 main 调用一次 fclose，即使分析因输入错误而失败也会关闭。"
+        }
+      },
+      {
+        "resource": {
+          "en": "stdin and stdout",
+          "zh": "stdin 和 stdout"
+        },
+        "owner": {
+          "en": "The C runtime provides these streams. This project borrows them.",
+          "zh": "C 运行时提供这些流，本项目只是借用。"
+        },
+        "release": {
+          "en": "Do not fclose borrowed stdin. stats_print flushes stdout; normal process shutdown performs runtime cleanup.",
+          "zh": "不关闭借来的 stdin。stats_print 刷新 stdout；正常进程结束时由运行时收尾。"
+        }
+      },
+      {
+        "resource": {
+          "en": "128-byte line buffer and parsed record",
+          "zh": "128 字节行缓冲区及解析记录"
+        },
+        "owner": {
+          "en": "analyze owns local stack storage. read_line writes the buffer; parse_record copies values into the record.",
+          "zh": "analyze 拥有局部栈存储。read_line 写缓冲区，parse_record 将数值写入记录。"
+        },
+        "release": {
+          "en": "The buffer is reused only after the current row is consumed. No function retains its pointer; local storage ends when its scope ends.",
+          "zh": "当前行处理完成后才重用缓冲区。没有函数保留其指针；离开作用域时局部存储结束。"
+        }
+      },
+      {
+        "resource": {
+          "en": "Statistics structure",
+          "zh": "统计结构体"
+        },
+        "owner": {
+          "en": "main owns a zero-initialized struct and lends it for updates and printing.",
+          "zh": "main 拥有零初始化的结构体，借给其他函数更新和打印。"
+        },
+        "release": {
+          "en": "No free is needed: it has automatic storage duration and contains values, not allocated pointers.",
+          "zh": "无需 free：它具有自动存储期，内部只保存数值，不包含动态分配的指针。"
+        }
+      }
+    ]
+  },
+  "milestones": [
+    {
+      "id": "one-row",
+      "title": {
+        "en": "1. Follow one row from text to a report",
+        "zh": "1. 跟踪一行文本变成报告"
+      },
+      "goal": {
+        "en": "Get a tiny vertical slice working: one valid row enters stdin and produces one correct report. Learn the data shape before the error branches.",
+        "zh": "先走通最小的完整路径：一条有效记录从 stdin 进入，并生成正确报告。先理解数据形状，再研究错误分支。"
+      },
+      "reasoning": {
+        "en": "Start with a question small enough to answer by hand: what should INFO 12 produce? It describes one event, so valid and INFO must be 1; total, min, max, and mean must all describe 12 ms. This expectation connects an input rule to an observable result. Use the complete downloaded files as a working baseline while understanding one path at a time. A struct groups related values so you can pass one record without confusing its level with its duration.",
+        "zh": "从一个能手算的问题开始：INFO 12 应输出什么？它表示一个事件，因此 valid 和 INFO 都为 1；总和、最小值、最大值和均值都对应 12 毫秒。这把输入规则和可观察结果连接起来。先把完整下载文件作为可运行的基线，再一次理解一条路径。结构体把相关值组合起来，传递一条记录时不容易混淆级别与耗时。"
+      },
+      "steps": [
+        {
+          "en": "In the project directory run make, then printf 'INFO 12\\n' | ./log_analyzer -. Keep the terminal output next to your hand prediction. The dash is an argument; the shell pipe connects printf output to the program’s stdin.",
+          "zh": "在项目目录运行 make，再运行 printf 'INFO 12\\n' | ./log_analyzer -。把终端输出与手算预测放在一起比较。短横线是一个参数；管道把 printf 的输出接到程序的 stdin。"
+        },
+        {
+          "en": "Read the record.h extract. The enum gives readable names to three categories; LEVEL_COUNT sizes a three-element counter array later. unsigned stores a nonnegative duration, but the parser must still enforce the smaller 60000 limit.",
+          "zh": "阅读 record.h 摘录。enum 为三个类别提供易读名字；LEVEL_COUNT 后续用于确定三个计数器组成的数组大小。unsigned 保存非负耗时，但解析器仍要额外限制到 60000。"
+        },
+        {
+          "en": "Trace only the successful calls in main.c: read_line fills text, parse_record fills a local record, stats_accept updates totals, and stats_print creates the report. Circle where text becomes typed values. Do not copy extracts into a new standalone file; build all supplied source files together.",
+          "zh": "只跟踪 main.c 中成功的调用：read_line 填入文本，parse_record 填入局部记录，stats_accept 更新统计，stats_print 输出报告。圈出文本变成有类型数值的位置。不要把摘录复制成独立程序；请一起编译全部源文件。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "enum log_level { LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, LEVEL_COUNT };\n\nstruct record {\n    enum log_level level;\n    unsigned duration_ms;\n};"
+      },
+      "snippet_explanation": {
+        "en": "Extract from record.h. The record contains values rather than a pointer into the input line. A later read can overwrite that line without changing a record already passed to the statistics code. This is the first ownership decision, even though no malloc appears.",
+        "zh": "摘自 record.h。记录保存的是值，不是指向输入行的指针。下一次读行可以覆盖原文本，而不会改变已交给统计代码的记录。这已经是一次资源归属设计，尽管没有出现 malloc。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "If the input is ERROR 12 instead, should the process return an error?",
+          "zh": "如果输入换成 ERROR 12，进程应该报错退出吗？"
+        },
+        "answer": {
+          "en": "No. ERROR is a valid severity in this format. It changes the ERROR counter to 1, and the process still returns 0 because the input itself is valid.",
+          "zh": "不应该。ERROR 是格式中的合法级别。它让 ERROR 计数变为 1；因为输入本身合法，进程仍返回 0。"
+        }
+      }
+    },
+    {
+      "id": "validated-record",
+      "title": {
+        "en": "2. Make validation all-or-nothing",
+        "zh": "2. 让校验要么全部成功，要么不提交"
+      },
+      "goal": {
+        "en": "Extend the one-row path with a strict parser contract: only a whole valid row can create a record.",
+        "zh": "为单行路径增加严格的解析契约：只有整行完全合法，才能形成记录。"
+      },
+      "reasoning": {
+        "en": "A conversion routine that reads the prefix 12 from 12ms would hide an input mistake. Our parser consumes a complete level token, requires a separator, reads at least one digit, and checks that only allowed trailing whitespace remains. It builds a local candidate and assigns *out once at the end. The caller therefore never receives half of a new record after failure. For each digit d, the next value would be 10v+d. Rewriting 10v+d <= 60000 as v <= (60000-d)/10 allows checking before multiplication.",
+        "zh": "如果转换函数从 12ms 中只读取前缀 12，就会掩盖输入错误。我们的解析器先读取完整级别，要求分隔符，再读至少一个数字，最后确保只剩允许的尾部空白。它先构造局部 candidate，最后一次性赋值给 *out。因此失败时调用者不会收到半条新记录。对每个数字 d，新值应为 10v+d。把 10v+d <= 60000 改写为 v <= (60000-d)/10，就能在乘法之前检查。"
+      },
+      "steps": [
+        {
+          "en": "Read the promise above parse_record in record.h, then its implementation. Mark input as borrowed and const; mark out as caller-owned writable storage. Neither pointer may be kept after the call.",
+          "zh": "先读 record.h 中 parse_record 上方的承诺，再读实现。把输入标为借用且 const，把 out 标为调用者拥有的可写存储。函数调用后不保留这两个指针。"
+        },
+        {
+          "en": "Follow candidate through INFO 60000, digit by digit. Before the final zero, v is 6000 and the check permits it. For INFO 60001, the final digit makes the threshold 5999, so parsing stops before writing an out-of-range value.",
+          "zh": "逐位跟踪 INFO 60000 的 candidate。最后一个零之前 v 为 6000，检查允许继续。对于 INFO 60001，最后一位让阈值成为 5999，因此在写入超范围值之前就停止。"
+        },
+        {
+          "en": "Run make test and locate the numeric-grammar test. Predict rejection for +1, -1, 1.5, 12ms, 1 2, and 60001 before reading assertions. Test one malformed row after a good row and verify only the good duration enters the sum.",
+          "zh": "运行 make test 并找到数字语法测试。先预测 +1、-1、1.5、12ms、1 2 和 60001 会被拒绝，再读断言。让有效行后面跟一条坏行，确认只有有效耗时进入总和。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "    while (*p >= '0' && *p <= '9') {\n        unsigned digit = (unsigned)(*p - '0');\n        if (candidate.duration_ms > (MAX_DURATION_MS - digit) / 10U) {\n            return false;\n        }\n        candidate.duration_ms = candidate.duration_ms * 10U + digit;\n        ++p;\n    }\n    if (*skip_space(p) != '\\0') {\n        return false;\n    }\n    *out = candidate;\n    return true;"
+      },
+      "snippet_explanation": {
+        "en": "Extract from record.c after the level and first-digit checks. The bound check happens before multiply-and-add. The final NUL check rejects suffixes and extra fields. *out = candidate is the commit point: all previous branches return without touching caller output.",
+        "zh": "摘自 record.c，位于级别与首位数字校验之后。边界检查先于乘加运算。最后的 NUL 检查拒绝后缀和额外字段。*out = candidate 是提交点：此前所有失败分支都不修改调用者输出。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why not assign out->level immediately after recognizing INFO?",
+          "zh": "为什么识别 INFO 后不立即写入 out->level？"
+        },
+        "answer": {
+          "en": "A later duration error would leave output partly changed. A local candidate makes the interface easier to reason about: success replaces the whole record; failure replaces nothing.",
+          "zh": "因为后续耗时错误会让输出只改变一部分。局部 candidate 让接口更清晰：成功就替换整条记录，失败就什么也不替换。"
+        }
+      }
+    },
+    {
+      "id": "bounded-stream",
+      "title": {
+        "en": "3. Preserve line boundaries while streaming",
+        "zh": "3. 连续读取时保住行边界"
+      },
+      "goal": {
+        "en": "Extend one-row input to a sequence without keeping the whole file in memory or mistaking a damaged tail for another row.",
+        "zh": "将单行输入扩展成连续记录，不把整份文件保存在内存中，也不把损坏行的尾部误认为另一行。"
+      },
+      "reasoning": {
+        "en": "The reader handles bytes and line endings; the parser handles the meaning of a complete line. Keeping those jobs separate makes failures easier to locate. A 127-byte payload needs an array of 128 bytes because C strings also need a NUL terminator. Once a row is known to be bad, stopping immediately would leave its tail waiting in the stream. Keep reading until LF or EOF, but keep enforcing the total byte budget. EOF alone is not proof of success: ferror distinguishes a read failure.",
+        "zh": "读取器处理字节和换行，解析器处理完整行的含义。分开这两项任务，更容易定位错误。127 字节的内容需要 128 字节数组，因为 C 字符串还需要 NUL 结束符。一旦发现坏行，如果马上停下，尾部仍留在流中。应继续读到 LF 或 EOF，同时继续检查总字节预算。单看 EOF 不能证明成功，还要用 ferror 区分读取失败。"
+      },
+      "steps": [
+        {
+          "en": "Read the five line_status meanings in reader.h before the loop. main may parse only LINE_OK. LINE_BAD increments rejection once; LINE_END finishes; LINE_IO_ERROR and LINE_LIMIT abort without a report.",
+          "zh": "先读 reader.h 中五种 line_status，再读循环。main 只能解析 LINE_OK。LINE_BAD 使拒绝次数加一；LINE_END 正常结束；LINE_IO_ERROR 与 LINE_LIMIT 终止且不生成报告。"
+        },
+        {
+          "en": "Trace used and bad in the extract for 127 bytes, then a 128th byte. used never exceeds 127. After bad becomes true, writing stops but reading continues. An embedded NUL follows the same rejection path, preventing hidden text after a fake string terminator.",
+          "zh": "对 127 字节以及第 128 个字节，跟踪摘录中的 used 和 bad。used 永远不超过 127。bad 变为真后停止写入，但继续读取。嵌入 NUL 走同一拒绝路径，避免伪装结束符之后藏着文本。"
+        },
+        {
+          "en": "Use the line-limit and binary-byte tests to check recovery. Then inspect the EOF branch for a last row without LF and the CR removal for CRLF. The 1 MiB test checks a different boundary: total input, not per-line capacity.",
+          "zh": "用行长度与二进制字节测试检查恢复行为。再查看 EOF 分支怎样处理缺少 LF 的最后一行，以及去掉 CR 如何支持 CRLF。1 MiB 测试检查另一个边界：总输入大小，而非单行容量。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "        if (ch == '\\n') {\n            break;\n        }\n        if (ch == '\\0' || used == MAX_LINE_BYTES) {\n            bad = true;\n        }\n        if (!bad) {\n            line[used++] = (char)ch;\n        }\n        /* Keep consuming a bad line so its tail is not a new record. */"
+      },
+      "snippet_explanation": {
+        "en": "Extract from reader.c, inside its byte loop. fgetc is stored in int elsewhere in the same loop, so EOF stays distinct from byte values. The buffer belongs to analyze; read_line borrows it. Do not read its contents after LINE_BAD, because no complete C string is promised on that path.",
+        "zh": "摘自 reader.c 的字节循环。同一循环中用 int 保存 fgetc 返回值，以区分 EOF 与普通字节。缓冲区属于 analyze，read_line 只是借用。LINE_BAD 后不要使用缓冲区内容，因为该路径不承诺提供完整 C 字符串。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why must a long row count as one rejection even if it fills the buffer many times?",
+          "zh": "为什么一条长行即使够填满多次缓冲区，也只能算一次拒绝？"
+        },
+        "answer": {
+          "en": "The input contract counts physical lines, not buffer-sized chunks. Draining preserves that framing, so the next call starts at the following real line.",
+          "zh": "输入契约按物理行计数，不按缓冲区大小的分块计数。读到行尾才能保住边界，让下次调用从真正的下一行开始。"
+        }
+      }
+    },
+    {
+      "id": "running-summary",
+      "title": {
+        "en": "4. Build a summary with explicit invariants",
+        "zh": "4. 用明确约束维护累积统计"
+      },
+      "goal": {
+        "en": "Turn many validated records into useful counts and latency aggregates using fixed-size state.",
+        "zh": "用固定大小的状态，把多条合法记录变成有用的计数与耗时统计。"
+      },
+      "reasoning": {
+        "en": "You do not need to remember every duration to compute a count, sum, minimum, or maximum. After each complete row, lines = valid + malformed. After each valid row, INFO + WARN + ERROR = valid. Only valid records affect latency metrics. Use the first valid duration to initialize both extrema; otherwise a zero-initialized minimum would stay zero for all-positive data. uint64_t holds counts and sums because their conservative bounds exceed small integer ranges, while a single 0–60000 duration fits unsigned.",
+        "zh": "计算数量、总和、最小值和最大值，不必记住每个耗时。每条完整行处理后，lines = valid + malformed；每条有效行处理后，INFO + WARN + ERROR = valid。只有有效记录影响耗时指标。用第一条有效耗时初始化两个极值，否则零初始化的最小值在全正数数据中会一直为零。计数与总和的保守边界较大，因此用 uint64_t；单条 0–60000 耗时用 unsigned 即可。"
+      },
+      "steps": [
+        {
+          "en": "Initialize totals with {0}, then read stats_accept and stats_reject. Trace the first two demo rows: after INFO 10 and WARN 40, count is 2, total is 50, min is 10 and max is 40. Confirm no rejected duration reaches this function.",
+          "zh": "用 {0} 初始化 totals，再读 stats_accept 和 stats_reject。跟踪示例的前两行：INFO 10 与 WARN 40 之后，数量为 2，总和 50，最小值 10，最大值 40。确认坏行的耗时不会进入此函数。"
+        },
+        {
+          "en": "Finish the six-row hand calculation before running the demo. The sum is 200 and 200/6 is 33.333… . In stats_print, cast before division and display three decimal places. Integer aggregation stays exact even though mean display is rounded.",
+          "zh": "先手算六行结果，再运行示例。总和为 200，200/6 为 33.333… 。在 stats_print 中，先转类型再相除，显示三位小数。均值显示会舍入，但整数累积仍然精确。"
+        },
+        {
+          "en": "Run the empty fixture. valid is zero, so no observed min or max exists and division is forbidden. Find the n/a branch, then run the positive-only mixed fixture to catch the minimum-initialization bug that the zero-containing demo alone would hide.",
+          "zh": "运行空样本。valid 为零时，没有观测到最小或最大值，也不能做除法。找到 n/a 分支，再运行耗时全为正数的混合样本；它能发现含零示例单独测试时可能漏掉的最小值初始化错误。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "void stats_accept(struct stats *s, const struct record *record)\n{\n    if (s->valid == 0 || record->duration_ms < s->min_ms) {\n        s->min_ms = record->duration_ms;\n    }\n    if (s->valid == 0 || record->duration_ms > s->max_ms) {\n        s->max_ms = record->duration_ms;\n    }\n    ++s->lines;\n    ++s->valid;\n    ++s->by_level[record->level];\n    s->total_ms += record->duration_ms;\n}"
+      },
+      "snippet_explanation": {
+        "en": "Extract from stats.c. Update extrema before increasing valid so valid == 0 means this is the first accepted row. record->level is safe as an index because the caller must pass a record produced by successful parsing. The header states that precondition; this is an internal interface, not an arbitrary-data API.",
+        "zh": "摘自 stats.c。先更新极值，再增加 valid，所以 valid == 0 表示当前是第一条有效记录。record->level 能安全作为索引，是因为调用者必须传入解析成功的记录。头文件写明此前置条件；这是内部接口，不是接受任意数据的 API。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Can you calculate an exact median from this state alone?",
+          "zh": "仅靠目前的状态，可以计算精确中位数吗？"
+        },
+        "answer": {
+          "en": "No. Count, sum, min and max lose the ordering information needed for a median. That extension needs another representation, such as a bounded histogram, and a new memory/correctness argument.",
+          "zh": "不能。数量、总和和极值丢失了中位数需要的顺序信息。增加这个功能需要其他表示，例如有限范围的直方图，并重新论证内存与正确性。"
+        }
+      }
+    },
+    {
+      "id": "cli-proof",
+      "title": {
+        "en": "5. Finish the interface and test the failure paths",
+        "zh": "5. 完成接口并测试失败路径"
+      },
+      "goal": {
+        "en": "Deliver a real CLI with a documented exit policy, clear cleanup, reproducible fixtures, and tests that can catch incorrect results.",
+        "zh": "交付真正的命令行工具，包含清楚的退出规则、资源清理、可复现样本，以及能发现错误结果的测试。"
+      },
+      "reasoning": {
+        "en": "A plausible report is not enough. The caller also needs to know whether every byte was inspected and whether any records were excluded. main owns the decision: 0 for clean completion, 3 for completed input with malformed rows, 2 for usage, and 1 for input/capacity or reported output failures. Close an owned file even when analyze fails. Delay stdout until input and close succeed; an output error may still leave a prefix. Tests compare real subprocess behavior with independent expected answers, and place temporary inputs in their own directories.",
+        "zh": "看起来合理的报告还不够。调用者还要知道是否检查了全部输入、是否排除了记录。main 负责决策：完整且无坏行返回 0，完整但有坏行返回 3，用法错误返回 2，输入、容量或输出函数报告的错误返回 1。即使 analyze 失败也关闭自己打开的文件。输入与关闭成功前不写 stdout；输出错误本身仍可能留下部分结果。测试将真实子进程行为与独立预期比较，并把临时输入放在各自的目录中。"
+      },
+      "steps": [
+        {
+          "en": "Read main from argument validation to return. Mark owns_input when fopen supplies the stream and false when stdin is borrowed. Follow the excerpt’s cleanup on success and failure; there is one fclose location and no free for stack-owned totals.",
+          "zh": "从参数校验一直读到 main 的 return。fopen 提供流时标记 owns_input；借用 stdin 时为假。跟踪摘录中成功与失败的清理路径：只有一个 fclose 位置，栈上的 totals 不需要 free。"
+        },
+        {
+          "en": "Run the mixed fixture and check echo $? immediately: it is 3 despite useful stdout. Run a missing filename and no argument: expect 1 and 2 with empty stdout. stderr is a separate diagnostic channel, so a script can keep the report apart from warnings.",
+          "zh": "运行混合样本，立即用 echo $? 检查：虽然 stdout 有用，退出码仍为 3。再运行不存在的文件名和缺少参数的情况：预期分别是 1 和 2，stdout 均为空。stderr 是单独诊断通道，脚本可将报告与警告分开。"
+        },
+        {
+          "en": "Run make test. For each test, name the bug it would catch: wrong mean type, permissive prefix parsing, incomplete draining, lost exit code, or a byte-budget off-by-one. The tests use a five-second subprocess timeout and literal expected totals. They do not simulate every output/close failure or impose a runtime deadline on ordinary CLI use.",
+          "zh": "运行 make test。说出每个测试能抓到的错误：均值类型错误、只解析前缀、坏行没有读完、退出码丢失，或总字节边界差一。测试使用五秒子进程超时和写死的手算预期。它们不模拟所有输出或关闭故障，也不等于普通命令行运行自带时限。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "    struct stats totals = {0};\n    bool completed = analyze(input, &totals);\n    if (owns_input && fclose(input) != 0) {\n        fputs(\"error: cannot close input\\n\", stderr);\n        completed = false;\n    }\n    if (!completed) {\n        return EXIT_IO;\n    }\n    if (!stats_print(stdout, &totals)) {\n        fputs(\"error: cannot write report\\n\", stderr);\n        return EXIT_IO;\n    }\n    return totals.malformed == 0 ? EXIT_CLEAN : EXIT_DATA;"
+      },
+      "snippet_explanation": {
+        "en": "Extract from the end of main.c. completed records whether input processing really finished. fclose runs for owned input before this result is checked. stats_print checks buffered output with fflush; its failure also becomes exit 1. A malformed completed input is distinguished at the final return.",
+        "zh": "摘自 main.c 末尾。completed 表明输入处理是否真正完成。检查该结果之前，先对自己拥有的输入调用 fclose。stats_print 用 fflush 检查缓冲输出；它失败也返回 1。完整读取但存在坏行的情况在最后的 return 区分。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why test returncode and stderr if the expected stdout already matches?",
+          "zh": "既然 stdout 已与预期一致，为什么还要测试 returncode 和 stderr？"
+        },
+        "answer": {
+          "en": "The report can be correct for accepted rows while silently hiding data loss. Exit 3 and line warnings tell a caller about rejected rows. Testing all three channels checks the tool’s full public contract.",
+          "zh": "报告可能对接受的行算得正确，却隐藏了数据损失。退出码 3 和行号警告负责告知调用者有行被拒绝。三个通道一起测试，才能覆盖工具对外的完整契约。"
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "record.h",
+      "role": {
+        "en": "Record interface",
+        "zh": "记录接口"
+      },
+      "read_order": 1,
+      "walkthrough": [
+        {
+          "en": "Read the enum and struct together: severity is a category, duration is a bounded nonnegative value.",
+          "zh": "把 enum 和 struct 一起读：级别是类别，耗时是有范围的非负值。"
+        },
+        {
+          "en": "The parser receives borrowed text and a caller-owned output address; success is reported as bool.",
+          "zh": "解析器接收借用的文本和调用者拥有的输出地址，用 bool 表示成功。"
+        },
+        {
+          "en": "The failure promise is explicit: *out stays unchanged. Check the implementation against that promise.",
+          "zh": "失败承诺很明确：*out 不变。用这个承诺检查实现。"
+        }
+      ]
+    },
+    {
+      "path": "record.c",
+      "role": {
+        "en": "Strict complete-row parsing",
+        "zh": "严格的整行解析"
+      },
+      "read_order": 2,
+      "walkthrough": [
+        {
+          "en": "The two static whitespace helpers accept only space and tab, keeping the grammar independent of locale.",
+          "zh": "两个 static 空白辅助函数只接受空格与制表符，让语法不依赖地区设置。"
+        },
+        {
+          "en": "Token length and memcmp verify a whole severity word before numeric parsing starts.",
+          "zh": "数字解析前，先用词长和 memcmp 检查完整级别单词。"
+        },
+        {
+          "en": "The digit loop checks range before arithmetic; the final end-of-string test and assignment implement all-or-nothing output.",
+          "zh": "数字循环在运算前检查范围；最终字符串末尾检查和赋值共同实现整体提交。"
+        }
+      ]
+    },
+    {
+      "path": "reader.h",
+      "role": {
+        "en": "Line and byte-budget interface",
+        "zh": "行与字节预算接口"
+      },
+      "read_order": 3,
+      "walkthrough": [
+        {
+          "en": "MAX_LINE_BYTES excludes LF but includes CR; add one byte when allocating a C string buffer.",
+          "zh": "MAX_LINE_BYTES 不包含 LF，但包含 CR；分配 C 字符串缓冲区时还要加一字节。"
+        },
+        {
+          "en": "A line_reader holds a borrowed stream and a cumulative byte count. Initialize that count once per input.",
+          "zh": "line_reader 保存借用的流和累计字节数，每个输入开始时初始化一次计数。"
+        },
+        {
+          "en": "Each enum result has a different caller action; only LINE_OK promises parseable buffer contents.",
+          "zh": "每个枚举结果对应不同的调用者动作，只有 LINE_OK 承诺缓冲区可供解析。"
+        }
+      ]
+    },
+    {
+      "path": "reader.c",
+      "role": {
+        "en": "Physical-line framing",
+        "zh": "物理行边界处理"
+      },
+      "read_order": 4,
+      "walkthrough": [
+        {
+          "en": "fgetc returns int. On EOF check ferror before deciding whether an unfinished last line exists.",
+          "zh": "fgetc 返回 int。遇到 EOF 时先检查 ferror，再判断是否还有未结束的最后一行。"
+        },
+        {
+          "en": "Every consumed byte contributes to the input budget, including newline and discarded bytes.",
+          "zh": "每个消费的字节都计入输入预算，包括换行和被丢弃的字节。"
+        },
+        {
+          "en": "bad freezes buffer writes but not reading. A successful line is CR-normalized and NUL-terminated before return.",
+          "zh": "bad 会停止写缓冲区，但不会停止读流。成功的行在返回前处理末尾 CR，并加 NUL 结束符。"
+        }
+      ]
+    },
+    {
+      "path": "stats.h",
+      "role": {
+        "en": "State and statistics interface",
+        "zh": "状态与统计接口"
+      },
+      "read_order": 5,
+      "walkthrough": [
+        {
+          "en": "Separate valid from malformed so the report cannot confuse total lines with accepted observations.",
+          "zh": "分开 valid 和 malformed，避免把总行数当作有效观测数。"
+        },
+        {
+          "en": "Use uint64_t for repeated counts and sums; extrema have the same type as one duration.",
+          "zh": "重复累积的计数和总和用 uint64_t，极值使用与单次耗时相同的类型。"
+        },
+        {
+          "en": "Read the preconditions: zero-initialized state, validated records, and no more than the input budget of updates.",
+          "zh": "阅读前置条件：状态零初始化，记录已校验，更新次数不超过输入预算。"
+        }
+      ]
+    },
+    {
+      "path": "stats.c",
+      "role": {
+        "en": "Updates and report formatting",
+        "zh": "统计更新与报告格式"
+      },
+      "read_order": 6,
+      "walkthrough": [
+        {
+          "en": "The static assertion connects the input cap to representable duration sums at compile time.",
+          "zh": "静态断言在编译时把输入上限与可表示的耗时总和联系起来。"
+        },
+        {
+          "en": "stats_accept handles first-record extrema then updates the related counters and sum together.",
+          "zh": "stats_accept 先处理第一条记录的极值，再一起更新相关计数与总和。"
+        },
+        {
+          "en": "stats_print uses PRIu64 for portable uint64_t formatting, avoids empty-data division, and flushes output before reporting success.",
+          "zh": "stats_print 用 PRIu64 可移植地格式化 uint64_t，避免空数据除法，并在报告成功前刷新输出。"
+        }
+      ]
+    },
+    {
+      "path": "main.c",
+      "role": {
+        "en": "CLI, orchestration, and cleanup",
+        "zh": "命令行、流程与清理"
+      },
+      "read_order": 7,
+      "walkthrough": [
+        {
+          "en": "main validates argument count and distinguishes owned file input from borrowed stdin.",
+          "zh": "main 检查参数数量，区分自己打开的文件输入和借用的 stdin。"
+        },
+        {
+          "en": "analyze maps each reader result to parsing, rejection, clean completion, or fatal failure. Short-circuit || prevents parsing a LINE_BAD buffer.",
+          "zh": "analyze 将读行结果映射成解析、拒绝、正常结束或致命失败。|| 的短路求值避免解析 LINE_BAD 缓冲区。"
+        },
+        {
+          "en": "Warning output is bounded separately from counting. Cleanup happens before printing, and the final return communicates data quality.",
+          "zh": "警告输出数量限制与计数分开处理。先清理输入再打印，最后通过返回值传达数据质量。"
+        }
+      ]
+    },
+    {
+      "path": "Makefile",
+      "role": {
+        "en": "Reproducible multi-file build",
+        "zh": "可复现的多文件构建"
+      },
+      "read_order": 8,
+      "walkthrough": [
+        {
+          "en": "all names the executable. Four object files correspond to four C implementation files.",
+          "zh": "all 指向可执行文件，四个目标文件对应四个 C 实现文件。"
+        },
+        {
+          "en": "Header prerequisites make dependents rebuild when an interface changes. The pattern rule compiles; the executable rule links.",
+          "zh": "头文件依赖让接口变化时重新构建相关文件。模式规则负责编译，可执行文件规则负责链接。"
+        },
+        {
+          "en": "test first builds and then runs python3 test.py. clean removes only the named binary and objects in this project.",
+          "zh": "test 先构建，再运行 python3 test.py。clean 只移除本项目列出的程序和目标文件。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/demo.log",
+      "role": {
+        "en": "Valid synthetic robot records",
+        "zh": "有效的模拟机器人记录"
+      },
+      "read_order": 9,
+      "walkthrough": [
+        {
+          "en": "All six rows match the grammar, including a legitimate zero duration and an ERROR event.",
+          "zh": "六行全部符合语法，包含合法的零耗时和 ERROR 事件。"
+        },
+        {
+          "en": "Compute 10 + 40 + 20 + 100 + 0 + 30 = 200 before running the program.",
+          "zh": "运行前先算 10 + 40 + 20 + 100 + 0 + 30 = 200。"
+        },
+        {
+          "en": "Use this small fixture to compare terminal output with the literal expected report in test.py.",
+          "zh": "用这个小样本比较终端输出和 test.py 中明确写出的预期报告。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/mixed.log",
+      "role": {
+        "en": "Valid data around three bad rows",
+        "zh": "三条坏行夹杂的有效数据"
+      },
+      "read_order": 10,
+      "walkthrough": [
+        {
+          "en": "Rows 2, 4, and 5 respectively violate level, sign, and maximum-duration rules.",
+          "zh": "第 2、4、5 行分别违反级别、正负号和耗时上限规则。"
+        },
+        {
+          "en": "The remaining durations 5, 10, 15 sum to 30; all are positive, so they check first-record minimum initialization.",
+          "zh": "剩余的 5、10、15 总和为 30；全部为正数，因此能检查第一条记录的最小值初始化。"
+        },
+        {
+          "en": "Expect exit 3 alongside a complete report and warnings, demonstrating that report availability and clean success differ.",
+          "zh": "预期有完整报告和警告，但退出码为 3，体现有报告不等于完全成功。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/empty.log",
+      "role": {
+        "en": "A truly empty stream",
+        "zh": "真正的空输入流"
+      },
+      "read_order": 11,
+      "walkthrough": [
+        {
+          "en": "This file has zero bytes. It contains neither a header nor a newline.",
+          "zh": "该文件是零字节，没有表头，也没有换行。"
+        },
+        {
+          "en": "Its role is to test successful completion with zero observations, not malformed input.",
+          "zh": "它用于测试没有观测值时的正常完成，并非测试坏行。"
+        },
+        {
+          "en": "Compare with the test that sends blank lines: those do create physical lines and rejection counts.",
+          "zh": "对比发送空白行的测试：空白行确实形成物理行，也产生错误计数。"
+        }
+      ]
+    },
+    {
+      "path": "test.py",
+      "role": {
+        "en": "Executable behavior tests",
+        "zh": "可执行程序的行为测试"
+      },
+      "read_order": 12,
+      "walkthrough": [
+        {
+          "en": "setUp creates a fresh temporary directory; addCleanup removes it. run_log calls the real executable without a shell and with a timeout.",
+          "zh": "setUp 创建新的临时目录，addCleanup 负责删除。run_log 不经 shell 调用真实程序，并设置超时。"
+        },
+        {
+          "en": "Fixtures have literal, independently calculated expected output. Other tests assert one targeted failure mode or boundary.",
+          "zh": "样本预期输出使用独立计算的明确常量。其他测试针对具体失败模式或边界。"
+        },
+        {
+          "en": "Both sides of limits are exercised. Missing-file and directory cases use real temporary paths; output and close failures are not exhaustively simulated.",
+          "zh": "每个限制都测试两侧。文件缺失和目录情况使用真实临时路径；没有穷尽模拟所有输出和关闭故障。"
+        }
+      ]
+    },
+    {
+      "path": "README.md",
+      "role": {
+        "en": "Complete English run guide",
+        "zh": "完整英文运行指南"
+      },
+      "read_order": 13,
+      "walkthrough": [
+        {
+          "en": "Start with build/run/test commands and the exit-status table.",
+          "zh": "先阅读构建、运行、测试命令和退出码表。"
+        },
+        {
+          "en": "Use the five milestones and file order as your map through the source.",
+          "zh": "把五个阶段和文件顺序当作阅读源码的路线。"
+        },
+        {
+          "en": "Reproduce the three captured examples, then read the tradeoffs and extension acceptance criteria.",
+          "zh": "复现三次实际示例，再阅读取舍和扩展验收标准。"
+        }
+      ]
+    },
+    {
+      "path": "README.zh.md",
+      "role": {
+        "en": "Complete Chinese run guide",
+        "zh": "完整中文运行指南"
+      },
+      "read_order": 14,
+      "walkthrough": [
+        {
+          "en": "The Chinese guide carries the same commands and input contract as the English guide.",
+          "zh": "中文指南提供与英文指南一致的命令和输入契约。"
+        },
+        {
+          "en": "Use its type, ownership, and debugging explanations alongside the English source identifiers.",
+          "zh": "把其中的类型、资源归属和调试说明与源码里的英文标识符对照。"
+        },
+        {
+          "en": "Output keys remain stable English strings in both languages, so the executable and tests do not change with the guide language.",
+          "zh": "两种指南中的输出键都保持固定英文，因此切换指南语言不会改变程序和测试。"
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "title": {
+        "en": "Clean robot trace",
+        "zh": "完整的机器人轨迹"
+      },
+      "command": "./log_analyzer fixtures/demo.log",
+      "stdout": "lines=6\nvalid=6\nmalformed=0\nINFO=3\nWARN=2\nERROR=1\ntotal_ms=200\nmin_ms=0\nmax_ms=100\nmean_ms=33.333\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "After make, run this from the project directory. Exit 0; stderr is empty. Six accepted rows sum to 200 ms, so 200/6 displays as 33.333. ERROR=1 is an event count, not a failed process.",
+        "zh": "先 make，再在项目目录运行。退出码 0，stderr 为空。六条有效记录总和为 200 毫秒，因此 200/6 显示为 33.333。ERROR=1 是事件计数，不表示进程失败。"
+      }
+    },
+    {
+      "title": {
+        "en": "Damaged rows with an honest report",
+        "zh": "有坏行，也有诚实的报告"
+      },
+      "command": "./log_analyzer fixtures/mixed.log",
+      "stdout": "lines=6\nvalid=3\nmalformed=3\nINFO=1\nWARN=1\nERROR=1\ntotal_ms=30\nmin_ms=5\nmax_ms=15\nmean_ms=10.000\n",
+      "expected_exit": 3,
+      "explanation": {
+        "en": "Exit 3. stdout summarizes only the three valid rows. stderr contains warning: line 2: malformed record, warning: line 4: malformed record, and warning: line 5: malformed record, each on its own line. DEBUG, -1, and 60001 are rejected. Run echo $? immediately afterward to inspect the exit status.",
+        "zh": "退出码 3。stdout 只统计三条有效记录。stderr 分三行输出 warning: line 2: malformed record、warning: line 4: malformed record 和 warning: line 5: malformed record。DEBUG、-1 和 60001 被拒绝。执行后立刻运行 echo $? 可查看退出码。"
+      }
+    },
+    {
+      "title": {
+        "en": "No observations yet",
+        "zh": "尚无观测记录"
+      },
+      "command": "./log_analyzer fixtures/empty.log",
+      "stdout": "lines=0\nvalid=0\nmalformed=0\nINFO=0\nWARN=0\nERROR=0\ntotal_ms=0\nmin_ms=n/a\nmax_ms=n/a\nmean_ms=n/a\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "Exit 0; stderr is empty. The zero-byte fixture contains no physical lines. n/a explicitly avoids inventing an observed minimum, maximum, or average when the valid count is zero.",
+        "zh": "退出码 0，stderr 为空。零字节样本不含任何物理行。有效数量为零时，n/a 明确表示没有观测到最小值、最大值或平均值。"
+      }
+    }
+  ],
+  "debugging": [
+    {
+      "symptom": {
+        "en": "An all-positive input has minimum 0.",
+        "zh": "输入耗时全部为正，最小值却是 0。"
+      },
+      "hypothesis": {
+        "en": "Zero initialization was mistaken for a real observation.",
+        "zh": "把初始化的零误当成了实际观测。"
+      },
+      "inspection": {
+        "en": "Run two rows with durations 5 and 15. Inspect s->valid just before the first stats_accept update.",
+        "zh": "用耗时 5 和 15 的两行复现，检查第一次 stats_accept 更新前的 s->valid。"
+      },
+      "fix": {
+        "en": "When valid is zero, set both extrema from the first real record before incrementing valid. Keep the positive-only mixed fixture test.",
+        "zh": "valid 为零时，先用第一条真实记录设置两个极值，再增加 valid。保留全正数的混合样本测试。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "Durations 1, 2, 2 produce mean 1.000.",
+        "zh": "耗时 1、2、2 得到均值 1.000。"
+      },
+      "hypothesis": {
+        "en": "Integer division discarded the fraction before conversion to double.",
+        "zh": "转换成 double 之前，整数除法已经丢掉了小数。"
+      },
+      "inspection": {
+        "en": "Write down 5/3 = 1.666… and inspect the operand types in stats_print, not just the destination type.",
+        "zh": "先写出 5/3 = 1.666…，再检查 stats_print 中除法操作数的类型，而不只是接收结果的变量类型。"
+      },
+      "fix": {
+        "en": "Convert before division: (double)total_ms / (double)valid. The fractional-mean test expects 1.667.",
+        "zh": "在除法之前转换：(double)total_ms / (double)valid。小数均值测试要求输出 1.667。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "One long row causes several rejections or loses the next good row.",
+        "zh": "一条长行导致多次拒绝，或弄丢了下一条有效行。"
+      },
+      "hypothesis": {
+        "en": "The reader returned when its buffer filled, leaving part of the same physical line unread.",
+        "zh": "缓冲区满时读取器立即返回，没有消费完同一物理行。"
+      },
+      "inspection": {
+        "en": "Place a 128-byte row before WARN 7. The final report must have two physical lines and exactly one malformed row.",
+        "zh": "把一条 128 字节行放在 WARN 7 前面。最终报告必须只有两条物理行，其中恰好一条坏行。"
+      },
+      "fix": {
+        "en": "After marking a row bad, keep consuming through LF or EOF, still enforcing the whole-input budget. Never parse a LINE_BAD buffer.",
+        "zh": "标记坏行后继续读取到 LF 或 EOF，同时仍检查整个输入预算。不要解析 LINE_BAD 的缓冲区。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "INFO 12ms or INFO 1 2 is accepted.",
+        "zh": "INFO 12ms 或 INFO 1 2 被接受。"
+      },
+      "hypothesis": {
+        "en": "The parser validated only a numeric prefix and ignored the remaining text.",
+        "zh": "解析器只验证了数字前缀，没有验证剩余文本。"
+      },
+      "inspection": {
+        "en": "After the digit loop, inspect the character after skipped trailing spaces. It must be the terminating NUL.",
+        "zh": "数字循环结束后，查看跳过尾部空白后的字符。它必须是字符串结束符 NUL。"
+      },
+      "fix": {
+        "en": "Reject any remaining non-whitespace text and assign *out only at the end. Test suffixes and extra fields as distinct failures.",
+        "zh": "拒绝任何剩余的非空白文本，最后才赋值给 *out。分别测试后缀与额外字段。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "A read failure looks like a successful shorter report.",
+        "zh": "读取失败看起来像成功生成了一份较短的报告。"
+      },
+      "hypothesis": {
+        "en": "EOF was treated as proof of a clean end without inspecting ferror.",
+        "zh": "只看到 EOF 就断定文件正常结束，没有检查 ferror。"
+      },
+      "inspection": {
+        "en": "Use the directory-input test on macOS/Linux; open may fail immediately or reading the opened directory may fail. In either case stdout must be empty.",
+        "zh": "在 macOS/Linux 上运行目录输入测试：可能打开就失败，也可能打开后读取失败。两种情况的 stdout 都必须为空。"
+      },
+      "fix": {
+        "en": "Check ferror when fgetc returns EOF. Propagate LINE_IO_ERROR through analyze so main returns 1 without stats_print.",
+        "zh": "fgetc 返回 EOF 时检查 ferror。通过 analyze 传递 LINE_IO_ERROR，使 main 返回 1 且不调用 stats_print。"
+      }
+    }
+  ],
+  "test_plan": [
+    {
+      "case": {
+        "en": "Six hand-calculable valid rows",
+        "zh": "六条可手算的有效记录"
+      },
+      "expected": {
+        "en": "Exit 0; 3 INFO, 2 WARN, 1 ERROR; sum 200; range 0–100; mean 33.333.",
+        "zh": "退出码 0；INFO 3 次、WARN 2 次、ERROR 1 次；总和 200，范围 0–100，均值 33.333。"
+      },
+      "reason": {
+        "en": "Catches wrong severity indexing, missing updates, and wrong aggregates using values computed independently of the program.",
+        "zh": "使用独立于程序计算的结果，发现级别索引、遗漏更新或聚合计算错误。"
+      }
+    },
+    {
+      "case": {
+        "en": "Mixed valid and malformed rows",
+        "zh": "有效与错误记录混合"
+      },
+      "expected": {
+        "en": "Exit 3; 3 valid and 3 malformed; total 30; warnings identify lines 2, 4, 5.",
+        "zh": "退出码 3；有效 3 行、错误 3 行；总和 30；警告指出第 2、4、5 行。"
+      },
+      "reason": {
+        "en": "Checks that rejection changes only rejection counters and that later good records still work.",
+        "zh": "验证拒绝数据只增加错误计数，并且后面的有效记录仍能处理。"
+      }
+    },
+    {
+      "case": {
+        "en": "Empty input and twenty blank lines",
+        "zh": "空输入与二十个空白行"
+      },
+      "expected": {
+        "en": "Empty input: exit 0, zero counts, n/a latencies. Blank rows: exit 3, twenty rejections, five detailed warnings and one omission message.",
+        "zh": "空输入：退出码 0，全部计数为零，耗时为 n/a。空白行：退出码 3，拒绝二十行，五条详细警告加一条省略提示。"
+      },
+      "reason": {
+        "en": "Separates absence of data from bad data and prevents unbounded diagnostic output.",
+        "zh": "区分没有数据和错误数据，并防止诊断信息无限增长。"
+      }
+    },
+    {
+      "case": {
+        "en": "Integer and level validation",
+        "zh": "整数与级别校验"
+      },
+      "expected": {
+        "en": "Accept 0, 60000 and leading zeroes; reject 60001, signs, fractions, suffixes, huge integers, extra fields, and nonmatching levels.",
+        "zh": "接受 0、60000 和前导零；拒绝 60001、正负号、小数、后缀、超大整数、多余字段和不匹配的级别。"
+      },
+      "reason": {
+        "en": "Exercises both edges of the contract and stops permissive partial conversion.",
+        "zh": "覆盖契约的两个端点，防止宽松的部分转换。"
+      }
+    },
+    {
+      "case": {
+        "en": "Framing and binary bytes",
+        "zh": "行边界与二进制字节"
+      },
+      "expected": {
+        "en": "Accept CRLF, tabs and a final row without LF. Reject NUL and 0xff rows without losing the following ERROR 9.",
+        "zh": "接受 CRLF、制表符和缺少末尾 LF 的最后一行。拒绝 NUL 与 0xff 所在行，同时保留后面的 ERROR 9。"
+      },
+      "reason": {
+        "en": "Checks string termination, the distinction between bytes and EOF, and continued processing after damage.",
+        "zh": "检查字符串结束、普通字节与 EOF 的区分，以及损坏后的继续处理。"
+      }
+    },
+    {
+      "case": {
+        "en": "127-byte row, 128-byte row, then a good row",
+        "zh": "127 字节行、128 字节行，再接有效行"
+      },
+      "expected": {
+        "en": "Exactly 3 lines, 2 accepted and 1 rejected; total duration 8.",
+        "zh": "恰好 3 行，接受 2 行、拒绝 1 行；耗时总和 8。"
+      },
+      "reason": {
+        "en": "Finds off-by-one buffer errors and verifies drain-to-newline behavior.",
+        "zh": "发现缓冲区边界差一错误，并验证读到换行的行为。"
+      }
+    },
+    {
+      "case": {
+        "en": "One MiB and one extra byte",
+        "zh": "一 MiB 与多一字节"
+      },
+      "expected": {
+        "en": "8192 padded valid rows succeed at exactly 1,048,576 bytes. Adding one byte returns 1 with no report.",
+        "zh": "8192 条填充后的有效行恰好占 1,048,576 字节，能够成功。再加一字节返回 1 且不输出报告。"
+      },
+      "reason": {
+        "en": "The accepted side and rejected side jointly verify the whole-input work bound.",
+        "zh": "同时验证允许的一侧与拒绝的一侧，检查总输入工作量边界。"
+      }
+    },
+    {
+      "case": {
+        "en": "CLI and real filesystem failures",
+        "zh": "命令行与真实文件系统错误"
+      },
+      "expected": {
+        "en": "Wrong argument count gives 2; missing file or directory input gives 1; every case has empty stdout.",
+        "zh": "错误参数数量返回 2；文件不存在或输入是目录时返回 1；所有情况的 stdout 均为空。"
+      },
+      "reason": {
+        "en": "Exercises actual subprocesses and filesystem behavior, without mocking successful output.",
+        "zh": "运行真实子进程并操作真实文件系统，不用模拟成功输出来替代测试。"
+      }
+    },
+    {
+      "case": {
+        "en": "Fractional mean from 1, 2, 2",
+        "zh": "由 1、2、2 计算小数均值"
+      },
+      "expected": {
+        "en": "Exit 0 and mean_ms=1.667.",
+        "zh": "退出码 0，mean_ms=1.667。"
+      },
+      "reason": {
+        "en": "Detects truncating integer division that whole-number averages would miss.",
+        "zh": "发现整数平均值样本容易漏掉的整数除法截断。"
+      }
+    }
+  ],
+  "design_notes": [
+    {
+      "title": {
+        "en": "A fixed line buffer with a total byte budget",
+        "zh": "固定行缓冲区与总字节预算"
+      },
+      "body": {
+        "en": "A growing getline buffer is convenient, but a fixed 128-byte array makes memory and termination visible in a first project. We reject larger rows and drain them. Time is O(B) for bytes consumed, application state is O(1), and at most one byte beyond 1 MiB is inspected. Standard I/O owns additional internal buffers. A byte budget is not a time deadline: stdin can block waiting for its producer, so start with completed regular files.",
+        "zh": "getline 的可增长缓冲区很方便，但第一个项目用 128 字节固定数组，更容易看清内存与结束符。我们拒绝较长行并读完其余部分。处理 B 个字节用 O(B) 时间，应用状态用 O(1) 空间，超过 1 MiB 后最多再检查一个字节。标准 I/O 另有自己的内部缓冲区。字节预算不是时间期限：stdin 可能等待生产者，建议先读已完成的普通文件。"
+      }
+    },
+    {
+      "title": {
+        "en": "Integer safety comes from a bound, not optimism",
+        "zh": "用边界证明整数安全"
+      },
+      "body": {
+        "en": "A duration is unsigned and at most 60000. The parser checks before multiplying. Counts and sums use uint64_t; even the conservative bound 1,048,576 × 60,000 = 62,914,560,000 fits. A static assertion protects this bound when constants change. The mean uses floating division only after integer aggregation; display rounding to three decimals does not change the exact integer sum.",
+        "zh": "耗时用 unsigned，最大 60000。解析器先检查再做乘法。计数和总和用 uint64_t；即使用保守边界 1,048,576 × 60,000 = 62,914,560,000 也能容纳。静态断言在常量变化时保护这个边界。完成整数累积后，均值才使用浮点除法；显示三位小数不会改变精确的整数总和。"
+      }
+    },
+    {
+      "title": {
+        "en": "Useful partial data needs an honest status",
+        "zh": "保留有用数据，也要诚实标记状态"
+      },
+      "body": {
+        "en": "Malformed rows do not destroy valid observations. Exit 3 communicates that the completed report excludes some rows. Fatal input failures instead suppress stdout because the input was not fully inspected. Warnings are capped at five detailed lines plus one omission message. This makes the tool useful in a terminal and predictable in scripts. A valid ERROR event alone never makes the process fail.",
+        "zh": "错误行不应毁掉其他有效观测。退出码 3 表明完整报告排除了部分行。致命输入错误则禁止输出报告，因为输入尚未完整检查。详细警告最多五条，再加一条省略提示。这既方便终端使用，也便于脚本判断。合法的 ERROR 事件本身不会让程序失败。"
+      }
+    },
+    {
+      "title": {
+        "en": "Small modules follow separate reasons to change",
+        "zh": "按变化原因拆成小模块"
+      },
+      "body": {
+        "en": "Changing whitespace rules belongs in record.c; changing line capacity belongs in reader.c; adding an aggregate belongs in stats.c; changing CLI policy belongs in main.c. Headers document borrowed pointers and preconditions. The parser promises not to retain text pointers, so no record depends on the reused buffer. The source remains four implementation files rather than one file for every helper.",
+        "zh": "改变空白规则应修改 record.c；改变行容量应修改 reader.c；增加统计指标应修改 stats.c；改变命令行策略应修改 main.c。头文件注明借用指针与前置条件。解析器承诺不保留文本指针，因此记录不依赖会被重用的缓冲区。实现保持四个源文件，不为每个小辅助函数另建文件。"
+      }
+    },
+    {
+      "title": {
+        "en": "Know the limits of the finished program",
+        "zh": "知道成品的边界"
+      },
+      "body": {
+        "en": "The format is synthetic: no timestamps, arbitrary messages, live tailing, or percentiles. Returned read/write/close errors are checked, but a write error can leave part of stdout and a broken pipe can trigger the normal POSIX SIGPIPE signal. stderr failures are not retried. The tests cover deterministic contract behavior, not every device or filesystem failure. No timing or scheduler outcome is used as a correct answer.",
+        "zh": "格式是人工设计的：没有时间戳、任意消息、实时追踪或百分位数。会检查读、写和关闭函数返回的错误，但写错误可能留下部分 stdout，断开的管道还可能触发 POSIX 默认 SIGPIPE 信号。不重试 stderr 写入失败。测试验证确定性的接口行为，不涵盖每种设备或文件系统故障，也不把耗时或调度顺序当作正确答案。"
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "title": {
+        "en": "Add latency summaries for each severity",
+        "zh": "为各级别增加耗时统计"
+      },
+      "plan": {
+        "en": "First add hand-calculated tests. Store a count and sum per level, update them only after successful parsing, then print each mean with the same empty-level policy.",
+        "zh": "先增加可手算的测试。为每个级别保存数量与总和，只在解析成功后更新，再用一致的空级别规则打印均值。"
+      },
+      "acceptance": {
+        "en": "The demo yields INFO mean 10.000, WARN mean 35.000, ERROR mean 100.000. A missing level prints n/a, malformed rows never contribute, and old global metrics remain unchanged.",
+        "zh": "示例中 INFO 均值为 10.000，WARN 为 35.000，ERROR 为 100.000。缺失级别输出 n/a，错误行不参与统计，原有全局指标保持不变。"
+      }
+    },
+    {
+      "title": {
+        "en": "Add an explicit strict mode",
+        "zh": "增加明确的严格模式"
+      },
+      "plan": {
+        "en": "Extend the argument contract with --strict. Decide the policy before coding: stop on the first malformed row, close any owned stream, and omit stdout. Keep the current default behavior.",
+        "zh": "把 --strict 加入参数契约。编码前先确定策略：遇到第一条坏行即停止，关闭自己拥有的流，stdout 保持为空。保留当前默认行为。"
+      },
+      "acceptance": {
+        "en": "The mixed fixture in strict mode returns 3, warns only about line 2, and prints no report. Without the flag its existing output is unchanged; clean and empty inputs still return 0.",
+        "zh": "严格模式读取混合样本时返回 3，只警告第 2 行，且没有报告。不加选项时输出保持原样；有效输入和空输入仍返回 0。"
+      }
+    }
+  ],
+  "references": [
+    {
+      "title": "WG14 N1570 — C11 committee draft: integer types and standard I/O",
+      "url": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf"
+    },
+    {
+      "title": "Clang Compiler User’s Manual",
+      "url": "https://clang.llvm.org/docs/UsersManual.html"
+    },
+    {
+      "title": "Python documentation — subprocess management",
+      "url": "https://docs.python.org/3/library/subprocess.html"
+    }
+  ]
+}

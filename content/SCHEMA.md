@@ -42,3 +42,13 @@ Cheatsheets remain compact. Preserve their existing English text except correcti
 Edit JSON sources, then regenerate HTML, Markdown, maps and downloadable programs. Keep source reviews and private authoring helpers outside this public project. Verify arithmetic and run every new program before publication. Use authoritative primary references for technical source checks.
 
 The opening route uses each map stage's title, topic membership and short `purpose` sentence. Preserve the topic IDs so existing links and the language switch keep working. Run `scripts/validate.py`, `scripts/verify_examples.py` and `scripts/validate_exports.py` before publishing.
+
+## Complete engineering workshops
+
+`content/comp2017-path.json` has bilingual `title`/`intro`, six `sessions` (title, goal, existing topic IDs, readiness checkpoint, optional project ID), `deeper` topic IDs, and `coaches` keyed by every course topic. Each coach supplies a simple model, an engineering decision, and an answered checkpoint.
+
+Each `content/projects/comp2017-*.json` describes one independently authored teaching project. Reader prose uses `{en, zh}`. Stable identifiers, source paths, commands, code, expected stdout and reference URLs remain shared. Required fields are id, number, title, summary, difficulty, story, prerequisites (topic/reason), outcomes, requirements (rule/why/check), architecture (nodes/flow/ownership), milestones, runs, debugging, test_plan, design_notes, files, extensions and references.
+
+A milestone has id, title, goal, reasoning, at least three steps, a real source snippet (code/language), snippet_explanation and checkpoint (question/answer). Explain each phase's input, state and visible result. Snippets are labelled extracts; readers compile the complete files. Every file has path, role, unique read_order and at least three walkthrough steps. List all project files, including Makefile, tests, fixtures and both READMEs. No compiled artifacts belong in the manifest.
+
+Runs contain a runtime-only command after the documented build, literal stdout, integer expected_exit, title and explanation. Describe stderr separately. A test case explains case/expected/reason; a debugging case explains symptom/hypothesis/inspection/fix. Design notes explain concrete tradeoffs and limits. Extensions include a plan and acceptance check. Preserve raw fixture bytes through export and archives. Prefer small deterministic fabricated inputs, documented bounds, explicit resource owners and cleanup paths. Never reuse supplied coursework as an example.

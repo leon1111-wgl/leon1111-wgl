@@ -1,0 +1,1148 @@
+{
+  "id": "comp2017-process-runner",
+  "course": "COMP2017",
+  "number": 2,
+  "title": {
+    "en": "A bounded process notebook",
+    "zh": "有容量上限的进程记录器"
+  },
+  "summary": {
+    "en": "Run one local program, retain a bounded stdout prefix, drain every remaining byte, and explain exactly how the child ended.",
+    "zh": "运行一个本地程序，保存有容量上限的标准输出前缀，继续读完其余字节，并准确解释子进程怎样结束。"
+  },
+  "story": {
+    "en": "Mei checks a sensor report before sharing it with her team. One checker prints a short success message; another prints pages of detail before returning an error. Copying terminal text loses the exit status, and saving every byte wastes memory. She builds a small notebook that keeps the first C bytes, says whether more arrived, and records the child outcome. Her first success is an echo with a space inside one argument. She then faces a full pipe, a missing executable, and a final line without a newline. By the end she can explain every descriptor, every captured byte, and the remaining limits of her tool. This is an original Guoliang learning project, independent of supplied course assignments.",
+    "zh": "小梅在分享团队的传感器报告前，会先运行检查程序。有的检查只输出一句成功提示，有的会打印很多细节后返回错误。复制终端文字容易漏掉退出状态，保存所有字节又浪费内存。她实现一个小记录器，只保留前 C 个字节，说明是否还有更多输出，并记录子进程结果。先从带空格参数的 echo 开始，再解决管道写满、程序不存在、最后一行没有换行的问题。完成后，她能说明每个描述符和保存字节的来历，也能说明工具尚未覆盖的情况。这是国良原创学习项目，与现成课程作业无关。"
+  },
+  "difficulty": {
+    "en": "Intermediate C: one parent, one child, one pipe; complete in five guided milestones.",
+    "zh": "C 语言进阶：一个父进程、一个子进程、一条管道，通过五个连续里程碑完成。"
+  },
+  "prerequisites": [
+    {
+      "topic": "strings-parsing",
+      "reason": {
+        "en": "Read argv as an array of separate strings and validate decimal capacity without overflow.",
+        "zh": "把 argv 看成独立字符串数组，并在不溢出的前提下检查十进制容量。"
+      }
+    },
+    {
+      "topic": "allocation-ownership",
+      "reason": {
+        "en": "The CLI allocates the buffer, lends it to the process module, then frees it exactly once.",
+        "zh": "命令行模块分配缓冲区，借给进程模块，最后只释放一次。"
+      }
+    },
+    {
+      "topic": "compilation-linkage",
+      "reason": {
+        "en": "Compile main.c and process.c together through the contract in process.h.",
+        "zh": "通过 process.h 的接口约定，把 main.c 与 process.c 编译链接在一起。"
+      }
+    },
+    {
+      "topic": "process-fork",
+      "reason": {
+        "en": "fork returns in two processes with separate memory and copied descriptor tables.",
+        "zh": "fork 在两个进程中返回；它们拥有独立内存和复制后的描述符表。"
+      }
+    },
+    {
+      "topic": "exec-wait",
+      "reason": {
+        "en": "Replace the child program and collect its final status with waitpid.",
+        "zh": "替换子进程程序，再用 waitpid 取得结束状态。"
+      }
+    },
+    {
+      "topic": "pipes-fifos",
+      "reason": {
+        "en": "Use pipe EOF and descriptor ownership to coordinate output and completion.",
+        "zh": "利用管道 EOF 和描述符所有权协调输出与结束。"
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "en": "Preserve argument boundaries while executing a program with fork and execvp.",
+      "zh": "使用 fork 和 execvp 执行程序，并保留原有参数边界。"
+    },
+    {
+      "en": "Bound captured memory while draining enough output to let a child make progress.",
+      "zh": "限制保存输出的内存，同时持续读取，让子进程能够继续执行。"
+    },
+    {
+      "en": "Separate EOF, successful wait, normal exit, signal termination, and runner failure.",
+      "zh": "区分 EOF、成功等待、正常退出、信号终止和记录器自身错误。"
+    },
+    {
+      "en": "Test observable bytes and status codes without depending on process scheduling.",
+      "zh": "测试可观察的字节与状态码，不依赖进程调度先后。"
+    }
+  ],
+  "requirements": [
+    {
+      "rule": {
+        "en": "Accept CAP -- PROGRAM [ARG ...], with CAP from 0 through 65536.",
+        "zh": "接受 CAP -- PROGRAM [ARG ...]，CAP 范围是 0 到 65536。"
+      },
+      "why": {
+        "en": "The memory budget must be explicit and validated before work starts.",
+        "zh": "内存预算必须明确，并在工作开始前完成检查。"
+      },
+      "check": {
+        "en": "Malformed, negative, huge, missing, and partially numeric capacities return 2 without a stdout report.",
+        "zh": "格式错误、负数、超大、缺少或混入字母的容量返回 2，不生成标准输出报告。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Pass the existing argv slice directly to execvp.",
+        "zh": "把已有 argv 的一部分直接传给 execvp。"
+      },
+      "why": {
+        "en": "Joining strings would erase argument boundaries and invite shell interpretation.",
+        "zh": "拼接字符串会破坏参数边界，还可能引入 shell 解释。"
+      },
+      "check": {
+        "en": "The fixture receives two words as one argument and $HOME;* as literal characters.",
+        "zh": "测试程序将 two words 作为一个参数收到，并原样收到 $HOME;*。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Store at most CAP bytes; continue reading until EOF.",
+        "zh": "最多保存 CAP 个字节，但一直读取到 EOF。"
+      },
+      "why": {
+        "en": "Stopping at the cap can leave the child blocked on a full pipe.",
+        "zh": "达到上限就停止读取，可能让子进程卡在写满的管道上。"
+      },
+      "check": {
+        "en": "A 1 MiB burst completes with a cap of 8 or 0, and reports truncation.",
+        "zh": "1 MiB 输出在容量为 8 或 0 时都能完成，并报告截断。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Capture stdout only; inherit stdin and stderr.",
+        "zh": "只捕获 stdout；继承 stdin 与 stderr。"
+      },
+      "why": {
+        "en": "A single pipe keeps ownership visible and avoids pretending that two streams have one reliable order.",
+        "zh": "单一管道让所有权清楚，也不把两个流说成具有可靠的统一顺序。"
+      },
+      "check": {
+        "en": "The stderr fixture produces an ok report and a separate diagnostic.",
+        "zh": "stderr 测试生成包含 ok 的报告，同时单独输出诊断。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Close unused descriptors, reap the direct child, and decode its wait status.",
+        "zh": "关闭不用的描述符，回收直接子进程，并解码其等待状态。"
+      },
+      "why": {
+        "en": "EOF requires every write end to close; termination still needs waitpid.",
+        "zh": "EOF 要求所有写端都关闭；进程结束仍需要 waitpid 处理。"
+      },
+      "check": {
+        "en": "Normal exit 0, exit 7, missing program 127, and SIGTERM are reported distinctly.",
+        "zh": "分别验证正常退出 0、退出 7、缺少程序 127 和 SIGTERM。"
+      }
+    },
+    {
+      "rule": {
+        "en": "Display bytes with deterministic ASCII escapes.",
+        "zh": "用确定的 ASCII 转义显示字节。"
+      },
+      "why": {
+        "en": "A captured prefix may contain NUL, controls, or only part of a multibyte character.",
+        "zh": "保存的前缀可能包含 NUL、控制字节或多字节字符的一部分。"
+      },
+      "check": {
+        "en": "NUL, 0xFF, quotes, backslash, tab, carriage return, and newline retain their byte identities.",
+        "zh": "验证 NUL、0xFF、引号、反斜杠、制表符、回车和换行都保留原字节含义。"
+      }
+    }
+  ],
+  "architecture": {
+    "nodes": [
+      {
+        "title": {
+          "en": "CLI and report: main.c",
+          "zh": "命令行与报告：main.c"
+        },
+        "body": {
+          "en": "Parse capacity, allocate the byte buffer, borrow argv, call the process module, escape the retained bytes, and return the child outcome.",
+          "zh": "检查容量、分配字节缓冲区、借用 argv、调用进程模块、转义保存的字节，并返回子进程结果。"
+        }
+      },
+      {
+        "title": {
+          "en": "Process lifecycle: process.c / process.h",
+          "zh": "进程生命周期：process.c / process.h"
+        },
+        "body": {
+          "en": "Create a pipe and child, redirect child stdout, drain the parent read end, and reap exactly that child. The public result stores a byte count, a truncation flag, and raw wait status.",
+          "zh": "创建管道和子进程，重定向子进程 stdout，父进程读取读端，并回收这个子进程。公开结果包含字节数、截断标记和原始等待状态。"
+        }
+      },
+      {
+        "title": {
+          "en": "Finite child: fixtures/child.c",
+          "zh": "有限测试程序：fixtures/child.c"
+        },
+        "body": {
+          "en": "Generate controlled outputs and outcomes without files, descendants, input, sleeps, or network access. Burst mode writes exactly 256 blocks of 4096 bytes.",
+          "zh": "产生受控输出和结果，不使用文件、后代进程、输入、睡眠或网络。burst 模式恰好写出 256 个 4096 字节块。"
+        }
+      },
+      {
+        "title": {
+          "en": "Independent checks: test.py",
+          "zh": "独立检查：test.py"
+        },
+        "body": {
+          "en": "Compile a temporary copy and compare real output and return codes with literal expectations. Each runner has an 8-second watchdog and a private process group.",
+          "zh": "在临时目录编译副本，把实际输出与返回码同手工预期比较。每次运行都有 8 秒看门狗和独立进程组。"
+        }
+      }
+    ],
+    "flow": {
+      "en": "Validate → allocate → pipe → fork. Child: close read end → dup2(write end, 1) → close original write end → execvp. Parent: close write end → read to EOF → close read end → waitpid → escape and report → free. Parent and child run concurrently; there is no chosen schedule. Reads observe bytes already written, EOF follows closure of all writers and draining of queued bytes, and the final report follows a successful wait.",
+      "zh": "检查参数 → 分配 → pipe → fork。子进程：关读端 → dup2(写端,1) → 关原写端 → execvp。父进程：关写端 → 读到 EOF → 关读端 → waitpid → 转义并报告 → free。父子进程并发运行，没有固定调度顺序。read 读取已经写入的字节，所有写端关闭且队列读空后才有 EOF，最终报告在成功等待之后生成。"
+    },
+    "ownership": [
+      {
+        "resource": {
+          "en": "Pipe read end",
+          "zh": "管道读端"
+        },
+        "owner": {
+          "en": "Parent after fork; child initially has a copy.",
+          "zh": "fork 后由父进程保留；子进程最初也有副本。"
+        },
+        "release": {
+          "en": "Child closes its copy before exec; parent closes after drain or read error.",
+          "zh": "子进程在 exec 前关闭副本；父进程读取结束或失败后关闭。"
+        }
+      },
+      {
+        "resource": {
+          "en": "Original pipe write end",
+          "zh": "原始管道写端"
+        },
+        "owner": {
+          "en": "Both processes briefly after fork.",
+          "zh": "fork 后双方短暂持有。"
+        },
+        "release": {
+          "en": "Parent closes immediately. Child closes after dup2 leaves stdout referring to the same pipe.",
+          "zh": "父进程立即关闭；子进程 dup2 后关闭，stdout 仍指向同一管道。"
+        }
+      },
+      {
+        "resource": {
+          "en": "Child stdout, descriptor 1",
+          "zh": "子进程标准输出，描述符 1"
+        },
+        "owner": {
+          "en": "Executed program and any descendants that inherit it.",
+          "zh": "执行后的程序，以及继承它的后代进程。"
+        },
+        "release": {
+          "en": "Program close or process termination; every writer must close before EOF.",
+          "zh": "程序关闭或进程结束时释放；所有写端都关闭后才可能有 EOF。"
+        }
+      },
+      {
+        "resource": {
+          "en": "Capture buffer and argument vector",
+          "zh": "输出缓冲区与参数数组"
+        },
+        "owner": {
+          "en": "main owns the allocation; process_run borrows it and the argv strings.",
+          "zh": "main 拥有分配内存；process_run 借用该内存和 argv 字符串。"
+        },
+        "release": {
+          "en": "main frees the buffer on error or after the report; borrowed argv is never freed here.",
+          "zh": "main 在错误时或报告后释放缓冲区；本模块不释放借用的 argv。"
+        }
+      },
+      {
+        "resource": {
+          "en": "Direct child and termination status",
+          "zh": "直接子进程及结束状态"
+        },
+        "owner": {
+          "en": "Parent owns the responsibility to reap its returned PID.",
+          "zh": "父进程负责回收 fork 返回的 PID。"
+        },
+        "release": {
+          "en": "waitpid retries EINTR and consumes termination status; read errors also attempt kill and reap.",
+          "zh": "waitpid 遇到 EINTR 重试并取得结束状态；读取失败也尝试终止并回收。"
+        }
+      }
+    ]
+  },
+  "milestones": [
+    {
+      "id": "contract",
+      "title": {
+        "en": "1. Define what one run means",
+        "zh": "1. 定义一次运行的约定"
+      },
+      "goal": {
+        "en": "Validate the command line and give the buffer one owner.",
+        "zh": "检查命令行，并给缓冲区明确的所有者。"
+      },
+      "reasoning": {
+        "en": "Mei chooses a byte budget before running a checker. A bounded decimal parser rejects overflow before multiplying; argv already supplies the required argument boundaries.",
+        "zh": "小梅先决定字节预算，再运行检查程序。有限范围的十进制解析器在乘法前防止溢出；argv 已经提供所需的参数边界。"
+      },
+      "steps": [
+        {
+          "en": "Build the complete project with make. Read process.h before following main.",
+          "zh": "用 make 编译完整项目。先读 process.h，再看 main。"
+        },
+        {
+          "en": "Trace 65536 through parse_capacity, then see why 65537 and 8x are rejected.",
+          "zh": "跟踪 65536 的解析过程，再说明为什么 65537 和 8x 被拒绝。"
+        },
+        {
+          "en": "Follow malloc, process_run(&argv[3], ...), and free. The process module must not free borrowed memory.",
+          "zh": "跟踪 malloc、process_run(&argv[3], ...) 和 free。进程模块不能释放借来的内存。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "static int parse_capacity(const char *text, size_t *capacity)\n{\n    size_t value = 0;\n    if (*text == '\\0') {\n        return -1;\n    }\n    for (const char *p = text; *p != '\\0'; ++p) {\n        if (*p < '0' || *p > '9') {\n            return -1;\n        }\n        size_t digit = (size_t)(*p - '0');\n        if (value > (PROCESS_MAX_CAPTURE - digit) / 10) {\n            return -1;\n        }\n        value = value * 10 + digit;\n    }\n    *capacity = value;\n    return 0;\n}"
+      },
+      "snippet_explanation": {
+        "en": "Extract from main.c, not a standalone program. digit is 0–9. The inequality value <= (MAX-digit)/10 ensures value*10+digit stays within the cap before computing it. Empty strings and any non-digit fail.",
+        "zh": "这是 main.c 的节选，不是独立程序。digit 范围是 0–9。先检查 value <= (MAX-digit)/10，才能保证 value*10+digit 不超过上限。空字符串和任何非数字都会失败。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Why pass &argv[3] instead of combining the remaining strings?",
+          "zh": "为什么传 &argv[3]，而不是把后面的字符串拼起来？"
+        },
+        "answer": {
+          "en": "It points to the program name followed by its existing arguments and the terminating NULL. Combining them would lose which spaces are inside an argument.",
+          "zh": "它指向程序名、已有参数和末尾 NULL。拼接后就无法区分哪些空格属于参数内部。"
+        }
+      }
+    },
+    {
+      "id": "wire-child",
+      "title": {
+        "en": "2. Give the child its output channel",
+        "zh": "2. 给子进程连接输出通道"
+      },
+      "goal": {
+        "en": "Replace child stdout with the pipe while preserving stdin and stderr.",
+        "zh": "把子进程 stdout 改为管道，同时保留 stdin 和 stderr。"
+      },
+      "reasoning": {
+        "en": "fork copies descriptors, so both processes initially hold both ends. Descriptor 1 must refer to the pipe in the child before exec changes the running program.",
+        "zh": "fork 会复制描述符，所以双方最初都持有两端。exec 替换程序之前，子进程描述符 1 必须已经指向管道。"
+      },
+      "steps": [
+        {
+          "en": "Draw two descriptor tables immediately after fork. Each has a read end and a write end.",
+          "zh": "画出 fork 后的两张描述符表，每张都有读端和写端。"
+        },
+        {
+          "en": "In the child, close the read copy, dup2 the write copy onto descriptor 1, then close the original write descriptor.",
+          "zh": "子进程先关读端，把写端 dup2 到描述符 1，再关原写端。"
+        },
+        {
+          "en": "Call execvp with the unchanged argument vector. On failure, write a fixed stderr diagnostic and call _exit(127).",
+          "zh": "使用未改写的参数数组调用 execvp。失败时向 stderr 写固定诊断，然后调用 _exit(127)。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "static void execute_child(int read_end, int write_end, char *const argv[])\n{\n    static const char setup_error[] = \"process_runner: stdout setup failed\\n\";\n    static const char exec_error[] = \"process_runner: execvp failed\\n\";\n    (void)close(read_end);\n    int copied;\n    do {\n        copied = dup2(write_end, STDOUT_FILENO);\n    } while (copied == -1 && errno == EINTR);\n    if (copied == -1) {\n        (void)close(write_end);\n        child_failure(setup_error, sizeof(setup_error) - 1, 126);\n    }\n    (void)close(write_end);\n    /* The original argument boundaries survive; no command string is built. */\n    execvp(argv[0], argv);\n    child_failure(exec_error, sizeof(exec_error) - 1, 127);\n}"
+      },
+      "snippet_explanation": {
+        "en": "Extract from process.c. The caller verifies descriptors 0–2 are open, so the new pipe descriptors exceed 2. dup2 makes stdout another reference to the write end; closing the original does not close stdout. Successful exec never returns. _exit skips copied stdio buffers and atexit callbacks.",
+        "zh": "这是 process.c 的节选。调用者检查 0–2 已打开，保证新管道描述符大于 2。dup2 让 stdout 成为写端的另一个引用；关闭原描述符不会关闭 stdout。exec 成功就不会返回。_exit 跳过复制来的 stdio 缓冲区和 atexit 回调。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Does closing the original write descriptor destroy the child output connection?",
+          "zh": "关闭原写端描述符，会不会破坏子进程输出通道？"
+        },
+        "answer": {
+          "en": "No. Descriptor 1 still refers to the pipe after successful dup2. That reference survives exec and closes when the program closes it or exits.",
+          "zh": "不会。dup2 成功后，描述符 1 仍指向管道。这个引用在 exec 后保留，到程序主动关闭或退出时才关闭。"
+        }
+      }
+    },
+    {
+      "id": "drain-bound",
+      "title": {
+        "en": "3. Save a prefix and keep draining",
+        "zh": "3. 保存前缀并持续读取"
+      },
+      "goal": {
+        "en": "Handle empty, exact-limit, over-limit, and newline-free output with bounded memory.",
+        "zh": "用有限内存处理空输出、恰好达到上限、超过上限和没有换行的输出。"
+      },
+      "reasoning": {
+        "en": "The pipe has finite kernel capacity too. If Mei stops reading after filling her buffer and then waits, a verbose child may be waiting for pipe space. Both sides would wait forever.",
+        "zh": "内核管道容量也有限。如果小梅缓冲区满了就停止读取并开始等待，大量输出的子进程可能正在等管道腾出空间，双方就都无法前进。"
+      },
+      "steps": [
+        {
+          "en": "For each positive read, compute space = capacity - captured and keep = min(count, space).",
+          "zh": "每次 read 返回正数后，计算 space=capacity-captured，再计算 keep=min(count,space)。"
+        },
+        {
+          "en": "Copy only keep bytes. Set truncated only when some actual bytes do not fit; reaching the cap alone is not truncation.",
+          "zh": "只复制 keep 个字节。只有确实有字节放不下时才标记截断；刚好达到上限不算截断。"
+        },
+        {
+          "en": "Continue reading until zero means EOF. Retry EINTR; a final fragment is data even without a newline.",
+          "zh": "继续读，直到返回 0 表示 EOF。EINTR 要重试；没有换行的末尾片段也是数据。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "static int drain_output(int read_end, unsigned char *buffer, size_t capacity,\n                        struct process_result *result)\n{\n    unsigned char chunk[4096];\n    for (;;) {\n        ssize_t received = read(read_end, chunk, sizeof(chunk));\n        if (received == -1 && errno == EINTR) {\n            continue;\n        }\n        if (received == -1) {\n            return -1;\n        }\n        if (received == 0) {\n            return 0;\n        }\n        size_t count = (size_t)received;\n        size_t space = capacity - result->captured;\n        size_t keep = count < space ? count : space;\n        if (keep > 0) {\n            memcpy(buffer + result->captured, chunk, keep);\n            result->captured += keep;\n        }\n        if (keep < count) {\n            result->truncated = true;\n        }\n        /* A full buffer stops copying, never reading. The child must progress. */\n    }\n}"
+      },
+      "snippet_explanation": {
+        "en": "Extract from process.c. The invariant is 0 <= captured <= capacity. Each read can be short; one write need not match one read. N bytes of child output require O(N) draining work, while storage is O(C+4096) for cap C. No total-discarded-byte counter can overflow.",
+        "zh": "这是 process.c 的节选。不变量是 0<=captured<=capacity。一次 read 可能只读到少量字节，一次 write 不一定对应一次 read。N 字节输出需要 O(N) 读取工作，容量 C 对应 O(C+4096) 内存。没有累加丢弃总量的计数器，所以不会在该计数上溢出。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "The child emits tail, exactly four bytes. What changes between caps 4, 3, and 0?",
+          "zh": "子进程输出 tail，恰好四个字节。容量 4、3、0 有何区别？"
+        },
+        "answer": {
+          "en": "Cap 4 retains tail with truncated=no. Cap 3 retains tai with truncated=yes. Cap 0 retains nothing with truncated=yes. All three still drain the same four bytes.",
+          "zh": "容量 4 保存 tail，truncated=no；容量 3 保存 tai，truncated=yes；容量 0 不保存字节，truncated=yes。三者仍会读完相同的四个字节。"
+        }
+      }
+    },
+    {
+      "id": "reap-report",
+      "title": {
+        "en": "4. Reap and explain the outcome",
+        "zh": "4. 回收并解释结束结果"
+      },
+      "goal": {
+        "en": "Finish descriptor cleanup and distinguish normal exit from signal termination.",
+        "zh": "完成描述符清理，并区分正常退出和信号终止。"
+      },
+      "reasoning": {
+        "en": "EOF does not prove a child has terminated: it can close stdout and continue running. Conversely, a descendant can hold the pipe open after the direct child ends. Mei needs waitpid as a second completion check.",
+        "zh": "EOF 不能证明子进程结束：它可能关闭 stdout 后继续运行。反过来，后代也可能在直接子进程结束后继续持有写端。小梅还需要 waitpid 检查另一种完成条件。"
+      },
+      "steps": [
+        {
+          "en": "Close the parent write end before draining; otherwise the parent itself prevents EOF.",
+          "zh": "读取前关闭父进程写端，否则父进程自己就会阻止 EOF。"
+        },
+        {
+          "en": "After draining, close the read end and wait for the specific child PID. Retry waitpid only when errno is EINTR.",
+          "zh": "读完后关读端，再等待指定子进程 PID。只有 errno 为 EINTR 时重试 waitpid。"
+        },
+        {
+          "en": "Use wait macros, print the escaped byte prefix and status, then free the buffer. On read failure, kill the direct child and still attempt to reap it.",
+          "zh": "使用等待状态宏，显示转义字节前缀与状态，然后释放缓冲区。读取失败时终止直接子进程，并仍尝试回收。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "static int report(const unsigned char *data, const struct process_result *result)\n{\n    print_bytes(data, result->captured);\n    printf(\"captured_bytes=%zu\\ntruncated=%s\\n\", result->captured,\n           result->truncated ? \"yes\" : \"no\");\n    if (WIFEXITED(result->wait_status)) {\n        int code = WEXITSTATUS(result->wait_status);\n        printf(\"child_exit=%d\\n\", code);\n        return code;\n    }\n    if (WIFSIGNALED(result->wait_status)) {\n        int number = WTERMSIG(result->wait_status);\n        printf(\"child_signal=%d\\n\", number);\n        return 128 + number;\n    }\n    fputs(\"process_runner: unexpected wait status\\n\", stderr);\n    return 125;\n}"
+      },
+      "snippet_explanation": {
+        "en": "Extract from main.c. WEXITSTATUS is used only after WIFEXITED; WTERMSIG only after WIFSIGNALED. The raw wait integer is not itself the exit code. Normal exit returns the child code; a signal is displayed separately and maps to 128+signal on supported systems.",
+        "zh": "这是 main.c 的节选。先判断 WIFEXITED 才用 WEXITSTATUS；先判断 WIFSIGNALED 才用 WTERMSIG。原始等待整数本身不是退出码。普通退出返回子进程代码；信号单独显示，在支持的平台上映射为 128+信号编号。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "Is child_exit=127 enough to prove execvp failed?",
+          "zh": "只看 child_exit=127，能证明 execvp 失败吗？"
+        },
+        "answer": {
+          "en": "No. The selected program could return 127 itself. This project adds a fixed stderr message on exec failure, but has no separate exec-error protocol. An extra close-on-exec error pipe is a possible extension.",
+          "zh": "不能。所选程序自己也可能返回 127。本项目在 exec 失败时另写固定 stderr 信息，但没有独立 exec 错误协议。可通过额外的 close-on-exec 错误管道扩展。"
+        }
+      }
+    },
+    {
+      "id": "test-boundaries",
+      "title": {
+        "en": "5. Check the notebook against controlled children",
+        "zh": "5. 用受控子进程检查记录器"
+      },
+      "goal": {
+        "en": "Verify bytes, truncation, stderr policy, and status without assuming scheduling.",
+        "zh": "验证字节、截断、stderr 策略和状态，不假定调度先后。"
+      },
+      "reasoning": {
+        "en": "A real child is a better check than inspecting source text. The synthetic helper produces finite, known behavior, so Mei can compute expectations independently and place a watchdog around the whole run.",
+        "zh": "运行真实子进程比检查源码文字更有说服力。合成测试程序的行为有限且已知，小梅能够独立算出预期，并为整个运行加看门狗。"
+      },
+      "steps": [
+        {
+          "en": "Run make test. It builds a temporary copy with strict warnings and invokes only the local fixture, /bin/echo, and a deliberately missing path.",
+          "zh": "运行 make test。它在临时目录严格编译，只调用本地测试程序、/bin/echo 和故意不存在的路径。"
+        },
+        {
+          "en": "Compare exact output, byte counts, child status, and separate stderr. The burst is 256*4096=1048576 bytes regardless of read chunk sizes.",
+          "zh": "比较精确输出、字节数、子进程状态和独立 stderr。无论 read 如何分块，burst 都是 256*4096=1048576 个字节。"
+        },
+        {
+          "en": "Test zero, exact and over-limit caps, literal metacharacters, nonzero exit, signal exit, binary escapes, and missing programs. Timeouts clean up only the private test process group.",
+          "zh": "测试零容量、恰好与超过上限、字面特殊字符、非零退出、信号退出、二进制转义和缺失程序。超时只清理独立的测试进程组。"
+        }
+      ],
+      "snippet": {
+        "language": "c",
+        "code": "int main(int argc, char **argv)\n{\n    if (argc < 2) {\n        return 2;\n    }\n    if (strcmp(argv[1], \"args\") == 0) {\n        for (int i = 2; i < argc; ++i) {\n            printf(\"[%s]\", argv[i]);\n        }\n    } else if (strcmp(argv[1], \"burst\") == 0) {\n        char block[4096];\n        memset(block, 'A', sizeof(block));\n        for (int i = 0; i < 256; ++i) {\n            if (fwrite(block, 1, sizeof(block), stdout) != sizeof(block)) {\n                return 3;\n            }\n        }\n    } else if (strcmp(argv[1], \"fragment\") == 0) {\n        fputs(\"tail\", stdout);\n    } else if (strcmp(argv[1], \"fail\") == 0) {\n        puts(\"check failed\");\n        return 7;\n    } else if (strcmp(argv[1], \"stderr\") == 0) {\n        fputs(\"diagnostic\\n\", stderr);\n        puts(\"ok\");\n    } else if (strcmp(argv[1], \"bytes\") == 0) {\n        const unsigned char bytes[] = {0, 255, '\"', '\\\\', '\\t', '\\r', '\\n'};\n        if (fwrite(bytes, 1, sizeof(bytes), stdout) != sizeof(bytes)) {\n            return 3;\n        }\n    } else if (strcmp(argv[1], \"signal\") == 0) {\n        (void)raise(SIGTERM);\n        return 3;\n    } else if (strcmp(argv[1], \"empty\") != 0) {\n        return 2;\n    }\n    return fflush(stdout) == 0 ? 0 : 3;\n}"
+      },
+      "snippet_explanation": {
+        "en": "Extract from fixtures/child.c, a separate bounded executable used by the tests. The helper neither forks nor reads stdin. Its burst is finite, its fail mode returns 7, and fragment omits the newline. These examples test this project and are not supplied assignment solutions.",
+        "zh": "这是 fixtures/child.c 的节选，它是测试使用的独立有限程序。辅助程序既不 fork，也不读取 stdin。burst 输出有限，fail 返回 7，fragment 不带换行。这些例子用于测试本项目，不是现成作业答案。"
+      },
+      "checkpoint": {
+        "question": {
+          "en": "What does the successful burst test prove, and what does it leave unproved?",
+          "zh": "burst 测试通过说明了什么？还有什么无法证明？"
+        },
+        "answer": {
+          "en": "It shows that this run drained a finite large stream while retaining only the cap and reaped the child. It does not prove every schedule, forced EINTR/error path, descendant cleanup, or a production timeout policy.",
+          "zh": "它说明本次运行在只保留容量上限的同时，读完了有限的大输出并回收子进程。它不能证明所有调度、强制 EINTR 或错误路径、后代清理和生产级超时策略。"
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "role": {
+        "en": "English build and engineering guide",
+        "zh": "英文构建与工程指南"
+      },
+      "read_order": 1,
+      "walkthrough": [
+        {
+          "en": "Start with the four real command examples and their exit semantics.",
+          "zh": "先读四个实际命令例子及退出含义。"
+        },
+        {
+          "en": "Follow the five milestones and descriptor ownership table.",
+          "zh": "按五个里程碑与描述符所有权表阅读。"
+        },
+        {
+          "en": "Read the limits before using a program outside the finite fixtures.",
+          "zh": "运行有限测试程序以外的程序前，先读适用范围。"
+        }
+      ]
+    },
+    {
+      "path": "README.zh.md",
+      "role": {
+        "en": "Complete Chinese companion guide",
+        "zh": "完整中文配套指南"
+      },
+      "read_order": 2,
+      "walkthrough": [
+        {
+          "en": "Use the same build, run, test, and clean commands.",
+          "zh": "使用相同的编译、运行、测试和清理命令。"
+        },
+        {
+          "en": "Trace EOF and wait as two distinct conditions.",
+          "zh": "把 EOF 与 wait 作为两个不同条件跟踪。"
+        },
+        {
+          "en": "Check the Chinese explanation of signals, exec fallback, and inherited resources.",
+          "zh": "查看信号、exec 回退和资源继承的中文解释。"
+        }
+      ]
+    },
+    {
+      "path": "process.h",
+      "role": {
+        "en": "Public data and ownership contract",
+        "zh": "公开数据与所有权约定"
+      },
+      "read_order": 3,
+      "walkthrough": [
+        {
+          "en": "Read the cap limit and three fields in process_result.",
+          "zh": "查看容量上限与 process_result 的三个字段。"
+        },
+        {
+          "en": "Observe that the buffer and argv are borrowed rather than transferred.",
+          "zh": "注意缓冲区与 argv 只是借用，没有转移所有权。"
+        },
+        {
+          "en": "Return 0 means the child was reaped, even when its own exit was nonzero.",
+          "zh": "返回 0 表示成功回收子进程，即使子进程本身返回非零。"
+        }
+      ]
+    },
+    {
+      "path": "main.c",
+      "role": {
+        "en": "CLI validation, byte display, and exit-code mapping",
+        "zh": "命令行检查、字节显示与退出码映射"
+      },
+      "read_order": 4,
+      "walkthrough": [
+        {
+          "en": "parse_capacity rejects malformed and out-of-range input before allocation.",
+          "zh": "parse_capacity 在分配前拒绝格式错误或越界输入。"
+        },
+        {
+          "en": "print_bytes uses a byte count rather than strlen, preserving embedded NUL.",
+          "zh": "print_bytes 使用字节数而非 strlen，因此保留内部 NUL。"
+        },
+        {
+          "en": "report decodes wait status; main frees the allocation on handled paths and checks the final stdout flush.",
+          "zh": "report 解码等待状态；main 在已处理路径释放内存，并检查最终 stdout 刷新。"
+        }
+      ]
+    },
+    {
+      "path": "process.c",
+      "role": {
+        "en": "Pipe setup, fork/exec, continuous drain, and wait",
+        "zh": "管道配置、fork/exec、连续读取与等待"
+      },
+      "read_order": 5,
+      "walkthrough": [
+        {
+          "en": "Check standard descriptors, then create the pipe before fork so both processes can refer to it.",
+          "zh": "先检查标准描述符，再在 fork 前创建管道，让双方都能引用。"
+        },
+        {
+          "en": "Separate execute_child from drain_output so descriptor ownership is easy to trace.",
+          "zh": "把 execute_child 与 drain_output 分开，便于跟踪描述符所有权。"
+        },
+        {
+          "en": "Save errno before cleanup, retry EINTR where appropriate, and attempt to reap even after a read error.",
+          "zh": "清理前保存 errno，在适当处重试 EINTR，并在读取失败后仍尝试回收。"
+        }
+      ]
+    },
+    {
+      "path": "fixtures/child.c",
+      "role": {
+        "en": "Finite synthetic output and status generator",
+        "zh": "有限的合成输出与状态生成器"
+      },
+      "read_order": 6,
+      "walkthrough": [
+        {
+          "en": "args surrounds each argument with brackets so spaces remain visible.",
+          "zh": "args 给每个参数加方括号，让空格边界可见。"
+        },
+        {
+          "en": "burst writes 256 fixed blocks; empty and fragment probe EOF without line assumptions.",
+          "zh": "burst 写 256 个固定块；empty 与 fragment 在不依赖行的情况下检查 EOF。"
+        },
+        {
+          "en": "fail, stderr, bytes, and signal isolate distinct observable behaviors.",
+          "zh": "fail、stderr、bytes 和 signal 分别产生不同可观察行为。"
+        }
+      ]
+    },
+    {
+      "path": "test.py",
+      "role": {
+        "en": "Fourteen real-process regression tests",
+        "zh": "十四个真实进程回归测试"
+      },
+      "read_order": 7,
+      "walkthrough": [
+        {
+          "en": "Copy only project inputs into TemporaryDirectory and compile there.",
+          "zh": "只把项目输入复制到 TemporaryDirectory，再在那里编译。"
+        },
+        {
+          "en": "Popen uses an argument list, DEVNULL stdin, separate output pipes, a new session, and an 8-second watchdog.",
+          "zh": "Popen 使用参数列表、DEVNULL 输入、分离的输出管道、新会话和 8 秒看门狗。"
+        },
+        {
+          "en": "Assertions compare real stdout, stderr, and return codes with hand-derived expectations; timeout kills only the test group.",
+          "zh": "断言把实际 stdout、stderr 和返回码与手工预期比较；超时只终止测试进程组。"
+        }
+      ]
+    },
+    {
+      "path": "Makefile",
+      "role": {
+        "en": "Strict, repeatable all/test/clean entry points",
+        "zh": "严格且可重复的 all/test/clean 入口"
+      },
+      "read_order": 8,
+      "walkthrough": [
+        {
+          "en": "all compiles the runner and independent fixture helper.",
+          "zh": "all 编译记录器和独立测试辅助程序。"
+        },
+        {
+          "en": "C11, POSIX feature declarations, warnings, and Werror are explicit.",
+          "zh": "明确指定 C11、POSIX 功能声明、警告和 Werror。"
+        },
+        {
+          "en": "test invokes Python; clean removes only the two generated executables.",
+          "zh": "test 调用 Python；clean 只删除两个生成的可执行文件。"
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "title": {
+        "en": "A first run with one space argument",
+        "zh": "第一次运行：一个含空格的参数"
+      },
+      "command": "./process_runner 32 -- /bin/echo 'hello team'",
+      "stdout": "stdout=\"hello team\\n\"\ncaptured_bytes=11\ntruncated=no\nchild_exit=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "The shell quotes create one hello team argument before the runner starts. The child writes 11 bytes including the newline. The runner returns 0 after EOF and waitpid.",
+        "zh": "shell 引号在记录器启动前构造一个 hello team 参数。子进程写出 11 字节，包含换行。记录器在 EOF 和 waitpid 后返回 0。"
+      }
+    },
+    {
+      "title": {
+        "en": "A megabyte through an eight-byte budget",
+        "zh": "一兆字节输出，八字节预算"
+      },
+      "command": "./process_runner 8 -- ./fixture_child burst",
+      "stdout": "stdout=\"AAAAAAAA\"\ncaptured_bytes=8\ntruncated=yes\nchild_exit=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "The helper writes 1,048,576 A bytes. Only eight are retained, but all remaining output is drained so the child can finish. Truncation does not make the child fail: the runner returns 0.",
+        "zh": "辅助程序写出 1,048,576 个 A。只保存八个，但读完其余全部输出，让子进程能够结束。截断不会让子进程失败：记录器返回 0。"
+      }
+    },
+    {
+      "title": {
+        "en": "A checker that reports failure",
+        "zh": "报告失败的检查程序"
+      },
+      "command": "./process_runner 32 -- ./fixture_child fail",
+      "stdout": "stdout=\"check failed\\n\"\ncaptured_bytes=13\ntruncated=no\nchild_exit=7\n",
+      "expected_exit": 7,
+      "explanation": {
+        "en": "The 13-byte message is complete, yet the child exits with 7. The runner returns 7 too. Successful capture and a successful child are different claims.",
+        "zh": "13 字节信息完整保存，但子进程返回 7。记录器也返回 7。捕获成功与子进程成功是不同结论。"
+      }
+    },
+    {
+      "title": {
+        "en": "A missing executable still has a lifecycle",
+        "zh": "程序不存在，生命周期仍须完成"
+      },
+      "command": "./process_runner 16 -- ./absent-program",
+      "stdout": "stdout=\"\"\ncaptured_bytes=0\ntruncated=no\nchild_exit=127\n",
+      "expected_exit": 127,
+      "explanation": {
+        "en": "The child writes process_runner: execvp failed plus a newline to inherited stderr (not shown in the stdout block), then calls _exit(127). The parent sees EOF, reaps it, and returns 127. A real program could also return 127, so the status alone is ambiguous.",
+        "zh": "子进程向继承的 stderr 写出 process_runner: execvp failed 和换行（不在此 stdout 区块中），再调用 _exit(127)。父进程读到 EOF、回收它，并返回 127。真实程序也能返回 127，因此只看状态存在歧义。"
+      }
+    },
+    {
+      "title": {
+        "en": "Exactly full without a final newline",
+        "zh": "恰好填满，而且没有末尾换行"
+      },
+      "command": "./process_runner 4 -- ./fixture_child fragment",
+      "stdout": "stdout=\"tail\"\ncaptured_bytes=4\ntruncated=no\nchild_exit=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "tail is exactly four bytes. No byte is discarded, so truncated=no even though capacity is full. A newline is not needed to finish a byte stream. The runner returns 0.",
+        "zh": "tail 恰好四字节。没有丢弃字节，所以容量虽然已满，仍是 truncated=no。字节流结束不要求换行。记录器返回 0。"
+      }
+    },
+    {
+      "title": {
+        "en": "Literal spaces and shell metacharacters",
+        "zh": "原样传递空格和 shell 特殊字符"
+      },
+      "command": "./process_runner 64 -- ./fixture_child args 'two words' '$HOME;*'",
+      "stdout": "stdout=\"[two words][$HOME;*]\"\ncaptured_bytes=20\ntruncated=no\nchild_exit=0\n",
+      "expected_exit": 0,
+      "explanation": {
+        "en": "The fixture surrounds each argument with brackets. The 20-byte result shows that two words stayed together and $HOME;* stayed literal. The runner returns 0; it never formed a command string.",
+        "zh": "测试程序给每个参数加方括号。20 字节结果说明 two words 保持完整，$HOME;* 保持字面含义。记录器返回 0，从未构造命令字符串。"
+      }
+    }
+  ],
+  "debugging": [
+    {
+      "symptom": {
+        "en": "A large-output command never finishes.",
+        "zh": "大量输出的命令一直不结束。"
+      },
+      "hypothesis": {
+        "en": "The parent waited before draining, or stopped reading at the capture limit.",
+        "zh": "父进程先等待再读取，或达到容量就停止读取。"
+      },
+      "inspection": {
+        "en": "Run the finite burst with cap 8 under make test; inspect whether every positive read leads back to read.",
+        "zh": "用 make test 在容量 8 下运行有限 burst；检查每次正数读取后是否继续 read。"
+      },
+      "fix": {
+        "en": "Drain to EOF even when keep becomes zero; only then call waitpid.",
+        "zh": "即使 keep 变成 0，也要读到 EOF，再调用 waitpid。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "The child exits, but EOF never appears.",
+        "zh": "子进程已退出，但一直没有 EOF。"
+      },
+      "hypothesis": {
+        "en": "The parent retained its write end, or another process inherited a writer.",
+        "zh": "父进程保留了写端，或其他进程继承了写端。"
+      },
+      "inspection": {
+        "en": "Draw every write descriptor in both processes; check the parent close immediately after fork.",
+        "zh": "画出双方所有写端描述符；检查父进程是否在 fork 后立即 close。"
+      },
+      "fix": {
+        "en": "Close the unused parent write end. A descendant-held writer requires a future process-tree policy.",
+        "zh": "关闭父进程不用的写端。后代保留写端的问题需要未来的进程树策略。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "The four-byte output tail is reported as truncated at cap 4.",
+        "zh": "四字节 tail 在容量 4 时被错误标成截断。"
+      },
+      "hypothesis": {
+        "en": "The code treats full capacity as proof of discarded data.",
+        "zh": "代码把容量满了误当成已经丢弃数据。"
+      },
+      "inspection": {
+        "en": "Compare fragment at cap 4 and cap 3; only the latter loses a byte.",
+        "zh": "比较 fragment 在容量 4 和 3 下的结果；只有后者丢失一个字节。"
+      },
+      "fix": {
+        "en": "Set truncated only when keep < count for an actual positive read.",
+        "zh": "只在真实正数读取中 keep<count 时设置截断。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "The reported exit code looks like 1792 instead of 7.",
+        "zh": "报告退出码看起来是 1792，而不是 7。"
+      },
+      "hypothesis": {
+        "en": "The code printed raw wait status as the exit code.",
+        "zh": "代码把原始等待状态当成退出码输出。"
+      },
+      "inspection": {
+        "en": "Run the fail fixture and inspect the WIFEXITED guard before WEXITSTATUS.",
+        "zh": "运行 fail 测试，检查 WEXITSTATUS 前是否判断 WIFEXITED。"
+      },
+      "fix": {
+        "en": "Decode with the wait macros; check signal termination in a separate branch.",
+        "zh": "用等待宏解码，并在独立分支检查信号终止。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "The output after a NUL byte disappears.",
+        "zh": "NUL 字节之后的输出消失。"
+      },
+      "hypothesis": {
+        "en": "A string routine such as strlen was used on raw captured bytes.",
+        "zh": "对原始捕获字节使用了 strlen 等字符串函数。"
+      },
+      "inspection": {
+        "en": "Run the bytes fixture: all seven bytes must remain visible as characters or escapes.",
+        "zh": "运行 bytes 测试：七个字节都必须以字符或转义形式可见。"
+      },
+      "fix": {
+        "en": "Iterate to result.captured, use unsigned char, and escape bytes individually.",
+        "zh": "循环到 result.captured，使用 unsigned char，并逐字节转义。"
+      }
+    },
+    {
+      "symptom": {
+        "en": "A space argument becomes two arguments or $HOME expands.",
+        "zh": "含空格的参数变成两个，或 $HOME 被展开。"
+      },
+      "hypothesis": {
+        "en": "The invocation was not quoted at the outer shell, or a command string was introduced.",
+        "zh": "外层 shell 调用没有正确引用，或实现中引入了命令字符串。"
+      },
+      "inspection": {
+        "en": "Use the args fixture and single-quote the literal values in a terminal command.",
+        "zh": "使用 args 测试，并在终端用单引号包围字面参数。"
+      },
+      "fix": {
+        "en": "Preserve the received argv vector in the runner; use shell quoting only to construct the initial arguments.",
+        "zh": "记录器保留收到的 argv；只在构造初始参数时使用 shell 引号。"
+      }
+    }
+  ],
+  "test_plan": [
+    {
+      "case": {
+        "en": "One argument containing a space",
+        "zh": "包含空格的一个参数"
+      },
+      "expected": {
+        "en": "echo prints hello team plus newline: 11 bytes, exit 0.",
+        "zh": "echo 输出 hello team 和换行：11 字节，退出 0。"
+      },
+      "reason": {
+        "en": "Detects accidental splitting and newline loss.",
+        "zh": "发现意外拆分参数或丢失换行。"
+      }
+    },
+    {
+      "case": {
+        "en": "Literal $HOME;* argument",
+        "zh": "字面参数 $HOME;*"
+      },
+      "expected": {
+        "en": "The args fixture prints [two words][$HOME;*]: 20 bytes.",
+        "zh": "args 测试输出 [two words][$HOME;*]：20 字节。"
+      },
+      "reason": {
+        "en": "Detects command-string construction or expansion.",
+        "zh": "发现命令拼接或展开。"
+      }
+    },
+    {
+      "case": {
+        "en": "1 MiB burst with caps 8, 0, and 65536",
+        "zh": "1 MiB 输出，容量分别为 8、0、65536"
+      },
+      "expected": {
+        "en": "Keep exactly the cap, report truncated=yes, and exit 0 before the watchdog.",
+        "zh": "恰好保留容量个字节，报告 truncated=yes，并在看门狗之前退出 0。"
+      },
+      "reason": {
+        "en": "Tests progress after capacity is exhausted, including the two limit endpoints.",
+        "zh": "验证容量用完后仍有进展，并覆盖容量两端。"
+      }
+    },
+    {
+      "case": {
+        "en": "Empty output at cap 0",
+        "zh": "零容量下的空输出"
+      },
+      "expected": {
+        "en": "Keep zero bytes with truncated=no, exit 0.",
+        "zh": "保存零字节，truncated=no，退出 0。"
+      },
+      "reason": {
+        "en": "A zero-size budget is not itself evidence of lost data.",
+        "zh": "预算为零本身不能证明丢失数据。"
+      }
+    },
+    {
+      "case": {
+        "en": "Final fragment tail at caps 4 and 3",
+        "zh": "末尾片段 tail，容量 4 与 3"
+      },
+      "expected": {
+        "en": "Retain tail/no and tai/yes respectively, without requiring a newline.",
+        "zh": "分别得到 tail/no 和 tai/yes，不要求换行。"
+      },
+      "reason": {
+        "en": "Separates exact capacity from overflow and byte streams from lines.",
+        "zh": "区分刚好达到容量和溢出，也区分字节流与文本行。"
+      }
+    },
+    {
+      "case": {
+        "en": "A checker returns 7",
+        "zh": "检查程序返回 7"
+      },
+      "expected": {
+        "en": "Capture check failed plus newline, print child_exit=7, return 7.",
+        "zh": "保存 check failed 和换行，显示 child_exit=7，返回 7。"
+      },
+      "reason": {
+        "en": "Runner success must not erase the child failure status.",
+        "zh": "记录器运行成功不能抹掉子进程失败状态。"
+      }
+    },
+    {
+      "case": {
+        "en": "Missing local executable",
+        "zh": "本地可执行文件不存在"
+      },
+      "expected": {
+        "en": "Empty capture, fixed execvp stderr diagnostic, child_exit=127, return 127.",
+        "zh": "空捕获、固定 execvp 标准错误诊断、child_exit=127、返回 127。"
+      },
+      "reason": {
+        "en": "Exercises the child _exit path and parent EOF/wait lifecycle.",
+        "zh": "覆盖子进程 _exit 路径和父进程 EOF/wait 生命周期。"
+      }
+    },
+    {
+      "case": {
+        "en": "Child stderr and binary stdout",
+        "zh": "子进程标准错误和二进制标准输出"
+      },
+      "expected": {
+        "en": "stderr stays separate; the bytes fixture reports all seven bytes with reversible escapes.",
+        "zh": "stderr 保持独立；bytes 测试用可逆转义显示全部七个字节。"
+      },
+      "reason": {
+        "en": "Prevents stream mixing, NUL truncation, and raw terminal-control output.",
+        "zh": "防止流混合、NUL 截断和原始终端控制字节输出。"
+      }
+    },
+    {
+      "case": {
+        "en": "Child terminates itself with SIGTERM",
+        "zh": "子进程用 SIGTERM 结束自己"
+      },
+      "expected": {
+        "en": "Report child_signal using the platform signal number; return 128 plus that number.",
+        "zh": "用平台信号编号显示 child_signal，并返回 128 加该编号。"
+      },
+      "reason": {
+        "en": "Exercises a different wait-status branch without timing assumptions.",
+        "zh": "不依赖时序地覆盖另一种等待状态分支。"
+      }
+    },
+    {
+      "case": {
+        "en": "Malformed CLI, negative or excessive cap, missing program",
+        "zh": "错误命令行、负数或过大容量、缺少程序"
+      },
+      "expected": {
+        "en": "Return 2 with usage on stderr and no stdout report.",
+        "zh": "返回 2，在 stderr 显示用法，没有 stdout 报告。"
+      },
+      "reason": {
+        "en": "Checks rejection before allocation/fork and guards numeric overflow.",
+        "zh": "检查在分配或 fork 前拒绝输入，并防止数字溢出。"
+      }
+    }
+  ],
+  "design_notes": [
+    {
+      "title": {
+        "en": "A byte budget is not a time budget",
+        "zh": "字节预算不是时间预算"
+      },
+      "body": {
+        "en": "Stored bytes=min(N,C); truncated=(N>C). Draining remains O(N) and memory O(C+4096). No timeout or process-tree control exists. A child waiting on input, a descendant keeping stdout open, a blocked stderr sink, or a child that never exits can stall the run. The test watchdog belongs to test.py, not the runner.",
+        "zh": "保存字节数=min(N,C)，截断=(N>C)。读取仍需 O(N) 工作，内存为 O(C+4096)。没有超时或进程树控制。子进程等输入、后代保留 stdout、stderr 接收端阻塞或子进程一直不结束，都可能让运行停住。测试看门狗属于 test.py，不属于记录器。"
+      }
+    },
+    {
+      "title": {
+        "en": "Two output streams, one capture",
+        "zh": "两种输出流，只捕获一种"
+      },
+      "body": {
+        "en": "stdout is captured and displayed after completion. stdin and stderr are inherited, and stderr can appear before the later stdout report without defining a merged order. Bytes use ASCII escapes rather than Unicode decoding; a cap may split a UTF-8 sequence, but its retained bytes remain visible. This is not a raw binary-copy tool.",
+        "zh": "stdout 被捕获并在结束后显示。stdin 和 stderr 保持继承，stderr 可能先于稍后的 stdout 报告出现，但这不代表存在统一顺序。字节用 ASCII 转义显示，不做 Unicode 解码；容量可能切断 UTF-8 序列，但保留的字节仍可见。这不是原始二进制复制工具。"
+      }
+    },
+    {
+      "title": {
+        "en": "No command string is constructed",
+        "zh": "不构造命令字符串"
+      },
+      "body": {
+        "en": "argv boundaries remain intact. A bare program name uses inherited PATH; an explicit path selects more predictably. POSIX execvp can invoke an interpreter for an executable text file in an unrecognized format. That fallback interprets the file, not a newly joined argument string. The program inherits authority, directory, environment, and unrelated non-close-on-exec descriptors; it is not a sandbox.",
+        "zh": "argv 参数边界保持不变。无路径程序名使用继承的 PATH；明确路径更容易确定目标。POSIX execvp 对格式无法识别的可执行文本文件可能调用解释器。回退解释的是该文件，不是新拼接的参数字符串。程序继承权限、目录、环境和其他未设置 close-on-exec 的描述符；这不是沙箱。"
+      }
+    },
+    {
+      "title": {
+        "en": "Status codes have deliberate limits",
+        "zh": "状态码存在明确限制"
+      },
+      "body": {
+        "en": "Normal child exit codes pass through. Signals are displayed separately and map to 128+N. CLI errors return 2, handled runner errors 125, child setup errors 126, and exec failures 127. A child can return any of those codes itself. No exec-error pipe exists, so 127 alone cannot identify exec failure. Fixed child diagnostics remain separate on stderr.",
+        "zh": "普通子进程退出码原样返回。信号单独显示并映射为 128+N。命令行错误返回 2，已处理的记录器错误返回 125，子进程配置错误返回 126，exec 失败返回 127。子进程本身也能返回这些代码。没有 exec 错误管道，因此单看 127 无法识别 exec 失败。固定子进程诊断保留在独立 stderr 上。"
+      }
+    },
+    {
+      "title": {
+        "en": "Small POSIX scope, explicit cleanup",
+        "zh": "有限 POSIX 范围与明确清理"
+      },
+      "body": {
+        "en": "The module assumes one thread, open descriptors 0–2, blocking I/O, default SIGCHLD handling, and no competing reaper. read/waitpid/dup2/child diagnostic write retry EINTR. On read error, cleanup kills only the direct child and attempts to reap it. close is best effort without retry; cross-platform recovery from interrupted close is omitted. There is no application signal handler, forwarding, or user-cancel policy. An interrupted runner can leave a child; a broken report pipe can cause default SIGPIPE termination.",
+        "zh": "模块假设单线程、描述符 0–2 已打开、阻塞 I/O、默认 SIGCHLD 处理且没有其他回收者。read/waitpid/dup2/子进程诊断 write 遇到 EINTR 会重试。读取失败只终止直接子进程并尝试回收。close 尽力执行而不重试；省略跨平台 close 中断恢复。没有应用信号处理器、转发或用户取消策略。中断记录器可能留下子进程，报告管道断开可能触发默认 SIGPIPE 终止。"
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "title": {
+        "en": "Add a distinct exec-error channel",
+        "zh": "增加独立的 exec 错误通道"
+      },
+      "plan": {
+        "en": "Create a second pipe with close-on-exec on the child write end. Successful exec closes it automatically; a failed exec writes a small errno record before _exit. Preserve ownership and complete both error and stdout reads.",
+        "zh": "增加第二条管道，给子进程写端设置 close-on-exec。exec 成功自动关闭它，exec 失败则先写入简短 errno 记录，再 _exit。保持清晰所有权，并完整处理错误通道和 stdout。"
+      },
+      "acceptance": {
+        "en": "Distinguish a real program returning 127 from failure to execute a missing path, with both children reaped and no descriptor leaks.",
+        "zh": "区分真实程序返回 127 与无法执行缺失路径；两者都回收子进程且不泄漏描述符。"
+      }
+    },
+    {
+      "title": {
+        "en": "Design deadlines and cancellation as a separate feature",
+        "zh": "把截止时间与取消作为独立功能设计"
+      },
+      "plan": {
+        "en": "Specify process-group ownership, monotonic deadlines, poll-based draining, a termination grace period, final forced cleanup, and a policy for descendants and caller signals before coding. Use only finite owned fixtures while developing.",
+        "zh": "先明确进程组所有权、单调时钟截止时间、基于 poll 的读取、终止宽限期、最终强制清理，以及后代和调用者信号策略，再编码。开发时只用有限且自己拥有的测试程序。"
+      },
+      "acceptance": {
+        "en": "A controlled child exceeding its budget yields a timeout outcome within a bounded interval; all owned children are reaped, pipes close, and retained output remains correct. Tests must not assert exact scheduling times.",
+        "zh": "受控子进程超过预算时，在有界时间内产生超时结果；所有自己管理的子进程被回收、管道关闭、保存输出正确。测试不能断言精确调度时间。"
+      }
+    }
+  ],
+  "references": [
+    {
+      "title": "The Open Group: POSIX fork",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/fork.html"
+    },
+    {
+      "title": "The Open Group: POSIX exec family",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/exec.html"
+    },
+    {
+      "title": "The Open Group: POSIX pipe",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/pipe.html"
+    },
+    {
+      "title": "The Open Group: POSIX read",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html"
+    },
+    {
+      "title": "The Open Group: POSIX wait and waitpid",
+      "url": "https://pubs.opengroup.org/onlinepubs/9699919799/functions/wait.html"
+    },
+    {
+      "title": "The Open Group: POSIX dup and dup2",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/dup.html"
+    },
+    {
+      "title": "The Open Group: POSIX _Exit and _exit",
+      "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/_exit.html"
+    }
+  ]
+}

@@ -1,0 +1,950 @@
+<!doctype html><html lang="zh-Hans" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>有容量上限的进程记录器 | Guoliang</title><meta name="description" content="运行一个本地程序，保存有容量上限的标准输出前缀，继续读完其余字节，并准确解释子进程怎样结束。"><link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css?v=8df55cf946ae"><script defer src="../assets/app.js?v=a47d26b4bea5"></script></head><body class="field-guide project-guide"><a class="skip" href="#main">跳到正文</a><header class="topbar"><div class="wrap"><a class="brand" href="../index.html"><span class="monogram">GW</span>Guoliang</a><nav><a href="../courses/comp2017.zh.html#projects">COMP2017</a><div class="language-switch"><a href="comp2017-process-runner.en.html" data-language="en" lang="en">EN</a><a href="comp2017-process-runner.zh.html" data-language="zh" lang="zh" aria-current="page">中文</a></div><button type="button" class="theme-button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap"><header class="course-hero"><div class="eyebrow">GUOLIANG / COMP2017 / PROJECT 02</div><h1>有容量上限的进程记录器</h1><p>运行一个本地程序，保存有容量上限的标准输出前缀，继续读完其余字节，并准确解释子进程怎样结束。</p><p class="course-meta">C 语言进阶：一个父进程、一个子进程、一条管道，通过五个连续里程碑完成。 · C11 / POSIX · EN / ZH</p><div class="actions"><a class="button primary" href="../downloads/comp2017-process-runner.zip" download>下载完整工程 ↓</a><a class="button" href="#source">阅读完整源文件 ↓</a><a class="button" href="../notes/comp2017-process-runner.zh.md" download>下载本篇讲义 ↓</a></div></header><section class="learning-route" aria-labelledby="route-title"><div class="route-heading"><div><span class="eyebrow">GUOLIANG / BUILD ROUTE</span><h2 id="route-title">每次完成一个可运行的小部分</h2></div></div><ol class="route-flow"><li><a class="route-node" href="#milestone-contract"><span class="route-step">01 →</span><h3>1. 定义一次运行的约定</h3><p>检查命令行，并给缓冲区明确的所有者。</p></a></li><li><a class="route-node" href="#milestone-wire-child"><span class="route-step">02 →</span><h3>2. 给子进程连接输出通道</h3><p>把子进程 stdout 改为管道，同时保留 stdin 和 stderr。</p></a></li><li><a class="route-node" href="#milestone-drain-bound"><span class="route-step">03 →</span><h3>3. 保存前缀并持续读取</h3><p>用有限内存处理空输出、恰好达到上限、超过上限和没有换行的输出。</p></a></li><li><a class="route-node" href="#milestone-reap-report"><span class="route-step">04 →</span><h3>4. 回收并解释结束结果</h3><p>完成描述符清理，并区分正常退出和信号终止。</p></a></li><li><a class="route-node" href="#milestone-test-boundaries"><span class="route-step">05 →</span><h3>5. 用受控子进程检查记录器</h3><p>验证字节、截断、stderr 策略和状态，不假定调度先后。</p></a></li></ol></section><div class="reading-tools"><div role="group" aria-label="阅读字号"><span>阅读字号</span><button type="button" data-reading-size="normal" aria-pressed="true">A · 舒适</button><button type="button" data-reading-size="large" aria-pressed="false">A+ · 更大</button></div><a href="#run">构建并运行这个工程 ↓</a></div><div class="course-layout"><aside class="toc"><details open><summary>工程学习目录</summary><ol><li><a href="#story">问题从哪里来</a></li><li><a href="#contract">需求与契约</a></li><li><a href="#architecture">结构与所有权</a></li><li><a href="#milestone-contract">1. 定义一次运行的约定</a></li><li><a href="#milestone-wire-child">2. 给子进程连接输出通道</a></li><li><a href="#milestone-drain-bound">3. 保存前缀并持续读取</a></li><li><a href="#milestone-reap-report">4. 回收并解释结束结果</a></li><li><a href="#milestone-test-boundaries">5. 用受控子进程检查记录器</a></li><li><a href="#run">构建与运行</a></li><li><a href="#debug">定位并解释错误</a></li><li><a href="#test">验证契约</a></li><li><a href="#decisions">工程取舍</a></li><li><a href="#source">完整源文件</a></li><li><a href="#next">有计划地扩展</a></li></ol></details></aside><div class="course-body"><section class="project-section" id="story" data-reading-id="story"><h2>从一个完整故事开始</h2><p>小梅在分享团队的传感器报告前，会先运行检查程序。有的检查只输出一句成功提示，有的会打印很多细节后返回错误。复制终端文字容易漏掉退出状态，保存所有字节又浪费内存。她实现一个小记录器，只保留前 C 个字节，说明是否还有更多输出，并记录子进程结果。先从带空格参数的 echo 开始，再解决管道写满、程序不存在、最后一行没有换行的问题。完成后，她能说明每个描述符和保存字节的来历，也能说明工具尚未覆盖的情况。这是国良原创学习项目，与现成课程作业无关。</p><h3>开始前先读</h3><ul><li><a href="../courses/comp2017.zh.html#strings-parsing">字符串、有界输入与解析</a> — 把 argv 看成独立字符串数组，并在不溢出的前提下检查十进制容量。</li><li><a href="../courses/comp2017.zh.html#allocation-ownership">动态分配与对象生命周期</a> — 命令行模块分配缓冲区，借给进程模块，最后只释放一次。</li><li><a href="../courses/comp2017.zh.html#compilation-linkage">翻译单元、符号与程序库</a> — 通过 process.h 的接口约定，把 main.c 与 process.c 编译链接在一起。</li><li><a href="../courses/comp2017.zh.html#process-fork">进程、虚拟内存与 fork</a> — fork 在两个进程中返回；它们拥有独立内存和复制后的描述符表。</li><li><a href="../courses/comp2017.zh.html#exec-wait">执行新程序并回收子进程</a> — 替换子进程程序，再用 waitpid 取得结束状态。</li><li><a href="../courses/comp2017.zh.html#pipes-fifos">管道、FIFO 端点与字节分帧</a> — 利用管道 EOF 和描述符所有权协调输出与结束。</li></ul><h3>完成后你能够</h3><ul><li>使用 fork 和 execvp 执行程序，并保留原有参数边界。</li><li>限制保存输出的内存，同时持续读取，让子进程能够继续执行。</li><li>区分 EOF、成功等待、正常退出、信号终止和记录器自身错误。</li><li>测试可观察的字节与状态码，不依赖进程调度先后。</li></ul></section><section class="project-section" id="contract" data-reading-id="contract"><h2>把需求写成可检查的行为</h2><article class="design-card"><h3>接受 CAP -- PROGRAM [ARG ...]，CAP 范围是 0 到 65536。</h3><p>内存预算必须明确，并在工作开始前完成检查。</p><p><strong>检查方法：</strong>格式错误、负数、超大、缺少或混入字母的容量返回 2，不生成标准输出报告。</p></article><article class="design-card"><h3>把已有 argv 的一部分直接传给 execvp。</h3><p>拼接字符串会破坏参数边界，还可能引入 shell 解释。</p><p><strong>检查方法：</strong>测试程序将 two words 作为一个参数收到，并原样收到 $HOME;*。</p></article><article class="design-card"><h3>最多保存 CAP 个字节，但一直读取到 EOF。</h3><p>达到上限就停止读取，可能让子进程卡在写满的管道上。</p><p><strong>检查方法：</strong>1 MiB 输出在容量为 8 或 0 时都能完成，并报告截断。</p></article><article class="design-card"><h3>只捕获 stdout；继承 stdin 与 stderr。</h3><p>单一管道让所有权清楚，也不把两个流说成具有可靠的统一顺序。</p><p><strong>检查方法：</strong>stderr 测试生成包含 ok 的报告，同时单独输出诊断。</p></article><article class="design-card"><h3>关闭不用的描述符，回收直接子进程，并解码其等待状态。</h3><p>EOF 要求所有写端都关闭；进程结束仍需要 waitpid 处理。</p><p><strong>检查方法：</strong>分别验证正常退出 0、退出 7、缺少程序 127 和 SIGTERM。</p></article><article class="design-card"><h3>用确定的 ASCII 转义显示字节。</h3><p>保存的前缀可能包含 NUL、控制字节或多字节字符的一部分。</p><p><strong>检查方法：</strong>验证 NUL、0xFF、引号、反斜杠、制表符、回车和换行都保留原字节含义。</p></article></section><section class="project-section" id="architecture" data-reading-id="architecture"><h2>追踪数据和它的所有者</h2><ol class="architecture-flow"><li><h3>命令行与报告：main.c</h3><p>检查容量、分配字节缓冲区、借用 argv、调用进程模块、转义保存的字节，并返回子进程结果。</p></li><li><h3>进程生命周期：process.c / process.h</h3><p>创建管道和子进程，重定向子进程 stdout，父进程读取读端，并回收这个子进程。公开结果包含字节数、截断标记和原始等待状态。</p></li><li><h3>有限测试程序：fixtures/child.c</h3><p>产生受控输出和结果，不使用文件、后代进程、输入、睡眠或网络。burst 模式恰好写出 256 个 4096 字节块。</p></li><li><h3>独立检查：test.py</h3><p>在临时目录编译副本，把实际输出与返回码同手工预期比较。每次运行都有 8 秒看门狗和独立进程组。</p></li></ol><p>检查参数 → 分配 → pipe → fork。子进程：关读端 → dup2(写端,1) → 关原写端 → execvp。父进程：关写端 → 读到 EOF → 关读端 → waitpid → 转义并报告 → free。父子进程并发运行，没有固定调度顺序。read 读取已经写入的字节，所有写端关闭且队列读空后才有 EOF，最终报告在成功等待之后生成。</p><div class="trace-wrap" tabindex="0"><table class="trace-table"><caption>谁负责每一种资源？</caption><thead><tr><th scope="col">资源</th><th scope="col">所有者</th><th scope="col">释放时机</th></tr></thead><tbody><tr><td>管道读端</td><td>fork 后由父进程保留；子进程最初也有副本。</td><td>子进程在 exec 前关闭副本；父进程读取结束或失败后关闭。</td></tr><tr><td>原始管道写端</td><td>fork 后双方短暂持有。</td><td>父进程立即关闭；子进程 dup2 后关闭，stdout 仍指向同一管道。</td></tr><tr><td>子进程标准输出，描述符 1</td><td>执行后的程序，以及继承它的后代进程。</td><td>程序关闭或进程结束时释放；所有写端都关闭后才可能有 EOF。</td></tr><tr><td>输出缓冲区与参数数组</td><td>main 拥有分配内存；process_run 借用该内存和 argv 字符串。</td><td>main 在错误时或报告后释放缓冲区；本模块不释放借用的 argv。</td></tr><tr><td>直接子进程及结束状态</td><td>父进程负责回收 fork 返回的 PID。</td><td>waitpid 遇到 EINTR 重试并取得结束状态；读取失败也尝试终止并回收。</td></tr></tbody></table></div></section><section class="project-section" id="milestone-contract" data-reading-id="milestone-contract"><h2>01 / 1. 定义一次运行的约定</h2><div class="milestone-goal"><p>检查命令行，并给缓冲区明确的所有者。</p></div><p>小梅先决定字节预算，再运行检查程序。有限范围的十进制解析器在乘法前防止溢出；argv 已经提供所需的参数边界。</p><ol class="execution-steps"><li><p>用 make 编译完整项目。先读 process.h，再看 main。</p></li><li><p>跟踪 65536 的解析过程，再说明为什么 65537 和 8x 被拒绝。</p></li><li><p>跟踪 malloc、process_run(&amp;argv[3], ...) 和 free。进程模块不能释放借来的内存。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-contract" class="language-c"><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">parse_capacity</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">capacity</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">text</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">text</span><span class="p">;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="sc">'0'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="sc">'9'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">digit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="sc">'0'</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">PROCESS_MAX_CAPTURE</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">digit</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">digit</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><p>这是 main.c 的节选，不是独立程序。digit 范围是 0–9。先检查 value &lt;= (MAX-digit)/10，才能保证 value*10+digit 不超过上限。空字符串和任何非数字都会失败。</p><details class="check"><summary>为什么传 &amp;argv[3]，而不是把后面的字符串拼起来？</summary><p>它指向程序名、已有参数和末尾 NULL。拼接后就无法区分哪些空格属于参数内部。</p></details></section><section class="project-section" id="milestone-wire-child" data-reading-id="milestone-wire-child"><h2>02 / 2. 给子进程连接输出通道</h2><div class="milestone-goal"><p>把子进程 stdout 改为管道，同时保留 stdin 和 stderr。</p></div><p>fork 会复制描述符，所以双方最初都持有两端。exec 替换程序之前，子进程描述符 1 必须已经指向管道。</p><ol class="execution-steps"><li><p>画出 fork 后的两张描述符表，每张都有读端和写端。</p></li><li><p>子进程先关读端，把写端 dup2 到描述符 1，再关原写端。</p></li><li><p>使用未改写的参数数组调用 execvp。失败时向 stderr 写固定诊断，然后调用 _exit(127)。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-wire-child" class="language-c"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">execute_child</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">read_end</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">write_end</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">setup_error</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"process_runner: stdout setup failed</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">exec_error</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"process_runner: execvp failed</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">read_end</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">copied</span><span class="p">;</span>
+<span class="w">    </span><span class="k">do</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">copied</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dup2</span><span class="p">(</span><span class="n">write_end</span><span class="p">,</span><span class="w"> </span><span class="n">STDOUT_FILENO</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">copied</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">copied</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">write_end</span><span class="p">);</span>
+<span class="w">        </span><span class="n">child_failure</span><span class="p">(</span><span class="n">setup_error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">setup_error</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">126</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">write_end</span><span class="p">);</span>
+<span class="w">    </span><span class="cm">/* The original argument boundaries survive; no command string is built. */</span>
+<span class="w">    </span><span class="n">execvp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="w">    </span><span class="n">child_failure</span><span class="p">(</span><span class="n">exec_error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">exec_error</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">127</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre><p>这是 process.c 的节选。调用者检查 0–2 已打开，保证新管道描述符大于 2。dup2 让 stdout 成为写端的另一个引用；关闭原描述符不会关闭 stdout。exec 成功就不会返回。_exit 跳过复制来的 stdio 缓冲区和 atexit 回调。</p><details class="check"><summary>关闭原写端描述符，会不会破坏子进程输出通道？</summary><p>不会。dup2 成功后，描述符 1 仍指向管道。这个引用在 exec 后保留，到程序主动关闭或退出时才关闭。</p></details></section><section class="project-section" id="milestone-drain-bound" data-reading-id="milestone-drain-bound"><h2>03 / 3. 保存前缀并持续读取</h2><div class="milestone-goal"><p>用有限内存处理空输出、恰好达到上限、超过上限和没有换行的输出。</p></div><p>内核管道容量也有限。如果小梅缓冲区满了就停止读取并开始等待，大量输出的子进程可能正在等管道腾出空间，双方就都无法前进。</p><ol class="execution-steps"><li><p>每次 read 返回正数后，计算 space=capacity-captured，再计算 keep=min(count,space)。</p></li><li><p>只复制 keep 个字节。只有确实有字节放不下时才标记截断；刚好达到上限不算截断。</p></li><li><p>继续读，直到返回 0 表示 EOF。EINTR 要重试；没有换行的末尾片段也是数据。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-drain-bound" class="language-c"><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">drain_output</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">read_end</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">capacity</span><span class="p">,</span>
+<span class="w">                        </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">chunk</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">received</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">read_end</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">chunk</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">received</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capacity</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">keep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">space</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">keep</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">memcpy</span><span class="p">(</span><span class="n">buffer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">keep</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">keep</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">keep</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">count</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">truncated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="cm">/* A full buffer stops copying, never reading. The child must progress. */</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre><p>这是 process.c 的节选。不变量是 0&lt;=captured&lt;=capacity。一次 read 可能只读到少量字节，一次 write 不一定对应一次 read。N 字节输出需要 O(N) 读取工作，容量 C 对应 O(C+4096) 内存。没有累加丢弃总量的计数器，所以不会在该计数上溢出。</p><details class="check"><summary>子进程输出 tail，恰好四个字节。容量 4、3、0 有何区别？</summary><p>容量 4 保存 tail，truncated=no；容量 3 保存 tai，truncated=yes；容量 0 不保存字节，truncated=yes。三者仍会读完相同的四个字节。</p></details></section><section class="project-section" id="milestone-reap-report" data-reading-id="milestone-reap-report"><h2>04 / 4. 回收并解释结束结果</h2><div class="milestone-goal"><p>完成描述符清理，并区分正常退出和信号终止。</p></div><p>EOF 不能证明子进程结束：它可能关闭 stdout 后继续运行。反过来，后代也可能在直接子进程结束后继续持有写端。小梅还需要 waitpid 检查另一种完成条件。</p><ol class="execution-steps"><li><p>读取前关闭父进程写端，否则父进程自己就会阻止 EOF。</p></li><li><p>读完后关读端，再等待指定子进程 PID。只有 errno 为 EINTR 时重试 waitpid。</p></li><li><p>使用等待状态宏，显示转义字节前缀与状态，然后释放缓冲区。读取失败时终止直接子进程，并仍尝试回收。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-reap-report" class="language-c"><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">report</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">print_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">);</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">"captured_bytes=%zu</span><span class="se">\n</span><span class="s">truncated=%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">,</span>
+<span class="w">           </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">truncated</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"yes"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">"no"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">);</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">"child_exit=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">code</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">code</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">WIFSIGNALED</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WTERMSIG</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">);</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">"child_signal=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">number</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">128</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">number</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">fputs</span><span class="p">(</span><span class="s">"process_runner: unexpected wait status</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">125</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><p>这是 main.c 的节选。先判断 WIFEXITED 才用 WEXITSTATUS；先判断 WIFSIGNALED 才用 WTERMSIG。原始等待整数本身不是退出码。普通退出返回子进程代码；信号单独显示，在支持的平台上映射为 128+信号编号。</p><details class="check"><summary>只看 child_exit=127，能证明 execvp 失败吗？</summary><p>不能。所选程序自己也可能返回 127。本项目在 exec 失败时另写固定 stderr 信息，但没有独立 exec 错误协议。可通过额外的 close-on-exec 错误管道扩展。</p></details></section><section class="project-section" id="milestone-test-boundaries" data-reading-id="milestone-test-boundaries"><h2>05 / 5. 用受控子进程检查记录器</h2><div class="milestone-goal"><p>验证字节、截断、stderr 策略和状态，不假定调度先后。</p></div><p>运行真实子进程比检查源码文字更有说服力。合成测试程序的行为有限且已知，小梅能够独立算出预期，并为整个运行加看门狗。</p><ol class="execution-steps"><li><p>运行 make test。它在临时目录严格编译，只调用本地测试程序、/bin/echo 和故意不存在的路径。</p></li><li><p>比较精确输出、字节数、子进程状态和独立 stderr。无论 read 如何分块，burst 都是 256*4096=1048576 个字节。</p></li><li><p>测试零容量、恰好与超过上限、字面特殊字符、非零退出、信号退出、二进制转义和缺失程序。超时只清理独立的测试进程组。</p></li></ol><p class="code-hint">这是完整工程中的教学摘录。请构建下面的完整文件后运行。</p><pre class="code highlighted" tabindex="0"><code id="project-snippet-test-boundaries" class="language-c"><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"args"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">argc</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">printf</span><span class="p">(</span><span class="s">"[%s]"</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"burst"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">block</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+<span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">block</span><span class="p">,</span><span class="w"> </span><span class="sc">'A'</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">block</span><span class="p">));</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fwrite</span><span class="p">(</span><span class="n">block</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">block</span><span class="p">),</span><span class="w"> </span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">block</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"fragment"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"tail"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"fail"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">puts</span><span class="p">(</span><span class="s">"check failed"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"stderr"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"diagnostic</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="n">puts</span><span class="p">(</span><span class="s">"ok"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"bytes"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">bytes</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="p">,</span><span class="w"> </span><span class="sc">'"'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\\'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\t'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\r'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">};</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fwrite</span><span class="p">(</span><span class="n">bytes</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w"> </span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">bytes</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"signal"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">raise</span><span class="p">(</span><span class="n">SIGTERM</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"empty"</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">fflush</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><p>这是 fixtures/child.c 的节选，它是测试使用的独立有限程序。辅助程序既不 fork，也不读取 stdin。burst 输出有限，fail 返回 7，fragment 不带换行。这些例子用于测试本项目，不是现成作业答案。</p><details class="check"><summary>burst 测试通过说明了什么？还有什么无法证明？</summary><p>它说明本次运行在只保留容量上限的同时，读完了有限的大输出并回收子进程。它不能证明所有调度、强制 EINTR 或错误路径、后代清理和生产级超时策略。</p></details></section><section class="project-section" id="run" data-reading-id="run"><h2>构建、运行并读懂结果</h2><p>使用 macOS 或 Linux 上支持 C11 的 Clang、make 和 Python 3。Windows 可使用 WSL 等 Linux 环境。这里的 Makefile 默认使用 Clang。在下载目录打开终端，解压并进入工程文件夹。make 构建可执行文件；make test 检查程序行为。</p><pre class="code highlighted" tabindex="0"><code class="language-bash">unzip<span class="w"> </span>comp2017-process-runner.zip
+<span class="nb">cd</span><span class="w"> </span>comp2017-process-runner
+make
+make<span class="w"> </span>test
+</code></pre><article class="code-example"><h3>第一次运行：一个含空格的参数</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./process_runner<span class="w"> </span><span class="m">32</span><span class="w"> </span>--<span class="w"> </span>/bin/echo<span class="w"> </span><span class="s1">'hello team'</span>
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">stdout=&quot;hello team\n&quot;
+captured_bytes=11
+truncated=no
+child_exit=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>shell 引号在记录器启动前构造一个 hello team 参数。子进程写出 11 字节，包含换行。记录器在 EOF 和 waitpid 后返回 0。</p></article><article class="code-example"><h3>一兆字节输出，八字节预算</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./process_runner<span class="w"> </span><span class="m">8</span><span class="w"> </span>--<span class="w"> </span>./fixture_child<span class="w"> </span>burst
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">stdout=&quot;AAAAAAAA&quot;
+captured_bytes=8
+truncated=yes
+child_exit=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>辅助程序写出 1,048,576 个 A。只保存八个，但读完其余全部输出，让子进程能够结束。截断不会让子进程失败：记录器返回 0。</p></article><article class="code-example"><h3>报告失败的检查程序</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./process_runner<span class="w"> </span><span class="m">32</span><span class="w"> </span>--<span class="w"> </span>./fixture_child<span class="w"> </span>fail
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">stdout=&quot;check failed\n&quot;
+captured_bytes=13
+truncated=no
+child_exit=7
+</pre></div><p class="code-hint">退出状态：7. </p><p>13 字节信息完整保存，但子进程返回 7。记录器也返回 7。捕获成功与子进程成功是不同结论。</p></article><article class="code-example"><h3>程序不存在，生命周期仍须完成</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./process_runner<span class="w"> </span><span class="m">16</span><span class="w"> </span>--<span class="w"> </span>./absent-program
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">stdout=&quot;&quot;
+captured_bytes=0
+truncated=no
+child_exit=127
+</pre></div><p class="code-hint">退出状态：127. </p><p>子进程向继承的 stderr 写出 process_runner: execvp failed 和换行（不在此 stdout 区块中），再调用 _exit(127)。父进程读到 EOF、回收它，并返回 127。真实程序也能返回 127，因此只看状态存在歧义。</p></article><article class="code-example"><h3>恰好填满，而且没有末尾换行</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./process_runner<span class="w"> </span><span class="m">4</span><span class="w"> </span>--<span class="w"> </span>./fixture_child<span class="w"> </span>fragment
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">stdout=&quot;tail&quot;
+captured_bytes=4
+truncated=no
+child_exit=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>tail 恰好四字节。没有丢弃字节，所以容量虽然已满，仍是 truncated=no。字节流结束不要求换行。记录器返回 0。</p></article><article class="code-example"><h3>原样传递空格和 shell 特殊字符</h3><pre class="code highlighted" tabindex="0"><code class="language-bash">./process_runner<span class="w"> </span><span class="m">64</span><span class="w"> </span>--<span class="w"> </span>./fixture_child<span class="w"> </span>args<span class="w"> </span><span class="s1">'two words'</span><span class="w"> </span><span class="s1">'$HOME;*'</span>
+</code></pre><div class="output-block"><h4>预期标准输出</h4><pre class="code code-output">stdout=&quot;[two words][$HOME;*]&quot;
+captured_bytes=20
+truncated=no
+child_exit=0
+</pre></div><p class="code-hint">退出状态：0. </p><p>测试程序给每个参数加方括号。20 字节结果说明 two words 保持完整，$HOME;* 保持字面含义。记录器返回 0，从未构造命令字符串。</p></article></section><section class="project-section" id="debug" data-reading-id="debug"><h2>依据现象定位错误</h2><article class="design-card"><h3>大量输出的命令一直不结束。</h3><h4>提出假设</h4><p>父进程先等待再读取，或达到容量就停止读取。</p><h4>检查相关状态</h4><p>用 make test 在容量 8 下运行有限 burst；检查每次正数读取后是否继续 read。</p><h4>修复并验证</h4><p>即使 keep 变成 0，也要读到 EOF，再调用 waitpid。</p></article><article class="design-card"><h3>子进程已退出，但一直没有 EOF。</h3><h4>提出假设</h4><p>父进程保留了写端，或其他进程继承了写端。</p><h4>检查相关状态</h4><p>画出双方所有写端描述符；检查父进程是否在 fork 后立即 close。</p><h4>修复并验证</h4><p>关闭父进程不用的写端。后代保留写端的问题需要未来的进程树策略。</p></article><article class="design-card"><h3>四字节 tail 在容量 4 时被错误标成截断。</h3><h4>提出假设</h4><p>代码把容量满了误当成已经丢弃数据。</p><h4>检查相关状态</h4><p>比较 fragment 在容量 4 和 3 下的结果；只有后者丢失一个字节。</p><h4>修复并验证</h4><p>只在真实正数读取中 keep&lt;count 时设置截断。</p></article><article class="design-card"><h3>报告退出码看起来是 1792，而不是 7。</h3><h4>提出假设</h4><p>代码把原始等待状态当成退出码输出。</p><h4>检查相关状态</h4><p>运行 fail 测试，检查 WEXITSTATUS 前是否判断 WIFEXITED。</p><h4>修复并验证</h4><p>用等待宏解码，并在独立分支检查信号终止。</p></article><article class="design-card"><h3>NUL 字节之后的输出消失。</h3><h4>提出假设</h4><p>对原始捕获字节使用了 strlen 等字符串函数。</p><h4>检查相关状态</h4><p>运行 bytes 测试：七个字节都必须以字符或转义形式可见。</p><h4>修复并验证</h4><p>循环到 result.captured，使用 unsigned char，并逐字节转义。</p></article><article class="design-card"><h3>含空格的参数变成两个，或 $HOME 被展开。</h3><h4>提出假设</h4><p>外层 shell 调用没有正确引用，或实现中引入了命令字符串。</p><h4>检查相关状态</h4><p>使用 args 测试，并在终端用单引号包围字面参数。</p><h4>修复并验证</h4><p>记录器保留收到的 argv；只在构造初始参数时使用 shell 引号。</p></article></section><section class="project-section" id="test" data-reading-id="test"><h2>验证正常行为，也验证失败</h2><div class="test-cases"><article class="design-card"><h3>包含空格的一个参数</h3><p>echo 输出 hello team 和换行：11 字节，退出 0。</p><p>发现意外拆分参数或丢失换行。</p></article><article class="design-card"><h3>字面参数 $HOME;*</h3><p>args 测试输出 [two words][$HOME;*]：20 字节。</p><p>发现命令拼接或展开。</p></article><article class="design-card"><h3>1 MiB 输出，容量分别为 8、0、65536</h3><p>恰好保留容量个字节，报告 truncated=yes，并在看门狗之前退出 0。</p><p>验证容量用完后仍有进展，并覆盖容量两端。</p></article><article class="design-card"><h3>零容量下的空输出</h3><p>保存零字节，truncated=no，退出 0。</p><p>预算为零本身不能证明丢失数据。</p></article><article class="design-card"><h3>末尾片段 tail，容量 4 与 3</h3><p>分别得到 tail/no 和 tai/yes，不要求换行。</p><p>区分刚好达到容量和溢出，也区分字节流与文本行。</p></article><article class="design-card"><h3>检查程序返回 7</h3><p>保存 check failed 和换行，显示 child_exit=7，返回 7。</p><p>记录器运行成功不能抹掉子进程失败状态。</p></article><article class="design-card"><h3>本地可执行文件不存在</h3><p>空捕获、固定 execvp 标准错误诊断、child_exit=127、返回 127。</p><p>覆盖子进程 _exit 路径和父进程 EOF/wait 生命周期。</p></article><article class="design-card"><h3>子进程标准错误和二进制标准输出</h3><p>stderr 保持独立；bytes 测试用可逆转义显示全部七个字节。</p><p>防止流混合、NUL 截断和原始终端控制字节输出。</p></article><article class="design-card"><h3>子进程用 SIGTERM 结束自己</h3><p>用平台信号编号显示 child_signal，并返回 128 加该编号。</p><p>不依赖时序地覆盖另一种等待状态分支。</p></article><article class="design-card"><h3>错误命令行、负数或过大容量、缺少程序</h3><p>返回 2，在 stderr 显示用法，没有 stdout 报告。</p><p>检查在分配或 fork 前拒绝输入，并防止数字溢出。</p></article></div></section><section class="project-section" id="decisions" data-reading-id="decisions"><h2>Guoliang 的工程取舍</h2><article class="design-card"><h3>字节预算不是时间预算</h3><p>保存字节数=min(N,C)，截断=(N&gt;C)。读取仍需 O(N) 工作，内存为 O(C+4096)。没有超时或进程树控制。子进程等输入、后代保留 stdout、stderr 接收端阻塞或子进程一直不结束，都可能让运行停住。测试看门狗属于 test.py，不属于记录器。</p></article><article class="design-card"><h3>两种输出流，只捕获一种</h3><p>stdout 被捕获并在结束后显示。stdin 和 stderr 保持继承，stderr 可能先于稍后的 stdout 报告出现，但这不代表存在统一顺序。字节用 ASCII 转义显示，不做 Unicode 解码；容量可能切断 UTF-8 序列，但保留的字节仍可见。这不是原始二进制复制工具。</p></article><article class="design-card"><h3>不构造命令字符串</h3><p>argv 参数边界保持不变。无路径程序名使用继承的 PATH；明确路径更容易确定目标。POSIX execvp 对格式无法识别的可执行文本文件可能调用解释器。回退解释的是该文件，不是新拼接的参数字符串。程序继承权限、目录、环境和其他未设置 close-on-exec 的描述符；这不是沙箱。</p></article><article class="design-card"><h3>状态码存在明确限制</h3><p>普通子进程退出码原样返回。信号单独显示并映射为 128+N。命令行错误返回 2，已处理的记录器错误返回 125，子进程配置错误返回 126，exec 失败返回 127。子进程本身也能返回这些代码。没有 exec 错误管道，因此单看 127 无法识别 exec 失败。固定子进程诊断保留在独立 stderr 上。</p></article><article class="design-card"><h3>有限 POSIX 范围与明确清理</h3><p>模块假设单线程、描述符 0–2 已打开、阻塞 I/O、默认 SIGCHLD 处理且没有其他回收者。read/waitpid/dup2/子进程诊断 write 遇到 EINTR 会重试。读取失败只终止直接子进程并尝试回收。close 尽力执行而不重试；省略跨平台 close 中断恢复。没有应用信号处理器、转发或用户取消策略。中断记录器可能留下子进程，报告管道断开可能触发默认 SIGPIPE 终止。</p></article></section><section class="project-section" id="source"><h2>按顺序阅读完整文件</h2><p>下面是下载包中的完整文件。编号表示建议阅读顺序。点击文件清单可直接跳转到代码。</p><ul class="file-index"><li><a href="#file-README-md">01 / README.md</a></li><li><a href="#file-README-zh-md">02 / README.zh.md</a></li><li><a href="#file-process-h">03 / process.h</a></li><li><a href="#file-main-c">04 / main.c</a></li><li><a href="#file-process-c">05 / process.c</a></li><li><a href="#file-fixtures-child-c">06 / fixtures/child.c</a></li><li><a href="#file-test-py">07 / test.py</a></li><li><a href="#file-Makefile">08 / Makefile</a></li></ul><article class="code-example project-file" id="file-README-md" data-reading-id="file-README-md"><h3>01 / README.md</h3><p>英文构建与工程指南</p><div class="code-actions"><button type="button" data-copy-code="code-file-README-md">复制文件</button><a href="../project-code/comp2017-process-runner/README.md" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-README-md" class="language-text"># Project 2: A bounded process notebook
+
+Guoliang | Original teaching project.
+
+Mei runs a small local check before sharing her team's sensor report. She needs
+three facts: what the check printed, whether she kept all of it, and how it ended.
+Copying a command into a shell would hide the process and pipe rules she wants to
+learn. This project builds a command-line notebook for one authorized program.
+
+This is an original learning project, not a supplied course assignment or a
+production job supervisor. Prerequisites: argument arrays, allocation ownership,
+separate compilation, fork, exec/wait, and pipes.
+
+## Build, run, and test
+
+Use macOS or Linux with Clang, Make, and Python 3. Run from this directory:
+
+```sh
+make
+./process_runner 32 -- /bin/echo 'hello team'
+./process_runner 8 -- ./fixture_child burst
+./process_runner 32 -- ./fixture_child fail
+./process_runner 16 -- ./absent-program
+make test
+make clean
+```
+
+`make` uses `clang -std=c11 -Wall -Wextra -Werror -pedantic -pthread` and
+`-D_POSIX_C_SOURCE=200809L`. The code is single-threaded; `-pthread` keeps the
+course project build convention consistent. `make test` builds another copy in a
+temporary directory and removes it afterward. It does not require `make` first.
+The final two runner commands intentionally return 7 and 127, respectively.
+Run the commands individually if your terminal script stops on a nonzero status.
+
+The interface is `process_runner CAP -- PROGRAM [ARG ...]`. CAP is decimal digits
+from 0 through 65536. A name without `/` is searched using inherited PATH. Prefer
+an explicit path when choosing a specific executable. Shell quotes in the
+examples make one argument before the runner starts; the runner passes the
+existing argument vector to `execvp`. It does not join arguments, expand `$HOME`,
+expand `*`, split spaces, or interpret `;`.
+
+For the first command, standard output is exactly:
+
+```text
+stdout="hello team\n"
+captured_bytes=11
+truncated=no
+child_exit=0
+```
+
+For the burst command, the fixture writes 1,048,576 `A` bytes and the report is:
+
+```text
+stdout="AAAAAAAA"
+captured_bytes=8
+truncated=yes
+child_exit=0
+```
+
+For the failing check, standard output is:
+
+```text
+stdout="check failed\n"
+captured_bytes=13
+truncated=no
+child_exit=7
+```
+
+For the missing program, standard output is:
+
+```text
+stdout=""
+captured_bytes=0
+truncated=no
+child_exit=127
+```
+
+It also writes `process_runner: execvp failed` followed by a newline to stderr.
+The failure did not strand the child: the parent reached EOF and reaped it.
+
+## Five connected milestones
+
+1. **Specify the notebook.** Read `main.c` and `process.h`. Validate the cap before
+   allocating or forking. Borrow `&amp;argv[3]` without building a command string.
+   The caller owns the allocated buffer; the process module only writes into it.
+2. **Give the child a channel.** Read `execute_child` in `process.c`. `pipe` creates
+   a read end and a write end. After `fork`, each process has descriptors for both.
+   The child closes its read end, duplicates its write end onto stdout (fd 1),
+   closes the original write descriptor, then calls `execvp`.
+3. **Keep memory bounded without blocking progress.** Read `drain_output`.
+   Each read may return any positive number up to 4096. Save only what fits,
+   but read again even when the capture is full. CAP=0 discards everything while
+   still letting the child finish. The final `tail` fixture needs no newline.
+4. **Finish the lifecycle.** Read `process_run` and `report`. The parent closes
+   its write end immediately. It drains until EOF, closes its read end, and calls
+   `waitpid` for this child. Decode status with `WIFEXITED`/`WEXITSTATUS` or
+   `WIFSIGNALED`/`WTERMSIG`, never by guessing bits in the raw status integer.
+5. **Prove the boundaries.** Read `fixtures/child.c` and `test.py`. Use literal
+   expected byte counts, return codes, stdout, and stderr. Try a cap of 3, 4, and
+   0 for a four-byte fragment. Then test a much larger burst and a missing program.
+   These are concept checks for this project, not answers to another assignment.
+
+## Descriptor ownership and ordering
+
+| Resource | Owner after setup | Release |
+| --- | --- | --- |
+| `channel[0]`, read descriptor | Parent | Close after EOF or read failure; child closes its copy before exec |
+| `channel[1]`, original write descriptor | Neither after setup | Parent closes immediately; child closes after `dup2` |
+| Child stdout, descriptor 1 | Executed child | Child closes it or process termination closes it |
+| Capture buffer | `main` in parent | `free` on process failure or after the report |
+| Direct child PID/status | Parent | `waitpid(child, ..., 0)` consumes its termination status |
+| Argument strings | C runtime/caller | Borrowed, never freed or rewritten by this module |
+
+An empty pipe gives EOF only after **all** write descriptors referring to it have
+closed. Closing the parent's copy is essential. A grandchild could keep stdout
+open, delaying EOF even after the direct child exits. EOF and child termination
+are separate events: a child could close stdout and keep running. Waiting after
+the drain is therefore still necessary. A successful wait tells us the direct
+child terminated; it does not wait for its descendants.
+
+There is no chosen scheduling order between parent and child. A successful read
+returns bytes already written into the pipe. The final report happens after the
+drain and successful wait. If the parent waited first, a full pipe could block the
+child's write, while the parent waits for that same child to finish. Keeping only
+a small prefix does not justify stopping the drain.
+
+For N output bytes and cap C, stored bytes = min(N, C), truncation = (N &gt; C).
+The algorithm reads O(N) bytes and uses O(C + 4096) memory. It deliberately does
+not count all discarded bytes, avoiding an unbounded total-byte counter. The
+report can contain up to four characters per stored byte because of escaping.
+
+## Output, errors, and boundaries
+
+- Only stdout is captured. Stdin and stderr are inherited. Diagnostics go directly
+  to the existing stderr sink; their timing relative to the later stdout report
+  is not specified. Captured bytes are displayed as printable ASCII with `\n`,
+  `\r`, `\t`, `\\`, `\"`, and two-digit `\xHH` escapes. NUL and high bytes are
+  supported. This is a byte view, not decoded Unicode or a raw binary copy.
+- Normal child exit codes are returned unchanged. Signal termination is printed
+  as `child_signal=N` and mapped to `128+N` on the supported systems. The report
+  distinguishes a signal from an ordinary child exit of the same numeric code.
+- Usage errors return 2. Runner allocation/setup/read/wait/report errors return
+  125 when handled. Child redirection failure uses `_exit(126)`; exec failure
+  writes a fixed diagnostic and uses `_exit(127)`. A program can itself return
+  126 or 127; there is no separate exec-error pipe to disambiguate them. A runner
+  error has no complete child report. OS error wording from `perror` can vary.
+- `read`, `waitpid`, child diagnostic `write`, and `dup2` retry `EINTR`. On a read
+  failure the parent sends SIGKILL to its own direct child, closes the read end,
+  and still attempts to reap it. A failed `fork` closes both descriptors while
+  preserving errno. The small child path uses `_exit`, so it does not flush a
+  copied parent stdio buffer or call inherited `atexit` handlers.
+- The API assumes a single-threaded caller, open standard descriptors, ordinary
+  blocking I/O, no competing child reaper, and default SIGCHLD handling. It checks
+  descriptors 0, 1, and 2 before creating the pipe so pipe descriptors exceed 2.
+  Cleanup closes are best effort and are not retried; portable recovery from
+  interrupted `close` across every POSIX variant is outside this example.
+- This is not a sandbox. The program inherits the current directory, environment,
+  stdin, stderr, and other non-close-on-exec descriptors. POSIX `execvp` can invoke
+  a command interpreter for an executable text file with an unrecognized format.
+  This fallback interprets the selected file; the runner still never constructs
+  a shell command from its arguments. Use the supplied compiled fixture or an
+  executable you are authorized to run.
+- There is no deadline, process-tree cleanup, resource quota, or signal-forwarding
+  policy. A child waiting for input, a descendant holding the pipe open, a blocked
+  stderr sink, or a child that never exits can stall the runner. Interrupting the
+  runner may leave a child alive; no application signal handlers are installed.
+  A broken report pipe can terminate it by default SIGPIPE. Adding cancellation
+  correctly requires a wider design than one extra `kill` call.
+
+The tests launch only the finite fixture helper, `/bin/echo`, and one deliberately
+missing path. Each runner gets an isolated process group and an 8-second test
+watchdog; timeout cleanup targets that test group. The fixture creates no
+children, reads no input, and writes at most 1 MiB. A 30-second build timeout
+bounds compilation. Fourteen tests cover malformed caps, spaces and metacharacters,
+empty output, exact/over limits, binary escaping, stderr, normal/nonzero/signal
+status, and exec failure. They do not force rare allocation/fork/read failures,
+EINTR delivery, every schedule, or process-tree cancellation.
+
+## Primary references
+
+- [POSIX fork](https://pubs.opengroup.org/onlinepubs/9799919799/functions/fork.html)
+- [POSIX exec family](https://pubs.opengroup.org/onlinepubs/9799919799/functions/exec.html)
+- [POSIX pipe](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pipe.html)
+- [POSIX read](https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html)
+- [POSIX wait and waitpid](https://pubs.opengroup.org/onlinepubs/9699919799/functions/wait.html)
+- [POSIX dup2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/dup.html)
+- [POSIX _exit](https://pubs.opengroup.org/onlinepubs/9799919799/functions/_exit.html)
+</code></pre><ol class="execution-steps"><li><p>先读四个实际命令例子及退出含义。</p></li><li><p>按五个里程碑与描述符所有权表阅读。</p></li><li><p>运行有限测试程序以外的程序前，先读适用范围。</p></li></ol></article><article class="code-example project-file" id="file-README-zh-md" data-reading-id="file-README-zh-md"><h3>02 / README.zh.md</h3><p>完整中文配套指南</p><div class="code-actions"><button type="button" data-copy-code="code-file-README-zh-md">复制文件</button><a href="../project-code/comp2017-process-runner/README.zh.md" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-README-zh-md" class="language-text"># 项目 2：有容量上限的进程记录器
+
+Guoliang | Original teaching project. 国良原创教学项目。
+
+小梅在分享团队的传感器报告前，会运行一个本地检查程序。她需要知道三件事：
+程序输出了什么、是否保留了全部输出，以及程序怎样结束。为了理解进程和管道，
+她要亲手实现一个命令行记录器，每次运行一个她有权运行的程序。
+
+这是原创学习项目，不是其他课程的作业答案，也不是生产级任务管理器。预备知识：
+参数数组、内存所有权、分离编译、fork、exec/wait 和管道。
+
+## 编译、运行和测试
+
+需要 macOS 或 Linux，以及 Clang、Make 和 Python 3。在本目录运行：
+
+```sh
+make
+./process_runner 32 -- /bin/echo 'hello team'
+./process_runner 8 -- ./fixture_child burst
+./process_runner 32 -- ./fixture_child fail
+./process_runner 16 -- ./absent-program
+make test
+make clean
+```
+
+编译选项为 `clang -std=c11 -Wall -Wextra -Werror -pedantic -pthread`，并设置
+`-D_POSIX_C_SOURCE=200809L`。程序是单线程的；`-pthread` 用来统一课程项目的编译要求。
+`make test` 会在临时目录编译副本，测试结束后删除副本。测试前不必先运行 `make`。
+最后两个运行命令故意返回 7 和 127。如果你的脚本遇到非零状态就停止，请逐条运行。
+
+接口是 `process_runner CAP -- PROGRAM [ARG ...]`。CAP 只能包含十进制数字，范围是
+0 到 65536。不含 `/` 的程序名由继承的 PATH 查找。要指定某个可执行文件时，建议
+明确写出路径。示例的引号由启动记录器的 shell 处理，让 `hello team` 成为一个参数。
+记录器把已有参数数组直接传给 `execvp`，不会拼接命令，不会展开 `$HOME` 或 `*`，
+不会按空格拆分参数，也不会把 `;` 当成命令分隔符。
+
+第一个命令的标准输出严格如下：
+
+```text
+stdout="hello team\n"
+captured_bytes=11
+truncated=no
+child_exit=0
+```
+
+burst 测试程序写出 1,048,576 个 `A`，报告只保留前 8 个：
+
+```text
+stdout="AAAAAAAA"
+captured_bytes=8
+truncated=yes
+child_exit=0
+```
+
+失败检查的标准输出如下：
+
+```text
+stdout="check failed\n"
+captured_bytes=13
+truncated=no
+child_exit=7
+```
+
+找不到程序时，标准输出如下：
+
+```text
+stdout=""
+captured_bytes=0
+truncated=no
+child_exit=127
+```
+
+标准错误还会收到 `process_runner: execvp failed` 和一个换行。父进程仍然读到 EOF，
+并取得子进程的结束状态。执行失败不等于放弃回收子进程。
+
+## 五个连续里程碑
+
+1. **定义记录器的接口。** 阅读 `main.c` 和 `process.h`。先检查容量，再分配内存和
+   创建进程。直接借用 `&amp;argv[3]`，不拼接命令字符串。main 拥有缓冲区，进程模块只是写入它。
+2. **给子进程一条输出通道。** 阅读 `process.c` 中的 `execute_child`。pipe 建立读端和
+   写端。fork 后父子进程各有这两个描述符的副本。子进程关闭读端，用 dup2 把写端复制到
+   标准输出 1，关闭原来的写端描述符，再调用 execvp。
+3. **限制内存，但继续读取。** 阅读 `drain_output`。每次 read 可能返回 1 到 4096 个
+   字节。只复制放得下的部分，但缓冲区满了也要继续读。CAP=0 时不保存输出，仍让子进程
+   顺利写完。fragment 模式输出 `tail`，没有换行也能完整处理。
+4. **完成进程生命周期。** 阅读 `process_run` 和 `report`。父进程立即关闭自己的写端，
+   读到 EOF 后关闭读端，再用 waitpid 等待这个子进程。用 WIFEXITED/WEXITSTATUS 或
+   WIFSIGNALED/WTERMSIG 解码结果，不要猜原始状态整数里各个位的含义。
+5. **检查边界。** 阅读 `fixtures/child.c` 和 `test.py`。用手工算出的字节数、状态码、
+   标准输出和标准错误作为预期结果。对四字节输出尝试容量 3、4 和 0，再测试大量输出和
+   不存在的程序。这些是本项目的概念检查，不是其他课程的作业答案。
+
+## 描述符所有权与执行顺序
+
+| 资源 | 初始化后由谁持有 | 如何释放 |
+| --- | --- | --- |
+| `channel[0]` 读端 | 父进程 | EOF 或读取失败后关闭；子进程在 exec 前关闭自己的副本 |
+| `channel[1]` 原写端描述符 | 初始化后双方都不再保留 | 父进程立即关闭；子进程 dup2 后关闭 |
+| 子进程的标准输出 1 | 新执行的程序 | 程序主动关闭或进程结束时关闭 |
+| 保存输出的缓冲区 | 父进程的 main | 运行失败或报告完成后 free |
+| 直接子进程的 PID 与结束状态 | 父进程 | waitpid 取得结束状态并完成回收 |
+| 参数字符串 | C 运行时或调用者 | 本模块只借用，不释放、不改写 |
+
+管道已经读空，并且所有写端描述符都关闭后，read 才返回 EOF。父进程必须关闭自己的
+写端。孙进程若继承了标准输出，即使直接子进程已经结束，也可能推迟 EOF。反过来，
+子进程可以先关闭标准输出，再继续计算。所以 EOF 和子进程结束是两个不同事件。
+读取结束后仍需 waitpid；它只等待直接子进程，不等待整棵后代进程树。
+
+父子进程没有固定调度顺序。read 返回的是已经写入管道的字节。最终报告发生在读完和
+等待成功之后。如果先 wait，子进程可能因管道已满而卡在 write，父进程又在等它结束，
+双方就无法前进。只保存一个小前缀，并不能成为停止读取的理由。
+
+设输出总量为 N，容量为 C，则保存字节数为 min(N,C)，截断条件为 N&gt;C。读取工作量为
+O(N)，内存为 O(C+4096)。程序不累加已经丢弃的总字节数，因此不需要处理无限增长的
+总量计数器。一个字节转义后最多用四个字符显示，所以显示长度不等于保存字节数。
+
+## 输出、错误与适用范围
+
+- 只捕获 stdout。stdin 和 stderr 保持继承。诊断直接送往原来的 stderr，不能假定它与
+  最后 stdout 报告的显示先后。保存的字节使用可打印 ASCII 和 `\n`、`\r`、`\t`、
+  `\\`、`\"`、两位十六进制 `\xHH` 显示。支持 NUL 和高位字节；这是字节视图，
+  不是 Unicode 解码器，也不是原始二进制文件副本。
+- 正常结束时，记录器原样返回子进程的退出码。信号结束时显示 `child_signal=N`，在
+  支持的平台上返回 `128+N`。报告可以区分信号结束和恰好返回相同数字的普通退出。
+- 参数错误返回 2；能够处理的记录器分配、创建、读取、等待或报告错误返回 125。
+  子进程重定向失败调用 `_exit(126)`，exec 失败写固定诊断后调用 `_exit(127)`。
+  程序本身也可以返回 126 或 127；本项目没有额外的 exec 错误管道来消除歧义。
+  记录器错误没有完整的子进程报告。perror 的系统错误文字可能因平台或语言环境而不同。
+- read、waitpid、子进程诊断 write 和 dup2 遇到 EINTR 会重试。读取发生其他错误时，
+  父进程向自己的直接子进程发送 SIGKILL，关闭读端，并继续尝试 waitpid。
+  fork 失败时关闭两个描述符，并保存原始 errno。子进程用 `_exit`，避免刷新继承的
+  父进程 stdio 缓冲区，也不会执行父进程注册的 atexit 回调。
+- API 假设调用者是单线程、标准描述符已经打开、使用普通阻塞 I/O、没有其他回收者，
+  并保留默认 SIGCHLD 处理。程序先检查 0、1、2，确保新管道描述符大于 2，简化 dup2
+  和 close 的所有权关系。清理时尽力关闭，不重试 close；兼容所有 POSIX 变体的
+  close 中断恢复不在这个例子的范围内。
+- 这不是沙箱。子进程继承工作目录、环境、stdin、stderr，以及没有设置 close-on-exec
+  的其他描述符。按 POSIX 规则，execvp 遇到格式无法识别的可执行文本文件时，可能调用
+  命令解释器来执行该文件。被解释的是选中的文件；记录器仍不把参数拼成 shell 命令。
+  练习时使用随附的编译后测试程序，或你有权执行的本地程序。
+- 没有超时、进程树清理、资源配额或信号转发策略。子进程等待输入、后代保留写端、stderr
+  接收方阻塞或子进程一直不结束，都可能让记录器等待。记录器没有安装信号处理器，
+  中断它可能留下仍存活的子进程。报告管道断开时，默认 SIGPIPE 可能直接结束记录器。
+  完整取消机制需要更大的设计，不能只加一次 kill 就声称完成。
+
+测试只启动有限的本地 fixture_child、`/bin/echo`，以及一个故意不存在的路径。
+每次测试创建独立进程组，8 秒内未结束就清理该测试进程组。测试辅助程序不创建后代、
+不读取输入，最多写出 1 MiB。编译有 30 秒超时。14 个测试覆盖错误容量、空格和特殊字符、
+空输出、恰好达到与超过容量、二进制转义、stderr、普通退出、非零退出、信号退出和 exec
+失败。它们不能强制覆盖罕见分配/fork/read 失败、EINTR、所有调度或进程树取消。
+
+## 官方参考
+
+- [POSIX fork](https://pubs.opengroup.org/onlinepubs/9799919799/functions/fork.html)
+- [POSIX exec 系列](https://pubs.opengroup.org/onlinepubs/9799919799/functions/exec.html)
+- [POSIX pipe](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pipe.html)
+- [POSIX read](https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html)
+- [POSIX wait 与 waitpid](https://pubs.opengroup.org/onlinepubs/9699919799/functions/wait.html)
+- [POSIX dup2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/dup.html)
+- [POSIX _exit](https://pubs.opengroup.org/onlinepubs/9799919799/functions/_exit.html)
+</code></pre><ol class="execution-steps"><li><p>使用相同的编译、运行、测试和清理命令。</p></li><li><p>把 EOF 与 wait 作为两个不同条件跟踪。</p></li><li><p>查看信号、exec 回退和资源继承的中文解释。</p></li></ol></article><article class="code-example project-file" id="file-process-h" data-reading-id="file-process-h"><h3>03 / process.h</h3><p>公开数据与所有权约定</p><div class="code-actions"><button type="button" data-copy-code="code-file-process-h">复制文件</button><a href="../project-code/comp2017-process-runner/process.h" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-process-h" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#ifndef GUOLIANG_PROCESS_H</span>
+<span class="cp">#define GUOLIANG_PROCESS_H</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdbool.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stddef.h&gt;</span>
+
+<span class="cp">#define PROCESS_MAX_CAPTURE 65536U</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">captured</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">truncated</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">wait_status</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cm">/* Synchronous, single-threaded caller; standard descriptors 0, 1, 2 must be open.</span>
+<span class="cm"> * argv is a nonempty, NULL-terminated argument vector, borrowed for this call.</span>
+<span class="cm"> * buffer belongs to the caller and holds at least capacity bytes (0 is valid).</span>
+<span class="cm"> * Return 0 after reaping the direct child, even if it failed. On -1, errno</span>
+<span class="cm"> * describes a runner error; do not consume result. No timeout is provided. */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">process_run</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">argv</span><span class="p">[],</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">capacity</span><span class="p">,</span>
+<span class="w">                </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+</code></pre><ol class="execution-steps"><li><p>查看容量上限与 process_result 的三个字段。</p></li><li><p>注意缓冲区与 argv 只是借用，没有转移所有权。</p></li><li><p>返回 0 表示成功回收子进程，即使子进程本身返回非零。</p></li></ol></article><article class="code-example project-file" id="file-main-c" data-reading-id="file-main-c"><h3>04 / main.c</h3><p>命令行检查、字节显示与退出码映射</p><div class="code-actions"><button type="button" data-copy-code="code-file-main-c">复制文件</button><a href="../project-code/comp2017-process-runner/main.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-main-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"process.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/wait.h&gt;</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">parse_capacity</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">capacity</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">text</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">text</span><span class="p">;</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">'\0'</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="sc">'0'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="sc">'9'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">digit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)(</span><span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="sc">'0'</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">PROCESS_MAX_CAPTURE</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">digit</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">digit</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/* A byte view: no strlen on captured data, and no raw terminal controls. */</span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">print_bytes</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">fputs</span><span class="p">(</span><span class="s">"stdout=</span><span class="se">\"</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">length</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="kt">byte</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">:</span><span class="w"> </span><span class="n">fputs</span><span class="p">(</span><span class="s">"</span><span class="se">\\</span><span class="s">n"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="sc">'\r'</span><span class="p">:</span><span class="w"> </span><span class="n">fputs</span><span class="p">(</span><span class="s">"</span><span class="se">\\</span><span class="s">r"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="sc">'\t'</span><span class="p">:</span><span class="w"> </span><span class="n">fputs</span><span class="p">(</span><span class="s">"</span><span class="se">\\</span><span class="s">t"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="sc">'\\'</span><span class="p">:</span><span class="w"> </span><span class="n">fputs</span><span class="p">(</span><span class="s">"</span><span class="se">\\\\</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="sc">'"'</span><span class="p">:</span><span class="w"> </span><span class="n">fputs</span><span class="p">(</span><span class="s">"</span><span class="se">\\\"</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="kt">byte</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">32</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">126</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">putchar</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="kt">byte</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\\</span><span class="s">x%02X"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="kt">byte</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">puts</span><span class="p">(</span><span class="s">"</span><span class="se">\"</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">report</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">print_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">);</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">"captured_bytes=%zu</span><span class="se">\n</span><span class="s">truncated=%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">,</span>
+<span class="w">           </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">truncated</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"yes"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">"no"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">);</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">"child_exit=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">code</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">code</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">WIFSIGNALED</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WTERMSIG</span><span class="p">(</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">);</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">"child_signal=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">number</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">128</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">number</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">fputs</span><span class="p">(</span><span class="s">"process_runner: unexpected wait status</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">125</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">capacity</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="s">"--"</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">parse_capacity</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">capacity</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"usage: process_runner CAP -- PROGRAM [ARG ...]</span><span class="se">\n</span><span class="s">"</span>
+<span class="w">              </span><span class="s">"CAP must be decimal digits from 0 to 65536.</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">capacity</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">capacity</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"process_runner: allocation failed</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">125</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">process_run</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">capacity</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">perror</span><span class="p">(</span><span class="s">"process_runner"</span><span class="p">);</span>
+<span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">125</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">report</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">result</span><span class="p">);</span>
+<span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fflush</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EOF</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ferror</span><span class="p">(</span><span class="n">stdout</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"process_runner: report write failed</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">125</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">code</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>parse_capacity 在分配前拒绝格式错误或越界输入。</p></li><li><p>print_bytes 使用字节数而非 strlen，因此保留内部 NUL。</p></li><li><p>report 解码等待状态；main 在已处理路径释放内存，并检查最终 stdout 刷新。</p></li></ol></article><article class="code-example project-file" id="file-process-c" data-reading-id="file-process-c"><h3>05 / process.c</h3><p>管道配置、fork/exec、连续读取与等待</p><div class="code-actions"><button type="button" data-copy-code="code-file-process-c">复制文件</button><a href="../project-code/comp2017-process-runner/process.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-process-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"process.h"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;errno.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fcntl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;signal.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/types.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/wait.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+
+<span class="cm">/* Child failure: no stdio flushing or parent atexit handlers after fork. */</span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">child_failure</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">code</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">sent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">write</span><span class="p">(</span><span class="n">STDERR_FILENO</span><span class="p">,</span><span class="w"> </span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sent</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sent</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">message</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">sent</span><span class="p">;</span>
+<span class="w">        </span><span class="n">length</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">sent</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_exit</span><span class="p">(</span><span class="n">code</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">execute_child</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">read_end</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">write_end</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">setup_error</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"process_runner: stdout setup failed</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">exec_error</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"process_runner: execvp failed</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">read_end</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">copied</span><span class="p">;</span>
+<span class="w">    </span><span class="k">do</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">copied</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dup2</span><span class="p">(</span><span class="n">write_end</span><span class="p">,</span><span class="w"> </span><span class="n">STDOUT_FILENO</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">copied</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">copied</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">write_end</span><span class="p">);</span>
+<span class="w">        </span><span class="n">child_failure</span><span class="p">(</span><span class="n">setup_error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">setup_error</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">126</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">write_end</span><span class="p">);</span>
+<span class="w">    </span><span class="cm">/* The original argument boundaries survive; no command string is built. */</span>
+<span class="w">    </span><span class="n">execvp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="w">    </span><span class="n">child_failure</span><span class="p">(</span><span class="n">exec_error</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">exec_error</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">127</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">drain_output</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">read_end</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">capacity</span><span class="p">,</span>
+<span class="w">                        </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">chunk</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">ssize_t</span><span class="w"> </span><span class="n">received</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">read_end</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">chunk</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">received</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="p">)</span><span class="n">received</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capacity</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">keep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">space</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">keep</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">memcpy</span><span class="p">(</span><span class="n">buffer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">keep</span><span class="p">);</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">captured</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">keep</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">keep</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">count</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">truncated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="cm">/* A full buffer stops copying, never reading. The child must progress. */</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">process_run</span><span class="p">(</span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">argv</span><span class="p">[],</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">capacity</span><span class="p">,</span>
+<span class="w">                </span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argv</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">'\0'</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">capacity</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">PROCESS_MAX_CAPTURE</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="p">(</span><span class="n">capacity</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EINVAL</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* Keeps both pipe descriptors above 2, so dup2/close ownership is simple. */</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STDIN_FILENO</span><span class="p">;</span><span class="w"> </span><span class="n">fd</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">STDERR_FILENO</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">fd</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fcntl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">F_GETFD</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">*</span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">process_result</span><span class="p">){</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">channel</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pipe</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">pid_t</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fork</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">saved</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">        </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">saved</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">execute_child</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* Parent owns only the read end. Keeping any write end would prevent EOF. */</span>
+<span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">failure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">drain_output</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">capacity</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">failure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">        </span><span class="cm">/* On a read error, abort our direct child before trying to reap it. */</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">kill</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="n">SIGKILL</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">close</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">    </span><span class="kt">pid_t</span><span class="w"> </span><span class="n">waited</span><span class="p">;</span>
+<span class="w">    </span><span class="k">do</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">waited</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">waitpid</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">result</span><span class="o">-&gt;</span><span class="n">wait_status</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">waited</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">errno</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">EINTR</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">waited</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">failure</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">failure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">errno</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">failure</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">errno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">failure</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>先检查标准描述符，再在 fork 前创建管道，让双方都能引用。</p></li><li><p>把 execute_child 与 drain_output 分开，便于跟踪描述符所有权。</p></li><li><p>清理前保存 errno，在适当处重试 EINTR，并在读取失败后仍尝试回收。</p></li></ol></article><article class="code-example project-file" id="file-fixtures-child-c" data-reading-id="file-fixtures-child-c"><h3>06 / fixtures/child.c</h3><p>有限的合成输出与状态生成器</p><div class="code-actions"><button type="button" data-copy-code="code-file-fixtures-child-c">复制文件</button><a href="../project-code/comp2017-process-runner/fixtures/child.c" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-fixtures-child-c" class="language-c"><span class="cm">/* Guoliang | Original teaching project. */</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;signal.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+
+<span class="cm">/* Synthetic, finite output only: no files, descendants, input, or sleeps. */</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"args"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">argc</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">printf</span><span class="p">(</span><span class="s">"[%s]"</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"burst"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">block</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+<span class="w">        </span><span class="n">memset</span><span class="p">(</span><span class="n">block</span><span class="p">,</span><span class="w"> </span><span class="sc">'A'</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">block</span><span class="p">));</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fwrite</span><span class="p">(</span><span class="n">block</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">block</span><span class="p">),</span><span class="w"> </span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">block</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"fragment"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"tail"</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"fail"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">puts</span><span class="p">(</span><span class="s">"check failed"</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"stderr"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fputs</span><span class="p">(</span><span class="s">"diagnostic</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="p">);</span>
+<span class="w">        </span><span class="n">puts</span><span class="p">(</span><span class="s">"ok"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"bytes"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">bytes</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="p">,</span><span class="w"> </span><span class="sc">'"'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\\'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\t'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\r'</span><span class="p">,</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">};</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fwrite</span><span class="p">(</span><span class="n">bytes</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w"> </span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">bytes</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"signal"</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">raise</span><span class="p">(</span><span class="n">SIGTERM</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">"empty"</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">fflush</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><ol class="execution-steps"><li><p>args 给每个参数加方括号，让空格边界可见。</p></li><li><p>burst 写 256 个固定块；empty 与 fragment 在不依赖行的情况下检查 EOF。</p></li><li><p>fail、stderr、bytes 和 signal 分别产生不同可观察行为。</p></li></ol></article><article class="code-example project-file" id="file-test-py" data-reading-id="file-test-py"><h3>07 / test.py</h3><p>十四个真实进程回归测试</p><div class="code-actions"><button type="button" data-copy-code="code-file-test-py">复制文件</button><a href="../project-code/comp2017-process-runner/test.py" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-test-py" class="language-python"><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># Guoliang | Original teaching project.</span>
+<span class="sd">"""Build a temporary copy and exercise only bounded, local fixture programs."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
+
+<span class="n">SOURCE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RunnerTests</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setUpClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"guoliang-process-test-"</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">addClassCleanup</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">cleanup</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">work</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">temp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"main.c"</span><span class="p">,</span> <span class="s2">"process.c"</span><span class="p">,</span> <span class="s2">"process.h"</span><span class="p">,</span> <span class="s2">"Makefile"</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">SOURCE</span> <span class="o">/</span> <span class="n">name</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">work</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">SOURCE</span> <span class="o">/</span> <span class="s2">"fixtures"</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">work</span> <span class="o">/</span> <span class="s2">"fixtures"</span><span class="p">)</span>
+        <span class="n">built</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">"make"</span><span class="p">,</span> <span class="s2">"all"</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">work</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">built</span><span class="o">.</span><span class="n">returncode</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="n">built</span><span class="o">.</span><span class="n">stdout</span> <span class="o">+</span> <span class="n">built</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_runner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="c1"># A new group lets a timeout clean up both runner and its own child.</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s2">"./process_runner"</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">work</span><span class="p">,</span>
+                                 <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                                 <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">start_new_session</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">"bounded fixture timed out; possible pipe/wait deadlock"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">child</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">),</span> <span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_echo_and_literal_space_argument</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Catches splitting one argument or losing the trailing newline.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"32"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"/bin/echo"</span><span class="p">,</span> <span class="s2">"hello team"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="hello team</span><span class="se">\\</span><span class="s1">n"</span><span class="se">\n</span><span class="s1">captured_bytes=11</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_metacharacters_are_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># No shell may expand the dollar sign, wildcard, or semicolon.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"64"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"args"</span><span class="p">,</span>
+                                        <span class="s2">"two words"</span><span class="p">,</span> <span class="s2">"$HOME;*"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="[two words][$HOME;*]"</span><span class="se">\n</span><span class="s1">captured_bytes=20</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_large_output_is_drained_after_cap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"8"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"burst"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="AAAAAAAA"</span><span class="se">\n</span><span class="s1">captured_bytes=8</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=yes</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_zero_cap_still_drains</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"0"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"burst"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout=""</span><span class="se">\n</span><span class="s1">captured_bytes=0</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=yes</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_empty_output_is_not_truncation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"0"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout=""</span><span class="se">\n</span><span class="s1">captured_bytes=0</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_exact_cap_and_final_fragment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"4"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"fragment"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="tail"</span><span class="se">\n</span><span class="s1">captured_bytes=4</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_one_byte_over_cap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"3"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"fragment"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="tai"</span><span class="se">\n</span><span class="s1">captured_bytes=3</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=yes</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_nonzero_child_status_is_returned</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"32"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"fail"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">'stdout="check failed</span><span class="se">\\</span><span class="s1">n"</span><span class="se">\n</span><span class="s1">captured_bytes=13</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=7</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_missing_program_is_reaped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"16"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./absent-program"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">127</span><span class="p">,</span> <span class="s1">'stdout=""</span><span class="se">\n</span><span class="s1">captured_bytes=0</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=127</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span>
+                          <span class="s2">"process_runner: execvp failed</span><span class="se">\n</span><span class="s2">"</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_stderr_is_inherited_not_captured</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"16"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"stderr"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="ok</span><span class="se">\\</span><span class="s1">n"</span><span class="se">\n</span><span class="s1">captured_bytes=3</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">"diagnostic</span><span class="se">\n</span><span class="s2">"</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_byte_escaping_is_lossless_for_the_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"16"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"bytes"</span><span class="p">),</span>
+                         <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'stdout="</span><span class="se">\\</span><span class="s1">x00</span><span class="se">\\</span><span class="s1">xFF</span><span class="se">\\\"\\\\\\</span><span class="s1">t</span><span class="se">\\</span><span class="s1">r</span><span class="se">\\</span><span class="s1">n"</span><span class="se">\n</span><span class="s1">captured_bytes=7</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'truncated=no</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_signal_status_is_reported</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">code</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"16"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"signal"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">128</span> <span class="o">+</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s1">'stdout=""</span><span class="se">\n</span><span class="s1">captured_bytes=0</span><span class="se">\n</span><span class="s1">truncated=no</span><span class="se">\n</span><span class="s1">'</span>
+                             <span class="sa">f</span><span class="s1">'child_signal=</span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_maximum_cap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">code</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="s2">"65536"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"burst"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s1">'stdout="'</span> <span class="o">+</span> <span class="s2">"A"</span> <span class="o">*</span> <span class="mi">65536</span> <span class="o">+</span> <span class="s1">'"</span><span class="se">\n</span><span class="s1">captured_bytes=65536</span><span class="se">\n</span><span class="s1">'</span>
+                             <span class="s1">'truncated=yes</span><span class="se">\n</span><span class="s1">child_exit=0</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_bad_cli_never_starts_a_child</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cases</span> <span class="o">=</span> <span class="p">[(),</span> <span class="p">(</span><span class="s2">"8"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"8"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">"-1"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">"65537"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">"8x"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">" 8"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">"9999999999999999999999999"</span><span class="p">,</span> <span class="s2">"--"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">"8"</span><span class="p">,</span> <span class="s2">"wrong"</span><span class="p">,</span> <span class="s2">"./fixture_child"</span><span class="p">,</span> <span class="s2">"empty"</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">cases</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="n">code</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_runner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s2">"usage: process_runner CAP -- PROGRAM [ARG ...]</span><span class="se">\n</span><span class="s2">"</span>
+                                     <span class="s2">"CAP must be decimal digits from 0 to 65536.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre><ol class="execution-steps"><li><p>只把项目输入复制到 TemporaryDirectory，再在那里编译。</p></li><li><p>Popen 使用参数列表、DEVNULL 输入、分离的输出管道、新会话和 8 秒看门狗。</p></li><li><p>断言把实际 stdout、stderr 和返回码与手工预期比较；超时只终止测试进程组。</p></li></ol></article><article class="code-example project-file" id="file-Makefile" data-reading-id="file-Makefile"><h3>08 / Makefile</h3><p>严格且可重复的 all/test/clean 入口</p><div class="code-actions"><button type="button" data-copy-code="code-file-Makefile">复制文件</button><a href="../project-code/comp2017-process-runner/Makefile" download>下载文件 ↓</a><p class="code-hint">构建时请保留文件名和目录结构。长行在代码框内横向滚动。</p></div><pre class="code highlighted" tabindex="0"><code id="code-file-Makefile" class="language-make"><span class="c"># Guoliang | Original teaching project.</span>
+<span class="nv">CC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>clang
+<span class="nv">CFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-std<span class="o">=</span>c11<span class="w"> </span>-Wall<span class="w"> </span>-Wextra<span class="w"> </span>-Werror<span class="w"> </span>-pedantic<span class="w"> </span>-pthread
+<span class="nv">CPPFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-D_POSIX_C_SOURCE<span class="o">=</span>200809L
+
+<span class="nf">.PHONY</span><span class="o">:</span><span class="w"> </span><span class="n">all</span> <span class="n">test</span> <span class="n">clean</span>
+<span class="nf">all</span><span class="o">:</span><span class="w"> </span><span class="n">process_runner</span> <span class="n">fixture_child</span>
+
+<span class="nf">process_runner</span><span class="o">:</span><span class="w"> </span><span class="n">main</span>.<span class="n">c</span> <span class="n">process</span>.<span class="n">c</span> <span class="n">process</span>.<span class="n">h</span>
+<span class="w">	</span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CPPFLAGS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CFLAGS<span class="k">)</span><span class="w"> </span>main.c<span class="w"> </span>process.c<span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span>
+
+<span class="nf">fixture_child</span><span class="o">:</span><span class="w"> </span><span class="n">fixtures</span>/<span class="n">child</span>.<span class="n">c</span>
+<span class="w">	</span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CPPFLAGS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CFLAGS<span class="k">)</span><span class="w"> </span>fixtures/child.c<span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span>
+
+<span class="nf">test</span><span class="o">:</span>
+<span class="w">	</span>python3<span class="w"> </span>test.py
+
+<span class="nf">clean</span><span class="o">:</span>
+<span class="w">	</span><span class="err">rm</span><span class="w"> </span><span class="err">-f</span><span class="w"> </span><span class="err">process_runner</span><span class="w"> </span><span class="err">fixture_child</span>
+</code></pre><ol class="execution-steps"><li><p>all 编译记录器和独立测试辅助程序。</p></li><li><p>明确指定 C11、POSIX 功能声明、警告和 Werror。</p></li><li><p>test 调用 Python；clean 只删除两个生成的可执行文件。</p></li></ol></article></section><section class="project-section" id="next" data-reading-id="next"><h2>每次只扩展一项契约</h2><article class="design-card"><h3>增加独立的 exec 错误通道</h3><p>增加第二条管道，给子进程写端设置 close-on-exec。exec 成功自动关闭它，exec 失败则先写入简短 errno 记录，再 _exit。保持清晰所有权，并完整处理错误通道和 stdout。</p><h4>验收检查</h4><p>区分真实程序返回 127 与无法执行缺失路径；两者都回收子进程且不泄漏描述符。</p></article><article class="design-card"><h3>把截止时间与取消作为独立功能设计</h3><p>先明确进程组所有权、单调时钟截止时间、基于 poll 的读取、终止宽限期、最终强制清理，以及后代和调用者信号策略，再编码。开发时只用有限且自己拥有的测试程序。</p><h4>验收检查</h4><p>受控子进程超过预算时，在有界时间内产生超时结果；所有自己管理的子进程被回收、管道关闭、保存输出正确。测试不能断言精确调度时间。</p></article><h3>一手参考资料</h3><ul><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/fork.html">The Open Group: POSIX fork</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/exec.html">The Open Group: POSIX exec family</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/pipe.html">The Open Group: POSIX pipe</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html">The Open Group: POSIX read</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/wait.html">The Open Group: POSIX wait and waitpid</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/dup.html">The Open Group: POSIX dup and dup2</a></li><li><a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/_exit.html">The Open Group: POSIX _Exit and _exit</a></li></ul></section></div></div><footer class="footer"><span class="watermark">Guoliang</span><a href="../courses/comp2017.zh.html#projects">返回工程学习路线 ↑</a></footer></main></body></html>

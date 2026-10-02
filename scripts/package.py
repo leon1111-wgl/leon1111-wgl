@@ -7,7 +7,7 @@ ROOT=Path(__file__).resolve().parents[1]
 EXCLUDED={'tmp','__pycache__','.git','.DS_Store','.venv'}
 def selected():
  for p in sorted(ROOT.rglob('*')):
-  if not p.is_file() or any(x in EXCLUDED for x in p.relative_to(ROOT).parts) or 'output/previews/' in p.relative_to(ROOT).as_posix() or p.suffix in {'.pyc','.log'}:continue
+  if not p.is_file() or any(x in EXCLUDED for x in p.relative_to(ROOT).parts) or 'output/previews/' in p.relative_to(ROOT).as_posix() or p.suffix=='.pyc' or (p.suffix=='.log' and not ('comp2017-log-analyzer' in p.parts and p.parent.name=='fixtures')):continue
   yield p
 if __name__=='__main__':
  archive=ROOT.parent/'Guoliang-GitHub-Learning-Kit.zip'
