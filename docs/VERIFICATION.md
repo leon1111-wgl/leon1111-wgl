@@ -15,3 +15,5 @@ Content review included five compiled Java examples, independent algorithm and l
 The distribution contains original learning notes and illustrations, not source lecture PDFs, assignments, examinations or supplied solutions. The private source audit is outside this directory. Coverage limitations are stated in each course introduction.
 
 The publishing account was authenticated as leon1111-wgl. Deployment uses the reviewed site directory and the GitHub Actions workflow; live release verification is performed after the push.
+
+The profile refresh was checked through GitHub’s Markdown rendering API: the linked cover, both learning portal cards and the collapsible nine-path catalogue survive rendering. Local browser inspection confirmed all three SVGs load and the catalogue expands to five course-page links plus eight AI-language links. Profile screenshots are content previews; public profile HTML and live image URLs are checked separately after publication.

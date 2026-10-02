@@ -50,45 +50,8 @@ def course(c):
  md+=['## Further reading']+[f'- [{x["title"]}]({x["url"]})' for x in c.get('references',[])]+['\n---\nGuoliang']
  for dest in [ROOT/'notes'/f'{c["code"]}.md',SITE/'notes'/f'{c["code"]}.md']:dest.write_text('\n\n'.join(md)+'\n')
 def readme(courses,guides):
- r=profile['research'];username=profile['github'].rstrip('/').rsplit('/',1)[-1] if profile['github'] else ''
- site_url=f'https://{username}.github.io/{username}/' if username else ''
- rows='\n'.join(f'| [{c["code"]}](notes/{c["code"]}.md) | {c["title"]} | {len(c["topics"])} | [PDF](site/downloads/{c["code"]}-cheatsheet.pdf) |' for c in courses)
- txt=f'''<p align="center"><img src="site/assets/profile-banner.svg" alt="Guoliang Wang — Exploring intelligence. Sharing understanding." width="100%"></p>
-
-<p align="center"><b>MSc student @ HKU</b> · <b>Multimodal AI & Long-Video Understanding</b></p>
-
-{('[Explore my learning website ↗]('+site_url+') · ') if site_url else ''}[Research](#selected-research) · [Learning library](#learning-library) · [Background](#background) · [Contact](mailto:{profile['email']})
-
-{profile['bio']}
-
-## Selected research
-
-**[{r['title']}]({r['url']})**  
-{r['venue']} · {r['role']} · DOI: {r['doi']}
-
-{r['summary']}
-
-{r['contribution']}
-
-## Learning library
-
-Original English study notes that connect **analogy stories → principles → formulas → worked examples**. Every course includes a clickable knowledge framework, explained notation, common pitfalls, and a one-page cheatsheet.
-
-| Course | Learning path | Topics | One-page reference |
-| :--- | :--- | :---: | :--- |
-{rows}
-
-[Download the complete five-page cheatsheet collection](site/downloads/guoliang-cheatsheet-collection.pdf)
-
-{readme_section(guides,site_url)}## Background
-
-'''
- for x in profile['education']:txt+=f'- **{x["institution"]}** · {x["degree"]} ({x["period"]}). {x["detail"]}\n'
- txt+='\n## Experience\n\n'
- for x in profile['experience']:txt+=f'- **{x["role"]}**, {x["organization"]} ({x["period"]}). {x["detail"]}\n'
- txt+='\n**Tools & interests:** '+ ' · '.join(profile['skills'])+'\n\n**Languages:** '+profile['languages']+'\n\n---\n<sub>Guoliang · Research, ideas & learning in public.</sub>\n'
- (ROOT/'README.md').write_text(txt)
- (ROOT/'profile'/'bio.txt').write_text('MSc student @ HKU | Multimodal AI, LLM agents & long-video understanding | AAAI 2026 co-first author | Learning through stories & examples\n')
+ from build_profile import build_profile
+ build_profile(ROOT,profile,courses,guides)
 if __name__=='__main__':
  profile=json.loads((CONTENT/'profile.json').read_text())
  courses=[json.loads((CONTENT/(c+'.json')).read_text()) for c in ORDER]

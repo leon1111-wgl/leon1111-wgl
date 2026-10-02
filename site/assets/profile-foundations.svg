@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="275" viewBox="0 0 520 275" role="img" aria-labelledby="title">
+<title id="title">Computer science: 5 courses · 121 explanations</title>
+<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#253647" stroke-width=".65"/></pattern><radialGradient id="glow"><stop stop-color="#60c9ce" stop-opacity=".2"/><stop offset="1" stop-color="#0b111c" stop-opacity="0"/></radialGradient></defs>
+<rect width="520" height="275" rx="18" fill="#0b111c"/>
+<rect width="520" height="275" rx="18" fill="url(#grid)"/>
+<path d="M30 29H88" stroke="#b8ee91" stroke-width="3"/>
+<text x="30" y="62" fill="#b8ee91" font-family="monospace" font-size="13" letter-spacing="1.5">01 / FOUNDATIONS</text>
+<text x="29" y="112" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="29" font-weight="700">Computer science</text>
+<text x="30" y="150" fill="#c7d2de" font-family="Arial,sans-serif" font-size="18">5 courses · 121 explanations</text>
+<text x="30" y="180" fill="#91a3b5" font-family="Arial,sans-serif" font-size="15">Knowledge maps + one-page cheatsheets</text>
+<path d="M30 207H490" stroke="#293a49"/>
+<text x="30" y="243" fill="#b8ee91" font-family="monospace" font-size="14">EXPLORE THE COURSES</text>
+<path d="M463 244l16-16m-16 0h16v16" fill="none" stroke="#b8ee91" stroke-width="2"/></svg>

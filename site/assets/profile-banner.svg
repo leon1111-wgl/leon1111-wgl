@@ -1,1 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc"><title id="title">Guoliang Wang</title><desc id="desc">Exploring intelligence. Sharing understanding. Computer science, multimodal AI and learning.</desc><defs><pattern id="grid" width="45" height="45" patternUnits="userSpaceOnUse"><path d="M45 0H0V45" fill="none" stroke="#233044" stroke-width=".6"/></pattern><radialGradient id="glow"><stop stop-color="#6d9980" stop-opacity=".3"/><stop offset="1" stop-color="#090e17" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="340" rx="20" fill="#090e17"/><rect width="1200" height="340" rx="20" fill="url(#grid)"/><ellipse cx="980" cy="160" rx="300" ry="230" fill="url(#glow)"/><g fill="none" stroke="#527064" opacity=".55"><circle cx="1020" cy="170" r="125"/><circle cx="1020" cy="170" r="85" stroke-dasharray="3 7"/><ellipse cx="1020" cy="170" rx="145" ry="55" transform="rotate(35 1020 170)"/><ellipse cx="1020" cy="170" rx="145" ry="55" transform="rotate(-35 1020 170)"/></g><g fill="#b8ee91"><circle cx="944" cy="71" r="4"/><circle cx="1128" cy="231" r="4"/><circle cx="929" cy="256" r="4"/></g><text x="65" y="64" fill="#b8ee91" font-family="monospace" font-size="12" letter-spacing="3">RESEARCH / FOUNDATIONS / EXPLANATION</text><text x="60" y="143" fill="#f0f5f7" font-family="Arial,sans-serif" font-size="59" font-weight="600" letter-spacing="-2">Guoliang Wang</text><text x="65" y="194" fill="#b8ee91" font-family="Arial,sans-serif" font-size="25">Exploring intelligence. Sharing understanding.</text><text x="65" y="274" fill="#a6b4c1" font-family="monospace" font-size="13">MSc student @ HKU  ·  Multimodal AI  ·  Long-Video Understanding</text><text x="1020" y="181" fill="#eaf0f6" font-family="monospace" font-size="35" text-anchor="middle">GW</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="438" viewBox="0 0 1200 438" role="img" aria-labelledby="title">
+<title id="title">Guoliang Wang — MSc student at HKU, working on AI. Enter my website.</title>
+<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#253647" stroke-width=".65"/></pattern><radialGradient id="glow"><stop stop-color="#60c9ce" stop-opacity=".2"/><stop offset="1" stop-color="#0b111c" stop-opacity="0"/></radialGradient></defs>
+<rect width="1200" height="438" rx="18" fill="#0b111c"/>
+<rect width="1200" height="438" rx="18" fill="url(#grid)"/>
+<ellipse cx="1000" cy="180" rx="320" ry="280" fill="url(#glow)"/>
+<path d="M40 70H1160" stroke="#2a3b4b"/>
+<g fill="#b8ee91"><circle cx="46" cy="38" r="5"/><circle cx="66" cy="38" r="5" opacity=".55"/><circle cx="86" cy="38" r="5" opacity=".25"/></g>
+<text x="1135" y="43" text-anchor="end" fill="#a6b7c8" font-family="monospace" font-size="13" letter-spacing="2">GUOLIANG / PERSONAL SPACE</text>
+<text x="54" y="116" fill="#b8ee91" font-family="monospace" font-size="13" letter-spacing="3">AI RESEARCH · SYSTEMS · LEARNING</text>
+<text x="49" y="204" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3">Guoliang Wang</text>
+<text x="54" y="253" fill="#b8ee91" font-family="Arial,sans-serif" font-size="25">MSc student @ HKU · Working on AI</text>
+<text x="54" y="295" fill="#a6b7c8" font-family="Arial,sans-serif" font-size="21">Multimodal models. Long videos. Clear explanations.</text>
+<g fill="none" stroke="#527e86"><circle cx="975" cy="222" r="126"/><circle cx="975" cy="222" r="88" stroke-dasharray="3 9"/><ellipse cx="975" cy="222" rx="152" ry="65" transform="rotate(-35 975 222)"/><path d="M898 122L1097 254L884 310L898 122M1097 254L975 222L898 122" opacity=".8"/></g>
+<g fill="#b8ee91"><circle cx="898" cy="122" r="5"/><circle cx="1097" cy="254" r="5"/><circle cx="884" cy="310" r="5"/></g>
+<circle cx="975" cy="222" r="44" fill="#101d29" stroke="#b8ee91"/>
+<text x="975" y="232" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="27">GW</text>
+<rect x="54" y="340" width="340" height="61" rx="9" fill="#b8ee91"/>
+<text x="78" y="378" fill="#152214" font-family="Arial,sans-serif" font-size="21" font-weight="700">ENTER MY WEBSITE</text>
+<path d="M355 378l15-15m-15 0h15v15" fill="none" stroke="#152214" stroke-width="2.5"/>
+<text x="423" y="377" fill="#a6b7c8" font-family="monospace" font-size="14">RESEARCH + COURSES + BILINGUAL AI GUIDES</text></svg>

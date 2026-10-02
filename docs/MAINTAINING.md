@@ -4,7 +4,7 @@ The homepage and five original course guides are English. Four AI field guides p
 
 ## Files
 
-- `README.md`: GitHub profile, with working links to readable Markdown notes and PDF references.
+- `README.md`: personal-first GitHub profile with a clickable website cover, course portals and a collapsible catalogue of direct teaching-page links.
 - `site/`: complete static website; upload only this directory as the Pages artifact.
 - `content/profile.json`: factual biography and GitHub URL.
 - `content/COURSE.json`: reviewed course text, knowledge map and compact reference content.
@@ -13,6 +13,7 @@ The homepage and five original course guides are English. Four AI field guides p
 - `notes/`: readable Markdown versions for GitHub.
 - `profile/bio.txt`: concise GitHub account biography.
 - `scripts/build.py`: generate HTML, Markdown and the profile README.
+- `scripts/build_profile.py`: generate the GitHub-compatible profile artwork and README; rebuild after editing.
 - `scripts/build_pdfs.py`: generate watermarked one-page PDFs and the five-page collection.
 - `scripts/validate.py`: validate local navigation, course scope and PDF structure.
 
