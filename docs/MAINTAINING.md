@@ -1,6 +1,6 @@
 # Maintaining the profile and learning library
 
-The homepage and five original course guides are English. Four AI field guides provide complete English and Chinese editions with a language switch. The five original learning paths are INFO1113, COMP2017, COMP2123, COMP2022 and COMP3308. Business courses, raw slides, examinations and assignment solutions are excluded. The notes explain concepts using independently written stories and examples.
+The homepage and five original course guides are English. Four AI field guides and a separate eight-lesson beginner primer provide complete English and Chinese editions with a language switch. The five original learning paths are INFO1113, COMP2017, COMP2123, COMP2022 and COMP3308. Business courses, raw slides, examinations and assignment solutions are excluded. The notes explain concepts using independently written stories and examples.
 
 ## Files
 
@@ -8,7 +8,10 @@ The homepage and five original course guides are English. Four AI field guides p
 - `site/`: complete static website; upload only this directory as the Pages artifact.
 - `content/profile.json`: factual biography and GitHub URL.
 - `content/COURSE.json`: reviewed course text, knowledge map and compact reference content.
-- `content/paths/*.json`: eight bilingual topics, a framework, a review and primary references for each AI guide.
+- `content/paths/*.json`: 16 bilingual topics, a framework, a review and primary references for each AI guide.
+- `content/primer.json`: beginner lessons in Python and the mathematics used by the guides.
+- `scripts/teaching.py`: glossary, guided questions, runnable examples, download archive and asset versioning.
+- `scripts/verify_examples.py`: run every exported Python file and compare its actual output.
 - `scripts/build_paths.py`: generate the bilingual pages and complete Markdown downloads.
 - `notes/`: readable Markdown versions for GitHub.
 - `profile/bio.txt`: concise GitHub account biography.
@@ -32,6 +35,7 @@ Use Python 3 with the packages in `requirements.txt`:
 python3 scripts/build.py
 python3 scripts/build_pdfs.py
 python3 scripts/validate.py
+python3 scripts/verify_examples.py
 ```
 
 Portable fonts are bundled in `scripts/fonts/` with their license. PDF generation stops if the text cannot fit at a readable size. Edit overly long reference blocks instead of shrinking them indefinitely.
@@ -49,3 +53,7 @@ GitHub documentation: https://docs.github.com/en/account-and-profile/how-tos/pro
 ## Updating the teaching material
 
 Keep each course topic’s story, principle, formula, symbol explanation and example. In each bilingual AI topic retain both complete language versions of the story, concept, application, documented practice, formula explanation, worked calculation, limits and takeaway. Explain every symbol and state the assumptions of complexity bounds or probability models. Use fresh illustrative problems. Retain links to primary references. Check each knowledge-map link and PDF after rebuilding.
+
+The default screen body size is 18px. A saved larger-text preference uses 21px. Code uses 16px or 18px with horizontal scrolling to preserve indentation. Do not reduce teaching text to fit a card. CSS and JavaScript URLs include a content hash so updates do not depend on an old browser cache expiring. The GitHub cover uses short large text; course counts stay in native Markdown text.
+
+Python snippets and the ZIP are generated into `site/examples/` and `site/downloads/`. Edit their JSON source, then rebuild. Most snippets use the standard library; some need NumPy. Examples have no model-weight or dataset downloads. A successful run checks the shown output, not every possible input.

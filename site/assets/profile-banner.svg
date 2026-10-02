@@ -1,21 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="438" viewBox="0 0 1200 438" role="img" aria-labelledby="title">
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="320" viewBox="0 0 840 320" role="img" aria-labelledby="title">
 <title id="title">Guoliang Wang — MSc student at HKU, working on AI. Enter my website.</title>
 <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#253647" stroke-width=".65"/></pattern><radialGradient id="glow"><stop stop-color="#60c9ce" stop-opacity=".2"/><stop offset="1" stop-color="#0b111c" stop-opacity="0"/></radialGradient></defs>
-<rect width="1200" height="438" rx="18" fill="#0b111c"/>
-<rect width="1200" height="438" rx="18" fill="url(#grid)"/>
-<ellipse cx="1000" cy="180" rx="320" ry="280" fill="url(#glow)"/>
-<path d="M40 70H1160" stroke="#2a3b4b"/>
-<g fill="#b8ee91"><circle cx="46" cy="38" r="5"/><circle cx="66" cy="38" r="5" opacity=".55"/><circle cx="86" cy="38" r="5" opacity=".25"/></g>
-<text x="1135" y="43" text-anchor="end" fill="#a6b7c8" font-family="monospace" font-size="13" letter-spacing="2">GUOLIANG / PERSONAL SPACE</text>
-<text x="54" y="116" fill="#b8ee91" font-family="monospace" font-size="13" letter-spacing="3">AI RESEARCH · SYSTEMS · LEARNING</text>
-<text x="49" y="204" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3">Guoliang Wang</text>
-<text x="54" y="253" fill="#b8ee91" font-family="Arial,sans-serif" font-size="25">MSc student @ HKU · Working on AI</text>
-<text x="54" y="295" fill="#a6b7c8" font-family="Arial,sans-serif" font-size="21">Multimodal models. Long videos. Clear explanations.</text>
-<g fill="none" stroke="#527e86"><circle cx="975" cy="222" r="126"/><circle cx="975" cy="222" r="88" stroke-dasharray="3 9"/><ellipse cx="975" cy="222" rx="152" ry="65" transform="rotate(-35 975 222)"/><path d="M898 122L1097 254L884 310L898 122M1097 254L975 222L898 122" opacity=".8"/></g>
-<g fill="#b8ee91"><circle cx="898" cy="122" r="5"/><circle cx="1097" cy="254" r="5"/><circle cx="884" cy="310" r="5"/></g>
-<circle cx="975" cy="222" r="44" fill="#101d29" stroke="#b8ee91"/>
-<text x="975" y="232" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="27">GW</text>
-<rect x="54" y="340" width="340" height="61" rx="9" fill="#b8ee91"/>
-<text x="78" y="378" fill="#152214" font-family="Arial,sans-serif" font-size="21" font-weight="700">ENTER MY WEBSITE</text>
-<path d="M355 378l15-15m-15 0h15v15" fill="none" stroke="#152214" stroke-width="2.5"/>
-<text x="423" y="377" fill="#a6b7c8" font-family="monospace" font-size="14">RESEARCH + COURSES + BILINGUAL AI GUIDES</text></svg>
+<rect width="840" height="320" rx="18" fill="#0b111c"/>
+<rect width="840" height="320" rx="18" fill="url(#grid)"/>
+<ellipse cx="705" cy="150" rx="230" ry="200" fill="url(#glow)"/>
+<path d="M36 37H804" stroke="#2a3b4b"/>
+<g fill="#b8ee91"><circle cx="42" cy="36" r="5"/><circle cx="62" cy="36" r="5" opacity=".6"/><circle cx="82" cy="36" r="5" opacity=".3"/></g>
+<text x="32" y="123" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="64" font-weight="700" letter-spacing="-2">Guoliang Wang</text>
+<text x="36" y="179" fill="#b8ee91" font-family="Arial,sans-serif" font-size="34">MSc @ HKU · AI</text>
+<g fill="none" stroke="#527e86"><circle cx="665" cy="159" r="86"/><circle cx="665" cy="159" r="61" stroke-dasharray="3 9"/><ellipse cx="665" cy="159" rx="122" ry="45" transform="rotate(-35 665 159)"/><path d="M611 89L751 181L606 219L611 89M751 181L665 159L611 89"/></g>
+<g fill="#b8ee91"><circle cx="611" cy="89" r="5"/><circle cx="751" cy="181" r="5"/><circle cx="606" cy="219" r="5"/></g>
+<circle cx="665" cy="159" r="35" fill="#101d29" stroke="#b8ee91"/>
+<text x="665" y="170" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="31">GW</text>
+<rect x="36" y="222" width="365" height="62" rx="9" fill="#b8ee91"/>
+<text x="58" y="263" fill="#152214" font-family="Arial,sans-serif" font-size="32" font-weight="700">Explore my site</text>
+<path d="M346 263l19-19m-19 0h19v19" fill="none" stroke="#152214" stroke-width="3"/></svg>

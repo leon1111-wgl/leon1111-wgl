@@ -45,12 +45,14 @@ My contributions included benchmark construction, temporal and visual evidence a
 
 ## Learning portals
 
-Choose a card to enter the teaching website. Every course connects **story → concept → formula → worked example**.
+Choose a card to enter the teaching website. Follow **story → concept → formula → worked example**. AI guides and data structures include runnable Python, expected outputs and step-by-step explanations.
+
+**New to Python or AI?** [Start here in English](https://leon1111-wgl.github.io/leon1111-wgl/ai/start.en.html) · [Start here in Chinese](https://leon1111-wgl.github.io/leon1111-wgl/ai/start.zh.html) · [Download Python examples](https://leon1111-wgl.github.io/leon1111-wgl/downloads/guoliang-python-examples.zip)
 
 <table>
 <tr>
-<td width="50%" align="center"><a href="https://leon1111-wgl.github.io/leon1111-wgl/#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/#learning"><strong>Open the course library ↗</strong></a></td>
-<td width="50%" align="center"><a href="https://leon1111-wgl.github.io/leon1111-wgl/#ai"><img src="site/assets/profile-ai.svg" width="100%" alt="AI field guides — open four learning paths with English and Chinese versions" /></a><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/#ai"><strong>Open the bilingual AI guides ↗</strong></a></td>
+<td width="50%" align="center"><a href="https://leon1111-wgl.github.io/leon1111-wgl/#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/#learning"><strong>Open the course library ↗</strong></a><p>5 courses · 121 topics</p></td>
+<td width="50%" align="center"><a href="https://leon1111-wgl.github.io/leon1111-wgl/#ai"><img src="site/assets/profile-ai.svg" width="100%" alt="AI field guides — open four learning paths with English and Chinese versions" /></a><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/#ai"><strong>Open the bilingual AI guides ↗</strong></a><p>4 guides · 64 bilingual topics</p></td>
 </tr>
 </table>
 

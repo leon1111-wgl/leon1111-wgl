@@ -1,13 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="275" viewBox="0 0 520 275" role="img" aria-labelledby="title">
-<title id="title">Learn AI through stories: 4 guides · 32 bilingual topics</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="210" viewBox="0 0 520 210" role="img" aria-labelledby="title">
+<title id="title">AI guides</title>
 <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#253647" stroke-width=".65"/></pattern><radialGradient id="glow"><stop stop-color="#60c9ce" stop-opacity=".2"/><stop offset="1" stop-color="#0b111c" stop-opacity="0"/></radialGradient></defs>
-<rect width="520" height="275" rx="18" fill="#0b111c"/>
-<rect width="520" height="275" rx="18" fill="url(#grid)"/>
-<path d="M30 29H88" stroke="#8cdde9" stroke-width="3"/>
-<text x="30" y="62" fill="#8cdde9" font-family="monospace" font-size="13" letter-spacing="1.5">02 / AI FIELD GUIDES</text>
-<text x="29" y="112" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="29" font-weight="700">Learn AI through stories</text>
-<text x="30" y="150" fill="#c7d2de" font-family="Arial,sans-serif" font-size="18">4 guides · 32 bilingual topics</text>
-<text x="30" y="180" fill="#91a3b5" font-family="Arial,sans-serif" font-size="15">Machine learning, vision + multimodal AI</text>
-<path d="M30 207H490" stroke="#293a49"/>
-<text x="30" y="243" fill="#8cdde9" font-family="monospace" font-size="14">CHOOSE A LEARNING PATH</text>
-<path d="M463 244l16-16m-16 0h16v16" fill="none" stroke="#8cdde9" stroke-width="2"/></svg>
+<rect width="520" height="210" rx="18" fill="#0b111c"/>
+<rect width="520" height="210" rx="18" fill="url(#grid)"/>
+<path d="M30 30H110" stroke="#8cdde9" stroke-width="4"/>
+<text x="30" y="95" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="50" font-weight="700">AI guides</text>
+<text x="30" y="168" fill="#8cdde9" font-family="monospace" font-size="36">AI</text>
+<circle cx="444" cy="159" r="30" fill="none" stroke="#8cdde9"/>
+<path d="M432 171l24-24m-24 0h24v24" fill="none" stroke="#8cdde9" stroke-width="3"/></svg>

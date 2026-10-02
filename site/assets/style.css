@@ -14,3 +14,58 @@
 @media(max-width:960px){.guide-application-grid{grid-template-columns:1fr;gap:10px}.guide-practice{padding:18px 22px;border:1px solid var(--line);border-radius:10px;margin-bottom:12px}.field-guide .course-layout{grid-template-columns:170px minmax(0,1fr)}}
 @media(max-width:640px){.ai-grid,.guide-review-grid{grid-template-columns:1fr}.ai-card-main{padding:24px}.ai-card h3{font-size:25px}.ai-card-foot{padding:14px 24px}.ai-card-foot span{max-width:175px;line-height:1.5}.field-guide .course-layout{display:block}.field-guide .topbar nav{gap:9px}.language-switch a{padding:4px 7px;font-size:11px}.guide-story{padding:22px}.field-guide .course-hero h1{font-size:34px}.field-guide .guide-home{display:none}.field-guide .topic h2{overflow-wrap:anywhere}.field-guide .toc ol{columns:1}}
 @media print{.field-guide .topic{break-inside:auto}.field-guide .story,.field-guide .formula,.field-guide .takeaway{break-inside:avoid}.guide-application-grid{grid-template-columns:1fr 1fr}.topic-sources a,.references a{color:#253e2e}.language-switch{display:none}.ai-grid{grid-template-columns:1fr 1fr}}
+
+/* Reading-first typography. Keep instructional text legible at every width. */
+@media screen {
+  :root{--read-font:18px;--code-font:16px;--muted:#bdc9d6;--text:#f0f4fa;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Arial,sans-serif}
+  :root[data-theme=light]{--muted:#42534d;--text:#14251e}
+  :root[data-reading-size=large]{--read-font:21px;--code-font:18px}
+  body{font-size:var(--read-font);line-height:1.8}
+  nav{font-size:16px;gap:22px}.theme-button{width:44px;height:44px;font-size:20px}
+  .hero .intro,.course-hero>p,.section-head p,.course-card p,.method p,.research-panel p,.about-grid p,.timeline p,.ai-card p,.download-panel p{font-size:var(--read-font);line-height:1.8}
+  .eyebrow,.number,.hero-note,.card-top,.card-foot,.course-meta,.topic-number,.pill,.timeline time,.skills span,.footer,.watermark,.ai-card-foot,.source-note,.breadcrumb,.back-top{font-size:14px;line-height:1.6;letter-spacing:.4px}
+  .eyebrow,.number,.topic-number{letter-spacing:1px}
+  .meta-item strong,.meta-item span,.method h3,.method b,.research-side h4,.text-link,.button{font-size:16px;line-height:1.6}
+  .course-card h3{font-size:24px;font-weight:600}.course-card{min-height:320px}.card-top,.card-foot{flex-wrap:wrap;gap:10px}
+  .topic p,.overview p,.overview li,.framework>p,.formula p,.check p,.cheat-item p,.pitfall,.source-note,.references li,:lang(zh) .guide-topic p{font-size:var(--read-font);line-height:1.85;color:var(--text)}
+  .topic h2{font-size:32px;font-weight:650;line-height:1.35;letter-spacing:-.3px}
+  .topic h3,.overview h3,.map-stage h3,.takeaway span,.guide-review-grid h3{font-size:15px;line-height:1.65;font-weight:650;letter-spacing:.5px}
+  .topic h4{font-size:20px;line-height:1.5;margin:18px 0 12px;font-weight:650;color:var(--text)}
+  .topic p{margin-bottom:20px}.scope{font-size:var(--read-font)!important;line-height:1.8}
+  .story-principle,.guide-application-grid{grid-template-columns:1fr;gap:20px}.story,.guide-story{padding:28px}.principle{padding:8px 0}
+  .guide-practice{padding:22px 26px;border:1px solid var(--line);border-radius:10px}
+  .course-layout{grid-template-columns:250px minmax(0,1fr);gap:40px}
+  .toc,.toc ol,.toc summary,.toc .toc-group{font-size:15px;line-height:1.6}.toc li{padding:7px 0}.toc .toc-group{font-family:var(--sans)}
+  .map-stage{grid-template-columns:140px 1fr}.map-nodes a{font-size:16px;line-height:1.5;padding:10px 13px}
+  .formula pre{font-size:var(--read-font);line-height:1.8}.code,.code code{font:var(--code-font)/1.7 var(--mono);tab-size:4}.code{margin:0 0 22px;padding:24px;white-space:pre;max-width:100%}.formula p{margin-top:18px}
+  .check summary{font-size:var(--read-font)}.topic-sources li,.source-list span{font-size:15px;line-height:1.8}.watermark{opacity:1}
+  .language-switch a{font-size:15px;padding:7px 10px}.source-list li{overflow-wrap:anywhere}
+  .reading-tools{display:flex;flex-wrap:wrap;gap:18px 24px;margin:28px 0 0;padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:16px}
+  .reading-tools>div{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.reading-tools button,.code-actions button,.code-actions a{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--text);font-size:16px}
+  .reading-tools button[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.reading-tools>a{display:block;width:100%;color:var(--accent);text-decoration:underline;text-underline-offset:4px}
+  .level-label{display:inline-block;margin:-12px 0 24px;padding:5px 12px;font-size:15px;border:1px solid var(--line);border-radius:6px;color:var(--accent)}
+  .glossary,.guided,.practice-cases{margin:28px 0}.glossary{padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  .glossary dl{margin:12px 0 0}.glossary dl>div+div{margin-top:18px}.glossary dt{font-size:var(--read-font);font-weight:650;color:var(--accent)}.glossary dd{margin:4px 0 0;font-size:var(--read-font);line-height:1.8}
+  .guided{padding:24px;border-left:3px solid var(--accent);background:var(--panel)}.guided ol{margin:0;padding-left:24px}.guided li{padding-left:6px;margin:20px 0}.guided li:last-child p:last-child{margin-bottom:0}
+  .code-example{margin:34px 0;padding-top:24px;border-top:1px solid var(--line)}.code-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 10px;font-size:15px}.code-actions span{margin-right:auto}.code-output{border-left:3px solid var(--accent);white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel2)}
+  .practice-cases article{padding:22px 24px;margin:14px 0;border:1px solid var(--line);border-radius:10px}.practice-cases h4{margin-top:0}
+  .course-body,.course-body>*{min-width:0}.course-body p,.course-body dd{overflow-wrap:break-word}
+  @media(max-width:1000px){.course-layout,.field-guide .course-layout{display:block}.toc{position:static;max-height:none;padding:24px 0}.toc ol{columns:2;column-gap:32px}.toc li{break-inside:avoid}.toc summary{font-size:16px}.story-principle{grid-template-columns:1fr}}
+  @media(max-width:640px){
+    .wrap{padding:0 20px}.topbar .wrap{gap:10px}.brand{font-size:17px}nav{gap:12px;font-size:15px}.topbar nav .nav-ai{display:none}.theme-button{width:40px;height:40px;flex-shrink:0}.language-switch a{font-size:14px;padding:6px 8px}.field-guide .guide-home{display:none}
+    .hero .intro,.course-hero>p{font-size:var(--read-font)}.hero-note,.figure-caption{font-size:13px}.toc ol{columns:1;font-size:16px}.map-stage{grid-template-columns:1fr}.topic h2{font-size:28px}.topic h3{font-size:15px}.story,.guide-story,.glossary,.guided,.formula{padding:20px}.code{padding:18px}.reading-tools{padding:16px}.code-actions{gap:8px}.code-actions span{width:100%}
+    .overview-cols,.guide-review-grid{grid-template-columns:1fr}.ai-card-foot{padding:16px 22px;flex-wrap:wrap}.ai-card-foot span{width:100%}.method{grid-template-columns:1fr}.method div{border-right:0;border-bottom:1px solid var(--line)}.footer{font-size:14px}.hero h1{font-size:42px}.course-hero h1{font-size:34px}.section-head p{max-width:none}
+  }
+}
+@media print{.reading-tools,.code-actions button{display:none}.glossary,.guided,.practice-cases{border:1px solid #bbb;padding:12px;margin:14px 0}.glossary dd{margin-left:0}.code{white-space:pre-wrap}.topic{break-inside:auto}.code-example{break-inside:avoid}}
+@media screen {
+  .primer-callout{padding:28px;margin:0 0 24px;border:1px solid var(--accent);border-radius:14px;background:var(--panel)}
+  .primer-callout h3{margin:0 0 8px;font-size:24px}.primer-callout p{margin:0;max-width:760px;font-size:var(--read-font);color:var(--text)}.primer-callout .actions{margin-top:20px}
+  .orbital text{font-size:13px}.orbital .core-sub{font-size:11px;letter-spacing:1px}.figure-caption{font-size:13px}
+}
+@media screen {
+  .run-help{width:100%;border-top:1px solid var(--line);padding-top:16px}
+  .run-help summary{cursor:pointer;font-size:16px;font-weight:600;color:var(--accent)}
+  .run-help p,.run-help li{font-size:var(--read-font);line-height:1.85;max-width:850px}.run-help li+li{margin-top:12px}
+  .run-help code{font-size:var(--code-font);font-family:var(--mono);overflow-wrap:anywhere;color:var(--accent)}.run-help a{text-decoration:underline;text-underline-offset:3px}
+}

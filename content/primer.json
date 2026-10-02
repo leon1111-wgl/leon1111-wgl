@@ -1,0 +1,1454 @@
+{
+  "id": "start",
+  "code": "START",
+  "color": "#b8ee91",
+  "title": {
+    "en": "Start Here: Python and AI Basics",
+    "zh": "从这里开始：Python 与 AI 基础"
+  },
+  "subtitle": {
+    "en": "Small steps before the bigger ideas.",
+    "zh": "先迈小步，再理解大概念。"
+  },
+  "description": {
+    "en": "New to programming or AI mathematics? Begin with eight gentle lessons. Read a story, follow the numbers, and run a small Python program.",
+    "zh": "刚开始学习编程或 AI 数学？先读这八节循序渐进的入门课。听一个故事，跟着数字计算，再运行一个小 Python 程序。"
+  },
+  "coverage": {
+    "en": "Start with names, lists and functions. Then learn vectors, matrices, probability, logarithms and slopes. Each lesson defines its terms before using them. You only need school arithmetic to begin.",
+    "zh": "先学习变量、列表和函数，再学习向量、矩阵、概率、对数和斜率。每节都先解释术语再使用，只需学校阶段的基础算术就能开始。"
+  },
+  "prerequisites": {
+    "en": [
+      "Addition, subtraction, multiplication and division.",
+      "A willingness to check one small step at a time.",
+      "Python 3.12 or later to run examples; no extra packages."
+    ],
+    "zh": [
+      "会加、减、乘、除。",
+      "愿意一次检查一个小步骤。",
+      "运行示例需 Python 3.12 或更新版本，无需额外工具包。"
+    ]
+  },
+  "outcomes": {
+    "en": [
+      "Read and change a small Python program.",
+      "Track shapes, units and mathematical symbols.",
+      "Explain one loss calculation and one gradient update.",
+      "Continue to a full AI guide with a stronger foundation."
+    ],
+    "zh": [
+      "能读懂并修改小型 Python 程序。",
+      "能检查形状、单位和数学符号。",
+      "能解释一次损失计算和一次梯度更新。",
+      "带着更扎实的基础继续学习 AI 路径。"
+    ]
+  },
+  "map": [
+    {
+      "title": {
+        "en": "Write your first programs",
+        "zh": "写出最初的程序"
+      },
+      "topics": [
+        "python-values",
+        "lists-loops",
+        "functions-tests"
+      ]
+    },
+    {
+      "title": {
+        "en": "Organize numbers",
+        "zh": "组织数字"
+      },
+      "topics": [
+        "vectors-dot-products",
+        "matrices-shapes"
+      ]
+    },
+    {
+      "title": {
+        "en": "Reason about uncertainty and change",
+        "zh": "理解不确定性与变化"
+      },
+      "topics": [
+        "probability-counts",
+        "powers-logarithms",
+        "slopes-gradients"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "python-values",
+      "title": {
+        "en": "Numbers, names and a first program",
+        "zh": "数字、变量与第一个程序"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Leah records the temperature of a small greenhouse. One sensor reports Celsius, but her notebook uses Fahrenheit. She first converts one reading with a calculator. The next morning she repeats the same work and makes a typing error. She writes three Python lines instead. One line stores the reading. Another applies the conversion rule. The last line displays the answer. She checks it against her earlier calculation. Now she can change the reading without rewriting the rule. A program has become a clear record of her calculation.",
+        "zh": "莉娅记录小温室的温度。传感器报告摄氏度，笔记却使用华氏度。她先用计算器转换一个读数。第二天早上，她重复操作时输错了数字。于是她写了三行 Python：一行保存读数，一行按规则转换，最后一行显示答案。她把结果与之前的手算比较。现在，只需改变读数，就能继续使用同一条规则。程序成了清楚的计算记录。"
+      },
+      "concept": {
+        "en": "A variable gives a value a name. In Python, = assigns a value. It does not ask whether two values are equal. Use == for that question. A number such as 20 is an integer. A value such as 20.5 is a floating-point number. Text is written inside quotes.\n\nPython calculates the right side of an assignment before storing the result. Parentheses control the order of operations. The print function displays a result. A line starting with # is a comment for the reader.",
+        "zh": "变量让一个值有名字。在 Python 中，= 用来赋值，不是询问两个值是否相等。判断相等要用 ==。20 这样的数是整数。20.5 这样的数是浮点数。文字要写在引号里。\n\n赋值时，Python 先计算等号右侧，再保存结果。括号决定运算顺序。print 函数显示结果。以 # 开头的行是给读者看的注释。"
+      },
+      "application": {
+        "en": "Keep the conversion rule separate from the reading. Change only celsius to convert another temperature. Use a clear variable name for each unit. Print an intermediate result when you need to locate a mistake.",
+        "zh": "把转换规则与读数分开。转换其他温度时只改变 celsius。每种单位使用清楚的变量名。需要定位错误时，可以打印中间结果。"
+      },
+      "practice": {
+        "en": "The Python tutorial introduces numbers, assignments and arithmetic expressions. Data preprocessing uses the same operations to convert units before later analysis. The temperature example here is an original illustration of that workflow.",
+        "zh": "Python 官方教程介绍数字、赋值和算术表达式。数据预处理会用同样的操作在分析前转换单位。这里的温度例子是对这一流程的原创演示。"
+      },
+      "formula": "F = (9 / 5)C + 32",
+      "symbols": {
+        "en": "C is a temperature in degrees Celsius. F is the same temperature in degrees Fahrenheit. Multiply C by nine fifths, then add 32. In Python, write multiplication with * and division with /. A name such as celsius is easier to read than a single letter when a program grows.",
+        "zh": "C 表示摄氏温度，F 表示同一温度对应的华氏度。先把 C 乘以九分之五，再加 32。在 Python 中，乘法写作 *，除法写作 /。程序变长后，celsius 这样的名称通常比单个字母更容易理解。"
+      },
+      "calculation": {
+        "en": "For C = 20, first calculate 9 / 5 = 1.8. Next calculate 1.8 × 20 = 36. Finally add 32 to get F = 68. At C = 0, the multiplication produces zero and F = 32. These two checks help catch a misplaced bracket. The program prints 68.0 because division produces a floating-point result.",
+        "zh": "令 C = 20。先算 9 / 5 = 1.8，再算 1.8 × 20 = 36，最后加上 32，得到 F = 68。若 C = 0，乘积为零，因此 F = 32。这两个检查可以帮助发现括号位置错误。程序输出 68.0，因为除法产生浮点结果。"
+      },
+      "limits": {
+        "en": "Floating-point numbers cannot represent every decimal exactly. This example has a simple exact check. For many later calculations, compare values with an appropriate tolerance instead of requiring exact equality.",
+        "zh": "浮点数不能精确表示所有小数。本例可以直接核对一个简单结果。许多后续计算需要允许合适的误差，而不是要求完全相等。"
+      },
+      "takeaway": {
+        "en": "Give values meaningful names. Use = to assign and == to compare. State the units before calculating.",
+        "zh": "给数值起有含义的名称。= 用于赋值，== 用于比较。计算前先说清单位。"
+      },
+      "sources": [
+        "python-intro"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Variable",
+            "zh": "变量"
+          },
+          "meaning": {
+            "en": "A name that refers to a value.",
+            "zh": "指向一个值的名称。"
+          }
+        },
+        {
+          "term": {
+            "en": "Assignment",
+            "zh": "赋值"
+          },
+          "meaning": {
+            "en": "Store the right-side result under a name with =.",
+            "zh": "用 = 把右侧结果保存到一个名称下。"
+          }
+        },
+        {
+          "term": {
+            "en": "Boolean",
+            "zh": "布尔值"
+          },
+          "meaning": {
+            "en": "A value that is either True or False.",
+            "zh": "只有 True 或 False 两种取值。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why not write 20 × 1.8 + 32 each time?",
+            "zh": "为什么不每次都直接写 20 × 1.8 + 32？"
+          },
+          "answer": {
+            "en": "A named input makes the rule reusable. It also tells another reader what 20 means.",
+            "zh": "给输入命名后，规则可以复用，读者也能知道 20 表示什么。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does x = x + 1 make sense?",
+            "zh": "x = x + 1 有意义吗？"
+          },
+          "answer": {
+            "en": "Yes, if x already has a numeric value. Read the old value, add one, then store the new value. This is an instruction, not an algebraic equation.",
+            "zh": "有，但 x 必须已经是数值。先读取旧值，加一，再保存新值。这是操作指令，不是代数等式。"
+          }
+        },
+        {
+          "question": {
+            "en": "What happens if celsius is the text \"20\"?",
+            "zh": "如果 celsius 是文字 \"20\" 呢？"
+          },
+          "answer": {
+            "en": "Text and numbers are different types. Convert numeric text with float or int before this calculation. Do not assume a quoted number behaves like a number.",
+            "zh": "文字和数字的类型不同。计算前要用 float 或 int 转换数字文字。带引号的数字不会自动表现为数值。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Sensor preprocessing",
+            "zh": "传感器预处理"
+          },
+          "body": {
+            "en": "Convert every sensor reading to the same unit before comparing them.",
+            "zh": "先把所有读数转换到相同单位，再进行比较。"
+          }
+        },
+        {
+          "title": {
+            "en": "Model settings",
+            "zh": "模型设置"
+          },
+          "body": {
+            "en": "Give a name to a learning rate or a threshold so its role is visible.",
+            "zh": "为学习率或阈值命名，让读者看得出它们的用途。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Numbers, names and a first program",
+            "zh": "数字、变量与第一个程序"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "celsius = 20\nfahrenheit = (9 / 5) * celsius + 32\nprint(fahrenheit)\nprint(fahrenheit == 68)\n",
+          "output": "68.0\nTrue",
+          "explanation": {
+            "en": "Line 1 gives the number 20 the name celsius. Line 2 reads that value and follows the conversion rule. The result is stored as fahrenheit. Line 3 displays 68.0. Line 4 asks whether that result equals 68. It displays True. True and False are Boolean values: they represent yes and no. Changing line 1 changes the calculation. It does not change the formula.",
+            "zh": "第 1 行把数字 20 保存为 celsius。第 2 行读取这个值，并按公式计算，再保存为 fahrenheit。第 3 行显示 68.0。第 4 行判断结果是否等于 68，并显示 True。True 和 False 是布尔值，分别表示真和假。改变第 1 行会改变计算输入，不会改变公式。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "lists-loops",
+      "title": {
+        "en": "Lists, positions and repeated steps",
+        "zh": "列表、位置与重复操作"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Leah now has three daily readings. She could create three separate variables, but a fourth day would need another line. She puts the readings in a list. Then she asks the computer to visit each reading in order. During each visit, it adds the reading to a running total. At the end, she divides by the number of readings. She can see both the total and the average. When another day arrives, the same loop handles the longer list. The important idea is one repeated action over a collection.",
+        "zh": "莉娅现在有三天的读数。她可以创建三个变量，但第四天又需要加一行。于是她把读数放进列表，让计算机按顺序访问它们。每访问一个读数，就把它加到累计值中。最后，再除以读数数量。她能同时看到总和与平均值。增加一天的数据后，同一个循环也能处理更长的列表。关键思想是：对一组数据重复执行同一个操作。"
+      },
+      "concept": {
+        "en": "A list stores values in order. Square brackets create it. Positions start at zero, so values[0] reads the first item. A for loop takes one item at a time. The indented lines below the loop repeat for each item.\n\nThe variable total is an accumulator. It starts at zero and keeps the sum so far. len(values) counts the items. Check that the list is not empty before dividing by its length.",
+        "zh": "列表按顺序保存值，用方括号创建。位置从零开始，因此 values[0] 读取第一个元素。for 循环每次取出一个元素。循环下方缩进的行会为每个元素重复执行。\n\ntotal 是累计变量。它从零开始，保存当前总和。len(values) 统计元素数量。用列表长度做除数之前，要先确认列表不是空的。"
+      },
+      "application": {
+        "en": "Use a list when you have several readings with the same role. Use a loop when the same action applies to each reading. Track total after every visit before writing a compact one-line version.",
+        "zh": "多个读数用途相同时可以放进列表。同一操作要作用于每个读数时可以使用循环。先跟踪每次更新后的 total，再考虑一行简写。"
+      },
+      "practice": {
+        "en": "Python’s data-structure and control-flow tutorials explain lists and for loops. A data-cleaning script can visit rows to count missing values. A model-training loop can visit batches to update parameters. Both repeat an action over a collection.",
+        "zh": "Python 官方数据结构与控制流程教程介绍列表和 for 循环。数据清洗脚本可以逐行统计缺失值。训练循环可以逐批更新参数。两者都在对一个集合重复操作。"
+      },
+      "formula": "mean = (x₁ + x₂ + … + xₙ) / n = (1 / n) Σᵢ₌₁ⁿ xᵢ",
+      "symbols": {
+        "en": "n is the number of readings and must be positive. xᵢ means reading i in the mathematical notation. Σ means add the listed terms. The mathematical labels here begin at one. Python list positions begin at zero. The first mathematical reading x₁ is values[0] in the code.",
+        "zh": "n 是读数数量，必须大于零。xᵢ 表示数学记号中的第 i 个读数。Σ 表示把这些项相加。这里的数学编号从一开始，而 Python 列表位置从零开始。数学中的第一个读数 x₁，在代码中是 values[0]。"
+      },
+      "calculation": {
+        "en": "Use readings 18, 21 and 24. Start with total = 0. After the first visit it is 18. After the second it is 39. After the third it is 63. There are three readings, so the mean is 63 / 3 = 21. The loop does not forget the previous total. It updates it.",
+        "zh": "使用读数 18、21、24。从 total = 0 开始。第一次处理后为 18，第二次为 39，第三次为 63。一共有三个读数，因此平均值是 63 / 3 = 21。循环不会忘记之前的累计值，而是继续更新它。"
+      },
+      "limits": {
+        "en": "The mean hides variation. Readings 0 and 42 also have mean 21, although neither is close to 21. This program assumes a nonempty list of numbers.",
+        "zh": "平均值会掩盖差异。0 和 42 的平均值也为 21，但两个读数都离 21 很远。程序假设列表非空，并且只包含数字。"
+      },
+      "takeaway": {
+        "en": "A list keeps values in order. A loop repeats steps. Create an accumulator before the loop so it keeps earlier results.",
+        "zh": "列表按顺序保存数值，循环重复步骤。累加器要在循环前创建，才能保留之前的结果。"
+      },
+      "sources": [
+        "python-data",
+        "python-control"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Index",
+            "zh": "索引"
+          },
+          "meaning": {
+            "en": "The position of an item in a list, starting at zero in Python.",
+            "zh": "元素在列表中的位置，Python 从零开始。"
+          }
+        },
+        {
+          "term": {
+            "en": "Loop",
+            "zh": "循环"
+          },
+          "meaning": {
+            "en": "Repeat a block of instructions for several items.",
+            "zh": "对多个元素重复执行一组指令。"
+          }
+        },
+        {
+          "term": {
+            "en": "Accumulator",
+            "zh": "累计变量"
+          },
+          "meaning": {
+            "en": "A variable that stores a result built over several steps.",
+            "zh": "保存多个步骤逐渐汇总的结果。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why is total created before the loop?",
+            "zh": "为什么在循环外创建 total？"
+          },
+          "answer": {
+            "en": "If total were reset to zero inside the loop, earlier readings would be lost. The final total would only contain the last reading.",
+            "zh": "若在循环内部每次归零，之前的读数就会丢失，最后只剩最后一个读数。"
+          }
+        },
+        {
+          "question": {
+            "en": "What is values[2]?",
+            "zh": "values[2] 是多少？"
+          },
+          "answer": {
+            "en": "It is 24. Positions 0, 1 and 2 refer to the first, second and third values.",
+            "zh": "是 24。位置 0、1、2 分别对应第一个、第二个和第三个值。"
+          }
+        },
+        {
+          "question": {
+            "en": "Is a Python list already a NumPy vector?",
+            "zh": "Python 列表就是 NumPy 向量吗？"
+          },
+          "answer": {
+            "en": "No. A list is a general Python container. NumPy arrays have different rules for numerical operations. Later examples will name the representation they use.",
+            "zh": "不是。列表是通用的 Python 容器。NumPy 数组的数值运算规则不同。后面的例子会说明使用哪种表示。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Dataset rows",
+            "zh": "数据记录"
+          },
+          "body": {
+            "en": "Visit each record to count missing fields or collect a summary.",
+            "zh": "逐条访问记录，统计缺失字段或生成摘要。"
+          }
+        },
+        {
+          "title": {
+            "en": "Training batches",
+            "zh": "训练批次"
+          },
+          "body": {
+            "en": "A training loop repeats updates for several groups of examples.",
+            "zh": "训练循环对多组样本重复执行更新。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Lists, positions and repeated steps",
+            "zh": "列表、位置与重复操作"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "values = [18, 21, 24]\ntotal = 0\nfor value in values:\n    total = total + value\n    print(\"running total:\", total)\nprint(\"first:\", values[0])\nprint(\"mean:\", total / len(values))\n",
+          "output": "running total: 18\nrunning total: 39\nrunning total: 63\nfirst: 18\nmean: 21.0",
+          "explanation": {
+            "en": "The list contains three numbers. total is created before the loop, so it is not reset during each visit. value receives 18, then 21, then 24. Two indented lines run on each visit. The final two print calls have no indentation, so they run after the loop. Notice that the printed average is 21.0.",
+            "zh": "列表中有三个数字。total 在循环之前创建，因此不会在每次访问时归零。value 依次得到 18、21、24。每次都会执行两行缩进代码。最后两个 print 没有缩进，所以会在循环结束后执行。注意，输出的平均值是 21.0。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "functions-tests",
+      "title": {
+        "en": "Functions, choices and small checks",
+        "zh": "函数、条件判断与小检查"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Omar wants to label a sensor reading as warm or cool. He writes the rule once, but soon needs it in two places. Copying the code makes later changes easy to miss. He gives the rule a name: label_temperature. The function accepts one reading and returns one label. He checks the value just below the boundary and the value exactly on it. These checks reveal which side includes the boundary. His small function now has both a clear job and examples that describe its behaviour.",
+        "zh": "奥马尔想把温度读数标记为暖或凉。他写好一次规则后，发现两个地方都需要它。复制代码会让后续修改容易遗漏，于是他给规则命名为 label_temperature。函数接收一个读数，再返回一个标签。他检查略低于边界的值，以及恰好在边界上的值。这些检查说明边界属于哪一侧。这个小函数现在有清楚的任务，也有能说明行为的例子。"
+      },
+      "concept": {
+        "en": "A function groups instructions under a name. def starts its definition. A parameter is a named input. return sends a result back to the caller. An if statement chooses a branch based on a condition.\n\nA test compares an actual result with an expected result. assert raises an error if its condition is false. It is useful for checking examples. It is not a substitute for validating untrusted inputs in a real application.",
+        "zh": "函数把一组指令放在一个名称下，def 开始函数定义。参数是有名称的输入。return 把结果交回调用者。if 根据条件选择执行哪个分支。\n\n测试比较实际结果和预期结果。assert 的条件若为假，就会报错。它适合检查教学例子，但不能代替真实应用中对不可信输入的检查。"
+      },
+      "application": {
+        "en": "Write a function when a calculation needs a name and may be reused. Choose its inputs and return value before writing its body. Test a value on each side of a boundary and a value exactly on it.",
+        "zh": "当一个计算需要名称并可能复用时，可以写成函数。先确定输入和返回值，再写函数体。检查边界两侧以及边界本身。"
+      },
+      "practice": {
+        "en": "Python’s control-flow tutorial explains if, def and return. A preprocessing pipeline often calls small functions for cleaning or conversion. An evaluation script can call another function to calculate a metric. Clear inputs make those parts easier to check.",
+        "zh": "Python 官方控制流程教程介绍 if、def 和 return。预处理流程常调用小函数完成清洗或转换。评估脚本可以调用另一个函数计算指标。清楚的输入让这些部分更容易检查。"
+      },
+      "formula": "label(x) = warm if x ≥ 25; otherwise cool",
+      "symbols": {
+        "en": "x is the temperature passed into the function. The number 25 is a chosen boundary for this example, not a universal comfort rule. The symbol ≥ means greater than or equal to. Python writes it as >=. The function returns text, not a probability.",
+        "zh": "x 是传给函数的温度。25 是本例选择的边界，不是通用的舒适温度标准。符号 ≥ 表示大于或等于，在 Python 中写作 >=。函数返回文字，不返回概率。"
+      },
+      "calculation": {
+        "en": "For x = 24, the comparison 24 ≥ 25 is false, so the result is cool. For x = 25, the comparison is true and the result is warm. For x = 29, it is also warm. These three inputs check both branches and the boundary. Many bugs hide exactly where a rule changes.",
+        "zh": "x = 24 时，24 ≥ 25 为假，结果是 cool。x = 25 时，条件为真，结果是 warm。x = 29 时，结果也为 warm。这三个输入检查了两个分支和边界。很多错误恰好藏在规则发生变化的地方。"
+      },
+      "limits": {
+        "en": "This threshold is a chosen teaching rule. It is not a weather or health recommendation. The function assumes a numeric input. A production interface must handle invalid values deliberately.",
+        "zh": "这个阈值是教学规则，不是天气或健康建议。函数假设输入是数值。真实接口需要明确处理无效输入。"
+      },
+      "takeaway": {
+        "en": "A function gives repeated logic a name. return sends its answer back. Boundary checks reveal exactly what a rule means.",
+        "zh": "函数为重复逻辑命名。return 交回结果。边界检查让规则的含义变得明确。"
+      },
+      "sources": [
+        "python-control"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Parameter",
+            "zh": "参数"
+          },
+          "meaning": {
+            "en": "A name used for an input inside a function.",
+            "zh": "函数内部用来表示输入的名称。"
+          }
+        },
+        {
+          "term": {
+            "en": "Return value",
+            "zh": "返回值"
+          },
+          "meaning": {
+            "en": "The result a function sends back.",
+            "zh": "函数交回的结果。"
+          }
+        },
+        {
+          "term": {
+            "en": "Boundary case",
+            "zh": "边界情况"
+          },
+          "meaning": {
+            "en": "An input where the rule changes its behaviour.",
+            "zh": "规则行为发生变化时对应的输入。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "What changes if >= becomes >?",
+            "zh": "如果把 >= 改成 > 会怎样？"
+          },
+          "answer": {
+            "en": "The value 25 becomes cool. The exact boundary matters even when almost all other inputs behave the same.",
+            "zh": "25 会变成 cool。即使其他大多数输入表现相同，边界定义仍然重要。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why use return instead of only print?",
+            "zh": "为什么使用 return，而不只是 print？"
+          },
+          "answer": {
+            "en": "A returned value can be stored, compared or passed to another function. Printing only displays a value.",
+            "zh": "返回值可以保存、比较或传给另一个函数。print 只负责显示。"
+          }
+        },
+        {
+          "question": {
+            "en": "Do two passing tests prove every case is correct?",
+            "zh": "两个测试通过，就证明所有情况都正确吗？"
+          },
+          "answer": {
+            "en": "No. They check only their inputs. Add cases that represent other valid values and any invalid inputs the real program must handle.",
+            "zh": "不能。它们只检查对应输入。还要考虑其他有效值，以及真实程序需要处理的无效输入。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Preprocessing functions",
+            "zh": "预处理函数"
+          },
+          "body": {
+            "en": "Keep a unit conversion or a cleaning rule in one reusable function.",
+            "zh": "把单位转换或清洗规则放进可复用的函数。"
+          }
+        },
+        {
+          "title": {
+            "en": "Model checks",
+            "zh": "模型检查"
+          },
+          "body": {
+            "en": "Test that a metric returns the expected answer for a small known case.",
+            "zh": "用答案已知的小例子检查评价指标是否算对。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Functions, choices and small checks",
+            "zh": "函数、条件判断与小检查"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "def label_temperature(value):\n    if value >= 25:\n        return \"warm\"\n    return \"cool\"\n\nassert label_temperature(24) == \"cool\"\nassert label_temperature(25) == \"warm\"\nfor reading in [24, 25, 29]:\n    print(reading, label_temperature(reading))\n",
+          "output": "24 cool\n25 warm\n29 warm",
+          "explanation": {
+            "en": "The first four lines define the function. They do not run its body immediately. Calling label_temperature(24) supplies 24 as value. The if condition is checked. A return statement ends that call. The two assert lines check known cases. The final loop calls the function three more times and prints each input beside its label.",
+            "zh": "前四行定义函数，不会立刻执行函数体。调用 label_temperature(24) 时，value 得到 24，然后检查 if 条件。return 会结束这一次调用。两行 assert 检查已知情况。最后的循环再调用函数三次，并把输入和标签一起打印出来。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vectors-dot-products",
+      "title": {
+        "en": "Vectors and the dot product",
+        "zh": "向量与点积"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Nora describes each short video using two counts: outdoor scenes and spoken sentences. A single number cannot keep both measurements separate. She writes an ordered pair instead. Then she builds a simple score that gives different importance to the two counts. She multiplies each count by its weight and adds the results. A friend swaps the order of the counts and gets another score. They learn that a vector needs both values and a shared meaning for each position. The arithmetic is simple, but the ordering is part of the data.",
+        "zh": "诺拉用两个数量描述短视频：室外场景数和说话句数。一个数字无法分别保留这两项信息，于是她写成有顺序的一对数字。接着，她让两项数量对总分产生不同影响：分别乘以权重，再相加。朋友交换了两项的顺序，算出了不同分数。他们发现，向量不仅需要数值，还需要为每个位置约定相同含义。算术很简单，但顺序也是数据的一部分。"
+      },
+      "concept": {
+        "en": "A vector is an ordered list of numbers. Its length here is the number of entries, also called its dimension. A feature vector describes one item. A weight vector says how each feature contributes to a score.\n\nThe dot product multiplies matching entries and adds the products. Both vectors must have the same number of entries. Feature order must also match. A weighted score does not become a useful prediction until its features, weights and evaluation are justified.",
+        "zh": "向量是一组有顺序的数字。这里的长度指元素个数，也叫维度。特征向量描述一个对象。权重向量说明每个特征如何影响分数。\n\n点积先把对应位置的数字相乘，再把乘积相加。两个向量必须有相同数量的元素，特征顺序也必须一致。加权分数并不自动成为有用的预测，还要说明特征、权重和评估方式是否合理。"
+      },
+      "application": {
+        "en": "Write the feature names beside their positions. Check that the weight list uses the same order. Calculate the individual contributions before adding them. This reveals which feature raises or lowers this score.",
+        "zh": "在各个位置旁写出特征名称。确认权重列表使用相同顺序。先分别计算每项贡献，再相加，这样能看出哪个特征提高或降低了分数。"
+      },
+      "practice": {
+        "en": "NumPy documents the dot product for one-dimensional arrays. Linear layers and linear prediction rules use weighted sums of features. Retrieval models can also compare learned representations using a dot product, often after normalization.",
+        "zh": "NumPy 文档介绍一维数组的点积。线性层和线性预测规则使用特征加权和。检索模型也可以用点积比较学习得到的表示，通常还会先归一化。"
+      },
+      "formula": "x = [x₁, x₂]; w = [w₁, w₂]\ns = w · x = w₁x₁ + w₂x₂",
+      "symbols": {
+        "en": "x is the feature vector. x₁ and x₂ are its first and second features. w contains the two weights, w₁ and w₂. The dot symbol · names the dot product. s is the resulting score. Subscripts are position labels, not powers. The score is a single number.",
+        "zh": "x 是特征向量，x₁、x₂ 分别是第一和第二个特征。w 中包含两个权重 w₁、w₂。符号 · 表示点积。s 是结果分数。下标表示位置，不表示乘方。点积的结果是一个数字。"
+      },
+      "calculation": {
+        "en": "Take x = [3, 4] and w = [2, −1]. The first contribution is 2 × 3 = 6. The second is −1 × 4 = −4. Add them to get s = 2. If only the first feature increases to 4, the score becomes 2 × 4 − 4 = 4. The change is 2 because its weight is 2.",
+        "zh": "取 x = [3, 4]，w = [2, −1]。第一项贡献为 2 × 3 = 6，第二项为 −1 × 4 = −4，相加得到 s = 2。若只把第一个特征改成 4，分数就变成 2 × 4 − 4 = 4。分数增加了 2，因为该特征的权重为 2。"
+      },
+      "limits": {
+        "en": "A dot product is only arithmetic until the feature meanings and weights are justified. Large feature scales can dominate a score. The arbitrary weights in this example were chosen to make the calculation visible.",
+        "zh": "点积本身只是算术，还需要说明特征含义与权重是否合理。尺度较大的特征可能主导分数。本例人为选择权重，是为了方便观察计算。"
+      },
+      "takeaway": {
+        "en": "Match the positions, multiply each pair, and add the products. Equal dimensions do not guarantee equal feature meanings.",
+        "zh": "对应位置相乘，再把乘积相加。维度相同并不保证特征含义相同。"
+      },
+      "sources": [
+        "numpy-dot",
+        "numpy-beginner"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Feature",
+            "zh": "特征"
+          },
+          "meaning": {
+            "en": "One measured property of an item.",
+            "zh": "一个对象的一项测量属性。"
+          }
+        },
+        {
+          "term": {
+            "en": "Dimension",
+            "zh": "维度"
+          },
+          "meaning": {
+            "en": "The number of entries in this vector.",
+            "zh": "这里指向量的元素数量。"
+          }
+        },
+        {
+          "term": {
+            "en": "Dot product",
+            "zh": "点积"
+          },
+          "meaning": {
+            "en": "Multiply matching entries, then add the results.",
+            "zh": "对应元素相乘，再把结果相加。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why must the feature order match?",
+            "zh": "为什么特征顺序必须一致？"
+          },
+          "answer": {
+            "en": "A weight for outdoor scenes must multiply the outdoor-scene count. Swapping only one vector changes the meaning of the calculation.",
+            "zh": "室外场景的权重必须乘以室外场景数量。只交换一个向量的顺序，会改变计算含义。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does a negative weight mean bad data?",
+            "zh": "负权重意味着数据不好吗？"
+          },
+          "answer": {
+            "en": "No. It means that increasing this feature lowers this particular score, with the other features fixed.",
+            "zh": "不是。它表示其他特征不变时，增加该特征会降低这个分数。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if one vector has an extra entry?",
+            "zh": "如果一个向量多了一个元素呢？"
+          },
+          "answer": {
+            "en": "There is no matching partner for that entry. Stop and fix the data contract instead of silently discarding it.",
+            "zh": "这个元素没有对应项。应先修正数据约定，不要悄悄丢弃它。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Linear models",
+            "zh": "线性模型"
+          },
+          "body": {
+            "en": "A prediction often starts with a weighted sum of input features.",
+            "zh": "预测常常从输入特征的加权和开始。"
+          }
+        },
+        {
+          "title": {
+            "en": "Similarity search",
+            "zh": "相似度检索"
+          },
+          "body": {
+            "en": "Many retrieval systems compare numeric representations using a dot product or a normalized version.",
+            "zh": "许多检索方法用点积或归一化后的点积比较数值表示。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Vectors and the dot product",
+            "zh": "向量与点积"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "features = [3, 4]\nweights = [2, -1]\nassert len(features) == len(weights)\nscore = 0\nfor position in range(len(features)):\n    contribution = features[position] * weights[position]\n    score = score + contribution\n    print(\"contribution:\", contribution)\nprint(\"score:\", score)\n",
+          "output": "contribution: 6\ncontribution: -4\nscore: 2",
+          "explanation": {
+            "en": "The two lists use the same feature order. The assert line checks their lengths. range(2) produces the positions 0 and 1. Each loop visit reads one feature and its matching weight. Multiplication gives one contribution. The running score adds both contributions. This longer version shows every step. Later examples may write the same operation with sum, zip or NumPy.",
+            "zh": "两个列表使用相同的特征顺序。assert 检查长度。range(2) 产生位置 0 和 1。每次循环读取一个特征及其对应权重，相乘得到单项贡献，再加入总分。这个较长的写法展示了每一步。后面可能用 sum、zip 或 NumPy 简写同一操作。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "matrices-shapes",
+      "title": {
+        "en": "Matrices: several examples at once",
+        "zh": "矩阵：一次表示多个样本"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Nora has a score for one video. Now she wants scores for two videos. She places one feature vector on each row of a table. Each column keeps the same meaning. She applies the same weights to every row. The first score is zero and the second is two. Her friend turns the table sideways and gets confused. They label the rows as videos and the columns as features. The labels make the calculation clear again. A matrix is useful because it keeps many related vectors in a regular shape.",
+        "zh": "诺拉已经会给一个视频打分。现在她想同时给两个视频打分。她把每个视频的特征向量放在表格的一行，并让每列保留相同含义，再对每一行使用同一组权重。第一个分数是零，第二个是二。朋友把表格转了方向，却不知道该怎么算。他们给行标上“视频”，给列标上“特征”。计算又清楚了。矩阵可以按规则的形状保存多个相关向量。"
+      },
+      "concept": {
+        "en": "A matrix is a rectangular table of numbers. Its shape states the number of rows and columns, in that order. A 2 by 2 matrix has two rows and two columns. Here a row describes one video. A column describes one feature across videos.\n\nMultiplying this matrix by a two-entry weight vector produces one score per row. The number of columns must match the number of weights. Shape checks catch some errors. They cannot tell whether the columns contain the right measurements.",
+        "zh": "矩阵是一个长方形数字表格。形状先写行数，再写列数。2 × 2 矩阵有两行两列。这里每行描述一个视频，每列描述所有视频的同一特征。\n\n让这个矩阵乘以含两个元素的权重向量，会为每一行产生一个分数。列数必须与权重数量相同。检查形状可以发现部分错误，但无法判断每列的测量含义是否正确。"
+      },
+      "application": {
+        "en": "Draw the rows and columns before using matrix notation. Label one row as one sample. Check that every row has the same number of features. Then apply the same scoring rule to each row.",
+        "zh": "使用矩阵记号前，先画出行和列。标清一行代表一个样本。确认每行特征数量相同，再对各行使用同一打分规则。"
+      },
+      "practice": {
+        "en": "NumPy’s beginner guide explains array shapes and axes. Its dot documentation describes matrix and vector operations. Machine-learning code uses these structures to handle a batch of samples with one shared set of weights.",
+        "zh": "NumPy 入门指南解释数组形状和轴。点积文档介绍矩阵与向量运算。机器学习程序利用这些结构，让一批样本共享同一组权重。"
+      },
+      "formula": "X = [[1, 2], [3, 4]]; w = [2, −1]\ny = Xw = [1×2 + 2×(−1), 3×2 + 4×(−1)] = [0, 2]",
+      "symbols": {
+        "en": "X is the input matrix. It has two sample rows and two feature columns. w is a column vector of two weights, written as a list for convenience. y contains one score for each row. Xw means matrix-vector multiplication, not multiplication of two whole lists in Python. Each output is a dot product.",
+        "zh": "X 是输入矩阵，有两行样本、两列特征。w 是由两个权重组成的列向量，这里为了方便写成列表。y 为每一行保存一个分数。Xw 表示矩阵与向量相乘，不是在 Python 中把两个完整列表直接相乘。每个输出都是一次点积。"
+      },
+      "calculation": {
+        "en": "For the first row, multiply 1 by 2 and 2 by −1. Add 2 and −2 to get 0. For the second row, multiply 3 by 2 and 4 by −1. Add 6 and −4 to get 2. There are two rows, so there are two outputs. Adding another sample row creates another output. Adding a feature column requires another weight.",
+        "zh": "第一行先算 1 × 2 和 2 × (−1)，再把 2 与 −2 相加，得到 0。第二行先算 3 × 2 和 4 × (−1)，再把 6 与 −4 相加，得到 2。两行对应两个输出。增加一个样本行，就会增加一个输出。增加一列特征，就需要增加一个权重。"
+      },
+      "limits": {
+        "en": "A nested Python list is not automatically a NumPy matrix. The loops here perform the arithmetic explicitly. More dimensions need additional shape conventions, which later lessons explain before using them.",
+        "zh": "嵌套 Python 列表不会自动成为 NumPy 矩阵。这里用循环明确执行算术。更多维度需要额外的形状约定，后面的课程会先解释再使用。"
+      },
+      "takeaway": {
+        "en": "Shape means axis sizes. For Xw, the feature-column count must match the weight count. Each sample row produces one score.",
+        "zh": "形状表示各轴大小。计算 Xw 时，特征列数必须等于权重数量。每个样本行产生一个分数。"
+      },
+      "sources": [
+        "numpy-beginner",
+        "numpy-dot"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Matrix",
+            "zh": "矩阵"
+          },
+          "meaning": {
+            "en": "A rectangular table of numbers.",
+            "zh": "长方形的数字表格。"
+          }
+        },
+        {
+          "term": {
+            "en": "Shape",
+            "zh": "形状"
+          },
+          "meaning": {
+            "en": "The sizes of the axes, such as rows and columns.",
+            "zh": "各个轴的大小，例如行数和列数。"
+          }
+        },
+        {
+          "term": {
+            "en": "Sample",
+            "zh": "样本"
+          },
+          "meaning": {
+            "en": "One item described by the input data.",
+            "zh": "输入数据所描述的一个对象。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why is the output not a 2 by 2 table?",
+            "zh": "为什么输出不是 2 × 2 表格？"
+          },
+          "answer": {
+            "en": "Each row is reduced to one weighted sum. Two rows therefore produce two numbers.",
+            "zh": "每行都被汇总为一个加权和，所以两行只产生两个数字。"
+          }
+        },
+        {
+          "question": {
+            "en": "What happens if a row has three features?",
+            "zh": "如果一行有三个特征呢？"
+          },
+          "answer": {
+            "en": "It needs three matching weights. Otherwise the intended dot product is not defined.",
+            "zh": "它需要三个对应权重，否则无法计算约定的点积。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can a correctly shaped matrix still be wrong?",
+            "zh": "形状正确的矩阵仍会出错吗？"
+          },
+          "answer": {
+            "en": "Yes. A column measured in centimetres cannot silently replace a column measured in metres. Meaning and units matter too.",
+            "zh": "会。以厘米测量的列不能悄悄替换以米测量的列。含义和单位同样重要。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Batch prediction",
+            "zh": "批量预测"
+          },
+          "body": {
+            "en": "Apply one model to several examples using a matrix of features.",
+            "zh": "用特征矩阵让同一个模型处理多个样本。"
+          }
+        },
+        {
+          "title": {
+            "en": "Images",
+            "zh": "图像"
+          },
+          "body": {
+            "en": "A grayscale image can be stored as a matrix whose entries record pixel intensities.",
+            "zh": "灰度图可以保存为矩阵，每个元素记录一个像素的亮度。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Matrices: several examples at once",
+            "zh": "矩阵：一次表示多个样本"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "rows = [[1, 2], [3, 4]]\nweights = [2, -1]\nscores = []\nfor row in rows:\n    assert len(row) == len(weights)\n    score = 0\n    for column in range(len(weights)):\n        score = score + row[column] * weights[column]\n    scores.append(score)\nprint(\"shape:\", len(rows), \"by\", len(weights))\nprint(\"scores:\", scores)\n",
+          "output": "shape: 2 by 2\nscores: [0, 2]",
+          "explanation": {
+            "en": "The outer loop visits sample rows. The inner loop visits columns within the current row. The score starts at zero for each new row. append adds the completed score to the end of scores. The indentation matters: append runs after the inner loop finishes. If score were reset only before the outer loop, scores would accumulate across rows. These particular inputs hide that bug because the first row scores zero. Change the first row to [2, 2]: correct scores become [2, 2], while the faulty reset gives [2, 4].",
+            "zh": "外层循环遍历样本行，内层循环遍历当前行的列。每换一行，score 都从零开始。append 把计算完成的分数加到 scores 末尾。缩进很重要：append 在内层循环结束后才执行。如果只在外层循环前把 score 清零，分数就会跨行累加。不过，本例第一行分数为零，恰好掩盖了这个错误。把第一行改成 [2, 2]：正确输出为 [2, 2]，错误的清零位置会产生 [2, 4]。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "probability-counts",
+      "title": {
+        "en": "Probability: choose the denominator",
+        "zh": "概率：先选对分母"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Leah keeps ten days of weather records. Four days had rain. A simple warning rule raised an alert on five days. Three of those five days had rain. Her friend says the rule has a rain rate of four out of ten. Leah asks a more precise question: when an alert appears, how often did it rain? They look only at the five alerted days and count three rainy ones. Both fractions are correct, but they answer different questions. Choosing the group to count is the first step in using probability.",
+        "zh": "莉娅保存了十天的天气记录，其中四天下雨。一个简单预警规则在五天发出了提醒，这五天中有三天下雨。朋友说，下雨比例是十分之四。莉娅提出更具体的问题：出现提醒时，有多大比例的日子真的下雨？他们只看收到提醒的五天，其中三天下雨。两个分数都算对了，但回答的是不同问题。使用概率时，第一步是选清楚计数的范围。"
+      },
+      "concept": {
+        "en": "An observed proportion is a count divided by the size of the group being counted. It lies between zero and one. Multiply by 100 to express it as a percentage. A probability model uses numbers in the same range to describe uncertainty.\n\nA conditional proportion limits attention to a stated condition, such as days with an alert. The denominator changes with that condition. Observed proportions can help estimate future probabilities. Ten days alone do not guarantee reliable estimates for another season.",
+        "zh": "观察比例等于目标数量除以所考察群体的总数量，取值在零和一之间。乘以 100 就得到百分比。概率模型也用这个范围内的数描述不确定性。\n\n条件比例只考察满足某个条件的记录，例如收到提醒的日子。分母会随条件改变。观察比例可以帮助估计未来概率，但仅凭十天记录，不能保证对另一个季节的估计准确。"
+      },
+      "application": {
+        "en": "Write the question in words before choosing a fraction. Circle the group named after given. That group determines the denominator. Then count the desired event within that group.",
+        "zh": "选择分数前先用文字写清问题。圈出“在……条件下”所限定的群体，以此确定分母，再统计该群体中目标事件的数量。"
+      },
+      "practice": {
+        "en": "Google’s classification guide distinguishes precision and recall. The same denominator choice appears here: precision asks about alerts, while recall asks about actual rainy days. The weather counts are a small teaching illustration, not a forecast evaluation.",
+        "zh": "Google 分类指南区分精确率和召回率。这里也需要选择分母：精确率考察提醒，召回率考察实际下雨日。天气数量只是教学演示，不是实际预报评估。"
+      },
+      "formula": "p̂(rain) = rainy days / all days = 4/10 = 0.4\np̂(rain | alert) = rainy alerted days / alerted days = 3/5 = 0.6",
+      "symbols": {
+        "en": "The hat in p̂ marks an estimate from these records. The vertical bar | means given: restrict the group to the condition on its right. rain | alert reads rain given an alert. The denominator must be greater than zero. These are frequencies from a tiny dataset, not promises about tomorrow.",
+        "zh": "p̂ 上的帽子表示由这些记录得到的估计。竖线 | 表示“在……条件下”，考察范围限制为右侧条件。rain | alert 表示“已收到提醒时下雨”。分母必须大于零。这些数是小数据集中的频率，不是对明天的保证。"
+      },
+      "calculation": {
+        "en": "The overall rainy fraction is 4 ÷ 10 = 0.4, or 40%. Within the five alerted days it is 3 ÷ 5 = 0.6, or 60%. The reverse question gives another denominator: of the four rainy days, three had alerts. That fraction is 3 ÷ 4 = 0.75. Confusing these two conditional questions is a common mistake.",
+        "zh": "全部日子的下雨比例是 4 ÷ 10 = 0.4，也就是 40%。只看五个收到提醒的日子，下雨比例为 3 ÷ 5 = 0.6，也就是 60%。反过来问，分母又不同：四个下雨日中有三个收到提醒，所以比例为 3 ÷ 4 = 0.75。混淆这两个条件问题很常见。"
+      },
+      "limits": {
+        "en": "Ten records provide little evidence about future weather. The sample may be biased or unrepresentative. A conditional proportion with an empty selected group is undefined.",
+        "zh": "十条记录不足以充分说明未来天气。样本可能有偏差或缺少代表性。若条件限定的群体为空，条件比例没有定义。"
+      },
+      "takeaway": {
+        "en": "Ask which group you are counting. P(rain given alert) and P(alert given rain) generally use different denominators.",
+        "zh": "先问清楚统计哪个群体。“提醒后下雨”与“下雨时提醒”通常使用不同的分母。"
+      },
+      "sources": [
+        "google-metrics"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Proportion",
+            "zh": "比例"
+          },
+          "meaning": {
+            "en": "A part divided by the whole group being counted.",
+            "zh": "部分数量除以所考察的整体数量。"
+          }
+        },
+        {
+          "term": {
+            "en": "Condition",
+            "zh": "条件"
+          },
+          "meaning": {
+            "en": "A rule that selects which records belong in the calculation.",
+            "zh": "决定哪些记录参与计算的规则。"
+          }
+        },
+        {
+          "term": {
+            "en": "Estimate",
+            "zh": "估计"
+          },
+          "meaning": {
+            "en": "A value inferred from available observations.",
+            "zh": "根据已有观察推算的数值。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why is 0.6 different from 0.75?",
+            "zh": "为什么 0.6 和 0.75 不同？"
+          },
+          "answer": {
+            "en": "The first denominator is alerted days. The second is rainy days. They describe different groups.",
+            "zh": "前者的分母是收到提醒的日子，后者是下雨的日子，考察的是不同群体。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if there were no alerts?",
+            "zh": "如果一次提醒都没有呢？"
+          },
+          "answer": {
+            "en": "The observed rain-given-alert fraction would be undefined because its denominator is zero. Do not report zero as if it were measured.",
+            "zh": "分母为零，观察到的“提醒后下雨比例”就没有定义。不要把零当作实际测得的结果。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does 60% mean tomorrow must be rainy?",
+            "zh": "60% 意味着明天一定下雨吗？"
+          },
+          "answer": {
+            "en": "No. It summarizes these records under a condition. Future weather may differ, and the sample is small.",
+            "zh": "不是。它概括的是这些记录在指定条件下的表现。未来天气可能不同，而且样本很少。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Classifier evaluation",
+            "zh": "分类器评估"
+          },
+          "body": {
+            "en": "Precision asks how many predicted positives were truly positive. Recall uses the actual positives as its denominator.",
+            "zh": "精确率考察预测为正的样本中有多少真的为正。召回率则把实际为正的样本作为分母。"
+          }
+        },
+        {
+          "title": {
+            "en": "Data checks",
+            "zh": "数据检查"
+          },
+          "body": {
+            "en": "Compare event frequencies across groups before drawing conclusions from an overall average.",
+            "zh": "在根据总体平均值下结论前，先比较各组的事件频率。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Probability: choose the denominator",
+            "zh": "概率：先选对分母"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "all_days = 10\nrainy_days = 4\nalerted_days = 5\nrainy_alerted_days = 3\nprint(\"rain:\", rainy_days / all_days)\nprint(\"rain given alert:\", rainy_alerted_days / alerted_days)\nprint(\"alert given rain:\", rainy_alerted_days / rainy_days)\n",
+          "output": "rain: 0.4\nrain given alert: 0.6\nalert given rain: 0.75",
+          "explanation": {
+            "en": "The first four lines name the counts. The first fraction uses four rainy days out of ten. The next two fractions share the numerator three, but use different denominators. The second result asks about alerted days. The third asks about rainy days. In a real program, check that the selected group is nonempty before dividing.",
+            "zh": "前四行为数量命名。第一个分数表示十天中有四天下雨。后两个分数使用相同分子三，但分母不同。第二个结果考察收到提醒的日子，第三个结果考察下雨的日子。真实程序应先检查所选群体非空，再做除法。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "powers-logarithms",
+      "title": {
+        "en": "Powers and logarithms without mystery",
+        "zh": "乘方与对数并不神秘"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Nora compares two models. One assigns the true class probability 0.8. The other assigns it 0.2. She wants to compare the probability assignments, not only the final class labels. She wants a penalty that grows when the assigned probability shrinks. She tries the negative natural logarithm. The first model gets a small penalty. The second gets a larger one. She does not need to memorize a table of logarithms. She first learns what a logarithm reverses, then checks the numbers with Python. A new symbol now has a concrete purpose.",
+        "zh": "诺拉比较两个模型。它们都涉及同一个真实类别，但分别给这个类别 0.8 和 0.2 的概率。只看对错，容易忽略概率分配的差异。她希望概率越低，惩罚越大，于是尝试负自然对数。第一个模型得到较小惩罚，第二个得到较大惩罚。她不需要背对数表。先理解对数在“反过来求什么”，再用 Python 核对数字。新符号就有了具体用途。"
+      },
+      "concept": {
+        "en": "A power means repeated multiplication when the exponent is a positive integer. For example, 2³ = 2 × 2 × 2 = 8. A logarithm asks the reverse question: what exponent produces this value? So log₂(8) = 3.\n\nThe natural logarithm, written ln, uses the constant e, about 2.71828, as its base. exp(a) means e raised to a. ln and exp undo one another for valid real inputs. In classification, −ln(p) penalizes a model when it gives the true class probability p.",
+        "zh": "当指数为正整数时，乘方表示重复相乘。例如 2³ = 2 × 2 × 2 = 8。对数反过来问：指数取多少才能得到这个值？因此 log₂(8) = 3。\n\n自然对数写作 ln，以常数 e 为底，e 约等于 2.71828。exp(a) 表示 e 的 a 次方。在有效实数输入范围内，ln 和 exp 互为逆运算。分类任务中，−ln(p) 会惩罚模型给真实类别分配较低概率的行为。"
+      },
+      "application": {
+        "en": "Check the base whenever you see a logarithm. In Python, math.log(p) means ln(p). Read a loss as a rule for scoring a prediction. Calculate a few probabilities to see how that rule behaves.",
+        "zh": "遇到对数先确认底数。Python 中 math.log(p) 表示 ln(p)。把损失看作评价预测的规则，代入几个概率观察规则的表现。"
+      },
+      "practice": {
+        "en": "Python’s math documentation defines log, log2 and exp. Google lists logarithms among the mathematics used in its machine-learning course. Later classification lessons apply negative logarithms to probability-based losses.",
+        "zh": "Python 的 math 文档定义 log、log2 和 exp。Google 把对数列为机器学习课程所需数学知识。后面的分类章节会用负对数构造基于概率的损失。"
+      },
+      "formula": "2³ = 8; log₂(8) = 3\nln(exp(a)) = a\nL = −ln(p), where 0 < p ≤ 1",
+      "symbols": {
+        "en": "The superscript 3 is an exponent. The subscript 2 in log₂ is the base. a is a real number. p is the probability assigned to the true class. L is the loss for that example. ln uses base e, not base 10. Larger L means a worse probability assignment for this true class.",
+        "zh": "上标 3 是指数。log₂ 的下标 2 是底数。a 是实数。p 是分配给真实类别的概率。L 是这个样本的损失。ln 的底数为 e，不是 10。L 越大，说明给这个真实类别分配的概率越不理想。"
+      },
+      "calculation": {
+        "en": "For p = 0.8, ln(0.8) is about −0.2231, so L is 0.2231. For p = 0.2, L is about 1.6094. For p = 1, ln(1) = 0 and the loss is zero. As p approaches zero from above, the loss grows without a finite upper bound. ln(0) is not a finite number.",
+        "zh": "p = 0.8 时，ln(0.8) 约为 −0.2231，因此 L 为 0.2231。p = 0.2 时，L 约为 1.6094。p = 1 时，ln(1) = 0，损失为零。当 p 从正数方向接近零时，损失不断增大，没有有限上界。ln(0) 不是有限数值。"
+      },
+      "limits": {
+        "en": "The logarithm requires a positive input. Rounded zero probabilities cause numerical trouble. This short program illustrates the formula; production libraries compute equivalent losses with stable operations.",
+        "zh": "对数要求输入为正数。舍入为零的概率会引起数值问题。短程序只演示公式，真实工具库会用稳定运算计算等价损失。"
+      },
+      "takeaway": {
+        "en": "A logarithm reverses exponentiation. The loss −ln(p) is small for a high true-class probability and large for a low one.",
+        "zh": "对数反过来求乘方中的指数。真实类别概率越高，−ln(p) 越小；概率越低，损失越大。"
+      },
+      "sources": [
+        "python-math",
+        "google-prereq"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Exponent",
+            "zh": "指数"
+          },
+          "meaning": {
+            "en": "The power applied to a base.",
+            "zh": "指定底数进行乘方的次数或推广后的数值。"
+          }
+        },
+        {
+          "term": {
+            "en": "Logarithm",
+            "zh": "对数"
+          },
+          "meaning": {
+            "en": "The exponent needed to produce a value from a chosen base.",
+            "zh": "以指定底数得到某个值时所需的指数。"
+          }
+        },
+        {
+          "term": {
+            "en": "Loss",
+            "zh": "损失"
+          },
+          "meaning": {
+            "en": "A number that measures an error or a poor prediction under a chosen rule.",
+            "zh": "按指定规则衡量错误或预测不佳程度的数。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why is there a minus sign?",
+            "zh": "为什么前面有负号？"
+          },
+          "answer": {
+            "en": "For probabilities between zero and one, ln(p) is nonpositive. The minus sign turns it into a nonnegative penalty.",
+            "zh": "概率在零和一之间时，ln(p) 不大于零。加负号后得到非负惩罚。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can I pass zero to math.log?",
+            "zh": "能把零传给 math.log 吗？"
+          },
+          "answer": {
+            "en": "No. Python raises a domain error. Real training code uses numerically stable loss functions instead of taking the log of rounded zero.",
+            "zh": "不能。Python 会报定义域错误。真实训练代码会使用数值稳定的损失函数，而不是对舍入后的零直接取对数。"
+          }
+        },
+        {
+          "question": {
+            "en": "Is a small loss proof that a model is useful?",
+            "zh": "损失小就证明模型有用吗？"
+          },
+          "answer": {
+            "en": "No. Check unseen examples, suitable metrics and the task’s requirements. A loss value answers only its specified question.",
+            "zh": "不能。还要检查未见样本、合适的指标和任务要求。损失值只回答其定义的问题。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Classification loss",
+            "zh": "分类损失"
+          },
+          "body": {
+            "en": "Cross-entropy includes the negative log probability of the true class for a one-hot label.",
+            "zh": "使用独热标签时，交叉熵包含真实类别概率的负对数。"
+          }
+        },
+        {
+          "title": {
+            "en": "Products of probabilities",
+            "zh": "概率相乘"
+          },
+          "body": {
+            "en": "Logarithms turn products into sums. This helps work with many small positive probabilities.",
+            "zh": "对数把乘积变成和，方便处理许多较小正概率。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Powers and logarithms without mystery",
+            "zh": "乘方与对数并不神秘"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "import math\nprint(\"power:\", 2 ** 3)\nprint(\"reverse:\", math.log2(8))\nfor probability in [0.8, 0.2, 1.0]:\n    loss = -math.log(probability)\n    print(f\"p={probability:.1f}, loss={loss:.4f}\")\n",
+          "output": "power: 8\nreverse: 3.0\np=0.8, loss=0.2231\np=0.2, loss=1.6094\np=1.0, loss=-0.0000",
+          "explanation": {
+            "en": "import math loads Python’s standard mathematical tools. ** means a power. math.log2 uses base two. math.log with one argument uses the natural logarithm. The loop calculates three losses. The f-string inserts values into text. :.4f prints four digits after the decimal point; it changes the display, not the stored loss. The display −0.0000 is floating-point negative zero. It compares equal to zero; the loss at probability one is zero.",
+            "zh": "import math 加载 Python 标准数学工具。** 表示乘方。math.log2 使用底数 2。只传一个参数时，math.log 计算自然对数。循环计算三个损失。f-string 把数值插入文字，:.4f 表示显示四位小数，它只改变显示形式，不改变保存的损失。 输出中的 −0.0000 是浮点负零。比较时它等于零，概率为一时损失就是零。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slopes-gradients",
+      "title": {
+        "en": "Slopes, gradients and one learning step",
+        "zh": "斜率、梯度与一次学习更新"
+      },
+      "level": "foundation",
+      "story": {
+        "en": "Leah adjusts a camera setting. The target is three, but she starts at zero. She measures the error as the square of the distance from the target. At zero, the error is nine. She tries a slightly larger setting and sees the error fall. This tells her a useful direction. She then uses the slope to choose a small update. The setting becomes 0.6 and the error becomes 5.76. She has not reached the target yet. She has learned how a local change can guide the next step.",
+        "zh": "莉娅调整相机参数。目标是三，但她从零开始。她用参数与目标之差的平方衡量误差，起点的误差是九。她稍微增大参数，发现误差下降，这给出了一个有用方向。接着，她根据斜率做一次小更新。参数变成 0.6，误差变成 5.76。她还没有到达目标，但已经知道如何根据局部变化寻找下一步。"
+      },
+      "concept": {
+        "en": "A slope describes how fast an output changes when an input changes. For a curve, the derivative is the slope at one point. You can estimate it by comparing nearby values. A gradient collects these slopes when there are several input variables.\n\nGradient descent moves a parameter against the local slope of a loss. A learning rate controls the step size. The method does not know the whole landscape from one slope. A step that is too large may increase the loss.",
+        "zh": "斜率描述输入改变时，输出变化得有多快。对于曲线，导数表示某一点的斜率。可以通过比较附近数值来估计它。当输入变量有多个时，梯度把各个方向的斜率收集起来。\n\n梯度下降让参数朝损失局部斜率的反方向移动。学习率控制步长。单凭一个位置的斜率，无法知道整个曲面的形状。步子太大时，损失反而可能上升。"
+      },
+      "application": {
+        "en": "Choose a simple loss and draw several values. Estimate a slope with nearby inputs. Use a small learning rate for one update. Recalculate the loss afterward, rather than assuming that an update must improve it.",
+        "zh": "选择简单损失，画出几个取值。用邻近输入估计斜率，再用小学习率更新一次。更新后重新计算损失，不要假定更新一定带来改善。"
+      },
+      "practice": {
+        "en": "Google’s gradient-descent lesson uses derivatives to guide parameter updates. Neural networks use the same optimization idea with many parameters. Backpropagation calculates their gradients; an optimizer decides how to apply those gradients.",
+        "zh": "Google 梯度下降课程用导数指导参数更新。神经网络把同样的优化思路用于许多参数。反向传播计算梯度，优化器决定如何根据梯度更新参数。"
+      },
+      "formula": "L(w) = (w − 3)²\ng = dL/dw = 2(w − 3)\nw_new = w − ηg",
+      "symbols": {
+        "en": "w is the adjustable parameter. L is its squared error from the target three. dL/dw means the derivative of L with respect to w. We call this slope g. η, pronounced eta, is the positive learning rate. w_new is the value after one update. For one parameter, the gradient is just this single slope.",
+        "zh": "w 是可调参数。L 是它与目标三之间的平方误差。dL/dw 表示 L 对 w 的导数，这里把斜率记为 g。η 读作 eta，是正的学习率。w_new 是更新后的参数。只有一个参数时，梯度就是这个单独的斜率。"
+      },
+      "calculation": {
+        "en": "Start with w = 0. The loss is (0 − 3)² = 9. The slope is 2(0 − 3) = −6. Choose η = 0.1. The new value is 0 − 0.1 × (−6) = 0.6. Its loss is (0.6 − 3)² = 5.76. To see where the slope comes from, expand the change: [L(w+h) − L(w)] / h = 2(w−3) + h. As the small nonzero change h approaches zero, this approaches 2(w−3).",
+        "zh": "从 w = 0 开始，损失为 (0 − 3)² = 9。斜率为 2(0 − 3) = −6。选择 η = 0.1，新值为 0 − 0.1 × (−6) = 0.6，新损失为 (0.6 − 3)² = 5.76。斜率公式来自展开变化量：[L(w+h) − L(w)] / h = 2(w−3) + h。当非零小变化 h 趋近零时，这个值趋近 2(w−3)。"
+      },
+      "limits": {
+        "en": "This loss is a simple convex quadratic with one minimum. Neural-network losses can have a more complicated shape. Finite-difference estimates also depend on step size and floating-point precision.",
+        "zh": "这里的损失是一条只有一个最小值的简单凸二次曲线。神经网络损失的形状可能复杂得多。有限差分估计也会受步长与浮点精度影响。"
+      },
+      "takeaway": {
+        "en": "The gradient describes local change. Subtract learning rate times gradient, then check the result. A larger step is not always better.",
+        "zh": "梯度描述局部变化。减去“学习率 × 梯度”后，再检查结果。步子更大并不总是更好。"
+      },
+      "sources": [
+        "google-gradient",
+        "google-prereq"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Derivative",
+            "zh": "导数"
+          },
+          "meaning": {
+            "en": "The local slope of a function with respect to one input.",
+            "zh": "函数相对于一个输入的局部斜率。"
+          }
+        },
+        {
+          "term": {
+            "en": "Gradient",
+            "zh": "梯度"
+          },
+          "meaning": {
+            "en": "A collection of partial derivatives for several parameters.",
+            "zh": "多个参数对应的偏导数组成的向量。"
+          }
+        },
+        {
+          "term": {
+            "en": "Learning rate",
+            "zh": "学习率"
+          },
+          "meaning": {
+            "en": "A value that scales a parameter update.",
+            "zh": "控制参数更新幅度的数值。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why subtract a negative slope?",
+            "zh": "为什么要减去负斜率？"
+          },
+          "answer": {
+            "en": "Subtracting it increases w. Here increasing w moves toward three and lowers the loss for a small step.",
+            "zh": "减去负数会让 w 增大。这里小幅增加 w 会靠近三，从而降低损失。"
+          }
+        },
+        {
+          "question": {
+            "en": "What happens at w = 3?",
+            "zh": "w = 3 时会怎样？"
+          },
+          "answer": {
+            "en": "The slope and loss are both zero. This quadratic has reached its minimum. Other functions may have zero slope at points that are not minima.",
+            "zh": "斜率和损失都为零，这条二次曲线已到达最小值。其他函数的零斜率点不一定是最小值。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if η = 2 at w = 0?",
+            "zh": "若 w = 0 时取 η = 2 呢？"
+          },
+          "answer": {
+            "en": "The new weight is 12 and the loss is 81. The update jumped too far, so the loss increased.",
+            "zh": "新权重是 12，损失是 81。步子跨得太大，损失反而上升。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Linear regression",
+            "zh": "线性回归"
+          },
+          "body": {
+            "en": "Adjust a line’s weights to reduce a prediction loss on training examples.",
+            "zh": "调整直线权重，降低训练样本上的预测损失。"
+          }
+        },
+        {
+          "title": {
+            "en": "Neural networks",
+            "zh": "神经网络"
+          },
+          "body": {
+            "en": "Backpropagation computes parameter gradients. An optimizer then uses them to update weights.",
+            "zh": "反向传播计算参数梯度，优化器再根据梯度更新权重。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "first-steps",
+          "title": {
+            "en": "Slopes, gradients and one learning step",
+            "zh": "斜率、梯度与一次学习更新"
+          },
+          "intro": {
+            "en": "Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.",
+            "zh": "把代码保存为 .py 文件，用 Python 3 运行。无需安装额外工具包。程序使用少量固定输入，你可以逐项检查结果。"
+          },
+          "code": "def loss(weight):\n    return (weight - 3) ** 2\n\nweight = 0.0\nstep = 0.001\napprox_slope = (loss(weight + step) - loss(weight - step)) / (2 * step)\nslope = 2 * (weight - 3)\nnew_weight = weight - 0.1 * slope\nprint(f\"estimated slope: {approx_slope:.3f}\")\nprint(f\"before: w={weight:.2f}, loss={loss(weight):.2f}\")\nprint(f\"after: w={new_weight:.2f}, loss={loss(new_weight):.2f}\")\nassert loss(new_weight) < loss(weight)\n",
+          "output": "estimated slope: -6.000\nbefore: w=0.00, loss=9.00\nafter: w=0.60, loss=5.76",
+          "explanation": {
+            "en": "The function defines the curve. approx_slope compares points just to the left and right of the current weight. Their input distance is twice step, which explains the denominator. slope uses the exact derivative for this particular curve. The update subtracts learning rate times slope. The last line checks that this chosen step reduced this loss. It does not claim that every possible learning rate would work.",
+            "zh": "函数定义损失曲线。approx_slope 比较当前权重左右两个相邻点，它们的输入距离为 step 的两倍，所以分母是 2 * step。slope 使用这条曲线的精确导数。更新时减去“学习率 × 斜率”。最后一行检查这一次更新确实降低了损失，并不声称所有学习率都有效。"
+          }
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "id": "python-intro",
+      "title": {
+        "en": "An informal introduction to Python",
+        "zh": "Python 入门介绍"
+      },
+      "url": "https://docs.python.org/3/tutorial/introduction.html",
+      "publisher": "Python Software Foundation",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "python-control",
+      "title": {
+        "en": "More control flow tools",
+        "zh": "更多控制流程工具"
+      },
+      "url": "https://docs.python.org/3/tutorial/controlflow.html",
+      "publisher": "Python Software Foundation",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "python-data",
+      "title": {
+        "en": "Data structures",
+        "zh": "数据结构"
+      },
+      "url": "https://docs.python.org/3/tutorial/datastructures.html",
+      "publisher": "Python Software Foundation",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "numpy-beginner",
+      "title": {
+        "en": "NumPy: the absolute basics for beginners",
+        "zh": "NumPy：初学者基础"
+      },
+      "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+      "publisher": "NumPy",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "numpy-dot",
+      "title": {
+        "en": "numpy.dot",
+        "zh": "numpy.dot 点积"
+      },
+      "url": "https://numpy.org/doc/stable/reference/generated/numpy.dot.html",
+      "publisher": "NumPy",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "python-math",
+      "title": {
+        "en": "Mathematical functions",
+        "zh": "数学函数"
+      },
+      "url": "https://docs.python.org/3/library/math.html",
+      "publisher": "Python Software Foundation",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "google-prereq",
+      "title": {
+        "en": "Prerequisites and prework",
+        "zh": "预备知识与准备工作"
+      },
+      "url": "https://developers.google.com/machine-learning/crash-course/prereqs-and-prework",
+      "publisher": "Google",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "google-gradient",
+      "title": {
+        "en": "Gradient descent",
+        "zh": "梯度下降"
+      },
+      "url": "https://developers.google.com/machine-learning/crash-course/linear-regression/gradient-descent",
+      "publisher": "Google",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "google-metrics",
+      "title": {
+        "en": "Accuracy, recall, precision and related metrics",
+        "zh": "准确率、召回率、精确率及相关指标"
+      },
+      "url": "https://developers.google.com/machine-learning/crash-course/classification/accuracy-precision-recall",
+      "publisher": "Google",
+      "kind": "Official documentation"
+    }
+  ],
+  "review": [
+    {
+      "title": {
+        "en": "Numbers, names and a first program",
+        "zh": "数字、变量与第一个程序"
+      },
+      "body": {
+        "en": "Give values meaningful names. Use = to assign and == to compare. State the units before calculating.",
+        "zh": "给数值起有含义的名称。= 用于赋值，== 用于比较。计算前先说清单位。"
+      }
+    },
+    {
+      "title": {
+        "en": "Lists, positions and repeated steps",
+        "zh": "列表、位置与重复操作"
+      },
+      "body": {
+        "en": "A list keeps values in order. A loop repeats steps. Create an accumulator before the loop so it keeps earlier results.",
+        "zh": "列表按顺序保存数值，循环重复步骤。累加器要在循环前创建，才能保留之前的结果。"
+      }
+    },
+    {
+      "title": {
+        "en": "Functions, choices and small checks",
+        "zh": "函数、条件判断与小检查"
+      },
+      "body": {
+        "en": "A function gives repeated logic a name. return sends its answer back. Boundary checks reveal exactly what a rule means.",
+        "zh": "函数为重复逻辑命名。return 交回结果。边界检查让规则的含义变得明确。"
+      }
+    },
+    {
+      "title": {
+        "en": "Vectors and the dot product",
+        "zh": "向量与点积"
+      },
+      "body": {
+        "en": "Match the positions, multiply each pair, and add the products. Equal dimensions do not guarantee equal feature meanings.",
+        "zh": "对应位置相乘，再把乘积相加。维度相同并不保证特征含义相同。"
+      }
+    },
+    {
+      "title": {
+        "en": "Matrices: several examples at once",
+        "zh": "矩阵：一次表示多个样本"
+      },
+      "body": {
+        "en": "Shape means axis sizes. For Xw, the feature-column count must match the weight count. Each sample row produces one score.",
+        "zh": "形状表示各轴大小。计算 Xw 时，特征列数必须等于权重数量。每个样本行产生一个分数。"
+      }
+    },
+    {
+      "title": {
+        "en": "Probability: choose the denominator",
+        "zh": "概率：先选对分母"
+      },
+      "body": {
+        "en": "Ask which group you are counting. P(rain given alert) and P(alert given rain) generally use different denominators.",
+        "zh": "先问清楚统计哪个群体。“提醒后下雨”与“下雨时提醒”通常使用不同的分母。"
+      }
+    },
+    {
+      "title": {
+        "en": "Powers and logarithms without mystery",
+        "zh": "乘方与对数并不神秘"
+      },
+      "body": {
+        "en": "A logarithm reverses exponentiation. The loss −ln(p) is small for a high true-class probability and large for a low one.",
+        "zh": "对数反过来求乘方中的指数。真实类别概率越高，−ln(p) 越小；概率越低，损失越大。"
+      }
+    },
+    {
+      "title": {
+        "en": "Slopes, gradients and one learning step",
+        "zh": "斜率、梯度与一次学习更新"
+      },
+      "body": {
+        "en": "The gradient describes local change. Subtract learning rate times gradient, then check the result. A larger step is not always better.",
+        "zh": "梯度描述局部变化。减去“学习率 × 梯度”后，再检查结果。步子更大并不总是更好。"
+      }
+    }
+  ]
+}

@@ -11,56 +11,59 @@
     "zh": "从可信的问题到经得起检验的模型"
   },
   "description": {
-    "en": "Build intuition for learning from tabular data through eight original stories, transparent calculations, and primary-source reading. Each chapter connects a modeling decision to the evidence needed to justify it.",
-    "zh": "通过八个原创故事、清晰的计算和一手资料阅读，建立从表格数据中学习的直觉。每一章都把建模决策与支持它所需的证据联系起来。"
+    "en": "Learn machine learning in sixteen guided chapters. Start with rows and labels. Build small models, inspect their errors, and work toward text filtering, recommendation, and reliability checks. Each chapter includes an original story, answered questions, two practice cases, and runnable Python.",
+    "zh": "通过十六个循序渐进的章节学习机器学习。从行与标签开始，构建小模型、检查误差，再走向文本过滤、推荐与可靠性检查。每章都有原创故事、带答案的引导问题、两个练习案例与可运行 Python。"
   },
   "coverage": {
-    "en": "Problem framing, leakage, regression, optimization, classification, evaluation, trees, unsupervised learning, and generalization. All stories and numerical datasets are original synthetic teaching examples.",
-    "zh": "涵盖问题定义、数据泄漏、回归、优化、分类、评估、树模型、无监督学习与泛化。所有故事和数值数据集均为原创的合成教学示例。"
+    "en": "Four stages cover data preparation, regression and classification, neighbours and text models, trees and boosting, clustering and PCA, recommendation, validation, calibration, and monitoring. All datasets and stories are original synthetic teaching examples. Python uses only the standard library or NumPy.",
+    "zh": "四阶段覆盖数据准备、回归与分类、近邻与文本模型、树与提升、聚类与 PCA、推荐、验证、校准和监测。所有数据与故事均为原创合成教学示例。Python 只使用标准库或 NumPy。"
   },
   "prerequisites": {
     "en": [
-      "Read a table and distinguish rows from columns.",
-      "Work with averages, squares, fractions, and simple algebra.",
-      "Recognize a vector as an ordered list; derivative intuition is helpful but introduced here."
+      "Read a table and use addition, fractions, and squares.",
+      "Start with the shared Python and maths primer. New terms are defined in each chapter.",
+      "No prior machine-learning library experience is required."
     ],
     "zh": [
-      "能够阅读表格并区分行与列。",
-      "掌握平均数、平方、分数和基础代数。",
-      "知道向量是有序数列；导数直觉会有帮助，本指南也会加以介绍。"
+      "能阅读表格，使用加法、分数与平方。",
+      "先阅读共享的 Python 与数学入门。每章都会解释新术语。",
+      "无需机器学习库使用经验。"
     ]
   },
   "outcomes": {
     "en": [
-      "Define a prediction task and prevent information leakage.",
-      "Calculate losses, gradient updates, classification metrics, and simple model decisions.",
-      "Explain what trees, clustering, and PCA learn and what they cannot establish.",
-      "Choose validation and regularization that match the intended deployment setting."
+      "Turn a prediction question into features, labels, and an honest split.",
+      "Calculate predictions and errors, and run a small Python example for every topic.",
+      "Choose and explain simple methods for text, numeric tables, and recommendation.",
+      "Use validation, calibration, and fresh labels to judge model reliability."
     ],
     "zh": [
-      "定义预测任务并防止信息泄漏。",
-      "计算损失、梯度更新、分类指标以及简单模型的决策。",
-      "解释树模型、聚类和主成分分析学到了什么，以及它们不能证明什么。",
-      "选择与预期使用场景相匹配的验证和正则化方法。"
+      "把预测问题转为特征、标签与合理划分。",
+      "计算预测和误差，为每个主题运行小型 Python 示例。",
+      "选择并解释用于文本、数值表格与推荐的简单方法。",
+      "用验证、校准与新标签判断模型可靠性。"
     ]
   },
   "map": [
     {
       "title": {
-        "en": "Ask and measure",
-        "zh": "提问与度量"
+        "en": "1 · Foundations: make a reliable table",
+        "zh": "1 · 基础：准备可信表格"
       },
       "topics": [
+        "features-labels-baselines",
         "framing-splits-leakage",
-        "linear-regression-mse"
+        "missing-data-eda",
+        "categorical-preprocessing"
       ]
     },
     {
       "title": {
-        "en": "Learn and decide",
-        "zh": "学习与决策"
+        "en": "2 · Core: fit and measure predictions",
+        "zh": "2 · 核心：拟合并衡量预测"
       },
       "topics": [
+        "linear-regression-mse",
         "gradient-descent-scaling",
         "logistic-thresholds",
         "metrics-imbalance"
@@ -68,17 +71,179 @@
     },
     {
       "title": {
-        "en": "Find structure and test it",
-        "zh": "发现结构并加以检验"
+        "en": "3 · Applied: choose a useful method",
+        "zh": "3 · 应用：选择有用方法"
       },
       "topics": [
+        "nearest-neighbours",
+        "text-naive-bayes",
         "trees-ensembles",
+        "boosting-residuals"
+      ]
+    },
+    {
+      "title": {
+        "en": "4 · Advanced: structure, ranking, and reliability",
+        "zh": "4 · 进阶：结构、排序与可靠性"
+      },
+      "topics": [
         "clustering-pca",
-        "validation-regularization-shift"
+        "content-recommendations",
+        "validation-regularization-shift",
+        "calibration-monitoring"
       ]
     }
   ],
   "topics": [
+    {
+      "id": "features-labels-baselines",
+      "level": "foundation",
+      "title": {
+        "en": "Start with rows, features, labels, and a baseline",
+        "zh": "从行、特征、标签与基线开始"
+      },
+      "story": {
+        "en": "Kai has a folder of school-club messages. He wants to separate announcements from ordinary chat. He first writes down what one example means: one message. He then records two inputs, word count and the number of links. A person supplies the label. The label is the answer to learn, so it cannot also be an input.\n\nBefore choosing an algorithm, Kai predicts the most common training label for every new message. This simple baseline is easy to beat only if useful information exists. He saves its score. Every later model must earn its extra complexity on the same held-out messages.",
+        "zh": "凯有一份学校社团消息记录。他想区分公告与普通聊天。首先，他规定一个样本就是一条消息，再记录两个输入：词数和链接数。标签由人提供，是模型要学习的答案，因此不能同时作为输入。\n\n选择算法之前，凯先对每条新消息预测训练中最常见的标签。只有数据含有有用信息时，才有机会超过这条简单基线。他保存基线分数。后续模型都必须在相同留出消息上证明额外复杂度值得。"
+      },
+      "concept": {
+        "en": "A dataset is a collection of examples. In a table, each row is one example and each input column is a feature. The label is the target answer. Classification predicts a category. Regression predicts a number.\n\nLearning means choosing model parameters from training examples. A baseline is a deliberately simple comparison. For classification, one option always predicts the most frequent training class. For regression with squared loss, one option predicts the training target mean. Evaluate either on separate examples.",
+        "zh": "数据集是一组样本。表格中每行是一个样本，每个输入列是一个特征。标签是目标答案。分类预测类别，回归预测数值。\n\n学习就是从训练样本中选择模型参数。基线是刻意保持简单的比较对象。分类可始终预测训练中最常见的类别。使用平方损失的回归可预测训练目标均值。两者都应在独立样本上评估。"
+      },
+      "application": {
+        "en": "For spam filtering, start by defining one message and a consistent label rule. For print-time prediction, define one job and its duration in seconds. Write units and allowable values beside each input. Keep a baseline before adding features or models.",
+        "zh": "垃圾消息过滤先定义一条消息及一致的标签规则。打印耗时预测先定义一个任务及其秒数。在输入旁写上单位与允许取值。增加特征或模型之前先保留基线。"
+      },
+      "practice": {
+        "en": "The official dummy-estimator documentation describes constant and class-frequency baselines. Read it to distinguish a comparison rule from a model that uses informative features. The message table here is an original teaching example.",
+        "zh": "官方虚拟估计器文档介绍常数与类别频率基线。阅读时区分比较规则与真正利用信息特征的模型。这里的消息表格是原创教学示例。"
+      },
+      "formula": "X ∈ ℝ^(n×d), y = [y₁, …, yₙ]\nc* = argmax_c count_train(c)\naccuracy = correct / n_test",
+      "symbols": {
+        "en": "X is the input table of real numbers, with n rows and d feature columns. ℝ means real numbers and × separates the two dimensions. y lists labels; i in yᵢ is a row index. c is a possible class. count_train(c) counts its training examples. argmax chooses the class with the largest count, called c*. n_test counts test rows.",
+        "zh": "X 是实数输入表，有 n 行、d 个特征列。ℝ 表示实数，× 分开两个维度。y 列出标签，yᵢ 中的 i 是行号。c 是可能的类别，count_train(c) 统计其训练样本数。argmax 选择计数最大的类别，记为 c*。n_test 是测试行数。"
+      },
+      "calculation": {
+        "en": "Use training labels [0, 0, 0, 1]. Class zero appears three times, so the baseline predicts zero. Test labels are [0, 1, 1, 0]. Two of four predictions are correct, giving accuracy 2/4=0.50. The 75% training majority does not guarantee 75% test accuracy.",
+        "zh": "训练标签为 [0,0,0,1]。类别零出现三次，因此基线预测零。测试标签为 [0,1,1,0]。四次预测中两次正确，准确率为 2/4=0.50。训练中 75% 的多数比例并不保证测试准确率也为 75%。"
+      },
+      "limits": {
+        "en": "A baseline can look strong when a useful class is rare. A label can also be inconsistent or wrong. Good scores require a clear task, reliable labels, and suitable held-out data.",
+        "zh": "有用类别稀少时，基线分数可能看起来很高。标签也可能不一致或错误。可信分数需要清楚任务、可靠标签与合适的留出数据。"
+      },
+      "takeaway": {
+        "en": "Define the example and answer first. Then keep a simple comparison that every complex model must improve.",
+        "zh": "先定义样本与答案，再保留一个简单比较，让复杂模型证明改进。"
+      },
+      "sources": [
+        "sklearn-dummy"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Feature",
+            "zh": "特征"
+          },
+          "meaning": {
+            "en": "An input available when a prediction must be made.",
+            "zh": "作出预测时已经可用的输入。"
+          }
+        },
+        {
+          "term": {
+            "en": "Label",
+            "zh": "标签"
+          },
+          "meaning": {
+            "en": "The target answer used to teach or evaluate a supervised model.",
+            "zh": "用于训练或评估监督模型的目标答案。"
+          }
+        },
+        {
+          "term": {
+            "en": "Baseline",
+            "zh": "基线"
+          },
+          "meaning": {
+            "en": "A simple reference prediction rule for judging improvement.",
+            "zh": "用于判断改进的简单参考预测规则。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Can message type appear in both X and y?",
+            "zh": "消息类别能同时放入 X 与 y 吗？"
+          },
+          "answer": {
+            "en": "Not if message type is what we want to predict. That would give the answer to the model. Inputs must be available before that answer is known.",
+            "zh": "如果目标就是预测消息类别，就不能。这等于把答案交给模型。输入必须在答案未知时可用。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why is the test accuracy 0.50 rather than 0.75?",
+            "zh": "为什么测试准确率为 0.50 而不是 0.75？"
+          },
+          "answer": {
+            "en": "The rule was chosen from training labels, but accuracy is counted on test labels. Only two of those four labels are zero.",
+            "zh": "规则由训练标签选择，但准确率按测试标签计算。四个测试标签中只有两个为零。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if both training classes have equal counts?",
+            "zh": "如果两个训练类别计数相同呢？"
+          },
+          "answer": {
+            "en": "Choose and document a deterministic tie rule. The example chooses the smaller class ID. Do not inspect test labels to break the tie.",
+            "zh": "选择并记录确定性的平局规则。本例选择较小类别编号。不要查看测试标签来打破平局。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Message sorting",
+            "zh": "消息分类"
+          },
+          "body": {
+            "en": "Write three invented rows with word count, link count, and a separate announcement label. Mark which inputs exist when the message arrives. Compute a majority-label baseline before training.",
+            "zh": "写三条自拟记录，包含词数、链接数及独立的公告标签。标明消息到达时哪些输入可用。训练前先计算多数标签基线。"
+          }
+        },
+        {
+          "title": {
+            "en": "Numeric baseline",
+            "zh": "数值基线"
+          },
+          "body": {
+            "en": "For training print times [2, 4, 6] seconds, predict their mean of 4 seconds. Test on [3, 5]. Squared errors are 1 and 1, so the test MSE is 1.",
+            "zh": "训练打印耗时为 [2,4,6] 秒，预测其均值 4 秒。在 [3,5] 上测试，平方误差均为 1，因此测试 MSE 为 1。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-majority-baseline",
+          "title": {
+            "en": "Build a majority-label baseline",
+            "zh": "构建多数标签基线"
+          },
+          "intro": {
+            "en": "Use training labels to choose a rule, then separate test labels to score it.",
+            "zh": "用训练标签选规则，再用独立测试标签评分。"
+          },
+          "code": "from collections import Counter\ntrain_y = [0, 0, 0, 1]\ntest_y = [0, 1, 1, 0]\ncounts = Counter(train_y)\nbaseline = min(counts, key=lambda label: (-counts[label], label))\npredictions = [baseline] * len(test_y)\ncorrect = sum(pred == true for pred, true in zip(predictions, test_y))\nprint('baseline class:', baseline)\nprint('predictions:', predictions)\nprint(f'test accuracy: {correct / len(test_y):.2f}')\n",
+          "output": "baseline class: 0\npredictions: [0, 0, 0, 0]\ntest accuracy: 0.50\n",
+          "explanation": {
+            "en": "Counter counts training labels. min orders by negative count, so the largest count comes first; the class ID resolves a tie. List repetition makes one prediction per test row. zip pairs predictions with labels, and sum counts True comparisons as one. The output is a baseline, not evidence that word count or links are useful.",
+            "zh": "Counter 统计训练标签。min 按负计数排序，因此最大计数排前；类别编号用于处理平局。列表重复为每个测试行生成预测。zip 配对预测和标签，sum 把为真的比较按一计数。输出只是基线，不能证明词数或链接有用。"
+          }
+        }
+      ]
+    },
     {
       "id": "framing-splits-leakage",
       "title": {
@@ -86,12 +251,12 @@
         "zh": "划分数据之前，先定义问题"
       },
       "story": {
-        "en": "Mira wants a small field logger to warn when a sensor will fail during its next recording session. Her first table contains many sessions from the same twelve devices, plus a maintenance note written after each failure. A random row split produces an exciting score. Then a newly borrowed device performs badly, and Mira notices that the maintenance note practically reveals the answer. She rewrites the task: predict a future failure using only information available before a session begins. She removes the note and reserves complete devices for validation and testing because her intended use involves unfamiliar hardware. The score falls, but the remaining mistakes now describe a real challenge. Her notebook begins with the prediction time, the target, and the unit being held out. These decisions become part of the model, not preliminary paperwork.",
-        "zh": "米拉希望让一个小型野外记录器提前警告：传感器是否会在下一次记录任务中失效。她的第一张表包含同样十二台设备的许多次任务，还包括每次故障发生后写下的维护记录。随机按行划分数据后，分数令人兴奋。然而，一台新借来的设备表现很差，米拉也发现维护记录几乎直接揭示了答案。她重新定义任务：只使用任务开始前已经获得的信息，预测未来是否失效。她删除维护记录，并把完整的设备分别留作验证和测试，因为预期的使用场景涉及陌生硬件。分数下降了，但剩下的错误终于反映了真实挑战。她在笔记开头写下预测时点、目标，以及留出数据的单位。这些决策成为模型的一部分，而不只是前期文书工作。"
+        "en": "Mira wants to warn when a field sensor may fail during its next session. Her table has many sessions from the same twelve devices. It also has maintenance notes written after failures. A random row split gives a very high score. Then the model fails on a new device.\n\nMira checks when each input becomes available. She removes the later notes. She keeps whole devices in separate training, validation, and test sets. The score falls. Yet it now answers her real question: can the model work on unfamiliar hardware? She writes the prediction time and split rule beside every result.",
+        "zh": "米拉想提前判断野外传感器是否会在下次记录中失效。表格包含十二台设备的多次记录，还包含故障之后才写的维护笔记。随机按行划分后，分数很高。可是模型在新设备上失败了。\n\n米拉检查每个输入何时可用。她删除事后笔记，把完整设备分别放入训练集、验证集和测试集。分数下降了，却终于回答了真正的问题：模型能否用于陌生硬件？她在每个结果旁写下预测时点和划分规则。"
       },
       "concept": {
-        "en": "A supervised learning problem specifies an input, a target, and the moment when a prediction must be made. Training data fit parameters; validation data guide choices; test data estimate performance after those choices are fixed. Leakage occurs when the learning process gains information unavailable in the intended prediction setting. It includes future measurements, shared identities across an inappropriate split, and preprocessing fitted on held-out data. The split should represent the question: new devices require group separation, whereas future sessions on existing devices may require chronological separation.",
-        "zh": "监督学习问题需要明确输入、目标和必须作出预测的时点。训练数据用于拟合参数，验证数据用于指导选择，测试数据则在这些选择确定之后评估性能。如果学习过程获得了预期预测场景中无法使用的信息，就会发生泄漏。这包括未来测量值、不恰当划分中跨集合重复出现的身份，以及使用留出数据拟合预处理步骤。划分方式应当对应研究问题：预测新设备需要按设备分组隔离，而预测现有设备的未来任务则可能需要按时间隔离。"
+        "en": "Training data teach the model its parameters. Validation data help us choose settings. Test data check the completed choice. Keep their roles separate.\n\nLeakage means using information that would be unavailable when making the real prediction. A future maintenance note is one example. Related rows can also make a test too easy. If the goal is to predict on new devices, separate whole devices. If the goal is tomorrow on known devices, preserve time order.",
+        "zh": "训练数据用于学习模型参数。验证数据帮助选择设置。测试数据检查最终选择。三者的职责要分开。\n\n泄漏指使用真正预测时无法获得的信息，事后维护笔记就是一例。相互关联的行也可能让测试过于容易。若目标是预测新设备，就隔离完整设备。若目标是预测已知设备的明天，就保持时间先后顺序。"
       },
       "application": {
         "en": "Write one sentence naming the prediction unit, target horizon, and available features. Draw the route from raw records to the final score. Split before fitting imputation, scaling, or feature selection, and fit those steps within each training fold. Check duplicate records and shared entities. Keep a simple baseline and record the split rule so that later model comparisons answer the same question.",
@@ -121,21 +286,427 @@
       "sources": [
         "google-splits",
         "sklearn-pitfalls"
+      ],
+      "level": "foundation",
+      "glossary": [
+        {
+          "term": {
+            "en": "Split",
+            "zh": "划分"
+          },
+          "meaning": {
+            "en": "An assignment of examples to separate sets with different jobs.",
+            "zh": "把样本分到承担不同任务的集合。"
+          }
+        },
+        {
+          "term": {
+            "en": "Leakage",
+            "zh": "数据泄漏"
+          },
+          "meaning": {
+            "en": "Information enters learning or selection even though it is unavailable in the intended prediction setting.",
+            "zh": "学习或选择过程用到了预期预测场景中不可用的信息。"
+          }
+        },
+        {
+          "term": {
+            "en": "Group",
+            "zh": "分组"
+          },
+          "meaning": {
+            "en": "Related records, such as all sessions from one device.",
+            "zh": "相关记录的集合，例如同一设备的全部记录。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why remove a very predictive maintenance note?",
+            "zh": "为什么删除预测力很强的维护笔记？"
+          },
+          "answer": {
+            "en": "It was written after failure. A warning made before the session cannot use it. Predictive strength does not make an input available.",
+            "zh": "笔记在故障后才出现。任务开始前的预警无法使用它。预测力强不代表当时可用。"
+          }
+        },
+        {
+          "question": {
+            "en": "How do eight training devices give 80 rows?",
+            "zh": "八台训练设备为什么对应 80 行？"
+          },
+          "answer": {
+            "en": "Each contributes ten sessions. Multiply 8 by 10. All ten rows from one device stay together.",
+            "zh": "每台提供十次记录，所以计算 8×10。同一设备的十行始终放在一起。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can we adjust the model after seeing the test score?",
+            "zh": "看完测试分数后能否调整模型？"
+          },
+          "answer": {
+            "en": "We can start a new development cycle, but that set is no longer an untouched final test. Use new independent test evidence for the revised model.",
+            "zh": "可以开始新的开发周期，但这个集合不再是未使用的最终测试集。修改后的模型需要新的独立测试证据。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "New recording devices",
+            "zh": "新录音设备"
+          },
+          "body": {
+            "en": "Group six invented recordings by device A, B, or C. Train on A and B, and reserve C. Verify that the two device sets have no overlap before inspecting labels.",
+            "zh": "把六条自拟录音按设备 A、B、C 分组。用 A 和 B 训练，保留 C。在查看标签前，先确认两个设备集合没有重叠。"
+          }
+        },
+        {
+          "title": {
+            "en": "Tomorrow’s sensor reading",
+            "zh": "明天的传感器读数"
+          },
+          "body": {
+            "en": "List measurements from days 1 to 10. Use days 1–6 for training, 7–8 for validation, and 9–10 for testing. Do not fill an earlier gap with a future reading.",
+            "zh": "列出第 1 到 10 天的测量值。第 1–6 天训练，第 7–8 天验证，第 9–10 天测试。不要用未来读数填补较早的缺口。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-group-split",
+          "title": {
+            "en": "Keep complete devices together",
+            "zh": "把完整设备放在一起"
+          },
+          "intro": {
+            "en": "Build the 120-row split without a random library call.",
+            "zh": "不用随机库调用，构建这个 120 行的划分。"
+          },
+          "code": "groups = [device for device in range(12) for _ in range(10)]\ntrain = [i for i, device in enumerate(groups) if device < 8]\nvalid = [i for i, device in enumerate(groups) if 8 <= device < 10]\ntest = [i for i, device in enumerate(groups) if device >= 10]\ntrain_devices = {groups[i] for i in train}\ntest_devices = {groups[i] for i in test}\nprint('rows:', len(train), len(valid), len(test))\nprint('shared devices:', sorted(train_devices & test_devices))\nprint('test error:', 2 / len(test))\n",
+          "output": "rows: 80 20 20\nshared devices: []\ntest error: 0.1\n",
+          "explanation": {
+            "en": "The first list repeats each device ID ten times. enumerate supplies row positions. The three conditions assign complete groups. A set removes repeated IDs; & finds shared IDs. The empty list confirms no training/test device overlap. The final line uses an assumed two errors; it does not train or evaluate a real sensor model.",
+            "zh": "第一行把每个设备编号重复十次。enumerate 提供行号。三个条件分配完整分组。集合去掉重复编号，& 查找共有编号。空列表表示训练和测试没有共享设备。最后一行假定出现两次错误；它没有训练或评估真实传感器模型。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing-data-eda",
+      "level": "foundation",
+      "title": {
+        "en": "Inspect the table before filling gaps",
+        "zh": "填补缺口前先检查表格"
+      },
+      "story": {
+        "en": "Mei records temperatures from a classroom sensor. Some cells are blank. One contains 999, the device’s error code. Her first average treats 999 as a real temperature and becomes absurdly high. She checks the recording guide and marks that code as missing.\n\nMei counts gaps before filling them. She chooses the median of the observed training readings as a simple replacement. She also keeps a flag showing which values were missing. The table is now usable, but the replacements are not new measurements. She compares later readings with this record of what was observed and what was filled.",
+        "zh": "梅记录教室传感器温度。有些单元格空白，还有一个值为 999，实际上是设备错误码。最初计算平均时，她把 999 当作真实温度，结果异常偏高。她查看记录说明，把错误码标为缺失。\n\n填补之前，梅先统计缺口。她用已观测训练读数的中位数作简单替代，并保留缺失标记。表格现在可用于计算，但替代值不是新的测量。以后比较读数时，她仍能区分原始观测与填充值。"
+      },
+      "concept": {
+        "en": "Exploratory data analysis, or EDA, means checking what the data contain before fitting a model. Inspect units, ranges, duplicates, and missing counts. A missing value is unknown; it is not automatically zero.\n\nImputation replaces missing entries by a stated rule. A median is the middle observed value after sorting. Learn the replacement from training data only, then reuse it. A separate missingness flag preserves the fact that a measurement was absent.",
+        "zh": "探索性数据分析 EDA 指建模前检查数据内容。检查单位、范围、重复与缺失数量。缺失代表未知，并不自动等于零。\n\n填补按明确规则替代缺失项。中位数是观测值排序后的中间值。只用训练数据学习替代值，再重复使用。单独的缺失指示保留“没有测量”这一事实。"
+      },
+      "application": {
+        "en": "Sensor tables and document metadata often contain gaps. Inspect their causes before choosing a replacement. Compare error rates for originally complete and originally incomplete rows. Keep the fitted replacement with the model.",
+        "zh": "传感器表格和文档元数据常有缺口。选择替代方式前先调查原因。比较原本完整与原本缺失行的错误率。将拟合的替代规则与模型一起保存。"
+      },
+      "practice": {
+        "en": "The scikit-learn imputation guide documents mean, median, constant replacements, and missing indicators. Its workflow motivates this small NumPy example. We do not assume that every model requires imputation.",
+        "zh": "scikit-learn 填补指南介绍均值、中位数、常数替代及缺失指示。这里的小型 NumPy 示例借鉴这些机制，并不假设所有模型都需要填补。"
+      },
+      "formula": "m = median(observed training values)\nx̃ᵢ = m if xᵢ is missing, otherwise xᵢ\nr = missing_count / n",
+      "symbols": {
+        "en": "m is the replacement median. xᵢ is the original value in row i; x̃ᵢ is its filled version. n is the number of rows. r is the fraction of missing entries in the chosen column. The tilde marks a transformed value.",
+        "zh": "m 是替代用的中位数。xᵢ 是第 i 行原值，x̃ᵢ 是填补后的值。n 为行数，r 为该列缺失比例。波浪号表示变换后的值。"
+      },
+      "calculation": {
+        "en": "Training values [2, missing, 6, 4] contain one gap out of four, so r=0.25. Observed values sort to [2,4,6], giving median 4. Fill training with [2,4,6,4]. For test values [missing,10], reuse 4 to get [4,10]. Do not recompute a test median of 10.",
+        "zh": "训练值 [2,缺失,6,4] 四项中缺一项，r=0.25。观测值排序为 [2,4,6]，中位数为 4。训练填补结果为 [2,4,6,4]。测试值 [缺失,10] 仍用 4，得到 [4,10]，不要重新计算测试中位数 10。"
+      },
+      "limits": {
+        "en": "Filling gaps can hide uncertainty. Missingness may depend on the unobserved value itself. An entirely missing training column has no observed median. Inspect and handle that case explicitly.",
+        "zh": "填补会掩盖不确定性。缺失原因可能与未观测值本身有关。整列训练数据全缺失时没有观测中位数，需要明确处理。"
+      },
+      "takeaway": {
+        "en": "First learn what a blank means. Then fill it using training information and preserve the missingness record.",
+        "zh": "先弄清空白的含义，再用训练信息填补，并保留缺失记录。"
+      },
+      "sources": [
+        "sklearn-impute",
+        "sklearn-pitfalls"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "EDA",
+            "zh": "探索性数据分析"
+          },
+          "meaning": {
+            "en": "Inspection of data structure, ranges, and quality before modeling.",
+            "zh": "建模前检查数据结构、范围与质量。"
+          }
+        },
+        {
+          "term": {
+            "en": "Imputation",
+            "zh": "缺失值填补"
+          },
+          "meaning": {
+            "en": "Replacing unknown entries with a stated estimate or placeholder.",
+            "zh": "用明确的估计值或占位值替代未知项。"
+          }
+        },
+        {
+          "term": {
+            "en": "Median",
+            "zh": "中位数"
+          },
+          "meaning": {
+            "en": "The middle sorted value, or the mean of the two middle values for an even count.",
+            "zh": "排序后的中间值；个数为偶数时取中间两值的平均。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why not replace every gap with zero?",
+            "zh": "为什么不把所有缺失都替换为零？"
+          },
+          "answer": {
+            "en": "Zero may be a real measured value with a very different meaning. A gap says we do not know. Choose a rule that matches the feature.",
+            "zh": "零可能是真实测量值，含义完全不同。缺口意味着不知道。应按特征含义选择规则。"
+          }
+        },
+        {
+          "question": {
+            "en": "What does the missing flag [0,1,0,0] preserve?",
+            "zh": "缺失标记 [0,1,0,0] 保留了什么？"
+          },
+          "answer": {
+            "en": "It records that the second value was unknown before filling. The filled value 4 alone cannot tell us that.",
+            "zh": "它记录第二个值填补前是未知的。单看填补值 4 无法判断这一点。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can we learn the median from test rows?",
+            "zh": "能用测试行学习中位数吗？"
+          },
+          "answer": {
+            "en": "No. That lets held-out data influence preparation. Fit on training rows and apply the saved rule everywhere else.",
+            "zh": "不能。这会让留出数据影响准备过程。应在训练行拟合，再将保存的规则用于其他数据。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "A sensor error code",
+            "zh": "传感器错误码"
+          },
+          "body": {
+            "en": "For [18,19,999,20], verify that 999 is an error code before marking it missing. The observed median is 19. Keep both the filled value and a missing flag.",
+            "zh": "对 [18,19,999,20]，先确认 999 是错误码，再标为缺失。观测中位数为 19。保留填充值与缺失标记。"
+          }
+        },
+        {
+          "title": {
+            "en": "An empty column",
+            "zh": "全空列"
+          },
+          "body": {
+            "en": "Try a training column with no observed values. Stop the median rule before it produces NaN. Decide whether to remove the column or use a documented constant and missing flag.",
+            "zh": "尝试没有任何观测值的训练列。在中位数规则产生 NaN 前停止。决定删除该列，或使用有记录的常数与缺失标记。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-median-imputation",
+          "title": {
+            "en": "Fit a median, then reuse it",
+            "zh": "拟合中位数，再重复使用"
+          },
+          "intro": {
+            "en": "NaN represents unknown numeric entries in this example.",
+            "zh": "本例用 NaN 表示未知数值。"
+          },
+          "code": "import numpy as np\ntrain = np.array([2., np.nan, 6., 4.])\ntest = np.array([np.nan, 10.])\nmissing = np.isnan(train)\nmedian = np.median(train[~missing])\nfilled_train = np.where(missing, median, train)\nfilled_test = np.where(np.isnan(test), median, test)\nprint(f'training missing fraction: {missing.mean():.2f}')\nprint('training flag:', missing.astype(int).tolist())\nprint('filled training:', filled_train.tolist())\nprint('filled test:', filled_test.tolist())\n",
+          "output": "training missing fraction: 0.25\ntraining flag: [0, 1, 0, 0]\nfilled training: [2.0, 4.0, 6.0, 4.0]\nfilled test: [4.0, 10.0]\n",
+          "explanation": {
+            "en": "isnan marks missing entries. ~ reverses the Boolean mask so indexing selects observed training values. median finds their middle value. where selects the replacement only at missing positions. astype(int) makes flags readable as zero and one. The test uses the same saved median. This prepares numeric data; it does not show that filling improves prediction.",
+            "zh": "isnan 标出缺失项。~ 反转布尔掩码，使索引选出已观测训练值。median 取中位数。where 只在缺失位置选择替代值。astype(int) 把标记显示成零和一。测试使用相同的中位数。代码准备数值数据，并不能说明填补改善了预测。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "categorical-preprocessing",
+      "level": "foundation",
+      "title": {
+        "en": "Turn categories into explicit columns",
+        "zh": "把类别变成明确的列"
+      },
+      "story": {
+        "en": "An art club catalogs objects by material: paper, wood, or metal. Lin wants to predict which storage box fits each object. She encodes materials as 1, 2, and 3. A distance-based model then treats metal as twice as far from paper as wood is. That spacing has no basis in the names.\n\nLin instead creates one column for each material. A one marks the selected category, and zeros mark the others. She also plans what to do with an unseen material. The new table states what she knows without inventing an order. She saves the column names with the model.",
+        "zh": "美术社按纸、木、金属记录物品材料。琳想预测每件物品适合的收纳盒。她把材料编码为 1、2、3，距离模型就把金属到纸的距离视为木到纸的两倍。材料名称并没有这样的间距。\n\n琳改为每种材料建立一列，用一标记所属类别，其他列为零。她还提前规定如何处理未见材料。新表格只表达已知信息，不编造顺序。她把列名与模型一起保存。"
+      },
+      "concept": {
+        "en": "A categorical feature names a group. Some categories have a real order, such as small, medium, and large. Others, such as material names, do not. One-hot encoding makes a separate indicator column for each known category.\n\nFit the vocabulary on training data. Use the same column order later. An unseen category needs an explicit rule, such as an unknown column or rejection. Our example adds an unknown column. That preserves a fixed shape but does not teach a model what a new category means.",
+        "zh": "类别特征表示组别。有些类别确有顺序，例如小、中、大；材料名称则没有。独热编码为每个已知类别建立独立指示列。\n\n词表应由训练数据确定，以后使用相同列顺序。未见类别需要明确规则，例如未知列或拒绝处理。本例加入未知列，能保持固定形状，却不能让模型理解新类别的含义。"
+      },
+      "application": {
+        "en": "Use category encodings for device models, file formats, or material types in a table. Keep numeric scaling and categorical encoding as separate preparation steps. Validate the whole sequence within each training fold.",
+        "zh": "可用类别编码表示表格中的设备型号、文件格式或材料种类。数值缩放与类别编码作为不同准备步骤，并在每个训练折内验证整个流程。"
+      },
+      "practice": {
+        "en": "The official preprocessing guide explains one-hot and ordinal encodings. It also documents choices for unknown categories. Our encoder is small enough to inspect row by row.",
+        "zh": "官方预处理指南解释独热编码与顺序编码，也记录未知类别的处理选项。这里的编码器很小，可以逐行检查。"
+      },
+      "formula": "hⱼ(c) = I[c = vocabularyⱼ]\nh_unknown(c) = I[c is absent from the training vocabulary]",
+      "symbols": {
+        "en": "c is the observed category. vocabularyⱼ is the known category assigned to column j. I is one when the condition is true and zero otherwise. hⱼ is the indicator in that column. h_unknown is the extra unknown-category indicator.",
+        "zh": "c 是观测类别，vocabularyⱼ 是第 j 列对应的已知类别。I 在条件成立时为一，否则为零。hⱼ 是该列的指示值，h_unknown 是额外的未知类别指示。"
+      },
+      "calculation": {
+        "en": "With columns [paper, wood, unknown], wood becomes [0,1,0]. Paper becomes [1,0,0]. An unseen metal becomes [0,0,1]. Each row sums to one. The two known categories have equal distance √2 in this representation, rather than an invented numeric order.",
+        "zh": "列为 [纸,木,未知] 时，木变为 [0,1,0]，纸变为 [1,0,0]，未见金属变为 [0,0,1]。每行之和为一。两种已知类别在此表示中的距离为 √2，而不是人为编造的数值顺序。"
+      },
+      "limits": {
+        "en": "Many categories create many columns. Rare categories give little training evidence. A new unknown column may be untrained if no training rows used it. Choose a fallback and evaluate its behavior.",
+        "zh": "类别很多时会产生很多列。稀有类别的训练证据很少。如果训练行未使用未知列，它可能没有学到有效权重。应选择后备方案并评估其行为。"
+      },
+      "takeaway": {
+        "en": "Encoding should express category meaning, keep column order fixed, and state how unseen values are handled.",
+        "zh": "编码要表达类别含义，固定列顺序，并明确处理未见值。"
+      },
+      "sources": [
+        "sklearn-preprocess",
+        "sklearn-pitfalls"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Categorical feature",
+            "zh": "类别特征"
+          },
+          "meaning": {
+            "en": "An input whose values identify groups or names.",
+            "zh": "用取值标识组别或名称的输入。"
+          }
+        },
+        {
+          "term": {
+            "en": "One-hot encoding",
+            "zh": "独热编码"
+          },
+          "meaning": {
+            "en": "Separate zero-or-one columns that identify one category.",
+            "zh": "用多列零或一来标识所属类别。"
+          }
+        },
+        {
+          "term": {
+            "en": "Vocabulary",
+            "zh": "词表"
+          },
+          "meaning": {
+            "en": "The saved list of known categories and their column order.",
+            "zh": "保存的已知类别列表及其列顺序。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why can 1, 2, 3 mislead a distance model?",
+            "zh": "为什么 1、2、3 会误导距离模型？"
+          },
+          "answer": {
+            "en": "Those numbers imply order and spacing. Unordered names do not justify that geometry. One-hot columns remove that particular assumption.",
+            "zh": "这些数值暗含顺序与间距，无序名称并不支持这种几何关系。独热列消除这一特定假设。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why save column order?",
+            "zh": "为什么保存列顺序？"
+          },
+          "answer": {
+            "en": "A learned weight is tied to a column. Swapping paper and wood later changes what that weight means even if the shape stays the same.",
+            "zh": "学习到的权重对应某一列。以后交换纸与木的列，即使形状不变，也改变了权重含义。"
+          }
+        },
+        {
+          "question": {
+            "en": "Is an unknown column a learned solution for every new category?",
+            "zh": "未知列是否是适用于所有新类别的已学解法？"
+          },
+          "answer": {
+            "en": "No. It identifies the situation. A useful response still needs evidence, a fallback rule, or later labeled examples.",
+            "zh": "不是。它只是标明情况。有效应对仍需证据、后备规则或后续带标签样本。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "File formats",
+            "zh": "文件格式"
+          },
+          "body": {
+            "en": "Train a vocabulary on png and txt. Encode a new wav file with an explicit unknown column. Check that every output has the same length and that column names remain fixed.",
+            "zh": "用 png 和 txt 建立训练词表。用明确的未知列编码新 wav 文件。检查每个输出长度相同，且列名保持固定。"
+          }
+        },
+        {
+          "title": {
+            "en": "Ordered sizes",
+            "zh": "有序尺寸"
+          },
+          "body": {
+            "en": "Compare material names with small, medium, large. The sizes have an order, but their spacing may not be equal. Decide whether an ordinal code or measured dimensions better fit the task.",
+            "zh": "比较材料名称与小、中、大。尺寸等级有顺序，但间距未必相同。决定顺序编码还是实测尺寸更适合任务。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-category-columns",
+          "title": {
+            "en": "Encode known and unseen categories",
+            "zh": "编码已知与未见类别"
+          },
+          "intro": {
+            "en": "An explicit last column records unknown categories.",
+            "zh": "明确使用最后一列记录未知类别。"
+          },
+          "code": "vocabulary = ['paper', 'wood']\ndef encode(value):\n    return [int(value == name) for name in vocabulary] + [int(value not in vocabulary)]\nprint('columns:', vocabulary + ['unknown'])\nfor value in ['wood', 'paper', 'metal']:\n    row = encode(value)\n    print(value, row, 'sum:', sum(row))\n",
+          "output": "columns: ['paper', 'wood', 'unknown']\nwood [0, 1, 0] sum: 1\npaper [1, 0, 0] sum: 1\nmetal [0, 0, 1] sum: 1\n",
+          "explanation": {
+            "en": "The list comprehension compares a value with each saved name. int converts each comparison to zero or one. The final entry tests membership in the whole vocabulary. Printing the sum checks that exactly one indicator is active. This encoder prepares features only. It neither trains a classifier nor learns how to handle metal correctly.",
+            "zh": "列表推导把取值与每个已保存名称比较。int 将比较结果转为零或一。最后一项检查它是否不在整个词表中。打印行和可确认恰有一个指示被激活。编码器只准备特征，既未训练分类器，也未学会怎样正确处理金属。"
+          }
+        }
       ]
     },
     {
       "id": "linear-regression-mse",
       "title": {
-        "en": "Fit a line and account for every error",
-        "zh": "拟合直线，逐项核算误差"
+        "en": "Linear regression: predict a number with a line",
+        "zh": "线性回归：用直线预测数值"
       },
       "story": {
-        "en": "Jun records the height of seedlings beside a window and wants to estimate tomorrow's height from elapsed growing time. He draws a line through a scatterplot, but two plausible lines look equally convincing by eye. One follows most points closely and misses a tall seedling; the other moves toward that seedling and misses several ordinary ones. Instead of choosing the prettier line, Jun writes down every prediction and its difference from the measured height. Squaring and averaging those differences gives him an explicit rule for comparison. He also notices that the score is in squared centimeters, so he reports its square root alongside it. The exercise does not establish that time alone causes growth. It gives him a transparent baseline, a visible error pattern, and a reason to collect light measurements next.",
-        "zh": "俊记录窗边幼苗的高度，希望根据已生长的时间估计明天的高度。他在散点图上画了一条直线，但肉眼看来，两条候选直线都很有说服力。一条贴近大多数点，却偏离了一株较高的幼苗；另一条向那株幼苗靠近，却偏离了几株普通幼苗。俊没有选择看起来更漂亮的直线，而是逐项写下预测值及其与实测高度之差。对这些差值平方后取平均，他得到了明确的比较规则。他还注意到分数的单位是平方厘米，因此同时报告其平方根。这个练习不能证明仅有时间会导致生长，但它提供了透明的基线、可见的误差模式，以及下一步采集光照测量值的理由。"
+        "en": "Jun records seedling heights beside a window. He wants a simple rule that links height to growing time. Two lines look plausible on paper. One misses a tall seedling. The other moves toward it but misses several smaller plants. Jun needs a fair way to compare them.\n\nHe writes each prediction beside its measured height. He subtracts, squares each error, and takes the average. He then takes a square root to return to centimeters. The line now has a clear score. Jun also sees where it fails. He keeps it as a baseline and plans to measure light next.",
+        "zh": "俊记录窗边幼苗的高度。他想用简单规则把高度与生长时间联系起来。纸上的两条直线似乎都合理。一条偏离高幼苗，另一条靠近高幼苗，却偏离几株小苗。俊需要公平的比较方法。\n\n他把预测与实测高度并排写下，逐项相减、平方，再取平均。他再开平方，把单位恢复为厘米。直线有了明确分数，失败的位置也清楚了。他把直线作为基线，并计划下一步测量光照。"
       },
       "concept": {
-        "en": "Linear regression represents a numeric target as an intercept plus a weighted sum of features. In one dimension this is a line; with several features it is a plane or hyperplane. Mean squared error, or MSE, averages squared residuals and therefore gives large mistakes more influence than small ones. Minimizing it chooses parameters according to that particular preference. Residual plots can reveal curved patterns or changing error spread that a single average hides. A fitted coefficient describes a conditional association within the model, not automatically a causal effect.",
-        "zh": "线性回归把数值目标表示为截距与特征加权和。在一维中，它是一条直线；使用多个特征时，它对应平面或超平面。均方误差（MSE）对残差的平方取平均，因此大误差的影响比小误差更强。最小化它，就是按照这种特定偏好选择参数。残差图可以显示单一平均值掩盖的弯曲模式或误差散布变化。拟合系数描述的是模型内部的条件关联，并不会自动成为因果效应。"
+        "en": "A line predicts a number by multiplying the input by a slope and adding an intercept. The slope says how much the prediction changes when the input rises by one unit. The intercept is the prediction at input zero.\n\nIn this chapter, prediction residual means prediction minus measurement. Squaring makes positive and negative errors contribute positively. Mean squared error, or MSE, averages these squares. Large errors count heavily. Root mean squared error, or RMSE, takes the square root so its unit matches the target. A fitted line describes an association; it does not by itself prove a cause.",
+        "zh": "直线先把输入乘以斜率，再加上截距，得到数值预测。输入增加一个单位时，预测改变多少由斜率决定。输入为零时的预测就是截距。\n\n本章把预测残差定义为预测减实测。平方让正负误差都作正贡献。均方误差 MSE 是这些平方的平均值，大误差影响更大。均方根误差 RMSE 再开平方，使单位与目标一致。拟合直线描述关联，本身不能证明因果。"
       },
       "application": {
         "en": "Start with a constant prediction, such as the training target mean, and compare a linear model on the same held-out examples. Keep measurement units beside each feature and coefficient. Examine residuals against predictions and important inputs. If large errors dominate the result, inspect their provenance before changing the loss. Report a unit-preserving metric such as root mean squared error when communicating error magnitude.",
@@ -164,6 +735,112 @@
       },
       "sources": [
         "google-loss"
+      ],
+      "level": "core",
+      "glossary": [
+        {
+          "term": {
+            "en": "Slope",
+            "zh": "斜率"
+          },
+          "meaning": {
+            "en": "Prediction change for a one-unit input increase.",
+            "zh": "输入增加一个单位时，预测值的变化。"
+          }
+        },
+        {
+          "term": {
+            "en": "Intercept",
+            "zh": "截距"
+          },
+          "meaning": {
+            "en": "The line’s prediction when the input is zero.",
+            "zh": "输入为零时直线的预测。"
+          }
+        },
+        {
+          "term": {
+            "en": "Residual",
+            "zh": "残差"
+          },
+          "meaning": {
+            "en": "Prediction minus the observed target, using this chapter’s convention.",
+            "zh": "按本章约定，为预测减去实测目标。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why square the errors before adding?",
+            "zh": "为什么先平方再相加？"
+          },
+          "answer": {
+            "en": "Errors +1 and −1 would cancel in a plain sum. Their squares add to 2. Squaring also makes an error of 4 count sixteen times as much as an error of 1.",
+            "zh": "直接求和时，+1 与 −1 会抵消。平方和为 2。误差为 4 的平方是 16，其影响是误差为 1 的十六倍。"
+          }
+        },
+        {
+          "question": {
+            "en": "Where does 0.577 centimeters come from?",
+            "zh": "0.577 厘米如何得到？"
+          },
+          "answer": {
+            "en": "The squared errors are 0, 0, and 1. Their average is 1/3 square centimeters. Its square root is about 0.577 centimeters.",
+            "zh": "平方误差为 0、0、1，平均为 1/3 平方厘米。开平方约为 0.577 厘米。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does a lower training MSE prove a better future prediction?",
+            "zh": "训练 MSE 更低是否证明未来预测更好？"
+          },
+          "answer": {
+            "en": "No. Training rows helped choose the rule. Compare models on the same held-out rows to test whether the improvement transfers.",
+            "zh": "不证明。训练行参与了规则选择。要在相同留出行上比较，才能检查改进能否迁移。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Seedling baseline",
+            "zh": "幼苗基线"
+          },
+          "body": {
+            "en": "Run the example, then change the final height from 8 to 10. The line still predicts 7 there. Its MSE becomes 9/3 = 3, which shows how a larger miss changes squared loss.",
+            "zh": "运行示例，再把最后的高度由 8 改为 10。直线仍预测 7。MSE 变为 9/3=3，显示大误差如何改变平方损失。"
+          }
+        },
+        {
+          "title": {
+            "en": "Print duration",
+            "zh": "打印耗时"
+          },
+          "body": {
+            "en": "For an invented print job, use page count as input and seconds as target. State the slope in seconds per page. Keep setup time in the intercept, and check held-out jobs of different lengths.",
+            "zh": "在自拟打印任务中，用页数作输入、秒数作目标。斜率单位为秒/页。用截距表示准备耗时，再检查不同长度的留出任务。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-line-loss",
+          "title": {
+            "en": "Compare a line and a constant",
+            "zh": "比较直线与常数"
+          },
+          "intro": {
+            "en": "Use the same three rows for an arithmetic demonstration.",
+            "zh": "用相同三行演示计算。"
+          },
+          "code": "import numpy as np\nx = np.array([1., 2., 3.])\ny = np.array([3., 5., 8.])\nprediction = 1 + 2 * x\nresidual = prediction - y\nmse = np.mean(residual ** 2)\nbaseline_mse = np.mean((y.mean() - y) ** 2)\nprint('prediction:', prediction.tolist())\nprint(f'MSE: {mse:.6f}; RMSE: {np.sqrt(mse):.6f}')\nprint(f'constant MSE: {baseline_mse:.6f}')\n",
+          "output": "prediction: [3.0, 5.0, 7.0]\nMSE: 0.333333; RMSE: 0.577350\nconstant MSE: 4.222222\n",
+          "explanation": {
+            "en": "np.array stores ordered numbers. Multiplication and subtraction act on matching entries. **2 squares each residual; mean adds and divides by three. sqrt restores the original unit. y.mean supplies the constant baseline. These rows are used only to compare arithmetic. The chosen line is not a fitted least-squares optimum or an independent test result.",
+            "zh": "np.array 保存有序数值。乘法和减法按对应位置计算。**2 平方每个残差，mean 求和再除以三，sqrt 恢复原单位。y.mean 给出常数基线。这些行仅用于比较计算。所选直线既不是声称求出的最小二乘最优解，也不是独立测试结果。"
+          }
+        }
       ]
     },
     {
@@ -173,12 +850,12 @@
         "zh": "用可控步长和可比尺度学习"
       },
       "story": {
-        "en": "Asha builds a model of how far a small robot cart travels during a motor pulse. One input is pulse duration in seconds, while another is an encoder count measured in thousands. Her training loss jumps upward after a few updates, and she initially assumes that the model is too simple. Before adding features, she inspects the update sizes and finds that one coefficient moves far more sharply than the other. She rescales the inputs using statistics from the training recordings and reduces the learning rate. The loss now descends steadily. To understand the change, she repeats one update by hand on two invented observations. That small calculation turns a mysterious training curve into a sequence of understandable decisions. She learns to separate an optimization problem from a model that genuinely lacks useful information.",
-        "zh": "阿莎建立一个模型，预测小型机器人小车在一次电机脉冲期间行驶多远。一个输入是以秒计的脉冲持续时间，另一个是以千为量级的编码器计数。几次更新后，训练损失突然上升，她起初以为模型过于简单。在增加特征之前，她检查了更新幅度，发现一个系数的变化比另一个剧烈得多。她使用训练记录的统计量缩放输入，并降低学习率，损失随后开始稳定下降。为了理解变化，她用两个虚构观测手算了一次更新。这个小计算把神秘的训练曲线变成了一系列可以理解的决策。她由此学会区分优化问题与模型确实缺少有用信息的问题。"
+        "en": "Asha measures how far a robot cart travels. One input is pulse duration in seconds. Another is an encoder count in thousands. During training, the loss suddenly rises. She first thinks the model needs more layers. Then she notices that one weight changes much faster than the others.\n\nAsha rescales inputs using the training records only. She also lowers the learning rate. The updates become easier to follow. To see why, she computes one step using two invented points. She can now separate a bad update rule from missing information. A lower training loss is useful, but she still needs validation.",
+        "zh": "阿莎测量机器人小车的行驶距离。一个输入是以秒计的脉冲时间，另一个是数千量级的编码器计数。训练中损失突然上升。她起初想增加网络层数，后来发现一个权重比其他权重变化快得多。\n\n阿莎只用训练记录计算缩放参数，并调低学习率。更新变得容易追踪。她再用两个自拟点手算一步，理解原因。现在她能区分更新规则不合适与输入信息不足。训练损失下降很有用，但仍需验证。"
       },
       "concept": {
-        "en": "Gradient descent updates parameters in the direction opposite the local slope of the loss. The learning rate controls how far each step travels; too large a step can overshoot, while very small steps can be slow. Feature scaling changes the geometry of the optimization problem and can make a shared learning rate more workable. Standardization subtracts a training mean and divides by a training standard deviation. It changes units, not the information available. Convergence of training loss alone says nothing about leakage, causal meaning, or performance on new examples.",
-        "zh": "梯度下降沿损失局部斜率的反方向更新参数。学习率控制每一步走多远；步长过大可能越过合适位置，步长很小则可能收敛缓慢。特征缩放会改变优化问题的几何形状，使统一的学习率更容易发挥作用。标准化先减去训练均值，再除以训练标准差。它改变的是单位，而不是可获得的信息。训练损失收敛本身并不能说明是否存在泄漏、是否具有因果含义，或在新样本上的表现如何。"
+        "en": "The loss is a number that measures prediction error. A gradient tells us how that loss changes near the current weights. In one dimension, think of the slope of a hill. Gradient descent moves against that slope. The learning rate multiplies the gradient to set the update.\n\nStandardization subtracts a training mean and divides by a training standard deviation. The mean gives the center. The standard deviation measures spread. This makes different input scales easier to handle. A constant column has zero spread and needs separate handling; dividing by zero is not allowed.",
+        "zh": "损失是衡量预测误差的数值。梯度描述当前权重附近损失怎样变化。一维时，可以把它想成山坡的斜率。梯度下降沿斜率的反方向移动。学习率乘以梯度，决定本次更新。\n\n标准化先减去训练均值，再除以训练标准差。均值表示中心，标准差表示分散程度。这样更容易处理不同输入尺度。常数列的离散程度为零，需要单独处理，不能除以零。"
       },
       "application": {
         "en": "Fit scaling statistics on training data and reuse them unchanged for validation and testing. Plot loss against updates, check for exploding or non-finite values, and try a smaller learning rate when steps are unstable. Compare training and validation curves before deciding whether to train longer. Handle constant features explicitly because their standard deviation is zero. Save the fitted transformation together with the final model.",
@@ -209,6 +886,112 @@
         "google-gradient",
         "google-normalization",
         "sklearn-pitfalls"
+      ],
+      "level": "core",
+      "glossary": [
+        {
+          "term": {
+            "en": "Gradient",
+            "zh": "梯度"
+          },
+          "meaning": {
+            "en": "Local slopes of the loss with respect to model parameters.",
+            "zh": "损失相对于模型参数的局部斜率。"
+          }
+        },
+        {
+          "term": {
+            "en": "Learning rate",
+            "zh": "学习率"
+          },
+          "meaning": {
+            "en": "A multiplier that controls how strongly a gradient changes a parameter.",
+            "zh": "控制梯度对参数改变幅度的乘数。"
+          }
+        },
+        {
+          "term": {
+            "en": "Standard deviation",
+            "zh": "标准差"
+          },
+          "meaning": {
+            "en": "A measure of spread; here it is the square root of the mean squared distance from the mean.",
+            "zh": "衡量离散程度；这里是与均值之差的平方均值再开平方。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why do 2 and 6 become −1 and 1?",
+            "zh": "为什么 2 和 6 变成 −1 和 1？"
+          },
+          "answer": {
+            "en": "Their mean is 4. Distances from 4 are −2 and 2. The population standard deviation is 2, so divide both distances by 2.",
+            "zh": "均值为 4，与 4 的差为 −2 和 2。总体标准差为 2，因此将两者除以 2。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why does a negative gradient increase a weight?",
+            "zh": "负梯度为什么让权重增加？"
+          },
+          "answer": {
+            "en": "The update subtracts learning rate times gradient. Subtracting a negative number adds a positive amount. This moves toward lower loss locally.",
+            "zh": "更新要减去学习率乘梯度。减去负数等于增加正数，从局部方向看是朝较低损失移动。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if the learning rate is much larger?",
+            "zh": "学习率很大时会怎样？"
+          },
+          "answer": {
+            "en": "A large step may cross the low point and raise the loss. Compare the loss before and after a step; do not assume every descent update succeeds.",
+            "zh": "大步可能越过低点，使损失上升。要比较更新前后的损失，不能假定每一步都成功。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "One robot update",
+            "zh": "小车模型的一步更新"
+          },
+          "body": {
+            "en": "Change the example’s learning rate from 0.1 to 1.1. Recompute the loss. The old gradients are unchanged, but the step overshoots and produces loss 7.2.",
+            "zh": "把学习率从 0.1 改为 1.1，重新计算损失。旧梯度不变，但步长越过低点，得到损失 7.2。"
+          }
+        },
+        {
+          "title": {
+            "en": "Constant sensor column",
+            "zh": "恒定传感器列"
+          },
+          "body": {
+            "en": "Try inputs [4, 4]. Their standard deviation is zero. Detect this case before division. Drop the uninformative column or map it to zero using an explicitly saved rule.",
+            "zh": "尝试输入 [4,4]，标准差为零。除法前先识别这种情况。可删除无信息的列，或用明确保存的规则把它映射为零。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-gradient-step",
+          "title": {
+            "en": "Standardize and take one step",
+            "zh": "标准化后更新一步"
+          },
+          "intro": {
+            "en": "All gradients below use the old parameter values.",
+            "zh": "下面所有梯度都使用更新前的参数。"
+          },
+          "code": "import numpy as np\nx = np.array([2., 6.]); y = np.array([1., 3.])\nz = (x - x.mean()) / x.std()\nw, b, rate = 0., 0., 0.1\nerror = w * z + b - y\ngw = 2 * np.mean(error * z)\ngb = 2 * np.mean(error)\nw, b = w - rate * gw, b - rate * gb\nprint('scaled inputs:', z.tolist())\nprint(f'gradients: {gw:.1f}, {gb:.1f}')\nprint(f'weights: {w:.1f}, {b:.1f}')\nprint(f'loss: {np.mean((w * z + b - y) ** 2):.3f}')\n",
+          "output": "scaled inputs: [-1.0, 1.0]\ngradients: -2.0, -4.0\nweights: 0.2, 0.4\nloss: 3.200\n",
+          "explanation": {
+            "en": "mean and std compute training statistics; NumPy std uses the population convention here. error stores old residuals. Multiplying by z gives the weight contribution to the derivative. Multiplying means by two comes from differentiating a square. The tuple assignment updates both parameters from old gradients. The last line recomputes the loss. This is one exact step for a tiny linear model, not a full training workflow.",
+            "zh": "mean 和 std 计算训练统计量；这里 NumPy 的 std 使用总体约定。error 保存旧残差。乘以 z 得到权重导数中的输入贡献。均值乘二来自平方的求导。元组赋值让两个参数都使用旧梯度更新。最后重新计算损失。这只是微型线性模型的一次精确更新，并非完整训练流程。"
+          }
+        }
       ]
     },
     {
@@ -218,12 +1001,12 @@
         "zh": "区分概率估计与决策"
       },
       "story": {
-        "en": "Leo helps a backyard astronomy group decide whether to prepare cameras for a clear evening. He trains a classifier from weather measurements available before sunset and obtains values such as 0.35 and 0.72. A friend interprets these as final yes-or-no instructions, but Leo notices that the group has two different decisions. Setting out a portable camera is easy to reverse, while assembling a delicate tracking rig takes much longer. He keeps the same probability model and compares different decision thresholds on validation evenings. The portable camera can tolerate more false alarms; the tracking rig needs stronger evidence. They record the selected rule before checking the reserved test evenings. The lesson is that a probability estimate summarizes the model's belief, while a threshold expresses how a particular action will use that estimate.",
-        "zh": "利奥帮助一个后院天文小组决定，是否要为晴朗的夜晚准备相机。他使用日落之前可获得的天气测量值训练分类器，得到 0.35、0.72 这样的数值。一位朋友把这些数值理解成最终的“是或否”指令，但利奥发现，小组实际上要作出两种不同决策。摆出便携相机很容易撤回，而组装精密的跟踪装置则耗时得多。他保留相同的概率模型，在验证集的夜晚比较不同决策阈值。便携相机可以容忍更多误报，而跟踪装置需要更强的证据。他们在检查预留测试夜晚之前，先记录选定的规则。由此得到的教训是：概率估计概括了模型的判断，而阈值表达了某一种行动如何使用这个估计。"
+        "en": "Leo wants to sort evening sky images into clear and cloudy groups. His model gives the next image a score of 0.60 for clear sky. He treats that number as a command to prepare the telescope. His friend asks why the cutoff is 0.50. Leo has no answer yet.\n\nHe separates two jobs. The model estimates a probability. A threshold turns that estimate into an action. Raising the threshold means fewer preparation alerts. He keeps the model fixed and compares cutoffs on validation images. The numbers now describe a choice he can explain, rather than a rule hidden inside the model.",
+        "zh": "里奥想把夜空图像分为晴朗和多云两类。模型给下一张图像的晴朗分数为 0.60，他立即准备望远镜。朋友问为什么以 0.50 为界，里奥暂时答不上来。\n\n他把两件事分开：模型估计概率，阈值把估计变成行动。提高阈值会减少准备提醒。他固定模型，用验证图像比较不同阈值。现在这些数字描述的是可解释的选择，而不是藏在模型里的规则。"
       },
       "concept": {
-        "en": "Binary logistic regression maps a linear score through the sigmoid function to produce a number between zero and one. That number is interpreted as an estimated probability of the chosen positive class. A threshold converts the estimate into a class decision, but changing it does not retrain the model. Lowering the threshold generally includes more positive predictions; raising it includes fewer. Probability calibration is a separate question: predictions near 0.7 should correspond to roughly 70% positives over suitable repeated cases if the model is calibrated.",
-        "zh": "二元逻辑回归把线性分数送入 sigmoid 函数，得到零与一之间的数值。这个数值被解释为所选正类的估计概率。阈值把估计转换为类别决策，但改变阈值并不等于重新训练模型。降低阈值通常会得到更多正类预测，提高阈值则会减少正类预测。概率校准是另一个问题：如果模型经过良好校准，那么在适当的重复案例中，预测接近 0.7 的案例应当大约有 70% 属于正类。"
+        "en": "A binary task has two labels, here clear and cloudy. Logistic regression first makes a linear score. The sigmoid function bends that score into a value between zero and one. We interpret it as the estimated probability of the positive label.\n\nA threshold is a separate decision rule. Predict positive when the estimate reaches that cutoff. Moving the cutoff does not change the weights or probability estimates. A sigmoid alone does not guarantee accurate probabilities. Calibration, taught later, checks whether predicted probabilities match observed frequencies.",
+        "zh": "二分类任务有两个标签，这里是晴朗和多云。逻辑回归先生成线性分数，再用 sigmoid 函数将它映射到零与一之间，作为正类概率的估计。\n\n阈值是另一个决策规则：估计达到界限就预测正类。移动阈值不会改变权重或概率估计。单独使用 sigmoid 并不能保证概率准确。后面学习的校准会检查预测概率与观测频率是否相符。"
       },
       "application": {
         "en": "Name the positive class before training and keep that definition consistent in metrics. Use validation data to compare thresholds under the intended action costs or review capacity. Inspect both false positives and false negatives at the chosen operating point. If probabilities themselves inform decisions, check calibration as well as classification accuracy. Freeze the threshold before the final test, and document how ties at the threshold are handled.",
@@ -253,6 +1036,112 @@
       "sources": [
         "google-sigmoid",
         "google-thresholds"
+      ],
+      "level": "core",
+      "glossary": [
+        {
+          "term": {
+            "en": "Positive class",
+            "zh": "正类"
+          },
+          "meaning": {
+            "en": "The label we choose to count as one, not necessarily something good.",
+            "zh": "选择用一表示的标签，不一定意味着好事。"
+          }
+        },
+        {
+          "term": {
+            "en": "Sigmoid",
+            "zh": "Sigmoid 函数"
+          },
+          "meaning": {
+            "en": "A smooth function that maps any finite real score into a value between zero and one.",
+            "zh": "把任意有限实数分数平滑映射到零与一之间的函数。"
+          }
+        },
+        {
+          "term": {
+            "en": "Threshold",
+            "zh": "阈值"
+          },
+          "meaning": {
+            "en": "The cutoff used to turn a probability estimate into a class choice.",
+            "zh": "把概率估计转为类别选择的界限。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Is 0.5987 already a class label?",
+            "zh": "0.5987 已经是类别标签吗？"
+          },
+          "answer": {
+            "en": "No. It is a probability estimate. Comparing it with 0.50 gives class one; comparing it with 0.65 gives class zero.",
+            "zh": "不是，它是概率估计。与 0.50 比较得到类别一，与 0.65 比较得到类别零。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why is sigmoid(0) equal to 0.5?",
+            "zh": "为什么 sigmoid(0) 等于 0.5？"
+          },
+          "answer": {
+            "en": "exp(0) equals 1. The denominator is 1+1=2, so the result is 1/2.",
+            "zh": "exp(0) 等于 1。分母为 1+1=2，所以结果为 1/2。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does a higher threshold improve every metric?",
+            "zh": "提高阈值会改善所有指标吗？"
+          },
+          "answer": {
+            "en": "No. It produces fewer positives. Some false alarms may disappear, but some true positives may be missed too. Count both types on validation data.",
+            "zh": "不会。正类预测会减少，部分误报可能消失，也可能漏掉部分真正例。要在验证数据上同时统计两种变化。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Sky image review",
+            "zh": "夜空图像复核"
+          },
+          "body": {
+            "en": "For probabilities [0.3, 0.6, 0.9], compare thresholds 0.5 and 0.8. The positive counts are two and one. Add true labels before deciding which threshold is better.",
+            "zh": "对概率 [0.3,0.6,0.9] 比较阈值 0.5 与 0.8，正类预测数分别为二和一。决定哪个阈值更好之前，需要加入真实标签。"
+          }
+        },
+        {
+          "title": {
+            "en": "Spam review queue",
+            "zh": "垃圾消息复核队列"
+          },
+          "body": {
+            "en": "Use a threshold to choose messages for human review. A lower threshold makes the queue longer. Measure useful detections and unnecessary reviews together; queue length alone is not quality.",
+            "zh": "用阈值选择需要人工复核的消息。降低阈值会增加队列长度。同时衡量有效检出与不必要复核；队列长度本身不代表质量。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-sigmoid-cutoffs",
+          "title": {
+            "en": "One probability, two decisions",
+            "zh": "同一个概率，两种决策"
+          },
+          "intro": {
+            "en": "Use illustrative fixed weights, not a trained sky classifier.",
+            "zh": "使用示意性的固定权重，不是真实训练的夜空分类器。"
+          },
+          "code": "from math import exp\nx, w, b = 2., 0.8, -1.2\nscore = b + w * x\nprobability = 1 / (1 + exp(-score))\nprint(f'score: {score:.4f}; probability: {probability:.4f}')\nfor threshold in [0.50, 0.65]:\n    label = int(probability >= threshold)\n    print(f'threshold {threshold:.2f}: class {label}')\n",
+          "output": "score: 0.4000; probability: 0.5987\nthreshold 0.50: class 1\nthreshold 0.65: class 0\n",
+          "explanation": {
+            "en": "The first calculation creates a linear score. exp implements the exponential in sigmoid. The loop reuses one probability. >= compares it with each cutoff; int turns True or False into one or zero. The output changes class while keeping the score fixed. No data were used to fit these weights or to justify either threshold.",
+            "zh": "第一项计算生成线性分数。exp 实现 sigmoid 中的指数。循环重复使用同一个概率。>= 与各阈值比较，int 将真假变成一或零。输出类别改变，但分数不变。没有使用数据拟合这些权重，也没有数据证明哪种阈值更合适。"
+          }
+        }
       ]
     },
     {
@@ -262,12 +1151,12 @@
         "zh": "统计任务真正关心的错误"
       },
       "story": {
-        "en": "Tessa builds a detector for a rare frog call in long evening recordings. Most clips contain wind, insects, or silence, so a classifier that always says no call looks impressive when she checks accuracy. Listening to its selected clips reveals the problem: there are no selected clips at all. She labels a small evaluation collection and writes four counts on a sheet: calls found, calls missed, false alarms, and correctly rejected background. Now two models that seemed similar have visibly different behavior. One finds more calls but asks her to listen to many extra clips; another provides cleaner selections but misses quiet calls. Tessa chooses a validation criterion that matches the time available for listening and reports the missed-call count separately. Her evaluation becomes a description of scientific usefulness instead of a single flattering percentage.",
-        "zh": "泰莎建立一个检测器，在长时间夜间录音中寻找一种罕见的蛙鸣。大多数片段只有风声、昆虫声或寂静，所以当她检查准确率时，一个始终回答“没有蛙鸣”的分类器看起来表现出色。她想听听被选中的片段，却发现问题所在：根本没有任何片段被选中。她为一小组评估数据标注标签，并在纸上写下四个数量：找到的蛙鸣、漏掉的蛙鸣、误报，以及正确排除的背景。此时，两个原本看似相近的模型表现出了明显差异。一个发现更多蛙鸣，却要求她额外听大量片段；另一个提供更干净的筛选结果，却漏掉轻微蛙鸣。泰莎选择了与可用听音时间相匹配的验证标准，并单独报告漏检数量。她的评估终于开始描述科研中的实际用途，而不再只是一个漂亮的百分比。"
+        "en": "Nora searches a collection of audio clips for bird calls. Only ten of every hundred clips contain a call. A model that says “no call” every time reaches 90% accuracy. That sounds good, but it retrieves nothing she wants to hear.\n\nNora checks a second detector. It finds eight calls and sends twelve background clips for review. Its accuracy is lower, yet its results may be more useful. She writes the four kinds of outcomes in a small table. She can now discuss how many calls are found and how much listening work remains. One score no longer hides the tradeoff.",
+        "zh": "诺拉在一组音频片段里寻找鸟叫。每一百段中只有十段包含鸟叫。模型每次都说“没有鸟叫”，准确率也能达到 90%。分数听起来不错，却没有找出任何想听的内容。\n\n诺拉检查第二个检测器。它找出八段鸟叫，也把十二段背景声送去复核。准确率较低，结果却可能更有用。她用小表格记录四种结果。现在她能同时讨论找回多少鸟叫，以及还要听多少片段。单一分数不再掩盖取舍。"
       },
       "concept": {
-        "en": "Accuracy measures the fraction of all predictions that are correct. Precision asks how many predicted positives are truly positive, while recall asks how many actual positives are found. Their denominators answer different questions, especially when the positive class is rare. F1 is the harmonic mean of precision and recall, but it ignores true negatives and encodes a particular balance between the two quantities. No metric is universally best. Choose metrics that reflect the intended use, and retain the confusion-matrix counts so readers can reconstruct the tradeoffs.",
-        "zh": "准确率衡量所有预测中正确预测所占的比例。精确率询问预测为正类的样本中有多少确实为正类，而召回率询问实际正类中有多少被找到。两者的分母回答不同问题，正类罕见时尤其如此。F1 是精确率与召回率的调和平均数，但它忽略真阴性，并隐含了这两个量之间的一种特定平衡。没有任何指标在所有场景中都是最优的。应选择符合预期用途的指标，并保留混淆矩阵计数，让读者能够重新判断各项取舍。"
+        "en": "A confusion matrix counts correct and incorrect decisions for each class. True positive means a real call was found. False positive means background was flagged. False negative means a call was missed. True negative means background was correctly rejected.\n\nAccuracy divides all correct decisions by all clips. Precision divides found calls by all flagged clips. Recall divides found calls by all real calls. F1 combines precision and recall through their harmonic mean. These questions differ, so report the counts as well as the ratios. A zero denominator needs an explicit convention.",
+        "zh": "混淆矩阵统计每类的正确与错误决策。真正例表示找到了真实鸟叫，假正例表示把背景标为鸟叫，假反例表示漏掉鸟叫，真反例表示正确排除背景。\n\n准确率用所有正确决策除以总片段数。精确率用找到的鸟叫除以全部标记片段。召回率用找到的鸟叫除以全部真实鸟叫。F1 用调和平均结合精确率与召回率。它们回答不同问题，因此既报告比例，也报告计数。分母为零时需要明确约定。"
       },
       "application": {
         "en": "Report the positive-class definition, prevalence, threshold, and four confusion-matrix counts with your metrics. Compare against a simple baseline, including an always-negative classifier when appropriate. Use validation data to examine precision and recall across thresholds. Check important recording conditions separately, such as quiet versus windy evenings. When denominators are zero, state the undefined quantity or the explicit reporting convention instead of silently treating it as excellent performance.",
@@ -275,16 +1164,16 @@
       },
       "practice": {
         "en": "The linked Google classification-metrics tutorial defines accuracy, precision, recall, and F1 and discusses how error priorities affect metric choice. Use that official framework to audit the original frog-detector example. Rebuild each metric from the four counts before drawing a conclusion, and explain why a high accuracy can coexist with no successful detections. The tutorial is the factual reference; the recording scenario and counts are original.",
-        "zh": "所链接的 Google 分类指标教程定义了准确率、精确率、召回率和 F1，并讨论不同错误的重要性如何影响指标选择。可以用这个官方框架审查原创的蛙鸣检测器示例。在作出结论之前，根据四项计数重新构建各个指标，并解释为什么高准确率可能与一次成功检测都没有同时出现。教程是事实依据；录音情境和计数均为原创。"
+        "zh": "所链接的 Google 分类指标教程定义了准确率、精确率、召回率和 F1，并讨论不同错误的重要性如何影响指标选择。可以用这个官方框架审查原创的鸟鸣检测器示例。在作出结论之前，根据四项计数重新构建各个指标，并解释为什么高准确率可能与一次成功检测都没有同时出现。教程是事实依据；录音情境和计数均为原创。"
       },
       "formula": "N = TP + TN + FP + FN\nAccuracy = (TP + TN) / N\nPrecision = TP / (TP + FP)\nRecall = TP / (TP + FN)\nF1 = 2 TP / (2 TP + FP + FN)",
       "symbols": {
         "en": "TP counts true positives: actual calls labeled as calls. TN counts true negatives: background clips labeled as background. FP counts false positives: background clips incorrectly labeled as calls. FN counts false negatives: actual calls that the detector misses. N is the total number of evaluated clips. Accuracy, Precision, Recall, and F1 name the four dimensionless metrics shown. Multiplication is implied in 2 TP. Each denominator must be checked before division; for example, precision is undefined when TP + FP is zero because no clips were predicted positive.",
-        "zh": "TP 统计真阳性，即实际蛙鸣被标为蛙鸣。TN 统计真阴性，即背景片段被标为背景。FP 统计假阳性，即背景片段被错误地标为蛙鸣。FN 统计假阴性，即检测器漏掉的实际蛙鸣。N 是被评估片段的总数。Accuracy、Precision、Recall 和 F1 分别表示公式中的四个无量纲指标。2 TP 表示二乘以 TP。除法之前必须检查每个分母；例如，TP + FP 为零时，精确率未定义，因为没有任何片段被预测为正类。"
+        "zh": "TP 统计真阳性，即实际鸟鸣被标为鸟鸣。TN 统计真阴性，即背景片段被标为背景。FP 统计假阳性，即背景片段被错误地标为鸟鸣。FN 统计假阴性，即检测器漏掉的实际鸟鸣。N 是被评估片段的总数。Accuracy、Precision、Recall 和 F1 分别表示公式中的四个无量纲指标。2 TP 表示二乘以 TP。除法之前必须检查每个分母；例如，TP + FP 为零时，精确率未定义，因为没有任何片段被预测为正类。"
       },
       "calculation": {
         "en": "Create one hundred labeled clips: ten contain calls and ninety contain background. Suppose a detector finds eight calls, misses two, and flags twelve background clips. Then TP = 8, FN = 2, FP = 12, and TN = 78. Accuracy is (8 + 78) / 100 = 86%. Precision is 8 / 20 = 40%, recall is 8 / 10 = 80%, and F1 is 16 / 30 ≈ 53.3%. An always-negative baseline reaches 90% accuracy because it rejects all ninety background clips, but its recall is zero. Its precision is undefined because it predicts no positives. Thus the detector has lower accuracy yet retrieves eight calls that the baseline misses. Whether twelve false alarms are acceptable depends on the intended listening workflow.",
-        "zh": "构造一百个带标签的片段：十个含有蛙鸣，九十个是背景。假设检测器找到八个蛙鸣、漏掉两个，并把十二个背景片段标为蛙鸣。那么 TP = 8、FN = 2、FP = 12、TN = 78。准确率为 (8 + 78) / 100 = 86%。精确率为 8 / 20 = 40%，召回率为 8 / 10 = 80%，F1 为 16 / 30 ≈ 53.3%。始终预测负类的基线可以达到 90% 的准确率，因为它排除了全部九十个背景片段，但其召回率为零。由于它没有预测任何正类，其精确率未定义。因此，检测器虽然准确率较低，却找回了基线漏掉的八个蛙鸣。十二次误报是否可以接受，取决于预期的听音流程。"
+        "zh": "构造一百个带标签的片段：十个含有鸟鸣，九十个是背景。假设检测器找到八个鸟鸣、漏掉两个，并把十二个背景片段标为鸟鸣。那么 TP = 8、FN = 2、FP = 12、TN = 78。准确率为 (8 + 78) / 100 = 86%。精确率为 8 / 20 = 40%，召回率为 8 / 10 = 80%，F1 为 16 / 30 ≈ 53.3%。始终预测负类的基线可以达到 90% 的准确率，因为它排除了全部九十个背景片段，但其召回率为零。由于它没有预测任何正类，其精确率未定义。因此，检测器虽然准确率较低，却找回了基线漏掉的八个鸟鸣。十二次误报是否可以接受，取决于预期的听音流程。"
       },
       "limits": {
         "en": "A confusion matrix describes one threshold on one evaluation set. Precision can change when the positive-class prevalence changes, even if other behavior appears similar. F1 does not express every cost preference. Small numbers of positives make recall estimates unstable, and a pooled score can hide poor performance in particular conditions.",
@@ -297,6 +1186,411 @@
       "sources": [
         "google-metrics",
         "google-thresholds"
+      ],
+      "level": "core",
+      "glossary": [
+        {
+          "term": {
+            "en": "Precision",
+            "zh": "精确率"
+          },
+          "meaning": {
+            "en": "Among predicted positives, the fraction that is truly positive.",
+            "zh": "预测为正的样本中，真实为正的比例。"
+          }
+        },
+        {
+          "term": {
+            "en": "Recall",
+            "zh": "召回率"
+          },
+          "meaning": {
+            "en": "Among actual positives, the fraction that is found.",
+            "zh": "真实为正的样本中，被找到的比例。"
+          }
+        },
+        {
+          "term": {
+            "en": "Class imbalance",
+            "zh": "类别不平衡"
+          },
+          "meaning": {
+            "en": "One class has many more examples than another.",
+            "zh": "一个类别的样本数量远多于另一个类别。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why can 90% accuracy be useless for finding calls?",
+            "zh": "为什么 90% 准确率可能无法帮助寻找鸟叫？"
+          },
+          "answer": {
+            "en": "Ninety clips are background. Rejecting every clip gets those ninety right but misses every call. Recall is zero.",
+            "zh": "九十段是背景。拒绝全部片段能判对这九十段，却漏掉所有鸟叫，召回率为零。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why are the precision and recall denominators different?",
+            "zh": "为什么精确率和召回率的分母不同？"
+          },
+          "answer": {
+            "en": "Precision asks about the 20 flagged clips: 8/20. Recall asks about the 10 real calls: 8/10. Both use the same eight correct detections.",
+            "zh": "精确率检查二十段标记片段，即 8/20。召回率检查十段真实鸟叫，即 8/10。两者都使用八次正确检出。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if no clip is predicted positive?",
+            "zh": "如果没有片段被预测为正类呢？"
+          },
+          "answer": {
+            "en": "Precision becomes 0/0 and is mathematically undefined. Some software reports zero by convention. State that convention and keep the counts visible.",
+            "zh": "精确率变成 0/0，数学上未定义。某些软件按约定报告零。要说明约定，并保留原始计数。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Listening workload",
+            "zh": "听音工作量"
+          },
+          "body": {
+            "en": "Use TP=8 and FP=12. Twenty clips need review, and eight are useful. If only ten reviews fit your session, evaluate a stricter threshold instead of hiding the workload behind accuracy.",
+            "zh": "使用 TP=8、FP=12。需要复核二十段，其中八段有用。若一次只能复核十段，就评估更严格的阈值，不要用准确率掩盖工作量。"
+          }
+        },
+        {
+          "title": {
+            "en": "Rare scratch inspection",
+            "zh": "稀有划痕检查"
+          },
+          "body": {
+            "en": "Make a table with 5 scratched and 95 clean synthetic examples. An always-clean rule has 95% accuracy and zero recall. Use it as a baseline before evaluating a detector.",
+            "zh": "构造五个有划痕、九十五个无划痕的合成样本。始终预测无划痕的规则有 95% 准确率，但召回率为零。先建立这条基线，再评估检测器。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-confusion-counts",
+          "title": {
+            "en": "Compute four metrics from counts",
+            "zh": "从计数计算四个指标"
+          },
+          "intro": {
+            "en": "These counts describe one threshold on an invented evaluation set.",
+            "zh": "这些计数描述自拟评估集上一个阈值的结果。"
+          },
+          "code": "tp, tn, fp, fn = 8, 78, 12, 2\ntotal = tp + tn + fp + fn\naccuracy = (tp + tn) / total\nprecision = tp / (tp + fp)\nrecall = tp / (tp + fn)\nf1 = 2 * tp / (2 * tp + fp + fn)\nfor name, value in [('accuracy', accuracy), ('precision', precision),\n                    ('recall', recall), ('F1', f1)]:\n    print(f'{name}: {value:.3f}')\nprint('clips to review:', tp + fp)\n",
+          "output": "accuracy: 0.860\nprecision: 0.400\nrecall: 0.800\nF1: 0.533\nclips to review: 20\n",
+          "explanation": {
+            "en": "The four counts cover all hundred clips once. Each division matches a different question. The F1 expression uses counts directly and equals the harmonic mean when precision and recall are defined. The loop prints each ratio to three decimal places. The code assumes nonzero denominators in this example. It computes metrics; it does not train an audio detector.",
+            "zh": "四个计数恰好覆盖一百段片段。每个除法对应不同问题。F1 直接用计数计算；在精确率和召回率有定义时，它等于两者的调和平均。循环把比例保留三位小数。本例假设分母非零。代码只计算指标，并未训练音频检测器。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "nearest-neighbours",
+      "level": "applied",
+      "title": {
+        "en": "Nearest neighbours: borrow evidence from nearby examples",
+        "zh": "近邻法：向附近样本借用证据"
+      },
+      "story": {
+        "en": "Aya sorts short sound clips into two instrument groups. Each clip has two measured features. Rather than fit a line, she plots the labeled training clips and finds those closest to a new clip. The nearest three labels vote on its class.\n\nThe first version gives strange results because one feature is in thousands and the other lies between zero and one. Aya rescales using training statistics. She then compares different neighbour counts on validation clips. She sees that “near” is a modeling choice. The method is easy to explain, but its answers depend on which features define the map.",
+        "zh": "绫把短音频分为两种乐器组。每段有两个测量特征。她先不拟合直线，而是画出带标签训练片段，找出离新片段最近的点，让最近三个标签投票。\n\n最初结果很奇怪：一个特征是数千量级，另一个在零到一之间。绫用训练统计量缩放，再在验证片段上比较不同邻居数。她发现“近”本身就是建模选择。方法容易解释，但答案依赖用哪些特征定义这张地图。"
+      },
+      "concept": {
+        "en": "The k-nearest-neighbours classifier stores labeled training examples. For a new input, compute distances, choose the k smallest, and count their labels. In our binary example, more than half voting one gives class one.\n\nEuclidean distance is ordinary straight-line distance. Square coordinate differences, add them, then take a square root. For ranking neighbours, squared distance gives the same order and avoids the root. Scaling must be fitted on training data. Choose k by validation, not by the final test.",
+        "zh": "k 近邻分类器保存带标签训练样本。对新输入计算距离，选择最小的 k 个，再统计标签。本例是二分类，超过半数投一则预测类别一。\n\n欧氏距离就是普通直线距离：坐标差平方、求和，再开平方。给邻居排序时，平方距离顺序相同，可以省去开方。缩放必须在训练数据上拟合。通过验证选择 k，而不是使用最终测试。"
+      },
+      "application": {
+        "en": "Nearest neighbours can provide a transparent baseline for small feature tables or similarity search. Show the retrieved examples to inspect mistakes. Check whether a query is far from every training point before trusting a local vote.",
+        "zh": "近邻法可为小型特征表或相似搜索提供直观基线。展示取回样本以检查错误。相信局部投票前，先检查查询是否离所有训练点都很远。"
+      },
+      "practice": {
+        "en": "The scikit-learn neighbours guide explains supervised neighbour prediction and distance choices. The example below implements only uniform voting over a tiny numeric table.",
+        "zh": "scikit-learn 近邻指南解释监督近邻预测与距离选择。以下示例仅对微型数值表实现等权投票。"
+      },
+      "formula": "d²(x,q) = Σⱼ₌₁ᵈ (xⱼ−qⱼ)²\nŷ = I[(1/k) Σᵢ∈Nₖ(q) yᵢ > 1/2]",
+      "symbols": {
+        "en": "q is the query vector and x is a training vector. j indexes d feature coordinates. d² is squared distance; the superscript 2 means square, while d in the sum counts features. Nₖ(q) is the set of k nearest row indices. yᵢ is a zero-or-one label. ŷ is the predicted label and I is the indicator.",
+        "zh": "q 是查询向量，x 是训练向量。j 遍历 d 个特征坐标。d² 表示平方距离，其中上标 2 表示平方，而求和上界 d 是特征数。Nₖ(q) 是最近 k 行的索引集合，yᵢ 是零或一标签，ŷ 是预测标签，I 是指示函数。"
+      },
+      "calculation": {
+        "en": "Use points [0,0], [1,0], [2,0], [4,0] with labels [0,0,1,1]. Query [1.6,0] gives squared distances [2.56,0.36,0.16,5.76]. The nearest three indices are [2,1,0], with labels [1,0,0]. Their mean is 1/3, so the vote is class zero. With k=1, the result is class one.",
+        "zh": "点为 [0,0]、[1,0]、[2,0]、[4,0]，标签为 [0,0,1,1]。查询 [1.6,0] 得到平方距离 [2.56,0.36,0.16,5.76]。最近三个索引为 [2,1,0]，标签为 [1,0,0]。均值为 1/3，因此预测零。若 k=1，则预测一。"
+      },
+      "limits": {
+        "en": "Distance loses meaning when irrelevant features dominate. Large training sets make direct search expensive. Ties need a rule. A vote fraction is not automatically a calibrated probability.",
+        "zh": "无关特征占主导时，距离失去意义。大型训练集使直接搜索昂贵。平局需要规则，投票比例也不自动是校准概率。"
+      },
+      "takeaway": {
+        "en": "A neighbour prediction is only as sensible as its distance, feature scales, and stored examples.",
+        "zh": "近邻预测是否合理，取决于距离、特征尺度与保存的样本。"
+      },
+      "sources": [
+        "sklearn-neighbours",
+        "google-normalization"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Neighbour",
+            "zh": "邻居"
+          },
+          "meaning": {
+            "en": "A training example ranked close to the query under a chosen distance.",
+            "zh": "在所选距离下，靠近查询的训练样本。"
+          }
+        },
+        {
+          "term": {
+            "en": "Euclidean distance",
+            "zh": "欧氏距离"
+          },
+          "meaning": {
+            "en": "Straight-line distance from squared coordinate differences.",
+            "zh": "由坐标差的平方计算的直线距离。"
+          }
+        },
+        {
+          "term": {
+            "en": "Hyperparameter",
+            "zh": "超参数"
+          },
+          "meaning": {
+            "en": "A setting chosen outside parameter fitting, such as the neighbour count k.",
+            "zh": "在参数拟合之外选择的设置，例如邻居数 k。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why can we rank squared distances without taking roots?",
+            "zh": "为什么可以不开平方就排序？"
+          },
+          "answer": {
+            "en": "For nonnegative values, square root preserves order. The smallest square has the smallest root.",
+            "zh": "对非负值，平方根保持顺序。平方最小，平方根也最小。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why does k=3 predict zero?",
+            "zh": "为什么 k=3 预测零？"
+          },
+          "answer": {
+            "en": "The three labels are [1,0,0]. Two vote zero and one votes one. Their class-one fraction is 1/3.",
+            "zh": "三个标签为 [1,0,0]，两票为零、一票为一，类别一比例为 1/3。"
+          }
+        },
+        {
+          "question": {
+            "en": "Is k=1 always more accurate because it is closest?",
+            "zh": "k=1 最近，是否总更准确？"
+          },
+          "answer": {
+            "en": "No. A single mislabeled or noisy point can control the answer. Larger k smooths decisions but may mix different regions. Compare validation errors.",
+            "zh": "不是。一个错误标签或噪声点就能控制答案。较大的 k 平滑决策，却可能混合不同区域。应比较验证误差。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "A changed neighbour count",
+            "zh": "改变邻居数"
+          },
+          "body": {
+            "en": "Run the same query with k=1 and k=3. Explain the changed answer by listing the selected labels. Do not change the training table at the same time.",
+            "zh": "对同一查询运行 k=1 与 k=3。列出所选标签，解释答案为何改变。不要同时修改训练表。"
+          }
+        },
+        {
+          "title": {
+            "en": "Clip similarity search",
+            "zh": "片段相似搜索"
+          },
+          "body": {
+            "en": "Use two invented audio features with stated units. Retrieve three nearby clips for inspection. Rescale one feature and check whether the retrieved set changes.",
+            "zh": "用两个标明单位的自拟音频特征，取回三个邻近片段检查。改变一个特征的尺度，检查取回集合是否改变。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-knn-vote",
+          "title": {
+            "en": "Inspect every nearest-neighbour vote",
+            "zh": "检查每一张近邻投票"
+          },
+          "intro": {
+            "en": "The table is synthetic and already uses comparable feature scales.",
+            "zh": "表格为合成数据，两个特征已经采用可比尺度。"
+          },
+          "code": "import numpy as np\nx = np.array([[0.,0.], [1.,0.], [2.,0.], [4.,0.]])\ny = np.array([0,0,1,1])\nquery = np.array([1.6,0.])\nsquared = np.sum((x - query) ** 2, axis=1)\norder = np.argsort(squared, kind='stable')\nprint('squared distances:', np.round(squared, 2).tolist())\nfor k in [1,3]:\n    labels = y[order[:k]]\n    print('k:', k, 'labels:', labels.tolist(), 'prediction:', int(labels.mean() > 0.5))\n",
+          "output": "squared distances: [2.56, 0.36, 0.16, 5.76]\nk: 1 labels: [1] prediction: 1\nk: 3 labels: [1, 0, 0] prediction: 0\n",
+          "explanation": {
+            "en": "Subtracting query uses it for every row. sum(axis=1) adds feature contributions within each row. argsort returns row indices from smallest distance to largest; stable ordering resolves equal distances by row order. Slicing [:k] selects neighbours. Their mean counts the fraction of ones. This is a genuine tiny neighbour classifier, with no evidence about real audio accuracy.",
+            "zh": "减去 query 时，每行都使用同一查询。sum(axis=1) 在每行内加总特征贡献。argsort 按距离从小到大返回行索引，稳定排序让等距离按原行顺序处理。[:k] 选取邻居，标签均值就是一的比例。这是实际可运行的微型近邻分类器，但没有真实音频准确率的证据。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "text-naive-bayes",
+      "level": "applied",
+      "title": {
+        "en": "Naive Bayes: classify short texts from word counts",
+        "zh": "朴素贝叶斯：用词频分类短文本"
+      },
+      "story": {
+        "en": "Bo receives many short club messages. He wants a first spam filter that he can inspect. He counts words rather than asking a large model to read each message. In the training examples, “offer” occurs often in spam and “meeting” occurs often in ordinary messages.\n\nA new message contains “offer.” Bo combines the class frequency with the word frequency in each class. He adds a small count before division so an unseen word does not force a score to zero. The filter gives a clear answer in this tiny case. Bo still tests normal messages that use “offer” innocently, because a word is evidence, not proof.",
+        "zh": "博收到许多社团短消息，想先做一个可检查的垃圾消息过滤器。他先统计词频。在训练例子中，“offer” 常出现在垃圾消息里，“meeting” 常出现在普通消息里。\n\n一条新消息含有“offer”。博把类别频率与该词在各类中的频率结合起来。除法前加上小计数，避免未见词让分数直接归零。这个微型例子给出清楚答案，但博仍测试正常使用“offer”的消息，因为一个词只是证据，不是证明。"
+      },
+      "concept": {
+        "en": "Tokenization splits text into units such as words. A count vector records how often each vocabulary word occurs. Multinomial naive Bayes uses class-specific word frequencies to score that vector. “Naive” names a conditional-independence assumption: the model ignores many dependencies among words once the class is fixed.\n\nAdd-one smoothing gives every vocabulary word a positive count. Multiply word probabilities with the class prior; equivalently, add their logarithms. Logs prevent long products from becoming too small. Normalize the two final scores if you want model probability estimates.",
+        "zh": "分词把文本拆成词等单位。计数向量记录词表中每个词出现多少次。多项式朴素贝叶斯用各类别的词频为向量评分。“朴素”指条件独立假设：类别固定后，模型忽略词之间的许多依赖。\n\n加一平滑使词表中每个词都有正计数。把词概率与类别先验相乘，也可等价地把对数相加。对数防止长乘积变得过小。对最终两类分数归一化，可得到模型概率估计。"
+      },
+      "application": {
+        "en": "Naive Bayes is a useful baseline for spam filtering and document categories. Fit vocabulary and word counts on training texts only. Inspect false positives, rare words, and punctuation choices before trusting aggregate accuracy.",
+        "zh": "朴素贝叶斯可作为垃圾消息过滤与文档分类的基线。词表和词频只在训练文本上拟合。相信总体准确率之前，检查误报、罕见词与标点处理。"
+      },
+      "practice": {
+        "en": "The official naive Bayes guide describes multinomial text classification and smoothing. The text counts here are original and intentionally tiny. They do not establish a deployable spam filter.",
+        "zh": "官方朴素贝叶斯指南介绍多项式文本分类与平滑。这里的文本计数是原创微型示例，不能据此建立可部署的垃圾消息过滤器。"
+      },
+      "formula": "θ_cj = (N_cj + 1)/(N_c + V)\ns_c = log π_c + Σⱼ xⱼ log θ_cj\nP(c|x) = exp(s_c) / Σ_a exp(s_a)",
+      "symbols": {
+        "en": "c and a index classes; j indexes words. N_cj counts word j in class c. N_c totals all word occurrences in that class. V is vocabulary size. θ_cj is the smoothed word probability. π_c is the class prior. xⱼ counts query word j. s_c is its log score. log is natural logarithm and exp reverses it.",
+        "zh": "c、a 表示类别，j 表示词。N_cj 统计类别 c 中词 j 的次数，N_c 是该类总词数，V 是词表大小。θ_cj 是平滑后的词概率，π_c 是类别先验，xⱼ 是查询中词 j 的次数，s_c 是对数分数。log 是自然对数，exp 是其逆运算。"
+      },
+      "calculation": {
+        "en": "Use vocabulary [offer, meeting]. Spam counts are [3,1]; ordinary counts are [1,3]. Each class has four word occurrences. Add-one smoothing gives spam word probabilities [4/6,2/6] and ordinary probabilities [2/6,4/6]. With equal class priors and query [1,0], unnormalized scores are 1/3 and 1/6. Their sum is 1/2, so spam probability is 2/3.",
+        "zh": "词表为 [offer,meeting]。垃圾类计数 [3,1]，普通类 [1,3]，各有四次词出现。加一平滑后，垃圾类词概率为 [4/6,2/6]，普通类为 [2/6,4/6]。类别先验相等、查询为 [1,0] 时，未归一化分数为 1/3 与 1/6，总和为 1/2，因此垃圾类概率为 2/3。"
+      },
+      "limits": {
+        "en": "Word counts lose order and much context. The independence assumption is often false. Probabilities may be poorly calibrated even when classification is useful. Unseen words need a saved vocabulary policy.",
+        "zh": "词计数丢失顺序和大量语境。独立性假设常不成立。即使分类有用，概率也可能校准很差。未见词需要固定的词表处理规则。"
+      },
+      "takeaway": {
+        "en": "Count words, smooth the counts, combine evidence, and inspect where context breaks the simple assumption.",
+        "zh": "统计词频、平滑计数、结合证据，再检查语境在哪些地方打破简单假设。"
+      },
+      "sources": [
+        "sklearn-naive-bayes"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Token",
+            "zh": "词元"
+          },
+          "meaning": {
+            "en": "One text unit produced by a chosen splitting rule.",
+            "zh": "按选定切分规则产生的一个文本单位。"
+          }
+        },
+        {
+          "term": {
+            "en": "Prior",
+            "zh": "先验"
+          },
+          "meaning": {
+            "en": "The class probability before using the query’s words.",
+            "zh": "使用查询词语之前的类别概率。"
+          }
+        },
+        {
+          "term": {
+            "en": "Smoothing",
+            "zh": "平滑"
+          },
+          "meaning": {
+            "en": "Adding small counts so known-vocabulary words never receive zero probability.",
+            "zh": "增加小计数，避免词表内的词得到零概率。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why add V to the denominator?",
+            "zh": "为什么分母加 V？"
+          },
+          "answer": {
+            "en": "We add one to each of V word counts. The total count therefore increases by V as well. Probabilities still sum to one.",
+            "zh": "V 个词的计数各加一，总计数也增加 V，这样概率之和仍为一。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why is the query [1,0]?",
+            "zh": "为什么查询是 [1,0]？"
+          },
+          "answer": {
+            "en": "It contains offer once and meeting zero times. The vector follows the saved vocabulary order.",
+            "zh": "它含 offer 一次、meeting 零次，向量遵循已保存词表顺序。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if both words occur once?",
+            "zh": "如果两个词各出现一次呢？"
+          },
+          "answer": {
+            "en": "With these symmetric counts and equal priors, both classes receive the same score. Real context may differ, but this count model cannot see it.",
+            "zh": "在此对称计数与相等先验下，两类分数相同。真实语境可能不同，但这个计数模型看不到。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Inspect a false alarm",
+            "zh": "检查误报"
+          },
+          "body": {
+            "en": "Write an ordinary message containing offer, such as an invitation to offer help. The toy classifier still favors spam. Explain which context the count representation omitted.",
+            "zh": "写一条含 offer 的普通消息，例如邀请提供帮助。玩具分类器仍偏向垃圾类。解释计数表示遗漏了哪些语境。"
+          }
+        },
+        {
+          "title": {
+            "en": "An unseen word",
+            "zh": "未见词"
+          },
+          "body": {
+            "en": "Add a query word absent from the saved vocabulary. Choose an unknown token or an ignore rule before evaluation. Do not expand the vocabulary using test labels.",
+            "zh": "加入一个不在保存词表中的查询词。评估前选定未知词元或忽略规则。不要利用测试标签扩充词表。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-naive-bayes-counts",
+          "title": {
+            "en": "Compute a two-word classifier",
+            "zh": "计算双词分类器"
+          },
+          "intro": {
+            "en": "Use supplied training count totals to show every probability.",
+            "zh": "用预设训练词频总计展示各个概率。"
+          },
+          "code": "import numpy as np\ncounts = np.array([[3.,1.], [1.,3.]])\nword_prob = (counts + 1) / (counts.sum(axis=1, keepdims=True) + 2)\nquery = np.array([1.,0.])\nlog_scores = np.log([0.5,0.5]) + np.log(word_prob) @ query\nweights = np.exp(log_scores - log_scores.max())\nprobabilities = weights / weights.sum()\nprint('word probabilities:', np.round(word_prob, 3).tolist())\nprint('class probabilities:', np.round(probabilities, 3).tolist())\nprint('class:', ['spam','ordinary'][int(np.argmax(probabilities))])\n",
+          "output": "word probabilities: [[0.667, 0.333], [0.333, 0.667]]\nclass probabilities: [0.667, 0.333]\nclass: spam\n",
+          "explanation": {
+            "en": "Rows represent classes and columns represent words. sum with keepdims preserves a column-shaped denominator for each row. Adding one implements smoothing. @ adds query-count-weighted log probabilities. Subtracting the largest log score keeps exponentials numerically manageable without changing the normalized result. argmax selects the higher score. The classifier is based only on these counts, not a trained language model.",
+            "zh": "行代表类别、列代表词。sum 配合 keepdims 为每行保留列形状的分母。加一实现平滑。@ 把按查询计数加权的对数概率相加。减去最大对数分数能保持指数计算稳定，而不改变归一化结果。argmax 选择较高分数。分类器只依赖这些计数，不是训练好的语言模型。"
+          }
+        }
       ]
     },
     {
@@ -306,12 +1600,12 @@
         "zh": "建立规则，再理解组合规则会改变什么"
       },
       "story": {
-        "en": "Niko tests paper kites with different wing angles and tail lengths. A linear classifier misses a pattern: long tails help at one wing angle but hurt at another. He draws a small decision tree that first asks about angle and then asks about tail length. The rules are easy to inspect, yet a deeper version memorizes nearly every flight and changes dramatically when one windy trial is removed. Niko limits the depth and compares the result with a collection of randomized trees. Their combined predictions vary less across his repeated training samples, although the model is harder to summarize as a single rule. He keeps a shallow tree for understanding and an ensemble as a candidate for prediction, evaluating both on flights reserved beforehand. More rules become useful only when they survive the same fair comparison.",
-        "zh": "尼科测试不同翼角和尾长的纸风筝。线性分类器遗漏了一个模式：长尾在某个翼角下有帮助，在另一个翼角下却有害。他画了一棵小型决策树，先询问翼角，再询问尾长。这些规则容易检查，但更深的版本几乎记住了每次飞行，而且只要移除一次多风条件下的试飞，整棵树就会大幅改变。尼科限制树深，并把结果与一组随机化树比较。在重复抽取训练样本时，组合预测的变化更小，但模型也更难概括成一条规则。他保留浅树用于理解，同时把集成模型作为预测候选；两者都使用事先预留的飞行记录进行评估。更多规则只有经得起同样公平的比较时，才真正有价值。"
+        "en": "Tao records whether a small kite stays in the air. His inputs include wind speed and the angle of the string. A single straight rule misses an interaction: a useful angle depends on the wind. He draws a decision tree with one question at each fork.\n\nThe tree handles the small table well. A deeper version then memorizes unusual trials. Tao compares shallower trees and a forest of varied trees. He checks how the forest combines their probabilities. The combined prediction is less tied to one tree’s rule, but it still needs held-out trials. A clear branch is a useful model choice, not proof of cause.",
+        "zh": "陶记录小风筝能否持续飞行，输入包括风速和拉线角度。一条直线规则忽略了交互：合适的角度取决于风速。他画出决策树，每个分叉问一个问题。\n\n这棵树能处理小表格，但更深的版本开始记住异常试验。陶比较浅树与由不同树组成的森林，并检查森林如何合并概率。组合结果不再过度依赖某一棵树，但仍需留出试验验证。清楚的分支是有用的建模选择，不是因果证明。"
       },
       "concept": {
-        "en": "A decision tree repeatedly divides feature space into regions and predicts from the examples in each leaf. For binary classification, Gini impurity measures how mixed a node's labels are; a candidate split is judged by the weighted impurity of its children. Deep trees can fit complicated patterns and also memorize noise. Random forests average predictions from randomized trees, often reducing variance. Boosting instead builds a sequence of learners that improve a chosen objective. Both are ensembles, but their training logic and tuning choices differ.",
-        "zh": "决策树反复把特征空间划分为不同区域，并根据各个叶节点中的样本作出预测。对于二元分类，基尼不纯度衡量节点标签的混杂程度；候选划分依据子节点的加权不纯度进行评价。深树可以拟合复杂模式，也可能记住噪声。随机森林对随机化树的预测取平均，往往能够降低方差。提升法则依次建立学习器，以改善所选目标函数。两者都属于集成方法，但训练逻辑和调参选择不同。"
+        "en": "A decision tree asks a sequence of questions, such as “wind speed below 3?” Each answer selects a branch. A leaf is the final group and supplies a prediction. To choose a split, compare how mixed the labels are before and after it. Gini impurity is zero for a pure group and larger for a mixed group.\n\nA forest combines many randomized trees. Here we average their positive-class probabilities. Varied trees can reduce sensitivity to one noisy sample. Boosting, in a later chapter, learns corrections in sequence instead of training a collection by the same logic.",
+        "zh": "决策树连续提问，例如“风速是否小于 3？”每个回答决定走哪条分支。叶子是最终分组，并给出预测。选择分裂时，比较分裂前后标签混杂程度。纯分组的基尼不纯度为零，混杂分组更高。\n\n森林组合多棵带随机性的树。这里平均它们的正类概率。不同的树可以降低对单个噪声样本的敏感度。后面学习的提升法依次学习修正，与森林的训练逻辑不同。"
       },
       "application": {
         "en": "Fit a shallow tree first and inspect its conditions against the data. Tune depth and minimum leaf size within validation, then compare a forest or boosted trees using identical splits and metrics. Examine stability across reasonable training variations. For interpretation, distinguish a useful predictive split from a causal explanation. Record whether an ensemble combines class votes or probabilities, since these can yield different decisions.",
@@ -341,6 +1635,261 @@
       "sources": [
         "sklearn-trees",
         "sklearn-ensembles"
+      ],
+      "level": "applied",
+      "glossary": [
+        {
+          "term": {
+            "en": "Leaf",
+            "zh": "叶子"
+          },
+          "meaning": {
+            "en": "A final tree region that supplies a prediction.",
+            "zh": "决策树中提供预测的最终区域。"
+          }
+        },
+        {
+          "term": {
+            "en": "Gini impurity",
+            "zh": "基尼不纯度"
+          },
+          "meaning": {
+            "en": "A label-mixing score; for two classes it is 2p(1−p).",
+            "zh": "衡量标签混杂的分数；二分类时为 2p(1−p)。"
+          }
+        },
+        {
+          "term": {
+            "en": "Ensemble",
+            "zh": "集成"
+          },
+          "meaning": {
+            "en": "A prediction made by combining several models.",
+            "zh": "组合多个模型得到预测。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why weight child impurities by their sizes?",
+            "zh": "为什么按子节点大小加权不纯度？"
+          },
+          "answer": {
+            "en": "A child containing nine examples should contribute more than a child containing one. The weights make the score describe a randomly selected parent example.",
+            "zh": "含九个样本的子节点应比只含一个样本的子节点贡献更大。加权后，分数对应从父节点随机选一个样本的情况。"
+          }
+        },
+        {
+          "question": {
+            "en": "How does the split gain become 0.08?",
+            "zh": "分裂增益如何得到 0.08？"
+          },
+          "answer": {
+            "en": "The parent has impurity 0.48. The children have weighted impurity 0.5×0.32+0.5×0.48=0.40. Subtract to get 0.08.",
+            "zh": "父节点不纯度为 0.48。子节点加权值为 0.5×0.32+0.5×0.48=0.40。相减得到 0.08。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can three similar trees all make the same error?",
+            "zh": "三棵相似的树会犯同样的错误吗？"
+          },
+          "answer": {
+            "en": "Yes. Averaging does not remove a misleading pattern that all trees learned. Data quality and independent validation still matter.",
+            "zh": "会。平均无法消除所有树都学到的误导模式。数据质量与独立验证仍然重要。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "A pure leaf",
+            "zh": "纯叶子"
+          },
+          "body": {
+            "en": "Change the left child to five successes and zero failures. Its positive fraction is one, so Gini becomes zero. Check whether this split also leaves enough examples for reliable evaluation.",
+            "zh": "把左子节点改为五次成功、零次失败。正类比例为一，基尼值为零。还要检查分裂后是否有足够样本可靠评估。"
+          }
+        },
+        {
+          "title": {
+            "en": "Forest voting rule",
+            "zh": "森林的合并规则"
+          },
+          "body": {
+            "en": "Compare probabilities [0.49, 0.49, 0.99]. Their mean is about 0.657, above 0.5. A majority of thresholded labels would be negative. State which combination rule you use.",
+            "zh": "比较概率 [0.49,0.49,0.99]，平均约为 0.657，高于 0.5。但先阈值化再多数投票会得到负类。要说明使用哪种合并规则。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-gini-forest",
+          "title": {
+            "en": "Score a split and average trees",
+            "zh": "计算分裂分数与树的平均"
+          },
+          "intro": {
+            "en": "Compute the local criterion without building a whole tree.",
+            "zh": "计算局部分裂准则，不构建整棵树。"
+          },
+          "code": "def gini(positive, total):\n    p = positive / total\n    return 2 * p * (1 - p)\nparent = gini(6, 10)\nchildren = 0.5 * gini(4, 5) + 0.5 * gini(2, 5)\nprobabilities = [0.2, 0.7, 0.9]\nprint(f'parent: {parent:.2f}; children: {children:.2f}')\nprint(f'gain: {parent - children:.2f}')\nprint(f'forest probability: {sum(probabilities) / len(probabilities):.2f}')\n",
+          "output": "parent: 0.48; children: 0.40\ngain: 0.08\nforest probability: 0.60\n",
+          "explanation": {
+            "en": "The function converts counts into a positive fraction, then computes binary Gini impurity. Equal child sizes give weights of 0.5. Subtracting child impurity measures the local gain. sum divided by len averages tree probabilities. The numbers demonstrate one candidate split and one ensemble rule; no tree search or forest training occurs.",
+            "zh": "函数先把计数转成正类比例，再计算二分类基尼不纯度。子节点一样大，因此权重均为 0.5。相减衡量局部增益。sum 除以 len 得到树概率的平均。数值只展示一个候选分裂与一种集成规则，没有进行树搜索或森林训练。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "boosting-residuals",
+      "level": "applied",
+      "title": {
+        "en": "Boosting: learn the next correction",
+        "zh": "提升法：学习下一次修正"
+      },
+      "story": {
+        "en": "Yun predicts the duration of simple robot tasks. A constant estimate misses short and long tasks in opposite directions. She draws the errors beneath the predictions. Then she fits a tiny tree to those remaining errors. Its job is to predict a correction, not the full duration.\n\nYun adds only part of the correction. The training loss drops. She repeats this idea carefully and watches validation error as well. More trees keep improving the training fit, but they need not improve new tasks. She now understands boosting as a sequence of focused repairs whose number and size must be chosen with evidence.",
+        "zh": "云预测简单机器人任务的时长。常数估计对短任务和长任务产生相反方向的误差。她把误差写在预测下方，再用小树拟合剩余误差。这棵树负责预测修正量，而不是完整时长。\n\n云只加入一部分修正，训练损失下降了。她谨慎重复这个过程，同时观察验证误差。增加树可以继续改善训练拟合，却未必改善新任务。她理解了提升法：一连串有针对性的修正，其数量与幅度都要由证据决定。"
+      },
+      "concept": {
+        "en": "An ensemble combines several models. In squared-error gradient boosting, start with a simple prediction and fit a small learner to residuals. Here residual means target minus current prediction. It is the negative of the earlier chapter’s prediction error, so adding it points toward the needed correction. Add a learning-rate-scaled version of that learner.\n\nThe next learner sees the remaining errors after the previous update. This differs from averaging independently randomized trees in a forest. Other losses use their negative gradients instead of this exact residual. Tree depth, step size, and round count control flexibility.",
+        "zh": "集成组合多个模型。平方误差梯度提升先建立简单预测，再用小模型拟合残差。这里残差定义为目标减当前预测。它是前面章节预测误差的相反数，因此加上它会朝所需修正方向移动。将小模型输出乘学习率后加入预测。\n\n下一模型处理前次更新后剩余的误差。这不同于森林对随机化树取平均。其他损失使用负梯度，而不一定是这里的残差。树深度、步长与轮数共同控制灵活性。"
+      },
+      "application": {
+        "en": "Boosted trees are a common option for numeric and categorical tables after appropriate preparation. Compare them with a linear baseline. Choose stopping rounds on validation data and retain the same split rules used for other models.",
+        "zh": "经过合适预处理后，提升树是数值与类别表格的常见选择。应与线性基线比较。通过验证数据选择停止轮数，并沿用其他模型相同的划分规则。"
+      },
+      "practice": {
+        "en": "The official ensemble guide explains gradient boosting and its connection to loss gradients. The code fits one fixed-split stump to residuals. It demonstrates one real correction step, not a complete boosting library.",
+        "zh": "官方集成指南解释梯度提升及其与损失梯度的联系。代码把一个固定分裂树桩拟合到残差，展示一次实际修正，并不是完整提升库。"
+      },
+      "formula": "rᵢ = yᵢ − F₀(xᵢ)\nF₁(xᵢ) = F₀(xᵢ) + η h(xᵢ)",
+      "symbols": {
+        "en": "i indexes training rows. yᵢ is the target. F₀ is the current predictor and F₁ is the updated predictor. rᵢ is the needed correction. h is a small learner fitted to those corrections. η is the learning rate, here between zero and one.",
+        "zh": "i 表示训练行，yᵢ 是目标。F₀ 是当前预测器，F₁ 是更新后预测器。rᵢ 是需要的修正量，h 是拟合这些修正的小模型，η 是学习率，这里取零到一之间。"
+      },
+      "calculation": {
+        "en": "Targets [1,1,3,3] have mean 2. Starting at 2 gives residuals [−1,−1,1,1] and MSE 1. A stump separating the first two rows from the last two predicts those residuals exactly. With η=0.5, predictions become [1.5,1.5,2.5,2.5]. All squared errors are 0.25, so the new MSE is 0.25.",
+        "zh": "目标 [1,1,3,3] 的均值为 2。从 2 开始，残差为 [−1,−1,1,1]，MSE 为 1。树桩把前两行与后两行分开，恰好预测这些残差。η=0.5 时，预测变为 [1.5,1.5,2.5,2.5]。所有平方误差为 0.25，因此新 MSE 为 0.25。"
+      },
+      "limits": {
+        "en": "Repeated corrections can chase noise. A small training loss does not choose the number of rounds for you. The fixed split here is unusually easy and does not measure performance on real task durations.",
+        "zh": "重复修正可能追逐噪声。训练损失小不能替你选择轮数。这里的固定分裂特别简单，不能衡量真实任务时长的性能。"
+      },
+      "takeaway": {
+        "en": "Boosting asks the next learner to repair what the current prediction still misses.",
+        "zh": "提升法让下一个模型修复当前预测仍遗漏的部分。"
+      },
+      "sources": [
+        "sklearn-ensembles"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Residual learner",
+            "zh": "残差学习器"
+          },
+          "meaning": {
+            "en": "A small model trained to predict the remaining correction.",
+            "zh": "学习预测剩余修正量的小模型。"
+          }
+        },
+        {
+          "term": {
+            "en": "Stump",
+            "zh": "树桩"
+          },
+          "meaning": {
+            "en": "A decision tree with one split and two leaves.",
+            "zh": "只有一个分裂、两个叶子的决策树。"
+          }
+        },
+        {
+          "term": {
+            "en": "Boosting round",
+            "zh": "提升轮次"
+          },
+          "meaning": {
+            "en": "One addition of a new correction model.",
+            "zh": "增加一个新修正模型的一次操作。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why does the correction use target minus prediction?",
+            "zh": "为什么修正使用目标减预测？"
+          },
+          "answer": {
+            "en": "If the prediction is too high, this difference is negative. Adding a negative correction lowers it. The sign matches the repair we need.",
+            "zh": "预测过高时，该差为负。加上负修正会降低预测，符号与所需修复一致。"
+          }
+        },
+        {
+          "question": {
+            "en": "Where does MSE 0.25 come from?",
+            "zh": "MSE 0.25 如何得到？"
+          },
+          "answer": {
+            "en": "Each prediction remains 0.5 away from its target. Squaring gives 0.25 for every row, so the average is also 0.25.",
+            "zh": "每项预测距目标仍差 0.5。平方均为 0.25，因此平均也是 0.25。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why not always use η=1?",
+            "zh": "为什么不总取 η=1？"
+          },
+          "answer": {
+            "en": "It fits this easy example in one step. On noisy data, full corrections can fit incidental patterns too quickly. Select the rate and round count with validation.",
+            "zh": "这个简单例子会一步拟合好。但噪声数据中，完整修正可能过快拟合偶然模式。应通过验证选择学习率和轮数。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "A smaller step",
+            "zh": "更小的一步"
+          },
+          "body": {
+            "en": "Use η=0.25. Predictions become [1.75,1.75,2.25,2.25], giving MSE 0.5625. The correction direction is unchanged, but progress per round is smaller.",
+            "zh": "取 η=0.25，预测变为 [1.75,1.75,2.25,2.25]，MSE 为 0.5625。修正方向不变，但每轮前进更少。"
+          }
+        },
+        {
+          "title": {
+            "en": "A noisy duration",
+            "zh": "有噪声的时长"
+          },
+          "body": {
+            "en": "Change the final target from 3 to 8. Recompute the mean and leaf corrections. Explain why one unusual measurement can influence a squared-error learner strongly before deciding whether it is valid data.",
+            "zh": "把最后目标从 3 改为 8，重新计算均值与叶子修正。先解释为何一个异常测量会强烈影响平方误差模型，再判断它是否有效数据。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-residual-stump",
+          "title": {
+            "en": "Fit one residual stump",
+            "zh": "拟合一个残差树桩"
+          },
+          "intro": {
+            "en": "The split at x<2 is fixed so we can inspect both leaf means.",
+            "zh": "固定以 x<2 分裂，便于检查两个叶子均值。"
+          },
+          "code": "import numpy as np\nx = np.array([0.,1.,2.,3.]); y = np.array([1.,1.,3.,3.])\nprediction = np.full_like(y, y.mean())\nresidual = y - prediction\nleft = x < 2\ncorrection = np.where(left, residual[left].mean(), residual[~left].mean())\nupdated = prediction + 0.5 * correction\nprint('residual:', residual.tolist())\nprint('updated:', updated.tolist())\nprint(f'MSE before: {np.mean((prediction-y)**2):.2f}')\nprint(f'MSE after: {np.mean((updated-y)**2):.2f}')\n",
+          "output": "residual: [-1.0, -1.0, 1.0, 1.0]\nupdated: [1.5, 1.5, 2.5, 2.5]\nMSE before: 1.00\nMSE after: 0.25\n",
+          "explanation": {
+            "en": "full_like makes a constant starting prediction with one entry per target. The Boolean left mask defines two leaves. Each leaf uses the mean residual, which minimizes its squared residual error. where sends each row its leaf correction. Adding half the correction performs one boosting step. No split search, multiple rounds, or independent validation are included.",
+            "zh": "full_like 为每个目标生成常数初始预测。布尔 left 掩码定义两个叶子。各叶子取残差均值，它能最小化叶内残差平方误差。where 为每行分配对应修正。加上一半修正即完成一次提升。代码不含分裂搜索、多轮训练或独立验证。"
+          }
+        }
       ]
     },
     {
@@ -350,12 +1899,12 @@
         "zh": "寻找结构，不凭空赋予标签"
       },
       "story": {
-        "en": "Imani measures the length, width, mass, and surface texture of stones collected along a river walk. She has no geological labels and wants a compact view of the collection. A clustering routine returns three groups, which she initially names as if they were established rock types. Looking more carefully, she sees that changing the units of mass reshapes the groups. She standardizes the measurements for a clearly stated comparison and uses principal component analysis to inspect the largest directions of variation. The plot reveals a broad size trend, while clustering proposes divisions within that representation. Imani replaces her confident labels with neutral group identifiers and compares representative stones by hand. The analysis now helps her form questions for further study. It does not magically supply the missing geological ground truth.",
-        "zh": "伊玛尼在河边散步时收集石头，并测量它们的长、宽、质量与表面纹理。她没有地质标签，希望用紧凑的方式观察整个收藏。一个聚类程序返回了三组，她起初把这些组命名得仿佛它们就是已经确定的岩石类型。仔细检查后，她发现只要改变质量的单位，分组就会变化。她为一个明确说明的比较目的标准化测量值，并使用主成分分析观察变化最大的方向。图中呈现出明显的大小趋势，而聚类则在这种表示中提出分组。伊玛尼把自信的类别名称改成中性的组编号，并亲自比较有代表性的石头。此时，分析开始帮助她提出进一步研究的问题，却不会神奇地补上缺失的地质真值。"
+        "en": "Imani measures stones from a river walk. She records length, width, mass, and texture but has no rock-type labels. A clustering program returns three groups. She almost names them as three geological types. Then changing grams to kilograms changes the groups.\n\nImani realizes that distance depends on units. She chooses a stated scaling rule and inspects representative stones. She also tries PCA to view the strongest directions of variation. The compact plot helps her ask better questions. It does not create the missing labels. She keeps neutral group names and seeks outside evidence before making a geological claim.",
+        "zh": "伊玛尼测量河边捡到的石头，记录长、宽、质量和纹理，却没有岩石类型标签。聚类程序返回三组，她差点把它们命名为三种岩石。随后，她发现把克改为千克就改变了分组。\n\n伊玛尼意识到距离依赖单位。她明确选择缩放规则，并检查各组代表石头。她还用 PCA 观察变化最大的方向。紧凑的图帮助她提出更好问题，却不会补出缺失的标签。她使用中性组名，在提出地质结论前寻找外部证据。"
       },
       "concept": {
-        "en": "Clustering groups observations according to a chosen similarity structure. K-means minimizes the sum of squared distances from points to their assigned centroids, so feature units and cluster shape matter. Principal component analysis, or PCA, instead finds orthogonal directions that preserve the most variance in centered data. It produces coordinates, not class labels. PCA can precede clustering, but discarded low-variance directions may still contain meaningful distinctions. Both methods reveal structure relative to their assumptions; neither independently proves that a group corresponds to a natural category.",
-        "zh": "聚类根据选定的相似性结构把观测分组。K 均值最小化各点到其所属质心的平方距离之和，因此特征单位和簇的形状都很重要。主成分分析（PCA）则在中心化数据中寻找保留最多方差的正交方向。它产生的是坐标，而不是类别标签。PCA 可以用于聚类之前，但被舍弃的低方差方向仍可能含有有意义的区别。两种方法揭示的都是相对于各自假设的结构；它们都不能单独证明某个分组对应自然类别。"
+        "en": "Clustering proposes groups without using target labels. K-means assigns points to nearby centers, then moves each center to its group mean. Its objective adds squared distances to centers. More groups can reduce that number without making the interpretation better.\n\nPCA answers a different question: which directions show the most spread after centering? It projects points onto those directions. The covariance matrix summarizes how coordinates vary together. An eigenvector is a direction whose orientation that matrix preserves; its eigenvalue measures the variance along it. These are geometric descriptions, not discovered class labels.",
+        "zh": "聚类不使用目标标签，提出候选分组。K-means 把点分给较近中心，再把中心移到组内均值。目标函数加总点到中心的平方距离。增加组数可以降低该数值，却不一定改善解释。\n\nPCA 回答另一个问题：减去均值后，哪个方向的离散程度最大？它将点投影到这些方向。协方差矩阵概括坐标如何共同变化。特征向量是矩阵作用后保持方向的向量，特征值表示该方向上的方差。这些是几何描述，不是发现的类别标签。"
       },
       "application": {
         "en": "Choose features and scaling according to the comparison you intend, and preserve the transformation for later observations. Inspect representative members of each cluster and compare several plausible cluster counts or initializations. For PCA, report retained variance and examine the component loadings. If the representation will feed a supervised model, fit it inside training folds. Use domain evidence to interpret groups rather than treating cluster identifiers as discovered truth.",
@@ -385,6 +1934,261 @@
       "sources": [
         "sklearn-clustering",
         "sklearn-pca"
+      ],
+      "level": "advanced",
+      "glossary": [
+        {
+          "term": {
+            "en": "Centroid",
+            "zh": "质心"
+          },
+          "meaning": {
+            "en": "The coordinate-wise mean of the points assigned to a group.",
+            "zh": "一个分组内各坐标分别求平均得到的中心。"
+          }
+        },
+        {
+          "term": {
+            "en": "Projection",
+            "zh": "投影"
+          },
+          "meaning": {
+            "en": "Coordinates obtained by measuring a point along selected directions.",
+            "zh": "沿选定方向测量一个点得到的坐标。"
+          }
+        },
+        {
+          "term": {
+            "en": "Explained variance",
+            "zh": "解释方差"
+          },
+          "meaning": {
+            "en": "The share of total spread retained by selected PCA directions.",
+            "zh": "选定 PCA 方向保留的总离散程度比例。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why is the two-cluster loss 4?",
+            "zh": "为什么两组的损失为 4？"
+          },
+          "answer": {
+            "en": "Each point is one vertical unit from its center. Its squared distance is 1. Four such points contribute 4.",
+            "zh": "每个点与中心的竖直距离为一，平方距离为 1。四个点合计为 4。"
+          }
+        },
+        {
+          "question": {
+            "en": "What does retaining 80% variance mean?",
+            "zh": "保留 80% 方差意味着什么？"
+          },
+          "answer": {
+            "en": "Horizontal variance is 4 and vertical variance is 1. Keeping the horizontal direction retains 4/(4+1). It does not mean 80% classification accuracy.",
+            "zh": "水平方差为 4，竖直方差为 1。保留水平方向得到 4/(4+1)。这不代表分类准确率为 80%。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why might a small-variance direction still matter?",
+            "zh": "方差小的方向为什么仍可能重要？"
+          },
+          "answer": {
+            "en": "A rare but useful difference can have little overall spread. PCA has no labels telling it that this difference matters for a later task.",
+            "zh": "少见但有用的差别，整体离散程度可能很小。PCA 没有标签来告诉它这个差别对后续任务重要。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Stone geometry",
+            "zh": "石头的几何结构"
+          },
+          "body": {
+            "en": "Multiply the vertical coordinate in the example by three. Vertical variance becomes 9 while horizontal variance stays 4. The first PCA direction changes, showing why units matter.",
+            "zh": "把示例中的竖直坐标乘三。竖直方差变为 9，水平方差仍为 4。第一主成分方向改变，说明单位的重要性。"
+          }
+        },
+        {
+          "title": {
+            "en": "Audio clip browsing",
+            "zh": "音频片段浏览"
+          },
+          "body": {
+            "en": "Cluster invented clip features such as duration and energy. Listen to representative clips before naming groups. A group of loud clips may reflect recording gain rather than sound type.",
+            "zh": "对时长、能量等自拟片段特征聚类。命名之前听取代表片段。一组大音量片段可能只是录音增益相近，不一定属于同一声音类型。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-cluster-pca-geometry",
+          "title": {
+            "en": "Measure groups and PCA variance",
+            "zh": "计算分组与 PCA 方差"
+          },
+          "intro": {
+            "en": "A rectangle makes both calculations visible.",
+            "zh": "矩形数据让两种计算都容易看清。"
+          },
+          "code": "import numpy as np\nx = np.array([[0., 0.], [0., 2.], [4., 0.], [4., 2.]])\ncenters = np.array([[0., 1.], [4., 1.]])\nassignment = np.array([0, 0, 1, 1])\nloss = np.sum((x - centers[assignment]) ** 2)\ncentered = x - x.mean(axis=0)\ncovariance = centered.T @ centered / len(x)\nvalues = np.linalg.eigvalsh(covariance)\nprint(f'cluster loss: {loss:.1f}')\nprint('covariance:', covariance.tolist())\nprint(f'first variance share: {values[-1] / values.sum():.2f}')\n",
+          "output": "cluster loss: 4.0\ncovariance: [[4.0, 0.0], [0.0, 1.0]]\nfirst variance share: 0.80\n",
+          "explanation": {
+            "en": "centers[assignment] selects one center per row. Squaring and summing yields the grouping loss. mean(axis=0) computes each column mean. .T swaps axes; @ multiplies matrices to form population covariance. eigvalsh returns its eigenvalues in ascending order, so the final one is largest. This code measures chosen groups and variance. It does not discover rock types or run an iterative k-means fit.",
+            "zh": "centers[assignment] 为每行选一个中心。平方再求和得到分组损失。mean(axis=0) 计算每列均值。.T 交换轴，@ 矩阵乘法构建总体协方差。eigvalsh 按升序返回特征值，因此最后一个最大。代码衡量已选分组和方差，没有发现岩石类别，也没有运行迭代 K-means 拟合。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "content-recommendations",
+      "level": "advanced",
+      "title": {
+        "en": "Recommendation: rank items by a stated similarity",
+        "zh": "推荐：按明确的相似度排序"
+      },
+      "story": {
+        "en": "Rui wants to suggest library videos to a science club. Each video has two hand-labeled features: astronomy and robotics. She represents one viewer’s stated interests with the same two features. A dot product gives each video a score.\n\nRui notices that a video with many tags can score highly just because its vector is longer. She compares cosine similarity, which removes vector length from the comparison. The ranking now reflects direction in the feature space. She shows why each video was suggested and invites feedback. This is a transparent content-based recommender, but it cannot discover interests that its two features never describe.",
+        "zh": "芮想为科学社推荐图书馆视频。每个视频有两个手工特征：天文与机器人。她用相同两维表示观众主动表达的兴趣，再用点积给视频评分。\n\n芮发现标签很多的视频可能只因向量更长而得高分，于是比较去除长度影响的余弦相似度。排序现在体现特征空间的方向。她展示推荐原因并收集反馈。这是透明的内容推荐，但无法发现这两个特征从未描述的兴趣。"
+      },
+      "concept": {
+        "en": "A content-based recommender compares item features with a user profile in the same space. A dot product multiplies matching coordinates and adds them. Cosine similarity divides that product by both vector lengths. It measures alignment rather than size.\n\nRanking sorts candidate items by score. A candidate set is the list considered before ranking. Remove unavailable or already-seen items when the task calls for it. A similarity score is not a probability of enjoyment. Evaluate relevance and variety with a clear feedback protocol.",
+        "zh": "基于内容的推荐器在相同空间中比较物品特征与用户画像。点积把对应坐标相乘后相加。余弦相似度再除以两个向量长度，衡量方向一致程度，而非大小。\n\n排序按分数排列候选物品。候选集是排序前考虑的列表。任务需要时，移除不可用或已看过内容。相似分数不是喜欢的概率。应按明确反馈流程评估相关性与多样性。"
+      },
+      "application": {
+        "en": "Use this idea for related reading, video suggestions, or similar document search. Start with understandable tags, then compare richer learned features. Keep a fallback for a new viewer with no profile and for items with no tags.",
+        "zh": "可用于相关阅读、视频建议或相似文档搜索。先用容易理解的标签，再比较更丰富的学习特征。为无画像的新观众与无标签物品准备后备规则。"
+      },
+      "practice": {
+        "en": "Google’s recommendation course documents content-based filtering and dot-product similarity. Our tagged-video example adds an explicit cosine calculation for inspection. It claims no production ranking quality.",
+        "zh": "Google 推荐课程介绍基于内容的过滤与点积相似度。这里的标签视频示例加入明确的余弦计算，便于检查，不声称具有生产推荐质量。"
+      },
+      "formula": "score(u,v) = (u·v)/(‖u‖‖v‖)\nu·v = Σⱼ uⱼvⱼ; ‖u‖ = √Σⱼ uⱼ²",
+      "symbols": {
+        "en": "u is the interest vector and v is an item vector. j indexes matching feature positions. · is the dot product. ‖u‖ is Euclidean vector length. √ means square root and Σ means sum. Both lengths must be nonzero for cosine similarity.",
+        "zh": "u 是兴趣向量，v 是物品向量，j 表示对应特征位置。· 是点积，‖u‖ 是欧氏向量长度。√ 表示平方根，Σ 表示求和。计算余弦相似度时，两个长度都必须非零。"
+      },
+      "calculation": {
+        "en": "Let the profile be [1,1]. Astronomy [1,0] and robotics [0,1] each score 1/√2≈0.707. A mixed video [1,1] scores 2/(√2×√2)=1. Scaling that video to [2,2] leaves its cosine at 1. In contrast, its dot product rises from 2 to 4.",
+        "zh": "画像为 [1,1]。天文 [1,0] 与机器人 [0,1] 均得 1/√2≈0.707。混合视频 [1,1] 得 2/(√2×√2)=1。将其缩放为 [2,2]，余弦仍为 1；点积则从 2 升到 4。"
+      },
+      "limits": {
+        "en": "A zero vector has no cosine direction. Narrow profiles can repeat very similar items. Hand labels can be incomplete. Similarity alone does not measure quality, novelty, or whether the viewer actually liked the item.",
+        "zh": "零向量没有可定义的余弦方向。狭窄画像可能重复推荐相似物品。手工标签可能不完整。相似度本身不能衡量质量、新颖性或观众是否真的喜欢。"
+      },
+      "takeaway": {
+        "en": "Choose a representation and score that match the recommendation question, then test the ranking with feedback.",
+        "zh": "选择符合推荐问题的表示与分数，再用反馈检验排序。"
+      },
+      "sources": [
+        "google-content-recommendations"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "User profile",
+            "zh": "用户画像"
+          },
+          "meaning": {
+            "en": "A feature vector describing stated or inferred interests.",
+            "zh": "描述主动表达或推断兴趣的特征向量。"
+          }
+        },
+        {
+          "term": {
+            "en": "Cosine similarity",
+            "zh": "余弦相似度"
+          },
+          "meaning": {
+            "en": "The dot product divided by both lengths, measuring directional alignment.",
+            "zh": "点积除以双方长度，用于衡量方向一致程度。"
+          }
+        },
+        {
+          "term": {
+            "en": "Candidate set",
+            "zh": "候选集"
+          },
+          "meaning": {
+            "en": "Items considered before ranking chooses their order.",
+            "zh": "排序决定顺序之前考虑的物品集合。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why do both one-topic videos score 0.707?",
+            "zh": "为什么两个单主题视频都得 0.707？"
+          },
+          "answer": {
+            "en": "The profile weights both topics equally. Each dot product is one, and the lengths are √2 and one.",
+            "zh": "画像对两个主题权重相同。点积都是一，长度分别为 √2 与一。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does score 1 mean certain enjoyment?",
+            "zh": "分数为 1 是否表示肯定喜欢？"
+          },
+          "answer": {
+            "en": "No. It means the represented directions match. The chosen features may omit pacing, difficulty, or the viewer’s current needs.",
+            "zh": "不是。它只表示当前表示的方向相同。特征可能遗漏节奏、难度或观众当前需求。"
+          }
+        },
+        {
+          "question": {
+            "en": "What if the profile is [0,0]?",
+            "zh": "画像为 [0,0] 时怎么办？"
+          },
+          "answer": {
+            "en": "Division by its zero length is undefined. Ask for interests or use a clearly labeled general fallback instead of fabricating a similarity.",
+            "zh": "除以零长度未定义。可以收集兴趣，或使用明确标注的通用后备规则，不要编造相似度。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Related reading",
+            "zh": "相关阅读"
+          },
+          "body": {
+            "en": "Give three invented articles two topic tags. Rank them for profile [1,0]. Compare the result with profile [0,1]. Explain the changed order from the coordinates.",
+            "zh": "给三篇自拟文章标两个主题特征。对画像 [1,0] 排序，再与 [0,1] 比较，用坐标解释顺序变化。"
+          }
+        },
+        {
+          "title": {
+            "en": "Longer tag vectors",
+            "zh": "更长的标签向量"
+          },
+          "body": {
+            "en": "Double every coordinate of one item. Its dot product doubles but its cosine stays fixed. Decide whether magnitude contains useful evidence in your particular recommendation task.",
+            "zh": "把一个物品所有坐标乘二。点积加倍，但余弦不变。判断在你的推荐任务中，向量大小是否包含有用证据。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-cosine-recommendations",
+          "title": {
+            "en": "Rank three tagged videos",
+            "zh": "给三个标签视频排序"
+          },
+          "intro": {
+            "en": "The tags are hand chosen; this example learns no embeddings.",
+            "zh": "标签为手工设定；示例不学习嵌入。"
+          },
+          "code": "import numpy as np\nnames = ['astronomy', 'robotics', 'mixed']\nitems = np.array([[1.,0.], [0.,1.], [1.,1.]])\nprofile = np.array([1.,1.])\nscores = (items @ profile) / (np.linalg.norm(items, axis=1) * np.linalg.norm(profile))\norder = np.argsort(-scores, kind='stable')\nfor index in order:\n    print(f'{names[index]}: {scores[index]:.3f}')\n",
+          "output": "mixed: 1.000\nastronomy: 0.707\nrobotics: 0.707\n",
+          "explanation": {
+            "en": "@ forms one dot product per item. norm computes vector length; axis=1 keeps item lengths separate. Division removes length effects. Sorting negative scores puts larger values first, with input order resolving ties. The mixed item ranks first under these tags. This is an inspectable scoring rule, not a validated viewer-preference model.",
+            "zh": "@ 为每个物品计算点积。norm 计算向量长度，axis=1 分别保留物品长度。除法去掉长度影响。对负分排序使高分在前，平局按输入顺序处理。在这些标签下混合视频排第一。这是可检查的评分规则，不是经验证的观众偏好模型。"
+          }
+        }
       ]
     },
     {
@@ -394,12 +2198,12 @@
         "zh": "验证模型选择，为场景变化做好准备"
       },
       "story": {
-        "en": "Ren models humidity in a small greenhouse using many correlated sensor readings. A flexible fit follows the first month almost perfectly, yet its estimates deteriorate on later days. He tries regularization to discourage large coefficients and compares strengths using folds that respect time. The model with the smallest training error no longer wins. After selecting a simpler candidate, he evaluates it on a final untouched period and records the result. Weeks later, new ventilation equipment changes the relationship between temperature and humidity. Ren sees that the old test result cannot promise performance under this new condition. He checks input ranges, obtains new labeled measurements, and reevaluates before relying on the model again. His notebook now treats validation as a decision process and monitoring as a continuing responsibility, with regularization helping only one part of the problem.",
-        "zh": "任使用许多相互相关的传感器读数，建立小型温室的湿度模型。一个灵活的拟合几乎完美追随了第一个月的数据，但在后续日期上的估计变差了。他尝试使用正则化抑制过大的系数，并通过尊重时间顺序的折划分比较不同强度。训练误差最小的模型不再获胜。选定较简单的候选模型后，他在最终一段未触碰的数据上评估并记录结果。几周后，新的通风设备改变了温度与湿度之间的关系。任意识到，旧测试结果不能保证新条件下的性能。他检查输入范围，获得新的带标签测量值，并在再次依赖模型之前重新评估。他的笔记现在把验证视为决策过程，把监测视为持续责任，而正则化只能帮助解决其中一部分问题。"
+        "en": "Ren predicts greenhouse humidity from several sensor readings. A flexible model almost matches the first month perfectly. It does poorly on later days. Ren tries a penalty that discourages large weights. He compares strengths on time-ordered validation periods. The best training fit no longer wins.\n\nHe tests the chosen model once on an untouched final period. Later, new ventilation equipment changes the greenhouse. Ren does not treat the old score as a permanent promise. He collects fresh labels and checks performance again. Validation helped choose a model for one setting. Monitoring must show whether that setting still describes the world.",
+        "zh": "任用多个传感器读数预测温室湿度。灵活模型几乎完全拟合第一个月，却在后来的日期表现很差。他尝试惩罚大权重，并按时间顺序的验证时段比较不同强度。训练拟合最好的模型不再胜出。\n\n他在未使用的最终时段上测试所选模型。后来通风设备更换，温室情况发生变化。任没有把旧分数当作永久承诺，而是收集新标签再次检查性能。验证帮助他为某种环境选模型，监测还要确认现实是否仍符合这种环境。"
       },
       "concept": {
-        "en": "Validation estimates how a modeling choice performs beyond the examples used to fit it. Cross-validation repeats this comparison across splits, but the split structure must reflect dependencies and the intended use. L2 regularization adds a penalty for large coefficients, trading some training fit for a simpler parameter solution. Its strength is selected using validation, not the final test. Distribution shift means the future input or target relationship differs from the evaluated setting. Regularization can reduce overfitting without protecting against every shift, so a good development score remains conditional evidence.",
-        "zh": "验证用于估计某项建模选择在拟合样本之外的表现。交叉验证在不同划分上重复这种比较，但划分结构必须反映数据依赖关系和预期用途。L2 正则化对大系数增加惩罚，用部分训练拟合效果换取更简单的参数解。其强度应通过验证选择，而不是通过最终测试选择。分布偏移意味着未来输入或输入与目标的关系不同于被评估的场景。正则化可以减轻过拟合，却无法防御所有偏移，因此良好的开发阶段分数仍只是附带条件的证据。"
+        "en": "Overfitting means learning details that help the training data but fail to transfer. L2 regularization adds the squared weights to the training objective, multiplied by a chosen strength. This discourages very large coefficients. It may improve generalization, but that is a question for validation.\n\nCross-validation repeats fitting and evaluation on several splits called folds. All learned preprocessing belongs inside each fold. Time and group dependencies still matter. Distribution shift means the future data or input-target relationship changes. Regularization does not protect against every such change.",
+        "zh": "过拟合是学到只帮助训练数据、却无法迁移的细节。L2 正则化把权重平方和乘以指定强度，再加到训练目标中，从而抑制过大系数。它可能改善泛化，但需要验证来判断。\n\n交叉验证在称为“折”的多个划分上重复拟合与评估。所有需要学习的预处理都应在每个折内部完成。时间与分组依赖仍要考虑。分布变化指未来数据或输入与目标的关系改变。正则化无法防御所有这类变化。"
       },
       "application": {
         "en": "Define a modest set of candidate settings and compare them on the same validation folds. Place every learned preprocessing step inside each fold. Use group or chronological splits when the task requires them, and keep a final evaluation period untouched by selection. Record input ranges, class proportions when relevant, and error patterns. After deployment changes, obtain fresh labeled evidence rather than treating input monitoring alone as a performance measurement.",
@@ -430,6 +2234,262 @@
         "sklearn-cv",
         "sklearn-ridge",
         "google-splits"
+      ],
+      "level": "advanced",
+      "glossary": [
+        {
+          "term": {
+            "en": "Overfitting",
+            "zh": "过拟合"
+          },
+          "meaning": {
+            "en": "Learning training-specific details that do not help new examples.",
+            "zh": "学到只适用于训练数据、不能帮助新样本的细节。"
+          }
+        },
+        {
+          "term": {
+            "en": "Regularization",
+            "zh": "正则化"
+          },
+          "meaning": {
+            "en": "A constraint or penalty that changes which fitted solutions are preferred.",
+            "zh": "通过约束或惩罚改变对拟合解的偏好。"
+          }
+        },
+        {
+          "term": {
+            "en": "Fold",
+            "zh": "折"
+          },
+          "meaning": {
+            "en": "One training/evaluation partition used during cross-validation.",
+            "zh": "交叉验证中一次训练与评估的划分。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Why can worse training MSE give a smaller objective?",
+            "zh": "为什么训练 MSE 更差，目标值反而更小？"
+          },
+          "answer": {
+            "en": "Candidate B trades 0.4 more MSE for 0.8 less penalty. Its total is 1.4+0.1×1=1.5, below A’s 1.9.",
+            "zh": "候选 B 的 MSE 增加 0.4，但惩罚减少 0.8。总值为 1.4+0.1×1=1.5，低于 A 的 1.9。"
+          }
+        },
+        {
+          "question": {
+            "en": "Which numbers should choose the penalty strength?",
+            "zh": "应该用哪些数值选择惩罚强度？"
+          },
+          "answer": {
+            "en": "Use validation errors, here fold means 1.2 and 1.0. The training objective helps fit weights; it is not an independent measure of future error.",
+            "zh": "使用验证误差，这里折均值为 1.2 与 1.0。训练目标用于拟合权重，不是未来误差的独立度量。"
+          }
+        },
+        {
+          "question": {
+            "en": "Do unchanged input averages prove the model is still accurate?",
+            "zh": "输入均值不变是否证明模型仍准确？"
+          },
+          "answer": {
+            "en": "No. The relationship between inputs and labels may change while averages stay similar. Obtain fresh labeled cases to measure errors.",
+            "zh": "不证明。即使均值相近，输入与标签的关系也可能改变。需要新的带标签样本来测量误差。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "Select a penalty",
+            "zh": "选择惩罚强度"
+          },
+          "body": {
+            "en": "Compare the two validation-error lists in the code. Choose the lower mean before opening the test set. Refit the chosen setting on development data, then report one final test result.",
+            "zh": "比较代码中两组验证误差。在查看测试集之前选择均值较低者。用开发数据重新拟合所选设置，再报告一次最终测试结果。"
+          }
+        },
+        {
+          "title": {
+            "en": "A changed recording room",
+            "zh": "录音房间改变"
+          },
+          "body": {
+            "en": "A sound classifier moves from a quiet room to a hall. Keep a recent labeled sample from the hall. Compare error types, not only average volume, before deciding whether adaptation helps.",
+            "zh": "声音分类器从安静房间移到大厅。保留大厅近期的带标签样本。在判断适应训练是否有帮助前，比较错误类型，而不只是平均音量。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-regularization-validation",
+          "title": {
+            "en": "Separate fitting objective and validation",
+            "zh": "区分拟合目标与验证"
+          },
+          "intro": {
+            "en": "Candidate summaries illustrate two different comparisons.",
+            "zh": "用候选摘要演示两种不同的比较。"
+          },
+          "code": "candidates = {'A': (1.0, 9), 'B': (1.4, 1)}\nstrength = 0.1\nfor name, (mse, squared_weights) in candidates.items():\n    print(f'{name} objective: {mse + strength * squared_weights:.1f}')\nfolds = {0.0: [1.0, 1.4, 1.2], 0.1: [0.9, 1.0, 1.1]}\nmeans = {value: sum(errors) / len(errors) for value, errors in folds.items()}\nfor value, score in means.items():\n    print(f'lambda {value:.1f}: validation MSE {score:.1f}')\nprint('chosen lambda:', min(means, key=means.get))\n",
+          "output": "A objective: 1.9\nB objective: 1.5\nlambda 0.0: validation MSE 1.2\nlambda 0.1: validation MSE 1.0\nchosen lambda: 0.1\n",
+          "explanation": {
+            "en": "Each candidate stores its training MSE and squared-weight sum. The first loop adds the penalty. The folds dictionary stores independent illustrative validation summaries. The next calculation averages equal-sized folds. min with key=means.get selects the strength with the smallest validation error. It does not select by penalized training loss. These are supplied summaries, not results from a fitted model.",
+            "zh": "每个候选保存训练 MSE 与权重平方和。第一个循环加上惩罚。folds 字典存放另一组示意性的验证摘要。接着对等大小折取平均。min 的 key=means.get 选择验证误差最小的强度，不按惩罚后的训练损失选择。这些是预设摘要，不是实际拟合模型的结果。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "calibration-monitoring",
+      "level": "advanced",
+      "title": {
+        "en": "Check confidence and watch for change",
+        "zh": "检查置信程度并监测变化"
+      },
+      "story": {
+        "en": "Ari’s spam filter marks many messages with probability 0.8. She initially reads that as an 80% success guarantee for each message. Instead, she groups recent labeled messages with similar probabilities. Among four messages predicted near 0.8, only two are spam. The model is too confident in this small group.\n\nAri records the group size and repeats the check with more data. She also tracks missing inputs and new vocabulary. These checks answer different questions. Input changes warn that conditions may have changed. Fresh labels reveal whether predictions remain useful. She plans recalibration on separate data rather than rewriting probabilities from the final test set.",
+        "zh": "阿丽的垃圾消息过滤器常给出 0.8 概率。她起初把它理解成每条消息都有 80% 的成功保证。后来她把近期带标签、概率相近的消息分组。四条预测约为 0.8 的消息中，只有两条是垃圾消息。在这个小组里模型过于自信。\n\n阿丽记录组大小，并收集更多数据重复检查。她还监测缺失输入和新词。它们回答不同问题：输入变化提示条件可能改变，新标签揭示预测是否仍有用。她计划用独立数据重新校准，而不是从最终测试集改写概率。"
+      },
+      "concept": {
+        "en": "Calibration asks whether estimated probabilities agree with observed frequencies over comparable cases. A reliability bin groups nearby estimates. Compare the bin’s mean probability with its positive-label fraction. Small bins are noisy, so keep their counts.\n\nThe Brier score averages squared differences between probability and a zero-or-one label. Lower is better for that score, but it combines several aspects of prediction quality; it is not a pure calibration measure. Monitoring also checks input validity, missingness, and labeled error rates over time. Recalibration needs data separate from the final evaluation.",
+        "zh": "校准检查相似案例中，估计概率是否与观测频率一致。可靠性分箱把相近估计分组，比较组内平均概率与正类比例。小组噪声较大，应保留计数。\n\n布里尔分数平均概率与零或一标签之差的平方。该指标越低越好，但它结合预测质量的多个方面，并非纯校准指标。监测还检查输入有效性、缺失率与随时间变化的带标签错误率。重新校准需要与最终评估分离的数据。"
+      },
+      "application": {
+        "en": "A spam review queue needs both useful ranking and interpretable confidence. Track probability bins on recent labeled messages. Also track new categories and missing features. Investigate changes, then compare any updated model on an independent period.",
+        "zh": "垃圾消息复核队列既需要有效排序，也需要可解释的置信程度。用近期带标签消息检查概率分箱，同时监测新类别与缺失特征。调查变化后，再在独立时段比较更新模型。"
+      },
+      "practice": {
+        "en": "The official calibration guide explains reliability diagrams and proper scoring rules. Google’s monitoring guide describes data checks and live labeled quality checks. The example is a tiny diagnostic, not a sufficient sample for deciding a recalibration policy.",
+        "zh": "官方校准指南解释可靠性图与恰当评分规则。Google 监测指南介绍数据检查与上线后的带标签质量检查。本例只是微型诊断，样本不足以决定重新校准策略。"
+      },
+      "formula": "p̄_b = (1/n_b) Σᵢ∈b pᵢ\nf_b = (1/n_b) Σᵢ∈b yᵢ\nBrier = (1/n) Σᵢ₌₁ⁿ (pᵢ−yᵢ)²",
+      "symbols": {
+        "en": "b is a nonempty probability bin and n_b is its count. pᵢ is a predicted positive probability and yᵢ is its zero-or-one label. p̄_b is the mean predicted probability; f_b is the observed positive fraction. n counts all evaluated examples. Σ adds entries.",
+        "zh": "b 是非空概率分箱，n_b 是箱内数量。pᵢ 是预测正类概率，yᵢ 是零或一标签。p̄_b 为平均预测概率，f_b 为观测正类比例。n 是全部评估样本数，Σ 表示相加。"
+      },
+      "calculation": {
+        "en": "Use probabilities [0.8,0.8,0.8,0.8] and labels [1,1,0,0]. The mean prediction is 0.8, but the positive fraction is 2/4=0.5. Squared errors are [0.04,0.04,0.64,0.64]. Their average is 1.36/4=0.34. Four cases suggest a question; they do not establish a precise population calibration error.",
+        "zh": "概率为 [0.8,0.8,0.8,0.8]，标签为 [1,1,0,0]。平均预测为 0.8，正类比例却为 2/4=0.5。平方误差为 [0.04,0.04,0.64,0.64]，均值为 1.36/4=0.34。四个案例提出了疑问，却不能精确确定总体校准误差。"
+      },
+      "limits": {
+        "en": "Delayed or missing labels limit monitoring. Binning choices change the display. Calibration may deteriorate after distribution shift. A changed feature mean is a warning, not proof that prediction error increased.",
+        "zh": "标签延迟或缺失限制监测。分箱方式会改变图示。分布变化后校准可能退化。特征均值改变只是警讯，不证明预测误差增加。"
+      },
+      "takeaway": {
+        "en": "Confidence needs frequency checks. Model quality needs fresh labels, especially when inputs or conditions change.",
+        "zh": "置信程度需要频率检查。模型质量需要新标签，尤其是在输入或环境变化时。"
+      },
+      "sources": [
+        "sklearn-calibration",
+        "google-monitoring"
+      ],
+      "glossary": [
+        {
+          "term": {
+            "en": "Calibration",
+            "zh": "校准"
+          },
+          "meaning": {
+            "en": "Agreement between predicted probabilities and observed frequencies over comparable cases.",
+            "zh": "相似案例中预测概率与观测频率的一致程度。"
+          }
+        },
+        {
+          "term": {
+            "en": "Reliability bin",
+            "zh": "可靠性分箱"
+          },
+          "meaning": {
+            "en": "A group of examples with similar predicted probabilities.",
+            "zh": "预测概率相近的一组样本。"
+          }
+        },
+        {
+          "term": {
+            "en": "Brier score",
+            "zh": "布里尔分数"
+          },
+          "meaning": {
+            "en": "The mean squared difference between predicted probability and binary outcome.",
+            "zh": "预测概率与二元结果之差的平方均值。"
+          }
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": {
+            "en": "Does 0.8 mean a particular message is partly spam?",
+            "zh": "0.8 是否表示一条消息有部分是垃圾消息？"
+          },
+          "answer": {
+            "en": "No. The label is still zero or one. Probability describes uncertainty. Calibration concerns frequencies across many comparable messages.",
+            "zh": "不是。标签仍为零或一。概率描述不确定性，校准针对许多相似消息的频率。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why do negative labels contribute 0.64 here?",
+            "zh": "这里负标签为何贡献 0.64？"
+          },
+          "answer": {
+            "en": "For y=0, the difference is 0.8−0=0.8. Squaring gives 0.64. Confident incorrect probabilities are penalized strongly.",
+            "zh": "y=0 时差为 0.8−0=0.8，平方为 0.64。自信但错误的概率受到较大惩罚。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can monitoring without labels certify accuracy?",
+            "zh": "没有标签的监测能证明准确率吗？"
+          },
+          "answer": {
+            "en": "No. It can detect schema or input changes. Measuring correctness requires trustworthy outcomes or labels.",
+            "zh": "不能。它能发现格式或输入变化，但衡量正确性需要可靠结果或标签。"
+          }
+        }
+      ],
+      "practice_cases": [
+        {
+          "title": {
+            "en": "A cautious probability",
+            "zh": "更谨慎的概率"
+          },
+          "body": {
+            "en": "Replace all four probabilities with 0.5. The Brier score becomes 0.25 on these labels. This improves this small score; validate any learned recalibration on separate data.",
+            "zh": "把四个概率都改为 0.5，此组标签上的布里尔分数变成 0.25。这个小样本分数改善了；任何学到的重新校准仍需独立数据验证。"
+          }
+        },
+        {
+          "title": {
+            "en": "A new file source",
+            "zh": "新的文件来源"
+          },
+          "body": {
+            "en": "Track missing-feature rates before and after a document importer changes. If the rate rises, inspect parsing first. Collect fresh labels before attributing the change to lower classifier accuracy.",
+            "zh": "文档导入器改变前后监测特征缺失率。若升高，先检查解析。判断分类准确率是否下降前，收集新标签。"
+          }
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "ml-calibration-bin",
+          "title": {
+            "en": "Inspect a probability bin",
+            "zh": "检查一个概率分箱"
+          },
+          "intro": {
+            "en": "All four examples belong to one bin near probability 0.8.",
+            "zh": "四个例子都属于概率约为 0.8 的同一分箱。"
+          },
+          "code": "import numpy as np\nprobability = np.array([0.8,0.8,0.8,0.8])\nlabel = np.array([1.,1.,0.,0.])\nbrier = np.mean((probability - label) ** 2)\nprint('bin count:', len(label))\nprint(f'mean probability: {probability.mean():.2f}')\nprint(f'observed positive fraction: {label.mean():.2f}')\nprint(f'Brier score: {brier:.2f}')\n",
+          "output": "bin count: 4\nmean probability: 0.80\nobserved positive fraction: 0.50\nBrier score: 0.34\n",
+          "explanation": {
+            "en": "The arrays pair each probability with its true label. Subtraction, squaring, and mean implement the Brier score. The label mean is the positive fraction because labels are zero or one. The printed count reminds us how little evidence four cases provide. The script diagnoses supplied predictions; it does not fit a calibrator or monitor a live system.",
+            "zh": "数组把每个概率与真实标签配对。相减、平方、取平均实现布里尔分数。标签为零或一，因此均值就是正类比例。打印数量提醒我们四个案例的证据有限。脚本诊断预设预测，没有拟合校准器，也没有监控真实系统。"
+          }
+        }
       ]
     }
   ],
@@ -573,87 +2633,247 @@
       "url": "https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification",
       "publisher": "scikit-learn",
       "kind": "Official tutorial"
+    },
+    {
+      "id": "sklearn-dummy",
+      "title": {
+        "en": "Dummy estimators and baseline comparisons",
+        "zh": "虚拟估计器与基线比较"
+      },
+      "url": "https://scikit-learn.org/stable/modules/model_evaluation.html#dummy-estimators",
+      "publisher": "scikit-learn",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "sklearn-impute",
+      "title": {
+        "en": "Imputation of missing values",
+        "zh": "缺失值填补"
+      },
+      "url": "https://scikit-learn.org/stable/modules/impute.html",
+      "publisher": "scikit-learn",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "sklearn-preprocess",
+      "title": {
+        "en": "Preprocessing: categorical features",
+        "zh": "预处理：类别特征"
+      },
+      "url": "https://scikit-learn.org/stable/modules/preprocessing.html#encoding-categorical-features",
+      "publisher": "scikit-learn",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "sklearn-neighbours",
+      "title": {
+        "en": "Nearest Neighbors",
+        "zh": "最近邻"
+      },
+      "url": "https://scikit-learn.org/stable/modules/neighbors.html",
+      "publisher": "scikit-learn",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "sklearn-naive-bayes",
+      "title": {
+        "en": "Naive Bayes",
+        "zh": "朴素贝叶斯"
+      },
+      "url": "https://scikit-learn.org/stable/modules/naive_bayes.html",
+      "publisher": "scikit-learn",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "sklearn-calibration",
+      "title": {
+        "en": "Probability calibration",
+        "zh": "概率校准"
+      },
+      "url": "https://scikit-learn.org/stable/modules/calibration.html",
+      "publisher": "scikit-learn",
+      "kind": "Official documentation"
+    },
+    {
+      "id": "google-content-recommendations",
+      "title": {
+        "en": "Content-based filtering",
+        "zh": "基于内容的过滤"
+      },
+      "url": "https://developers.google.com/machine-learning/recommendation/content-based/basics",
+      "publisher": "Google",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "google-monitoring",
+      "title": {
+        "en": "Monitoring pipelines",
+        "zh": "监测流水线"
+      },
+      "url": "https://developers.google.com/machine-learning/crash-course/production-ml-systems/monitoring",
+      "publisher": "Google",
+      "kind": "Official tutorial"
     }
   ],
   "review": [
     {
       "title": {
-        "en": "Audit information before scoring",
-        "zh": "评分前审查信息"
+        "en": "Start with rows, features, labels, and a baseline",
+        "zh": "从行、特征、标签与基线开始"
       },
       "body": {
-        "en": "State the prediction time and holdout unit. Fit preprocessing only on training data, and check identities, duplicates, and future-derived features.",
-        "zh": "写明预测时点与留出单位。仅在训练数据上拟合预处理，并检查身份、重复记录和由未来信息衍生的特征。"
+        "en": "Define the example and answer first. Then keep a simple comparison that every complex model must improve.",
+        "zh": "先定义样本与答案，再保留一个简单比较，让复杂模型证明改进。"
       }
     },
     {
       "title": {
-        "en": "Read the residuals",
-        "zh": "阅读残差"
+        "en": "Define the question before dividing the data",
+        "zh": "划分数据之前，先定义问题"
       },
       "body": {
-        "en": "Calculate errors before trusting a regression score. MSE emphasizes large mistakes; RMSE restores target units. Neither makes a coefficient causal.",
-        "zh": "信任回归分数之前，先计算误差。MSE 强调大错误，RMSE 恢复目标单位。两者都不能使系数具有因果意义。"
+        "en": "A score becomes meaningful only after you specify what is predicted, when information becomes available, and what kind of unseen case the split represents.",
+        "zh": "只有明确预测什么、信息何时可用，以及划分代表哪一种未见案例之后，分数才有意义。"
       }
     },
     {
       "title": {
-        "en": "Check scale and step size",
-        "zh": "检查尺度与步长"
+        "en": "Inspect the table before filling gaps",
+        "zh": "填补缺口前先检查表格"
       },
       "body": {
-        "en": "Use training statistics for scaling, evaluate gradients at the same old parameters, and inspect both training and validation curves.",
-        "zh": "使用训练统计量进行缩放，在同一组旧参数上计算梯度，同时检查训练与验证曲线。"
+        "en": "First learn what a blank means. Then fill it using training information and preserve the missingness record.",
+        "zh": "先弄清空白的含义，再用训练信息填补，并保留缺失记录。"
       }
     },
     {
       "title": {
-        "en": "Name the decision rule",
-        "zh": "明确决策规则"
+        "en": "Turn categories into explicit columns",
+        "zh": "把类别变成明确的列"
       },
       "body": {
-        "en": "A probability and a threshold play different roles. Select the threshold on validation data and state the positive class and tie convention.",
-        "zh": "概率与阈值承担不同作用。在验证数据上选择阈值，并说明正类与恰好等于阈值时的处理约定。"
+        "en": "Encoding should express category meaning, keep column order fixed, and state how unseen values are handled.",
+        "zh": "编码要表达类别含义，固定列顺序，并明确处理未见值。"
       }
     },
     {
       "title": {
-        "en": "Keep the four counts",
-        "zh": "保留四项计数"
+        "en": "Linear regression: predict a number with a line",
+        "zh": "线性回归：用直线预测数值"
       },
       "body": {
-        "en": "Report true positives, true negatives, false positives, and false negatives. Check prevalence and denominators before interpreting accuracy, precision, recall, or F1.",
-        "zh": "报告真阳性、真阴性、假阳性与假阴性。解释准确率、精确率、召回率或 F1 之前，先检查正类比例与分母。"
+        "en": "Linear regression is a transparent baseline; its loss defines which mistakes matter, and its residuals reveal what the line leaves unexplained.",
+        "zh": "线性回归是透明的基线；损失函数决定哪些错误更重要，残差则揭示直线尚未解释的部分。"
       }
     },
     {
       "title": {
-        "en": "Validate the rules you combine",
-        "zh": "验证组合起来的规则"
+        "en": "Learn with controlled steps and comparable scales",
+        "zh": "用可控步长和可比尺度学习"
       },
       "body": {
-        "en": "Limit tree complexity and compare ensembles on the same split. Local impurity reduction and feature importance do not establish causality.",
-        "zh": "限制树的复杂度，并在相同划分上比较集成模型。局部不纯度下降与特征重要性都不能确立因果关系。"
+        "en": "Inspect the update rule, input units, and loss curve together; stable optimization is necessary for learning, but it is not evidence of generalization.",
+        "zh": "把更新规则、输入单位和损失曲线放在一起检查；稳定优化是学习的必要条件，却不是泛化能力的证据。"
       }
     },
     {
       "title": {
-        "en": "Interpret geometry cautiously",
-        "zh": "谨慎解释几何结构"
+        "en": "Separate probability estimates from decisions",
+        "zh": "区分概率估计与决策"
       },
       "body": {
-        "en": "Clusters propose groups; principal components preserve variance. Scaling changes both, and neither supplies the missing scientific labels.",
-        "zh": "簇提出分组，主成分保留方差。缩放会改变两者，而它们都无法提供缺失的科学标签。"
+        "en": "Train the probability model and choose the decision threshold as related but separate steps, then evaluate the complete rule on untouched data.",
+        "zh": "把训练概率模型与选择决策阈值视为相关但独立的步骤，再用未参与选择的数据评估完整规则。"
       }
     },
     {
       "title": {
-        "en": "Treat generalization as conditional",
-        "zh": "把泛化结论视为附带条件"
+        "en": "Count the mistakes that the task actually cares about",
+        "zh": "统计任务真正关心的错误"
       },
       "body": {
-        "en": "Tune regularization with appropriate validation, then test the finished choice. When the setting changes, collect fresh labels and reevaluate.",
-        "zh": "用适当的验证调整正则化，再测试完成后的选择。场景改变时，收集新的标签并重新评估。"
+        "en": "Keep the confusion matrix close to every headline score; the right metric must reveal the errors that matter for the intended use.",
+        "zh": "让混淆矩阵始终伴随主要分数；合适的指标必须揭示预期用途真正关心的错误。"
+      }
+    },
+    {
+      "title": {
+        "en": "Nearest neighbours: borrow evidence from nearby examples",
+        "zh": "近邻法：向附近样本借用证据"
+      },
+      "body": {
+        "en": "A neighbour prediction is only as sensible as its distance, feature scales, and stored examples.",
+        "zh": "近邻预测是否合理，取决于距离、特征尺度与保存的样本。"
+      }
+    },
+    {
+      "title": {
+        "en": "Naive Bayes: classify short texts from word counts",
+        "zh": "朴素贝叶斯：用词频分类短文本"
+      },
+      "body": {
+        "en": "Count words, smooth the counts, combine evidence, and inspect where context breaks the simple assumption.",
+        "zh": "统计词频、平滑计数、结合证据，再检查语境在哪些地方打破简单假设。"
+      }
+    },
+    {
+      "title": {
+        "en": "Build rules, then understand what combining them changes",
+        "zh": "建立规则，再理解组合规则会改变什么"
+      },
+      "body": {
+        "en": "Trees turn interactions into explicit regions; ensembles can stabilize predictions, but every added layer of complexity still needs validation on the intended task.",
+        "zh": "树模型把交互作用转化为明确区域；集成方法可以稳定预测，但每增加一层复杂度，都仍需针对预期任务进行验证。"
+      }
+    },
+    {
+      "title": {
+        "en": "Boosting: learn the next correction",
+        "zh": "提升法：学习下一次修正"
+      },
+      "body": {
+        "en": "Boosting asks the next learner to repair what the current prediction still misses.",
+        "zh": "提升法让下一个模型修复当前预测仍遗漏的部分。"
+      }
+    },
+    {
+      "title": {
+        "en": "Find structure without inventing labels",
+        "zh": "寻找结构，不凭空赋予标签"
+      },
+      "body": {
+        "en": "Use clustering to propose groups and PCA to compress variation, then test your interpretation with evidence that neither method supplied.",
+        "zh": "用聚类提出分组，用 PCA 压缩变化，再用这两种方法本身没有提供的证据检验解释。"
+      }
+    },
+    {
+      "title": {
+        "en": "Recommendation: rank items by a stated similarity",
+        "zh": "推荐：按明确的相似度排序"
+      },
+      "body": {
+        "en": "Choose a representation and score that match the recommendation question, then test the ranking with feedback.",
+        "zh": "选择符合推荐问题的表示与分数，再用反馈检验排序。"
+      }
+    },
+    {
+      "title": {
+        "en": "Validate choices and prepare for a changing setting",
+        "zh": "验证模型选择，为场景变化做好准备"
+      },
+      "body": {
+        "en": "Use validation to choose complexity, reserve testing for the completed choice, and gather fresh evidence whenever the intended prediction setting changes.",
+        "zh": "用验证选择复杂度，用保留测试评估已经完成的选择；只要预期预测场景改变，就收集新的证据。"
+      }
+    },
+    {
+      "title": {
+        "en": "Check confidence and watch for change",
+        "zh": "检查置信程度并监测变化"
+      },
+      "body": {
+        "en": "Confidence needs frequency checks. Model quality needs fresh labels, especially when inputs or conditions change.",
+        "zh": "置信程度需要频率检查。模型质量需要新标签，尤其是在输入或环境变化时。"
       }
     }
   ]

@@ -40,6 +40,11 @@ for code in CODES:
   for key in ['title','story','principle','formula','symbols','example','pitfall','check']:
    check(bool(t.get(key)),code+' '+t['id']+' missing '+key)
   check(all(t['check'].get(k) for k in ['question','answer']),code+' check malformed')
+ if code=='COMP2123':
+  check(len(topics)==26,code+' topic coverage changed')
+  for t in topics:
+   for key,minimum in [('code_examples',1),('glossary',3),('guided_questions',3)]:
+    check(len(t.get(key,[]))>=minimum,code+' '+t['id']+' insufficient '+key)
  text=json.dumps(c,ensure_ascii=False)
  check(not re.search('[\u4e00-\u9fff]',text),code+' non-English content')
  check(not re.search(r'BUSS[0-9]{4}',text,re.I),code+' excluded course in JSON')
@@ -67,4 +72,4 @@ path_errors,guides=validate_paths()
 errors.extend(path_errors)
 if errors:
  print('\n'.join(errors));sys.exit(1)
-print(f'PASS: {len(parsers)} HTML pages, all local links and anchors, five course maps, English original courses and bilingual AI guides, excluded source content, five single-page PDFs and five-page collection; four bilingual field guides with 32 complete translations.')
+print(f'PASS: {len(parsers)} HTML pages, all local links and anchors, five course maps, English original courses and bilingual AI guides, excluded source content, five single-page PDFs and five-page collection; {sum(len(g["topics"]) for g in guides)} bilingual topics including the beginner primer.')

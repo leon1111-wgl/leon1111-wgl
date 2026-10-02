@@ -12,43 +12,32 @@ def svg(body, width, height, title):
 {body}</svg>'''
 
 
-def artwork(root):
+def artwork(root, courses, guides):
     assets = root / 'site' / 'assets'
-    hero = '''<ellipse cx="1000" cy="180" rx="320" ry="280" fill="url(#glow)"/>
-<path d="M40 70H1160" stroke="#2a3b4b"/>
-<g fill="#b8ee91"><circle cx="46" cy="38" r="5"/><circle cx="66" cy="38" r="5" opacity=".55"/><circle cx="86" cy="38" r="5" opacity=".25"/></g>
-<text x="1135" y="43" text-anchor="end" fill="#a6b7c8" font-family="monospace" font-size="13" letter-spacing="2">GUOLIANG / PERSONAL SPACE</text>
-<text x="54" y="116" fill="#b8ee91" font-family="monospace" font-size="13" letter-spacing="3">AI RESEARCH · SYSTEMS · LEARNING</text>
-<text x="49" y="204" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3">Guoliang Wang</text>
-<text x="54" y="253" fill="#b8ee91" font-family="Arial,sans-serif" font-size="25">MSc student @ HKU · Working on AI</text>
-<text x="54" y="295" fill="#a6b7c8" font-family="Arial,sans-serif" font-size="21">Multimodal models. Long videos. Clear explanations.</text>
-<g fill="none" stroke="#527e86"><circle cx="975" cy="222" r="126"/><circle cx="975" cy="222" r="88" stroke-dasharray="3 9"/><ellipse cx="975" cy="222" rx="152" ry="65" transform="rotate(-35 975 222)"/><path d="M898 122L1097 254L884 310L898 122M1097 254L975 222L898 122" opacity=".8"/></g>
-<g fill="#b8ee91"><circle cx="898" cy="122" r="5"/><circle cx="1097" cy="254" r="5"/><circle cx="884" cy="310" r="5"/></g>
-<circle cx="975" cy="222" r="44" fill="#101d29" stroke="#b8ee91"/>
-<text x="975" y="232" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="27">GW</text>
-<rect x="54" y="340" width="340" height="61" rx="9" fill="#b8ee91"/>
-<text x="78" y="378" fill="#152214" font-family="Arial,sans-serif" font-size="21" font-weight="700">ENTER MY WEBSITE</text>
-<path d="M355 378l15-15m-15 0h15v15" fill="none" stroke="#152214" stroke-width="2.5"/>
-<text x="423" y="377" fill="#a6b7c8" font-family="monospace" font-size="14">RESEARCH + COURSES + BILINGUAL AI GUIDES</text>'''
-    (assets / 'profile-banner.svg').write_text(svg(hero, 1200, 438, 'Guoliang Wang — MSc student at HKU, working on AI. Enter my website.'))
-    cards = [
-        ('profile-foundations.svg', '01 / FOUNDATIONS', 'Computer science', '5 courses · 121 explanations', 'Knowledge maps + one-page cheatsheets', '#b8ee91', 'EXPLORE THE COURSES'),
-        ('profile-ai.svg', '02 / AI FIELD GUIDES', 'Learn AI through stories', '4 guides · 32 bilingual topics', 'Machine learning, vision + multimodal AI', '#8cdde9', 'CHOOSE A LEARNING PATH'),
-    ]
-    for filename, label, title, count, detail, color, action in cards:
-        body = f'''<path d="M30 29H88" stroke="{color}" stroke-width="3"/>
-<text x="30" y="62" fill="{color}" font-family="monospace" font-size="13" letter-spacing="1.5">{label}</text>
-<text x="29" y="112" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="29" font-weight="700">{escape(title)}</text>
-<text x="30" y="150" fill="#c7d2de" font-family="Arial,sans-serif" font-size="18">{count}</text>
-<text x="30" y="180" fill="#91a3b5" font-family="Arial,sans-serif" font-size="15">{escape(detail)}</text>
-<path d="M30 207H490" stroke="#293a49"/>
-<text x="30" y="243" fill="{color}" font-family="monospace" font-size="14">{action}</text>
-<path d="M463 244l16-16m-16 0h16v16" fill="none" stroke="{color}" stroke-width="2"/>'''
-        (assets / filename).write_text(svg(body, 520, 275, title + ': ' + count))
+    hero = '''<ellipse cx="705" cy="150" rx="230" ry="200" fill="url(#glow)"/>
+<path d="M36 37H804" stroke="#2a3b4b"/>
+<g fill="#b8ee91"><circle cx="42" cy="36" r="5"/><circle cx="62" cy="36" r="5" opacity=".6"/><circle cx="82" cy="36" r="5" opacity=".3"/></g>
+<text x="32" y="123" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="64" font-weight="700" letter-spacing="-2">Guoliang Wang</text>
+<text x="36" y="179" fill="#b8ee91" font-family="Arial,sans-serif" font-size="34">MSc @ HKU · AI</text>
+<g fill="none" stroke="#527e86"><circle cx="665" cy="159" r="86"/><circle cx="665" cy="159" r="61" stroke-dasharray="3 9"/><ellipse cx="665" cy="159" rx="122" ry="45" transform="rotate(-35 665 159)"/><path d="M611 89L751 181L606 219L611 89M751 181L665 159L611 89"/></g>
+<g fill="#b8ee91"><circle cx="611" cy="89" r="5"/><circle cx="751" cy="181" r="5"/><circle cx="606" cy="219" r="5"/></g>
+<circle cx="665" cy="159" r="35" fill="#101d29" stroke="#b8ee91"/>
+<text x="665" y="170" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="31">GW</text>
+<rect x="36" y="222" width="365" height="62" rx="9" fill="#b8ee91"/>
+<text x="58" y="263" fill="#152214" font-family="Arial,sans-serif" font-size="32" font-weight="700">Explore my site</text>
+<path d="M346 263l19-19m-19 0h19v19" fill="none" stroke="#152214" stroke-width="3"/>'''
+    (assets / 'profile-banner.svg').write_text(svg(hero,840,320,'Guoliang Wang — MSc student at HKU, working on AI. Enter my website.'))
+    for filename,title,code,color in [('profile-foundations.svg','Foundations','CS','#b8ee91'),('profile-ai.svg','AI guides','AI','#8cdde9')]:
+        body=f'''<path d="M30 30H110" stroke="{color}" stroke-width="4"/>
+<text x="30" y="95" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="50" font-weight="700">{title}</text>
+<text x="30" y="168" fill="{color}" font-family="monospace" font-size="36">{code}</text>
+<circle cx="444" cy="159" r="30" fill="none" stroke="{color}"/>
+<path d="M432 171l24-24m-24 0h24v24" fill="none" stroke="{color}" stroke-width="3"/>'''
+        (assets / filename).write_text(svg(body,520,210,title))
 
 
 def build_profile(root, profile, courses, guides):
-    artwork(root)
+    artwork(root, courses, guides)
     username = profile['github'].rstrip('/').rsplit('/', 1)[-1]
     site = f'https://{username}.github.io/{username}/'
     r = profile['research']
@@ -100,12 +89,14 @@ def build_profile(root, profile, courses, guides):
 
 ## Learning portals
 
-Choose a card to enter the teaching website. Every course connects **story → concept → formula → worked example**.
+Choose a card to enter the teaching website. Follow **story → concept → formula → worked example**. AI guides and data structures include runnable Python, expected outputs and step-by-step explanations.
+
+**New to Python or AI?** [Start here in English]({site}ai/start.en.html) · [Start here in Chinese]({site}ai/start.zh.html) · [Download Python examples]({site}downloads/guoliang-python-examples.zip)
 
 <table>
 <tr>
-<td width="50%" align="center"><a href="{site}#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="{site}#learning"><strong>Open the course library ↗</strong></a></td>
-<td width="50%" align="center"><a href="{site}#ai"><img src="site/assets/profile-ai.svg" width="100%" alt="AI field guides — open four learning paths with English and Chinese versions" /></a><br /><a href="{site}#ai"><strong>Open the bilingual AI guides ↗</strong></a></td>
+<td width="50%" align="center"><a href="{site}#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="{site}#learning"><strong>Open the course library ↗</strong></a><p>{len(courses)} courses · {sum(len(c["topics"]) for c in courses)} topics</p></td>
+<td width="50%" align="center"><a href="{site}#ai"><img src="site/assets/profile-ai.svg" width="100%" alt="AI field guides — open four learning paths with English and Chinese versions" /></a><br /><a href="{site}#ai"><strong>Open the bilingual AI guides ↗</strong></a><p>{len(guides)} guides · {sum(len(g["topics"]) for g in guides)} bilingual topics</p></td>
 </tr>
 </table>
 

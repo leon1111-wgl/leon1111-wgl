@@ -1,0 +1,758 @@
+[
+  {
+    "path": "examples/COMP2123/analysis-correctness-prefix-total-trace.py",
+    "group": "COMP2123",
+    "topic": "analysis-correctness",
+    "title": "A running total and its invariant",
+    "output": "4 4\n-1 3\n6 9\n2 11\n[4, 3, 9, 11]\n"
+  },
+  {
+    "path": "examples/COMP2123/lists-representations-array-insert-shifts.py",
+    "group": "COMP2123",
+    "topic": "lists-representations",
+    "title": "See an array insertion shift values",
+    "output": "['L', 'X', 'M', 'N', 'P']\nshifts: 3\n"
+  },
+  {
+    "path": "examples/COMP2123/lists-representations-linked-node-splice.py",
+    "group": "COMP2123",
+    "topic": "lists-representations",
+    "title": "Insert a real node into a linked chain",
+    "output": "['L', 'M', 'X', 'N']\nX still links to N: True\n"
+  },
+  {
+    "path": "examples/COMP2123/stacks-queues-stack-bracket-check.py",
+    "group": "COMP2123",
+    "topic": "stacks-queues",
+    "title": "Match brackets with a stack",
+    "output": "True\nFalse\nFalse\n"
+  },
+  {
+    "path": "examples/COMP2123/stacks-queues-deque-fifo-service.py",
+    "group": "COMP2123",
+    "topic": "stacks-queues",
+    "title": "Serve waiting jobs with deque",
+    "output": "served: Ada\nwaiting: ['Bo', 'Cy']\nleft end: urgent\nwaiting: ['Bo', 'Cy']\n"
+  },
+  {
+    "path": "examples/COMP2123/trees-traversal-tree-three-orders.py",
+    "group": "COMP2123",
+    "topic": "trees-traversal",
+    "title": "Compare three traversal orders",
+    "output": "pre ['R', 'A', 'C', 'B']\nin ['C', 'A', 'R', 'B']\npost ['C', 'A', 'B', 'R']\n"
+  },
+  {
+    "path": "examples/COMP2123/trees-traversal-tree-size-height.py",
+    "group": "COMP2123",
+    "topic": "trees-traversal",
+    "title": "Calculate size and height together",
+    "output": "size: 4\nheight: 2\nempty: (0, -1)\n"
+  },
+  {
+    "path": "examples/COMP2123/bst-range-queries-bst-build-search.py",
+    "group": "COMP2123",
+    "topic": "bst-range-queries",
+    "title": "Insert keys and record the search route",
+    "output": "route: [18, 27, 22]\nfound: True\n"
+  },
+  {
+    "path": "examples/COMP2123/bst-range-queries-bst-pruned-range.py",
+    "group": "COMP2123",
+    "topic": "bst-range-queries",
+    "title": "Report a range without visiting every branch",
+    "output": "[13, 18, 22, 27]\n"
+  },
+  {
+    "path": "examples/COMP2123/avl-balance-avl-single-rotation.py",
+    "group": "COMP2123",
+    "topic": "avl-balance",
+    "title": "Rotate an outer-heavy branch right",
+    "output": "before height: 2\nkeys: 10 20 30\nafter height: 1\n"
+  },
+  {
+    "path": "examples/COMP2123/avl-balance-avl-double-rotation.py",
+    "group": "COMP2123",
+    "topic": "avl-balance",
+    "title": "Repair an inner-heavy branch",
+    "output": "after first: 30 20 10\nafter second: 10 20 30\n"
+  },
+  {
+    "path": "examples/COMP2123/priority-queues-heaps-heapq-priority-service.py",
+    "group": "COMP2123",
+    "topic": "priority-queues-heaps",
+    "title": "Use heapq to serve priorities",
+    "output": "minimum: 3\nserved: [3, 4, 5, 8, 10, 12]\n"
+  },
+  {
+    "path": "examples/COMP2123/priority-queues-heaps-heap-bubble-up.py",
+    "group": "COMP2123",
+    "topic": "priority-queues-heaps",
+    "title": "Write the heap insertion repair",
+    "output": "[3, 8, 4, 12, 10, 5]\nswaps: 1\nvalid: True\n"
+  },
+  {
+    "path": "examples/COMP2123/sorting-baselines-insertion-sort-trace.py",
+    "group": "COMP2123",
+    "topic": "sorting-baselines",
+    "title": "Watch insertion sort grow a prefix",
+    "output": "[2, 5, 4, 1]\n[2, 4, 5, 1]\n[1, 2, 4, 5]\nshifts: 5\n"
+  },
+  {
+    "path": "examples/COMP2123/sorting-baselines-heap-sort-output.py",
+    "group": "COMP2123",
+    "topic": "sorting-baselines",
+    "title": "Sort by repeatedly removing a heap minimum",
+    "output": "input: [5, 2, 4, 1]\nsorted: [1, 2, 4, 5]\n"
+  },
+  {
+    "path": "examples/COMP2123/hashing-collisions-hash-chaining-buckets.py",
+    "group": "COMP2123",
+    "topic": "hashing-collisions",
+    "title": "Store colliding keys in one bucket",
+    "output": "bucket 3: [(10, 'ten'), (17, 'seventeen'), (24, 'twenty-four')]\n24: twenty-four\n31: None\n"
+  },
+  {
+    "path": "examples/COMP2123/hashing-collisions-linear-probe-tombstone.py",
+    "group": "COMP2123",
+    "topic": "hashing-collisions",
+    "title": "Delete without breaking a probe chain",
+    "output": "(True, [3, 4, 5])\n(False, [3, 4])\n"
+  },
+  {
+    "path": "examples/COMP2123/cuckoo-maps-sets-cuckoo-two-home-demo.py",
+    "group": "COMP2123",
+    "topic": "cuckoo-maps-sets",
+    "title": "Follow a bounded cuckoo insertion",
+    "output": "first: [6, None, None]\nsecond: [0, 3, None]\n3 found: True\n"
+  },
+  {
+    "path": "examples/COMP2123/cuckoo-maps-sets-set-and-counter-contracts.py",
+    "group": "COMP2123",
+    "topic": "cuckoo-maps-sets",
+    "title": "Separate membership from multiplicity",
+    "output": "red present: True\ndistinct: 2\nred count: 2\ntotal: 3\n"
+  },
+  {
+    "path": "examples/COMP2123/graph-models-adjacency-list-degree-check.py",
+    "group": "COMP2123",
+    "topic": "graph-models",
+    "title": "Build an undirected adjacency list",
+    "output": "A ['B', 'C']\nB ['A', 'D']\nC ['A', 'D']\nD ['B', 'C']\nE []\ndegree sum: 8\ntwice edges: 8\n"
+  },
+  {
+    "path": "examples/COMP2123/dfs-bridges-dfs-low-bridge-trace.py",
+    "group": "COMP2123",
+    "topic": "dfs-bridges",
+    "title": "Find a bridge with discovery and low values",
+    "output": "discovery: {'A': 0, 'B': 1, 'C': 2, 'D': 3}\nlow: {'A': 0, 'B': 0, 'C': 0, 'D': 3}\nbridges: [('C', 'D')]\n"
+  },
+  {
+    "path": "examples/COMP2123/bfs-distance-bfs-distance-and-route.py",
+    "group": "COMP2123",
+    "topic": "bfs-distance",
+    "title": "Use a queue to find distance and a route",
+    "output": "distance to E: 3\nroute: ['S', 'A', 'C', 'E']\ndistance to X: None\n"
+  },
+  {
+    "path": "examples/COMP2123/dijkstra-relaxation-dijkstra-lazy-heap.py",
+    "group": "COMP2123",
+    "topic": "dijkstra-relaxation",
+    "title": "Trace shorter routes with a lazy heap",
+    "output": "distances: [('S', 0), ('A', 3), ('B', 2), ('C', 6)]\nroute: ['S', 'B', 'A', 'C']\n"
+  },
+  {
+    "path": "examples/COMP2123/minimum-spanning-trees-kruskal-union-find.py",
+    "group": "COMP2123",
+    "topic": "minimum-spanning-trees",
+    "title": "Build an MST with union-find",
+    "output": "edges: [('A', 'B', 1), ('B', 'C', 2), ('C', 'D', 3)]\ntotal: 6\n"
+  },
+  {
+    "path": "examples/COMP2123/greedy-fractional-fractional-knapsack-trace.py",
+    "group": "COMP2123",
+    "topic": "greedy-fractional",
+    "title": "Fill a capacity by density",
+    "output": "A weight: 4 fraction: 1.0\nB weight: 5 fraction: 1.0\nC weight: 1 fraction: 0.167\ntotal value: 56.0\n"
+  },
+  {
+    "path": "examples/COMP2123/interval-partitioning-interval-room-heap.py",
+    "group": "COMP2123",
+    "topic": "interval-partitioning",
+    "title": "Assign every session to a room",
+    "output": "A room 1\nB room 2\nC room 1\nD room 2\nrooms: 2\n"
+  },
+  {
+    "path": "examples/COMP2123/huffman-coding-huffman-tree-codebook.py",
+    "group": "COMP2123",
+    "topic": "huffman-coding",
+    "title": "Build the tree and read its codewords",
+    "output": "A 0\nB 11\nC 101\nD 100\nmerges: [6, 13, 25]\nbits: 44\n"
+  },
+  {
+    "path": "examples/COMP2123/recurrences-merge-sort-merge-sort-real-merge.py",
+    "group": "COMP2123",
+    "topic": "recurrences-merge-sort",
+    "title": "Implement merge sort from its stopping case",
+    "output": "[1, 3, 7, 8]\n[]\n[2, 4, 4]\n"
+  },
+  {
+    "path": "examples/COMP2123/recurrences-merge-sort-binary-search-indices.py",
+    "group": "COMP2123",
+    "topic": "recurrences-merge-sort",
+    "title": "Halve a search interval without copying data",
+    "output": "checked: [12, 23, 16]\nindex: 4\n"
+  },
+  {
+    "path": "examples/COMP2123/quicksort-lower-bound-quicksort-three-way.py",
+    "group": "COMP2123",
+    "topic": "quicksort-lower-bound",
+    "title": "Partition and recursively sort both sides",
+    "output": "[2, 4, 4, 6, 7, 9]\n[5, 5, 5]\n"
+  },
+  {
+    "path": "examples/COMP2123/pareto-maxima-pareto-descending-scan.py",
+    "group": "COMP2123",
+    "topic": "pareto-maxima",
+    "title": "Keep points that improve the best second score",
+    "output": "E best y: 2\nD best y: 4\nC best y: 7\nB best y: 7\nA best y: 8\nfrontier: ['E', 'D', 'C', 'A']\n"
+  },
+  {
+    "path": "examples/COMP2123/karatsuba-master-karatsuba-three-products.py",
+    "group": "COMP2123",
+    "topic": "karatsuba-master",
+    "title": "Multiply using three recursive products",
+    "output": "1081\n7006652\n0\n"
+  },
+  {
+    "path": "examples/COMP2123/selection-pivots-quickselect-one-branch.py",
+    "group": "COMP2123",
+    "topic": "selection-pivots",
+    "title": "Find a rank without sorting both sides",
+    "output": "fourth: 7\nsixth: 10\nduplicates: 7\n"
+  },
+  {
+    "path": "examples/COMP2123/random-permutations-fisher-yates-enumerate.py",
+    "group": "COMP2123",
+    "topic": "random-permutations",
+    "title": "Check every shuffle path for three cards",
+    "output": "ABC 1\nACB 1\nBAC 1\nBCA 1\nCAB 1\nCBA 1\npaths: 6\n"
+  },
+  {
+    "path": "examples/COMP2123/skip-lists-skip-list-links-and-insert.py",
+    "group": "COMP2123",
+    "topic": "skip-lists",
+    "title": "Build real forward-link towers",
+    "output": "level 2 [11]\nlevel 1 [3, 11, 24]\nlevel 0 [3, 8, 11, 17, 24, 29]\nright moves: [(2, 11)]\nfound 17: True\nafter insert: [3, 8, 11, 17, 20, 24, 29]\n"
+  },
+  {
+    "path": "examples/COMP2123/cryptography-complexity-modular-power-and-toy-agreement.py",
+    "group": "COMP2123",
+    "topic": "cryptography-complexity",
+    "title": "Compute powers by repeated squaring",
+    "output": "public: 10 4\nshared: 18 18\nrecovered a: 3\n"
+  },
+  {
+    "path": "examples/AI-ML/features-labels-baselines-ml-majority-baseline.py",
+    "group": "AI-ML",
+    "topic": "features-labels-baselines",
+    "title": "Build a majority-label baseline",
+    "output": "baseline class: 0\npredictions: [0, 0, 0, 0]\ntest accuracy: 0.50\n"
+  },
+  {
+    "path": "examples/AI-ML/framing-splits-leakage-ml-group-split.py",
+    "group": "AI-ML",
+    "topic": "framing-splits-leakage",
+    "title": "Keep complete devices together",
+    "output": "rows: 80 20 20\nshared devices: []\ntest error: 0.1\n"
+  },
+  {
+    "path": "examples/AI-ML/missing-data-eda-ml-median-imputation.py",
+    "group": "AI-ML",
+    "topic": "missing-data-eda",
+    "title": "Fit a median, then reuse it",
+    "output": "training missing fraction: 0.25\ntraining flag: [0, 1, 0, 0]\nfilled training: [2.0, 4.0, 6.0, 4.0]\nfilled test: [4.0, 10.0]\n"
+  },
+  {
+    "path": "examples/AI-ML/categorical-preprocessing-ml-category-columns.py",
+    "group": "AI-ML",
+    "topic": "categorical-preprocessing",
+    "title": "Encode known and unseen categories",
+    "output": "columns: ['paper', 'wood', 'unknown']\nwood [0, 1, 0] sum: 1\npaper [1, 0, 0] sum: 1\nmetal [0, 0, 1] sum: 1\n"
+  },
+  {
+    "path": "examples/AI-ML/linear-regression-mse-ml-line-loss.py",
+    "group": "AI-ML",
+    "topic": "linear-regression-mse",
+    "title": "Compare a line and a constant",
+    "output": "prediction: [3.0, 5.0, 7.0]\nMSE: 0.333333; RMSE: 0.577350\nconstant MSE: 4.222222\n"
+  },
+  {
+    "path": "examples/AI-ML/gradient-descent-scaling-ml-gradient-step.py",
+    "group": "AI-ML",
+    "topic": "gradient-descent-scaling",
+    "title": "Standardize and take one step",
+    "output": "scaled inputs: [-1.0, 1.0]\ngradients: -2.0, -4.0\nweights: 0.2, 0.4\nloss: 3.200\n"
+  },
+  {
+    "path": "examples/AI-ML/logistic-thresholds-ml-sigmoid-cutoffs.py",
+    "group": "AI-ML",
+    "topic": "logistic-thresholds",
+    "title": "One probability, two decisions",
+    "output": "score: 0.4000; probability: 0.5987\nthreshold 0.50: class 1\nthreshold 0.65: class 0\n"
+  },
+  {
+    "path": "examples/AI-ML/metrics-imbalance-ml-confusion-counts.py",
+    "group": "AI-ML",
+    "topic": "metrics-imbalance",
+    "title": "Compute four metrics from counts",
+    "output": "accuracy: 0.860\nprecision: 0.400\nrecall: 0.800\nF1: 0.533\nclips to review: 20\n"
+  },
+  {
+    "path": "examples/AI-ML/nearest-neighbours-ml-knn-vote.py",
+    "group": "AI-ML",
+    "topic": "nearest-neighbours",
+    "title": "Inspect every nearest-neighbour vote",
+    "output": "squared distances: [2.56, 0.36, 0.16, 5.76]\nk: 1 labels: [1] prediction: 1\nk: 3 labels: [1, 0, 0] prediction: 0\n"
+  },
+  {
+    "path": "examples/AI-ML/text-naive-bayes-ml-naive-bayes-counts.py",
+    "group": "AI-ML",
+    "topic": "text-naive-bayes",
+    "title": "Compute a two-word classifier",
+    "output": "word probabilities: [[0.667, 0.333], [0.333, 0.667]]\nclass probabilities: [0.667, 0.333]\nclass: spam\n"
+  },
+  {
+    "path": "examples/AI-ML/trees-ensembles-ml-gini-forest.py",
+    "group": "AI-ML",
+    "topic": "trees-ensembles",
+    "title": "Score a split and average trees",
+    "output": "parent: 0.48; children: 0.40\ngain: 0.08\nforest probability: 0.60\n"
+  },
+  {
+    "path": "examples/AI-ML/boosting-residuals-ml-residual-stump.py",
+    "group": "AI-ML",
+    "topic": "boosting-residuals",
+    "title": "Fit one residual stump",
+    "output": "residual: [-1.0, -1.0, 1.0, 1.0]\nupdated: [1.5, 1.5, 2.5, 2.5]\nMSE before: 1.00\nMSE after: 0.25\n"
+  },
+  {
+    "path": "examples/AI-ML/clustering-pca-ml-cluster-pca-geometry.py",
+    "group": "AI-ML",
+    "topic": "clustering-pca",
+    "title": "Measure groups and PCA variance",
+    "output": "cluster loss: 4.0\ncovariance: [[4.0, 0.0], [0.0, 1.0]]\nfirst variance share: 0.80\n"
+  },
+  {
+    "path": "examples/AI-ML/content-recommendations-ml-cosine-recommendations.py",
+    "group": "AI-ML",
+    "topic": "content-recommendations",
+    "title": "Rank three tagged videos",
+    "output": "mixed: 1.000\nastronomy: 0.707\nrobotics: 0.707\n"
+  },
+  {
+    "path": "examples/AI-ML/validation-regularization-shift-ml-regularization-validation.py",
+    "group": "AI-ML",
+    "topic": "validation-regularization-shift",
+    "title": "Separate fitting objective and validation",
+    "output": "A objective: 1.9\nB objective: 1.5\nlambda 0.0: validation MSE 1.2\nlambda 0.1: validation MSE 1.0\nchosen lambda: 0.1\n"
+  },
+  {
+    "path": "examples/AI-ML/calibration-monitoring-ml-calibration-bin.py",
+    "group": "AI-ML",
+    "topic": "calibration-monitoring",
+    "title": "Inspect a probability bin",
+    "output": "bin count: 4\nmean probability: 0.80\nobserved positive fraction: 0.50\nBrier score: 0.34\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-tensors-dl-dense-axis-check.py",
+    "group": "AI-DL",
+    "topic": "dl-tensors",
+    "title": "Name the axes of a dense layer",
+    "output": "shape: (2, 2)\noutput: [[4.5, -2.5], [6.5, 2.5]]\nmean per feature: [5.5, 0.0]\nmean per recording: [1.0, 4.5]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-activations-dl-activation-values.py",
+    "group": "AI-DL",
+    "topic": "dl-activations",
+    "title": "Print values and slopes",
+    "output": "z=-2: ReLU=0.0, sigmoid=0.119203, slope=0.104994\nz=0: ReLU=0.0, sigmoid=0.500000, slope=0.250000\nz=2: ReLU=2.0, sigmoid=0.880797, slope=0.104994\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-representations-dl-mlp-gauges.py",
+    "group": "AI-DL",
+    "topic": "dl-representations",
+    "title": "Trace two hidden units",
+    "output": "input: [3.0, 1.0] hidden: [1.0, 0.0] output: 1.0\ninput: [1.0, 3.0] hidden: [0.0, 1.0] output: 1.0\ninput: [2.0, 2.0] hidden: [0.0, 0.0] output: 0.0\nparameters: 9\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-softmax-loss-dl-stable-softmax-loss.py",
+    "group": "AI-DL",
+    "topic": "dl-softmax-loss",
+    "title": "Compute stable probabilities and cross-entropy",
+    "output": "probabilities: [0.665241, 0.244728, 0.090031]\nsum: 1.000000; loss: 0.407606\nshift unchanged: True\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-shape-tracing-dl-shape-path.py",
+    "group": "AI-DL",
+    "topic": "dl-shape-tracing",
+    "title": "Print the shape at every layer",
+    "output": "images (2, 2, 2)\nflat (2, 4)\nhidden (2, 3)\nlogits (2, 2)\nfirst flattened image: [0.0, 1.0, 2.0, 3.0]\nparameters: 23\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-autograd-dl-chain-rule-check.py",
+    "group": "AI-DL",
+    "topic": "dl-autograd",
+    "title": "Check a gradient and update the network",
+    "output": "gradient w: 4.000000; finite difference: 4.000000\nnew loss: 0.0003125\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-optimization-dl-sgd-adam-first-step.py",
+    "group": "AI-DL",
+    "topic": "dl-optimization",
+    "title": "Compare the first SGD and Adam steps",
+    "output": "SGD: parameter 0.300000; loss 4.145000\nAdam: parameter 0.100000; loss 4.705000\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-training-loop-dl-one-weight-training-loop.py",
+    "group": "AI-DL",
+    "topic": "dl-training-loop",
+    "title": "Run five transparent training steps",
+    "output": "epoch 1: w=0.8000, train=0.9600, valid=3.2400\nepoch 2: w=1.2800, train=0.3456, valid=1.1664\nepoch 3: w=1.5680, train=0.1244, valid=0.4199\nepoch 4: w=1.7408, train=0.0448, valid=0.1512\nepoch 5: w=1.8445, train=0.0161, valid=0.0544\nbest weight: 1.84448\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-regularization-dl-dropout-expectation.py",
+    "group": "AI-DL",
+    "topic": "dl-regularization",
+    "title": "Calculate dropout outcomes exactly",
+    "output": "expectation: 4.000000; variance: 5.333333\ntraining: [2.666667, 0.0]\nevaluation: [2.0, 4.0]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-normalization-dl-row-layernorm.py",
+    "group": "AI-DL",
+    "topic": "dl-normalization",
+    "title": "Normalize features within each row",
+    "output": "means: [2.0, 12.0]\nvariances: [1.0, 4.0]\nnormalized: [[-0.999995, 0.999995], [-0.999999, 0.999999]]\nrow means: [0.0, 0.0]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-convolution-dl-filter-residual.py",
+    "group": "AI-DL",
+    "topic": "dl-convolution",
+    "title": "Slide a filter and add a shortcut",
+    "output": "filter output: [[0.0, 0.0], [-1.0, 0.0]]\nresidual sum: [2.5, -0.75]\nafter ReLU: [2.5, 0.0]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-token-embeddings-dl-embedding-mask-mean.py",
+    "group": "AI-DL",
+    "topic": "dl-token-embeddings",
+    "title": "Look up tokens and ignore padding",
+    "output": "vectors: [[1.0, 0.0], [0.0, 2.0], [0.0, 0.0]]\nreal-token count: 2\nmasked mean: [0.5, 1.0]\nreversed mean: [0.5, 1.0]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-attention-dl-attention-mask.py",
+    "group": "AI-DL",
+    "topic": "dl-attention",
+    "title": "Compare allowed and masked context",
+    "output": "weights: [[0.731059, 0.268941]]\noutput: [[1.462117, 1.075766]]\nmasked output: [[2.0, 0.0]]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-transformer-block-dl-tiny-transformer-block.py",
+    "group": "AI-DL",
+    "topic": "dl-transformer-block",
+    "title": "Run a complete toy pre-norm block",
+    "output": "attention: [[1.0, 0.0], [0.5, 0.5]]\nfirst residual: [[2.0, -2.0], [2.0, -2.0]]\nblock output: [[2.5, -2.0], [2.5, -2.0]]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-transfer-dl-frozen-feature-head.py",
+    "group": "AI-DL",
+    "topic": "dl-transfer",
+    "title": "Train a head on fixed features",
+    "output": "new weights: [0.2, 0.15]\nnew bias: 0.050; new probability: 0.574443\nloss before: 0.693147; after: 0.554355\nfixed features: [2.0, -1.0]\n"
+  },
+  {
+    "path": "examples/AI-DL/dl-efficient-adaptation-dl-low-rank-merge.py",
+    "group": "AI-DL",
+    "topic": "dl-efficient-adaptation",
+    "title": "Compare separate and merged adapter paths",
+    "output": "full entries: 12 adapter entries: 7\noutput: [0.8, 1.6, 2.4]\nmerged agrees: True\n"
+  },
+  {
+    "path": "examples/AI-CV/pixels-contracts-pixel-scale.py",
+    "group": "AI-CV",
+    "topic": "pixels-contracts",
+    "title": "Follow one channel",
+    "output": "RGB: [0, 0, 255]\nscaled=0.6; standardized=0.4\nstored numbers: 72\n"
+  },
+  {
+    "path": "examples/AI-CV/colour-channels-red-channel-rule.py",
+    "group": "AI-CV",
+    "topic": "colour-channels",
+    "title": "Test three known colours",
+    "output": "marker margin: 160 selected: True\npaper margin: 0 selected: False\nshade margin: 40 selected: False\n"
+  },
+  {
+    "path": "examples/AI-CV/filters-neighborhoods-local-filter.py",
+    "group": "AI-CV",
+    "topic": "filters-neighborhoods",
+    "title": "Average a small patch",
+    "output": "mean=11.0\nedge response: 6\n"
+  },
+  {
+    "path": "examples/AI-CV/edges-morphology-binary-opening.py",
+    "group": "AI-CV",
+    "topic": "edges-morphology",
+    "title": "Remove an isolated speck",
+    "output": "eroded: [0, 0, 0, 0, 0, 1, 0, 0]\nopened: [0, 0, 0, 0, 1, 1, 1, 0]\n"
+  },
+  {
+    "path": "examples/AI-CV/geometry-augmentation-move-box.py",
+    "group": "AI-CV",
+    "topic": "geometry-augmentation",
+    "title": "Move both box corners",
+    "output": "corners: [(25, 37), (65, 97)]\narea: 2400\nclipped bottom: 80\n"
+  },
+  {
+    "path": "examples/AI-CV/classical-features-descriptor-distance.py",
+    "group": "AI-CV",
+    "topic": "classical-features",
+    "title": "Compare two patch descriptions",
+    "output": "ranked: [(1.0, 'A'), (5.0, 'B')]\nratio=0.20; accept=True\n"
+  },
+  {
+    "path": "examples/AI-CV/recognition-transfer-classification-head.py",
+    "group": "AI-CV",
+    "topic": "recognition-transfer",
+    "title": "Turn features into three scores",
+    "output": "scores: [1, 2, 0]\nprobabilities: [0.2447, 0.6652, 0.09]\nloss=0.4076\n"
+  },
+  {
+    "path": "examples/AI-CV/detection-overlap-box-overlap.py",
+    "group": "AI-CV",
+    "topic": "detection-overlap",
+    "title": "Measure two proposed boxes",
+    "output": "intersection=9; IoU=0.3913\n0.3 suppress B\n0.5 keep B\n"
+  },
+  {
+    "path": "examples/AI-CV/detection-average-precision-ranked-ap.py",
+    "group": "AI-CV",
+    "topic": "detection-average-precision",
+    "title": "Read three ranked detections",
+    "output": "rank=1: precision=1.0000, recall=0.5000\nrank=2: precision=0.5000, recall=0.5000\nrank=3: precision=0.6667, recall=1.0000\ntoy AP=0.8333\n"
+  },
+  {
+    "path": "examples/AI-CV/segmentation-regions-mask-counts.py",
+    "group": "AI-CV",
+    "topic": "segmentation-regions",
+    "title": "Count foreground overlap",
+    "output": "shared: 2 union: 4\nIoU=0.5000; Dice=0.6667\n"
+  },
+  {
+    "path": "examples/AI-CV/tracking-identity-track-gate.py",
+    "group": "AI-CV",
+    "topic": "tracking-identity",
+    "title": "Predict and gate one track",
+    "output": "predicted: 8\nnearest: 8 accepted: True\n"
+  },
+  {
+    "path": "examples/AI-CV/ocr-reading-ocr-template.py",
+    "group": "AI-CV",
+    "topic": "ocr-reading",
+    "title": "Count symbol mismatches",
+    "output": "distances: {'H': 1, 'I': 5}\nclosest: H\n"
+  },
+  {
+    "path": "examples/AI-CV/visual-tokens-patch-budget.py",
+    "group": "AI-CV",
+    "topic": "visual-tokens",
+    "title": "Count patches and comparisons",
+    "output": "P=8: patches=16, values=192, pairs=289\nP=4: patches=64, values=48, pairs=4225\n"
+  },
+  {
+    "path": "examples/AI-CV/defect-inspection-difference-inspection.py",
+    "group": "AI-CV",
+    "topic": "defect-inspection",
+    "title": "Locate the largest change",
+    "output": "differences: [1, 1, 15, 0]\nflagged positions: [2]\nimage score: 15\n"
+  },
+  {
+    "path": "examples/AI-CV/evaluation-shift-evaluate-alerts.py",
+    "group": "AI-CV",
+    "topic": "evaluation-shift",
+    "title": "Count alerts and misses",
+    "output": "precision=0.60; recall=0.75; F1=0.6667\nshared sessions: 0\n"
+  },
+  {
+    "path": "examples/AI-CV/inference-pipelines-pipeline-budget.py",
+    "group": "AI-CV",
+    "topic": "inference-pipelines",
+    "title": "Inspect rounding and total delay",
+    "output": "encoded: [1, 3, 9]\nrestored: [0.1, 0.3, 0.9]\nlargest error=0.04\nserial latency ms: 13\n"
+  },
+  {
+    "path": "examples/AI-MM/tokens-embeddings-toy-token-table.py",
+    "group": "AI-MM",
+    "topic": "tokens-embeddings",
+    "title": "Look up and pool two tokens",
+    "output": "tokens: ['red', 'kite']\nIDs: [0, 1]\npooled: [0.5, 1.0]\n"
+  },
+  {
+    "path": "examples/AI-MM/modalities-alignment-cosine-alignment.py",
+    "group": "AI-MM",
+    "topic": "modalities-alignment",
+    "title": "Compare two descriptions",
+    "output": "A: 0.80\nB: 0.60\n"
+  },
+  {
+    "path": "examples/AI-MM/early-late-fusion-weighted-fusion.py",
+    "group": "AI-MM",
+    "topic": "early-late-fusion",
+    "title": "Combine only available evidence",
+    "output": "both=0.70\nimage only=0.80\nearly feature list: [0.2, 0.9, 0.6, 0.1]\n"
+  },
+  {
+    "path": "examples/AI-MM/audio-text-alignment-audio-duration.py",
+    "group": "AI-MM",
+    "topic": "audio-text-alignment",
+    "title": "Check the time before matching",
+    "output": "counts: 192000 64000\nwrong relabelled duration: 12.0\nsimilarity=0.96\n"
+  },
+  {
+    "path": "examples/AI-MM/clip-contrastive-contrastive-table.py",
+    "group": "AI-MM",
+    "topic": "clip-contrastive",
+    "title": "Score the correct partners both ways",
+    "output": "image to text=0.0486\ntext to image=0.0543\ncombined=0.0515\n"
+  },
+  {
+    "path": "examples/AI-MM/cross-attention-fusion-attention-mix.py",
+    "group": "AI-MM",
+    "topic": "cross-attention-fusion",
+    "title": "Let a query mix two values",
+    "output": "weights: [0.8044, 0.1956]\noutput: [8.0443, 0.7823]\n"
+  },
+  {
+    "path": "examples/AI-MM/image-text-search-search-ranking.py",
+    "group": "AI-MM",
+    "topic": "image-text-search",
+    "title": "Find and check the top two",
+    "output": "ranking: ['umbrella', 'kite', 'kite-detail']\nRecall@2=0.50\n"
+  },
+  {
+    "path": "examples/AI-MM/conditional-generation-response-probability.py",
+    "group": "AI-MM",
+    "topic": "conditional-generation",
+    "title": "Compare two possible responses",
+    "output": "correct probability=0.180\nincorrect probability=0.315\nmean loss=0.5716\n"
+  },
+  {
+    "path": "examples/AI-MM/document-ocr-qa-document-row.py",
+    "group": "AI-MM",
+    "topic": "document-ocr-qa",
+    "title": "Keep a word beside its row",
+    "output": "row: ['Friday', 'Room 3']\nnormalized x: 200.0\n"
+  },
+  {
+    "path": "examples/AI-MM/speech-tasks-word-error-rate.py",
+    "group": "AI-MM",
+    "topic": "speech-tasks",
+    "title": "Count a changed word",
+    "output": "reference words: 4\nWER=0.25\nthree insertions WER=1.50\n"
+  },
+  {
+    "path": "examples/AI-MM/audio-video-sync-sync-offset.py",
+    "group": "AI-MM",
+    "topic": "audio-video-sync",
+    "title": "Find a delayed clap",
+    "output": "shift scores: {-1: 0, 0: 0, 1: 1}\naudio delay seconds=0.1\n"
+  },
+  {
+    "path": "examples/AI-MM/video-temporal-grounding-temporal-overlap.py",
+    "group": "AI-MM",
+    "topic": "video-temporal-grounding",
+    "title": "Sample a video and compare intervals",
+    "output": "sample times: [0, 2, 4, 6, 8, 10]\nshort event sampled: False\ntemporal IoU=0.60\n"
+  },
+  {
+    "path": "examples/AI-MM/visual-instruction-tuning-frozen-feature.py",
+    "group": "AI-MM",
+    "topic": "visual-instruction-tuning",
+    "title": "Adjust a connector, keep the feature",
+    "output": "weight=1.00; feature=2.0; loss=0.500\nweight=0.75; feature=2.0; loss=0.125\n"
+  },
+  {
+    "path": "examples/AI-MM/multimodal-rag-retrieve-cite.py",
+    "group": "AI-MM",
+    "topic": "multimodal-rag",
+    "title": "Return an answer with its evidence ID",
+    "output": "retrieval score: 3\nanswer: arrow-marked opening\nevidence: sheet-A page 2 diagram-A\n"
+  },
+  {
+    "path": "examples/AI-MM/evaluation-hallucination-claim-audit.py",
+    "group": "AI-MM",
+    "topic": "evaluation-hallucination",
+    "title": "Count unsupported mentions and coverage",
+    "output": "unsupported mention rate=0.15\ncaptions with errors=0.40\ntarget coverage=0.68\nshort revision coverage=0.38\n"
+  },
+  {
+    "path": "examples/AI-MM/efficient-evidence-systems-cascade-budget.py",
+    "group": "AI-MM",
+    "topic": "efficient-evidence-systems",
+    "title": "Compare a full pass and a shortlist",
+    "output": "costs: 1000 150\nsaved fraction=0.85\nkept evidence indices: [0, 1] tokens: 140\n"
+  },
+  {
+    "path": "examples/AI-START/python-values-first-steps.py",
+    "group": "AI-START",
+    "topic": "python-values",
+    "title": "Numbers, names and a first program",
+    "output": "68.0\nTrue"
+  },
+  {
+    "path": "examples/AI-START/lists-loops-first-steps.py",
+    "group": "AI-START",
+    "topic": "lists-loops",
+    "title": "Lists, positions and repeated steps",
+    "output": "running total: 18\nrunning total: 39\nrunning total: 63\nfirst: 18\nmean: 21.0"
+  },
+  {
+    "path": "examples/AI-START/functions-tests-first-steps.py",
+    "group": "AI-START",
+    "topic": "functions-tests",
+    "title": "Functions, choices and small checks",
+    "output": "24 cool\n25 warm\n29 warm"
+  },
+  {
+    "path": "examples/AI-START/vectors-dot-products-first-steps.py",
+    "group": "AI-START",
+    "topic": "vectors-dot-products",
+    "title": "Vectors and the dot product",
+    "output": "contribution: 6\ncontribution: -4\nscore: 2"
+  },
+  {
+    "path": "examples/AI-START/matrices-shapes-first-steps.py",
+    "group": "AI-START",
+    "topic": "matrices-shapes",
+    "title": "Matrices: several examples at once",
+    "output": "shape: 2 by 2\nscores: [0, 2]"
+  },
+  {
+    "path": "examples/AI-START/probability-counts-first-steps.py",
+    "group": "AI-START",
+    "topic": "probability-counts",
+    "title": "Probability: choose the denominator",
+    "output": "rain: 0.4\nrain given alert: 0.6\nalert given rain: 0.75"
+  },
+  {
+    "path": "examples/AI-START/powers-logarithms-first-steps.py",
+    "group": "AI-START",
+    "topic": "powers-logarithms",
+    "title": "Powers and logarithms without mystery",
+    "output": "power: 8\nreverse: 3.0\np=0.8, loss=0.2231\np=0.2, loss=1.6094\np=1.0, loss=-0.0000"
+  },
+  {
+    "path": "examples/AI-START/slopes-gradients-first-steps.py",
+    "group": "AI-START",
+    "topic": "slopes-gradients",
+    "title": "Slopes, gradients and one learning step",
+    "output": "estimated slope: -6.000\nbefore: w=0.00, loss=9.00\nafter: w=0.60, loss=5.76"
+  }
+]
