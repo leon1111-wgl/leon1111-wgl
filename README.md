@@ -35,11 +35,11 @@ My contributions included benchmark construction, temporal and visual evidence a
 ## Background & experience
 
 - **The University of Hong Kong** · MSc · 2026 - Present. Working on AI. Enrolled September 2026.
-- **The University of Sydney** · Bachelor of Commerce · 2023 - 2026. Major in Finance; minor in Computer Science. Dalyell Scholar. Graduated June 2026.
+- **The University of Sydney** · Studied Finance and Computer Science · 2023–2026. Dalyell Scholar.
 - **Zhejiang University** · Exchange study · Dec 2024 - Jan 2025. Short-term exchange experience.
 
 - **Long-video research**, EV²-Bench & model evaluation · 2025 - 2026. Contributed to dataset construction and reproducible evaluation with lmms-eval, structured model outputs, and evidence precision, recall, and F1.
-- **AI Algorithm Intern**, Shenzhen Beidou Applied Technology Research Institute · Jul - Aug 2025. Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring.
+- **AI Algorithm Intern**, Shenzhen Beidou Applied Technology Research Institute · 2025. Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring.
 
 **Languages** · Mandarin Chinese and English (IELTS 7.5)
 

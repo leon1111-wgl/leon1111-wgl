@@ -13,10 +13,10 @@
       "detail": "Working on AI. Enrolled September 2026."
     },
     {
-      "period": "2023 - 2026",
+      "period": "2023–2026",
       "institution": "The University of Sydney",
-      "degree": "Bachelor of Commerce",
-      "detail": "Major in Finance; minor in Computer Science. Dalyell Scholar. Graduated June 2026."
+      "degree": "Studied Finance and Computer Science",
+      "detail": "Dalyell Scholar."
     },
     {
       "period": "Dec 2024 - Jan 2025",
@@ -42,7 +42,7 @@
       "detail": "Contributed to dataset construction and reproducible evaluation with lmms-eval, structured model outputs, and evidence precision, recall, and F1."
     },
     {
-      "period": "Jul - Aug 2025",
+      "period": "2025",
       "role": "AI Algorithm Intern",
       "organization": "Shenzhen Beidou Applied Technology Research Institute",
       "detail": "Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring."
