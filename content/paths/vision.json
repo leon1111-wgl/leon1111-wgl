@@ -1,0 +1,683 @@
+{
+  "id": "vision",
+  "code": "CV",
+  "color": "#e9bc86",
+  "title": {
+    "en": "Computer Vision: From Pixels to Perception",
+    "zh": "计算机视觉：从像素到感知"
+  },
+  "subtitle": {
+    "en": "Understand images, geometry, recognition and the evidence behind a prediction.",
+    "zh": "理解图像、几何、识别，以及预测背后的证据。"
+  },
+  "description": {
+    "en": "Eight connected stories turn images into inspectable models: pixel contracts, local filters, geometry, recognition, detection, segmentation, visual tokens and reliable evaluation. Follow the calculations, then continue with official tutorials and original research.",
+    "zh": "八个连贯故事把图像变成可理解、可检验的模型：像素约定、局部滤波、几何变换、识别、检测、分割、视觉词元和可靠评估。先跟着例子计算，再进入官方教程与原始研究。"
+  },
+  "coverage": {
+    "en": "An original conceptual companion to official OpenCV and PyTorch materials, Stanford teaching and foundational vision research. Examples use synthetic numbers; this is a connected introduction, not a reproduction of a particular course or a production deployment manual.",
+    "zh": "这是一份结合 OpenCV、PyTorch 官方资料、Stanford 教学与基础视觉研究编写的原创概念指南。例子使用自拟数据；它是一条连贯的入门路径，并非某门课程的复制品，也不是生产部署手册。"
+  },
+  "prerequisites": {
+    "en": [
+      "Basic arrays and Python-style indexing",
+      "Vectors, matrix multiplication and simple probability",
+      "The difference between training and evaluation"
+    ],
+    "zh": [
+      "基本数组与 Python 风格索引",
+      "向量、矩阵乘法与简单概率",
+      "训练与评估的区别"
+    ]
+  },
+  "outcomes": {
+    "en": [
+      "Trace an image through shape, scale and coordinate changes",
+      "Choose classification, detection or segmentation for the actual question",
+      "Read a convolution or patch model with explicit dimensions",
+      "Evaluate performance without leaking related images"
+    ],
+    "zh": [
+      "追踪图像的形状、尺度与坐标变化",
+      "根据任务选择分类、检测或分割",
+      "用明确维度理解卷积与图像块模型",
+      "避免相关图像泄漏，可靠地评估效果"
+    ]
+  },
+  "map": [
+    {
+      "title": {
+        "en": "Represent and transform",
+        "zh": "表示与变换"
+      },
+      "topics": [
+        "pixels-contracts",
+        "filters-neighborhoods",
+        "geometry-augmentation"
+      ]
+    },
+    {
+      "title": {
+        "en": "Recognize and locate",
+        "zh": "识别与定位"
+      },
+      "topics": [
+        "recognition-transfer",
+        "detection-overlap",
+        "segmentation-regions"
+      ]
+    },
+    {
+      "title": {
+        "en": "Connect and evaluate",
+        "zh": "连接与评估"
+      },
+      "topics": [
+        "visual-tokens",
+        "evaluation-shift"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "pixels-contracts",
+      "title": {
+        "en": "Pixels are measurements with a contract",
+        "zh": "像素是带有约定的测量值"
+      },
+      "story": {
+        "en": "Maya volunteers at a community archive that is digitizing painted theatre posters. One morning, every blue costume appears red in the new catalogue. The scanner seems fine, and the files open without errors, so the team initially suspects the display. Maya follows one known blue patch through the pipeline instead. The loader stores blue first, while the next component interprets the first channel as red. She writes down the channel order, array shape and numeric range at every boundary, corrects the conversion, and checks the same patch again. The costume returns to blue. The incident changes the team's routine: before asking whether a model understands a picture, they verify that each component receives the same picture. A pixel array needs a contract, just as a parcel needs a label that every handler interprets consistently.",
+        "zh": "Maya 在社区档案馆做志愿者，协助把手绘剧院海报数字化。一天早晨，新目录里的蓝色戏服全部变成了红色。扫描仪似乎正常，文件也能打开，大家最初怀疑显示器。Maya 没有更换设备，而是沿着处理流程追踪一小块已知的蓝色区域。她发现，读取组件把蓝色放在第一个通道，下一组件却把第一个通道当成红色。她逐一记录接口处的通道顺序、数组形状与数值范围，修正转换，再检查同一色块。戏服终于恢复了蓝色。从此，团队在讨论模型是否理解图片之前，先确认各组件接收到的是同一幅图片。像素数组也需要约定，就像包裹标签必须让每个经手人得到相同的含义。"
+      },
+      "concept": {
+        "en": "An image tensor is a numerical representation with spatial axes, channels, a data type and an intensity convention. A height-by-width RGB image and a channel-first batch encode related information in different layouts. Changing layout is not the same as swapping colour channels. Converting an unsigned byte to floating point also does not automatically scale its values. Preprocessing must match the model's expected channel order, range and normalization statistics. Coordinate indexing commonly uses row then column, whereas geometric points are often written as horizontal x then vertical y. These conventions must be explicit wherever data crosses a boundary.",
+        "zh": "图像张量是一种数值表示，包含空间轴、通道、数据类型和强度约定。高×宽排列的 RGB 图像与通道优先的批次张量可以表达相近的信息，但布局不同。交换轴的顺序不等于交换颜色通道；把无符号字节转换成浮点数，也不会自动缩放数值。预处理必须符合模型所要求的通道顺序、取值范围和归一化统计量。数组索引通常先写行、再写列，而几何坐标常写成先水平 x、再垂直 y。数据跨越接口时，都应明确这些约定。"
+      },
+      "application": {
+        "en": "Start a vision pipeline with a tiny diagnostic image whose colours and locations you know. Inspect shape, type, minimum and maximum values, and one selected pixel after each conversion. Apply normalization using the statistics specified by the pretrained weights, or training-only estimates when designing your own pipeline. Keep the unmodified input available so that visualization does not accidentally display standardized values as ordinary colours.",
+        "zh": "搭建视觉流程时，可以先使用一张颜色与位置都已知的小型诊断图片。每次转换后，检查形状、类型、最小值、最大值，以及某个指定像素。采用预训练权重要求的归一化统计量；若自己设计流程，就只用训练数据估计。保留未修改的输入，以免可视化时误把标准化数值当成普通颜色。"
+      },
+      "practice": {
+        "en": "OpenCV's Basic Operations on Images tutorial makes pixel access, array properties and channel manipulation visible rather than treating an image as an opaque file. TorchVision's transforms documentation explains transformations across images and structured targets. Together they illustrate the practical boundary that the archive story exposes: representation choices are part of the computation, and must remain consistent before learned inference begins.",
+        "zh": "OpenCV 的 Basic Operations on Images 官方教程直接展示像素访问、数组属性与通道操作，而不是把图像当作不透明文件。TorchVision 的变换文档介绍了图像与结构化目标的处理。两者共同体现档案馆故事中的实际问题：表示方式本身就是计算的一部分，在模型推理开始之前必须保持一致。"
+      },
+      "formula": "z = (v / 255 − μ) / σ\nHWC → CHW: (H, W, C) → (C, H, W)",
+      "symbols": {
+        "en": "v is an eight-bit channel value between zero and 255. Dividing by 255 maps it to the unit interval; μ and σ are the chosen mean and positive standard deviation on that same scale. z is the standardized value and can be negative. H, W and C denote height, width and channel count. HWC and CHW describe axis order only, not whether the channels mean red, green or blue. This equation assumes the stated byte scale; a floating image already in the unit interval should not be divided again.",
+        "zh": "v 是取值为 0 到 255 的八位通道数值。除以 255 后，它被映射到单位区间；μ 和正数 σ 是在相同尺度下使用的均值与标准差。z 是标准化后的数值，可以为负。H、W、C 分别表示高度、宽度与通道数。HWC 和 CHW 只说明轴的顺序，并不说明哪个通道代表红、绿或蓝。公式假设输入确实使用上述字节尺度；已经位于单位区间的浮点图像不应再次除以 255。"
+      },
+      "calculation": {
+        "en": "Use a synthetic channel value v = 153 with μ = 0.5 and σ = 0.25. First scale: 153 / 255 = 0.6. Then centre: 0.6 − 0.5 = 0.1. Finally divide by the standard deviation: z = 0.4. If the value 0.6 had already been scaled, another division by 255 would instead produce approximately −1.9906 after standardization. The shape offers a separate check: a 4-by-6 RGB image has shape (4, 6, 3), and moving its channel axis first gives (3, 4, 6), still containing 72 numbers. Neither operation by itself converts BGR to RGB. Compare both numeric values and channel semantics before declaring the input correct.",
+        "zh": "设自拟通道值 v = 153，μ = 0.5，σ = 0.25。先缩放：153 / 255 = 0.6。再中心化：0.6 − 0.5 = 0.1。最后除以标准差，得到 z = 0.4。如果输入的 0.6 已经完成缩放，却再次除以 255，标准化结果将约为 −1.9906。形状需要单独检查：一张 4×6 的 RGB 图像形状为 (4, 6, 3)，把通道轴移到前面后得到 (3, 4, 6)，两者都包含 72 个数值。这两种操作本身都不会把 BGR 变成 RGB。只有同时检查数值和通道含义，才能判断输入是否正确。"
+      },
+      "limits": {
+        "en": "The parcel-label analogy explains interface agreement, not colour science. Camera response, gamma encoding and illumination also affect pixels. Correct shapes and ranges cannot prove that an image represents the same physical scene under different capture conditions; they only eliminate a useful class of avoidable errors.",
+        "zh": "包裹标签的类比解释的是接口一致性，并不能代替色彩科学。相机响应、伽马编码与光照也会影响像素。形状和范围正确，不能证明不同拍摄条件下的图像对应相同的物理测量；它只是排除了一类本可避免的错误。"
+      },
+      "takeaway": {
+        "en": "Before learning from pixels, establish their axes, colour meaning, scale and normalization contract at every boundary.",
+        "zh": "在让模型学习像素之前，先明确每个接口的轴顺序、颜色含义、数值尺度与归一化约定。"
+      },
+      "sources": [
+        "opencv-pixels",
+        "torchvision-transforms"
+      ]
+    },
+    {
+      "id": "filters-neighborhoods",
+      "title": {
+        "en": "Local filters ask local questions",
+        "zh": "局部滤波提出局部问题"
+      },
+      "story": {
+        "en": "Jon is restoring a scanned star chart for a small observatory. Dust from the scanner produces bright specks, but faint pencil lines mark the constellations. His first repair replaces each pixel by a neighbourhood average. The specks soften, yet some important pencil lines disappear too. Instead of declaring the repair successful because the image looks smoother, Jon compares a few known lines and blank regions. He uses a smaller smoothing window where appropriate and keeps an edge response alongside the original image to inspect changes. The restored chart is useful because he has chosen a local question rather than a universal beautification rule. A neighbourhood filter resembles a committee listening to nearby witnesses: averaging can reduce isolated noise, but a majority can also erase a rare observation that matters.",
+        "zh": "Jon 正在为一间小型天文台修复扫描星图。扫描仪里的灰尘留下了亮点，但微弱的铅笔线又标记着星座。他第一次尝试把每个像素替换成邻域平均值。亮点确实变淡，一些重要的铅笔线却也消失了。Jon 没有因为图像更平滑就宣布成功，而是对照几条已知线段和空白区域检查。他在合适位置使用更小的平滑窗口，并把边缘响应与原图并列查看。修复之所以有用，是因为他选择了具体的局部问题，而不是套用万能的美化规则。邻域滤波就像让附近证人组成评议组：平均意见能减弱孤立噪声，也可能抹去一个少见却重要的观察。"
+      },
+      "concept": {
+        "en": "A linear image filter computes a weighted sum of nearby values at each location. A normalized averaging kernel smooths variation, while kernels with positive and negative coefficients respond to changes. Applying one kernel repeatedly across an image shares the same local operation spatially. Boundary padding determines what happens when part of the neighbourhood lies outside the image. Many software operations described casually as convolution actually compute cross-correlation, without flipping the kernel. For symmetric averaging kernels the results coincide, but directional filters can change sign or orientation under a flip.",
+        "zh": "线性图像滤波器在每个位置计算附近数值的加权和。归一化的平均核可以平滑变化，而带正负系数的核会对变化作出响应。在全图重复使用同一个核，就在空间上共享了一种局部运算。邻域超出图像边界时，结果取决于填充方式。许多日常被称为“卷积”的软件操作，实际计算的是不翻转核的互相关。对称平均核下，两者结果相同；但方向性滤波器在翻转后可能改变符号或方向。"
+      },
+      "application": {
+        "en": "Specify the question before choosing a filter: suppress isolated noise, estimate a gradient, or prepare an image for a downstream task. Inspect representative boundaries as well as flat areas, record the padding rule, and retain a floating-point output when negative responses matter. Compare downstream accuracy or annotation quality rather than assuming that visual smoothness is automatically an improvement.",
+        "zh": "选择滤波器前，先说明目标：抑制孤立噪声、估计梯度，还是为后续任务准备输入。既要查看平坦区域，也要查看代表性边界，记录填充规则；若负响应有意义，应保留浮点输出。要比较后续识别效果或标注质量，而不是把视觉上的平滑自动等同于改进。"
+      },
+      "practice": {
+        "en": "OpenCV's Smoothing Images tutorial presents several neighbourhood filters, while its filter2D reference specifies the correlation convention used by that operation. These are useful complementary sources: the tutorial explains the workflow and the reference resolves an implementation detail. Learned convolutional networks extend the shared-local-operation idea by fitting many kernels from data, although training and nonlinear layers make them much more than fixed smoothing filters.",
+        "zh": "OpenCV 的 Smoothing Images 教程展示多种邻域滤波方法，而 filter2D 接口参考明确了该操作使用的互相关约定。两类来源可以互补：教程说明流程，接口参考澄清实现细节。学习型卷积网络会从数据中拟合许多核，扩展了共享局部运算的思想；但训练过程与非线性层使它远不止固定平滑滤波器。"
+      },
+      "formula": "y[r,c] = Σ_i Σ_j K[i,j] x[r+i,c+j]\nMean kernel: K[i,j] = 1 / (k²)",
+      "symbols": {
+        "en": "x is the input intensity array and y is the output. r and c identify the output location. i and j run over the kernel's neighbourhood offsets; K supplies the weight at each offset. The displayed convention is cross-correlation. For a square k-by-k mean filter, each of its k² weights equals 1/k² and their sum is one. The formula does not specify how out-of-bounds values are supplied, so padding must be stated separately. With multiple channels, filtering can operate independently per channel or also sum across them, depending on the layer.",
+        "zh": "x 是输入强度数组，y 是输出；r 与 c 表示输出位置。i 和 j 遍历核的邻域偏移，K 给出每个偏移对应的权重。这里写的是互相关约定。对于 k×k 的平均滤波器，k² 个权重都等于 1/k²，总和为 1。该公式没有规定越界位置如何取值，因此必须另外说明填充方式。多通道情况下，可以逐通道独立滤波，也可以在通道之间求和，具体取决于运算层。"
+      },
+      "calculation": {
+        "en": "Consider a 3-by-3 patch with eight entries equal to 10 and a centre entry equal to 19. A uniform mean filter gives (8 × 10 + 19) / 9 = 11 at the centre. The bright speck is reduced, but not removed without consequence: a genuine isolated star would also be weakened. For a separate one-dimensional edge probe, apply the correlation kernel [−1, 0, 1] to [2, 5, 8]. The response is −2 + 0 + 8 = 6. Reversing the input order gives −6. Taking an unsigned output carelessly could hide the negative response. These two calculations answer different questions, so choose and evaluate them according to the information you need to preserve.",
+        "zh": "考虑一个 3×3 图像块：其中八个值为 10，中心值为 19。均值滤波后的中心值为 (8 × 10 + 19) / 9 = 11。亮点被减弱了，但并非没有代价：真正孤立的星点也会变暗。另看一维边缘探测，把互相关核 [−1, 0, 1] 作用于 [2, 5, 8]，响应为 −2 + 0 + 8 = 6。若输入顺序反转，结果就是 −6。粗心地使用无符号输出，可能掩盖负响应。这两项计算回答的是不同问题，应根据需要保留的信息选择和评估它们。"
+      },
+      "limits": {
+        "en": "Neighbouring witnesses can share the same mistake. Averaging cannot recover details already absent from the measurement, and strong smoothing can damage boundaries. An edge response identifies local intensity change, not a semantic object boundary: shadows, texture and sensor noise can all generate responses.",
+        "zh": "邻近证人也可能犯同一种错误。平均无法恢复原本就没有被测到的细节，过强平滑还会损伤边界。边缘响应表示局部强度变化，并不等于语义对象边界；阴影、纹理和传感器噪声都可能产生响应。"
+      },
+      "takeaway": {
+        "en": "A filter is a local question expressed as weights; evaluate what it preserves as carefully as what it removes.",
+        "zh": "滤波器是用权重表达的局部问题；既要检查它去掉了什么，也要检查它保留了什么。"
+      },
+      "sources": [
+        "opencv-filters",
+        "opencv-filter2d"
+      ]
+    },
+    {
+      "id": "geometry-augmentation",
+      "title": {
+        "en": "Move the picture and its meaning together",
+        "zh": "让图像与标注一起移动"
+      },
+      "story": {
+        "en": "Lina builds a small camera system to recognize tools on a workshop wall. It performs well until the camera is mounted higher and the tools appear at unfamiliar positions. She decides to train with translated and resized images. At first, she moves the pictures but leaves the annotated rectangles untouched; the new training set now teaches the model that the hammer is somewhere else. A side-by-side overlay reveals the mistake immediately. Lina makes each transformation operate on the image and its labels together, then rejects crops that remove the object completely. Recognition improves on a held-out camera position. Her lesson is about shared geometry: moving a theatre stage while leaving the actors' floor marks fixed creates confusion, even when both the stage and the marks are individually well made.",
+        "zh": "Lina 为工作间做了一套小型相机系统，识别挂在墙上的工具。它原本表现不错，直到相机被安装到更高的位置，工具出现在陌生坐标上。她于是使用平移和缩放后的图像训练。起初，她只移动图片，却没有移动标注框；新数据反而教模型把锤子定位到别处。把框叠加在图上检查，错误立刻显现。Lina 让每次变换同时作用于图像和标注，并排除完全裁掉对象的样本。系统在未参与训练的新相机位置上取得了改善。这个故事说明几何关系必须共享：如果移动了剧院舞台，却把演员的地面定位标记留在原处，即便舞台和标记本身都制作精良，也仍会引起混乱。"
+      },
+      "concept": {
+        "en": "A geometric transform maps coordinates from one reference frame into another. Translation changes position, scaling changes extent, and affine maps can combine translation with linear transformations. Rendering transformed images usually samples the source through an inverse mapping, using interpolation for noninteger coordinates. Data augmentation uses selected transforms to express variations that should preserve the target meaning. That assumption depends on the task: a horizontal flip may preserve a tool category but change a left-pointing arrow's label. Bounding boxes, masks and keypoints require coordinated transformations, not merely the same output image dimensions.",
+        "zh": "几何变换把一个参考系中的坐标映射到另一个参考系。平移改变位置，缩放改变尺寸，仿射映射可以组合线性变换和平移。生成变换后的图像时，通常通过逆映射从源图像采样，并对非整数坐标插值。数据增强使用选定的变换来表达“目标含义应保持不变”的变化。但这一假设取决于任务：水平翻转可能不改变工具类别，却会改变向左箭头的标签。标注框、掩码和关键点需要协同变换，不能只保证输出图像尺寸相同。"
+      },
+      "application": {
+        "en": "Write down which variations are plausible in the intended camera setting and which annotations must change with them. Preview augmented samples with boxes and masks overlaid, including extreme crops and border cases. Apply randomness only in the training pipeline; use a defined evaluation transform. Keep related frames within one split so augmentation does not disguise leakage between training and evaluation.",
+        "zh": "先写下目标相机环境中哪些变化是合理的，以及哪些标注必须随之改变。预览增强样本时应叠加框与掩码，还要包含极端裁剪和边界情况。随机增强通常只用于训练流程，评估采用明确的固定处理。相关视频帧应放在同一数据划分中，避免增强掩盖训练与评估之间的泄漏。"
+      },
+      "practice": {
+        "en": "OpenCV's Geometric Transformations tutorial connects coordinate maps with image resampling. TorchVision's transforms documentation demonstrates why images, boxes, masks and videos need compatible operations. In the official TorchVision detection tutorial, image and target transformations are part of preparing training data. These sources motivate the workshop workflow without suggesting that every transformation is valid for every detection task or label vocabulary.",
+        "zh": "OpenCV 的 Geometric Transformations 教程把坐标映射与图像重采样联系起来。TorchVision 的变换文档说明图像、框、掩码和视频为何需要兼容操作。在官方目标检测教程中，图像与目标的变换也是训练数据准备的一部分。这些资料支持工作间案例的流程，但并不意味着所有变换都适合每一种检测任务或标签体系。"
+      },
+      "formula": "[x′, y′, 1]ᵀ = [[sₓ, 0, tₓ], [0, sᵧ, tᵧ], [0, 0, 1]] [x, y, 1]ᵀ\nx′ = sₓx + tₓ; y′ = sᵧy + tᵧ",
+      "symbols": {
+        "en": "x and y are horizontal and vertical coordinates in the original frame; primed coordinates belong to the transformed frame. sₓ and sᵧ are scale factors, while tₓ and tᵧ are translations measured in output-coordinate units. The appended one allows translation to appear inside matrix multiplication; the superscript T denotes a column vector. This restricted affine map contains scaling and translation, not rotation or perspective. For positive scales, transform both corners of an axis-aligned box; more general transformations require considering all corners and the intended output representation.",
+        "zh": "x、y 是原参考系中的水平与垂直坐标，带撇的坐标属于变换后的参考系。sₓ、sᵧ 是缩放系数；tₓ、tᵧ 是以输出坐标单位计量的平移量。补上的 1 让平移能够写进矩阵乘法，上标 T 表示列向量。这个受限的仿射变换只含缩放和平移，不含旋转或透视。缩放系数为正时，可变换轴对齐框的两个对角；更一般的变换需要考虑所有顶点及所需的输出表示。"
+      },
+      "calculation": {
+        "en": "A synthetic tool box has corners (10, 20) and (30, 50). Choose sₓ = sᵧ = 2, tₓ = 5 and tᵧ = −3. The first corner becomes (2 × 10 + 5, 2 × 20 − 3) = (25, 37). The second becomes (65, 97). Width changes from 20 to 40 and height from 30 to 60, so area changes from 600 to 2400 square coordinate units. Translation changes neither width nor area. If the output canvas ends at y = 80, the box extends beyond it; clipping and the retained-object rule must now be applied consistently. Updating only the pixels would leave the original box at an unrelated location.",
+        "zh": "一个自拟工具框的两个对角为 (10, 20) 与 (30, 50)。设 sₓ = sᵧ = 2，tₓ = 5，tᵧ = −3。第一个顶点变为 (2 × 10 + 5, 2 × 20 − 3) = (25, 37)，第二个变为 (65, 97)。宽从 20 变成 40，高从 30 变成 60，因此面积从 600 变成 2400 个平方坐标单位。平移不会改变宽或面积。如果输出画布只到 y = 80，框就超出画布，需要一致地执行裁剪与对象保留规则。若只更新像素，原标注框就会留在不相关的位置。"
+      },
+      "limits": {
+        "en": "The moving-stage analogy does not guarantee that identity survives a transformation. Cropping can remove decisive evidence, and interpolation can change small patterns. Augmentation improves robustness only to useful, label-consistent variation; it cannot substitute for representative real images from the intended environment.",
+        "zh": "移动舞台的类比不能保证对象含义在变换后保持不变。裁剪可能移除关键证据，插值也可能改变细小图案。增强只对有用且标签一致的变化有帮助，不能代替来自目标环境的代表性真实图像。"
+      },
+      "takeaway": {
+        "en": "Every geometric change must carry its targets along, and every augmentation must justify why the label still means the same thing.",
+        "zh": "几何变化必须带着标注一起变化；每项增强都要说明，为什么标签含义仍然成立。"
+      },
+      "sources": [
+        "opencv-geometry",
+        "torchvision-transforms",
+        "torchvision-detection"
+      ]
+    },
+    {
+      "id": "recognition-transfer",
+      "title": {
+        "en": "Borrow a visual vocabulary, then teach a new decision",
+        "zh": "借用视觉词汇，再学习新的判断"
+      },
+      "story": {
+        "en": "A community garden asks Noor to sort camera images into three plant categories. She has only a small labelled collection, so training a large recognition model from random weights produces unstable results. Noor instead starts with a network that has already learned reusable visual patterns from other images. She freezes its feature extractor and trains a small new decision layer. The first results improve, but close inspection shows mistakes under the garden's unusual evening lighting. She then cautiously fine-tunes selected layers using a lower learning rate and keeps a separate set of garden visits for evaluation. The process resembles hiring an experienced illustrator to learn a new field guide: drawing experience transfers, but the illustrator still needs local examples, clear categories and an honest check of unfamiliar pages.",
+        "zh": "社区花园请 Noor 把相机图片分成三类植物。她手头的已标注图片不多，从随机权重训练大型识别模型时，结果很不稳定。于是她使用一个已经从其他图像中学到可复用视觉模式的网络，冻结特征提取部分，只训练一个新的小型决策层。初步结果有所改善，但仔细检查后发现，花园特殊的傍晚光线仍会导致错误。她随后用较低学习率谨慎微调部分层，并把若干独立采集日留作评估。这像请一位经验丰富的插画师学习新的植物手册：绘画经验可以迁移，但插画师仍需要当地样本、清晰类别，以及对陌生页面的诚实检验。"
+      },
+      "concept": {
+        "en": "A classifier maps an image to scores for a defined set of classes. A feature extractor converts pixels into a representation, and a prediction head turns that representation into class logits. Transfer learning reuses pretrained parameters instead of learning every feature from scratch. A frozen backbone updates no backbone parameters; fine-tuning updates some or all of them under the new objective. Softmax converts logits into a normalized distribution over the provided classes. Its largest value is not a guarantee that the predicted label is correct, especially for inputs unlike the training distribution.",
+        "zh": "分类器把图像映射成一组已定义类别的分数。特征提取器把像素变成表示，预测头再把表示变成类别 logits。迁移学习复用预训练参数，无须所有特征都从头学习。冻结主干时，主干参数不更新；微调则会按新目标更新其中一部分或全部参数。Softmax 把 logits 转换成针对已给定类别的归一化分布。最大数值并不保证预测正确，尤其当输入不同于训练分布时。"
+      },
+      "application": {
+        "en": "Begin with a simple frozen-feature baseline, match the pretrained preprocessing, and replace the head to match your own label set. Split by capture session or source when neighbouring images are related. Compare fine-tuning against that baseline using the same held-out groups. Inspect mistakes by lighting and viewpoint, and reserve enough evaluation data to notice when an apparently better model has merely memorized local patterns.",
+        "zh": "先建立冻结特征的简单基线，使预处理符合预训练模型要求，再把预测头替换成自己的类别集合。相邻图像存在关联时，应按采集批次或来源划分数据。微调与基线要使用相同的留出组比较。按光照和视角查看错误，并保留足够评估数据，以便发现所谓更好的模型是否只是记住了局部模式。"
+      },
+      "practice": {
+        "en": "PyTorch's official Transfer Learning for Computer Vision tutorial contrasts adapting a pretrained network with using it as a fixed feature extractor. Stanford's CS231n teaching provides a broader account of learned visual representations and recognition. Noor's three-category garden example is original; the connection is the reusable workflow of adapting a learned representation and testing whether that adaptation actually generalizes to new images.",
+        "zh": "PyTorch 的官方 Transfer Learning for Computer Vision 教程对比了调整预训练网络与把它作为固定特征提取器的做法。Stanford 的 CS231n 教学则提供了学习型视觉表示与识别的更广背景。Noor 的三类植物案例是原创例子；它与这些资料的联系，在于复用已学表示，并检验调整后是否能推广到新图像的工作流程。"
+      },
+      "formula": "h = fθ(x); z = Wh + b\npₖ = exp(zₖ) / Σⱼ exp(zⱼ)\nL = −log(pᵧ)",
+      "symbols": {
+        "en": "x is an input image, fθ is a feature extractor with parameters θ, and h is its feature vector. W and b are the new head's weight matrix and bias. z contains one unnormalized logit per class; k and j index classes. pₖ is the corresponding softmax value. y denotes the correct class, and L is the negative log-likelihood for one labelled image. The logarithm is natural. With a frozen backbone, optimization changes W and b but leaves θ fixed; fine-tuning permits selected components of θ to change as well.",
+        "zh": "x 是输入图像，fθ 是参数为 θ 的特征提取器，h 是特征向量。W、b 是新预测头的权重矩阵与偏置。z 为每个类别提供一个未归一化 logit，k、j 是类别索引，pₖ 为对应的 softmax 值。y 表示正确类别，L 是单张已标注图片的负对数似然，这里的对数为自然对数。主干冻结时，优化只改变 W、b，θ 不变；微调则允许 θ 的选定部分也发生变化。"
+      },
+      "calculation": {
+        "en": "For a transparent toy calculation, let h = [1, 2], set the three rows of W to [1, 0], [0, 1] and [0, 0], and use zero biases. The logits are [1, 2, 0]. Exponentiating gives approximately [2.7183, 7.3891, 1], whose sum is 11.1073. The class probabilities are therefore approximately [0.2447, 0.6652, 0.0900]. If the second class is correct, the loss is −log(0.6652), approximately 0.4076. The model predicts that class, yet still incurs loss because it assigns some probability elsewhere. This demonstrates the head calculation, not the millions of computations that created a realistic image representation. Test new images before interpreting a low training loss as useful recognition.",
+        "zh": "为了让计算透明，设 h = [1, 2]，W 的三行为 [1, 0]、[0, 1]、[0, 0]，偏置全为 0。得到 logits 为 [1, 2, 0]。取指数后约为 [2.7183, 7.3891, 1]，总和为 11.1073。因此类别概率约为 [0.2447, 0.6652, 0.0900]。若第二类正确，损失为 −log(0.6652)，约等于 0.4076。模型虽然预测正确，仍然有损失，因为它还给其他类别分配了概率。这个例子演示的是预测头的计算，而不是生成真实图像表示所需的大量运算。在把较低训练损失解释成有效识别之前，还必须检验新图像。"
+      },
+      "limits": {
+        "en": "The experienced-illustrator analogy can overstate what transfers. Pretraining may encode irrelevant shortcuts, and a confident softmax can still choose the wrong class. Frozen features are a useful baseline rather than a universal solution; the appropriate adaptation depends on dataset size, similarity and evaluation evidence.",
+        "zh": "经验丰富的插画师类比，可能夸大能够迁移的能力。预训练可能包含无关捷径，较大的 softmax 值也可能对应错误类别。冻结特征是有用的基线，却不是通用答案；如何调整应依据数据量、相似性与评估证据决定。"
+      },
+      "takeaway": {
+        "en": "Transfer a representation, define the new decision carefully, and measure improvement on genuinely separate image groups.",
+        "zh": "迁移表示，仔细定义新的判断任务，再用真正独立的图像组衡量改进。"
+      },
+      "sources": [
+        "pytorch-transfer",
+        "stanford-cs231n"
+      ]
+    },
+    {
+      "id": "detection-overlap",
+      "title": {
+        "en": "Boxes locate candidates; overlap resolves duplicates",
+        "zh": "框定位候选对象，重叠度帮助消除重复"
+      },
+      "story": {
+        "en": "Eli records seabird observations from a coastal hide. His detector reports seven gulls in a photograph where he can identify four. The overlay reveals several slightly different rectangles around the same bird, so simply counting predictions inflates the observation. Eli sorts candidates by score and removes strongly overlapping alternatives within the gull class. The count now agrees on this photograph. However, a second picture contains two birds standing close together, and an aggressive overlap threshold removes a real neighbour. He compares several thresholds on separately labelled images and keeps crowded scenes visible in the error review. The useful result is a defined counting procedure with known failures. Rectangles are proposed locations, like several pencil circles drawn around the same landmark; reconciling circles requires a rule, but the rule cannot see the landmark itself.",
+        "zh": "Eli 在海岸观鸟屋记录海鸟。检测器在一张他能辨认出四只海鸥的照片中报告了七只。叠加预测框后，他发现同一只鸟周围有几个略有不同的矩形，因此直接数预测结果会夸大数量。Eli 按分数排列候选框，在海鸥类别内部移除高度重叠的替代框。这张照片的计数于是与人工观察一致。然而，第二张照片中有两只靠得很近的鸟，过于激进的重叠阈值反而删掉了一只真实邻鸟。他在另行标注的图像上比较多个阈值，并在错误复查中保留拥挤场景。最终得到的是一套规则明确、失败情况已知的计数流程。矩形只是候选位置，就像围绕同一地标画出的几个铅笔圈；合并这些圈需要规则，但规则本身看不见地标。"
+      },
+      "concept": {
+        "en": "Object detection predicts class labels, scores and locations for individual candidates. Intersection over union, or IoU, measures the overlap between two regions relative to their union; it is a geometric ratio, not classification accuracy. Greedy non-maximum suppression first keeps the highest-scoring remaining box, then removes lower-scoring boxes whose IoU with it exceeds a threshold, and repeats. Here suppression operates separately within each class. TorchVision's basic NMS operation receives no class labels, so that separation must be arranged by the caller. A suppression threshold and an evaluation matching threshold serve different purposes even when both use IoU.",
+        "zh": "目标检测为各个候选对象预测类别、分数与位置。交并比 IoU 衡量两个区域的交集相对于并集的比例；它是几何比值，并非分类准确率。贪心非极大值抑制先保留剩余框中分数最高的一个，再移除与它的 IoU 超过阈值的低分框，随后重复此过程。这里按类别分别执行抑制。TorchVision 的基础 NMS 操作不接收类别标签，因此需要调用方安排类别隔离。抑制阈值和评估时的匹配阈值用途不同，即使两者都使用 IoU。"
+      },
+      "application": {
+        "en": "Define box coordinates and class handling before comparing detections. Inspect overlays containing isolated objects, crowded neighbours and partial occlusions. Choose score and suppression thresholds using validation data, then keep them fixed for the final evaluation. Record how predictions match annotations, including the rule preventing multiple predictions from claiming the same object. A plausible-looking box is evidence to inspect, not proof that the object count is correct.",
+        "zh": "比较检测结果之前，先定义框坐标和类别处理方式。检查包含孤立对象、拥挤邻居与部分遮挡的叠加图。用验证数据选择分数阈值和抑制阈值，在最终评估时保持固定。记录预测与标注的匹配方法，包括防止多个预测重复认领同一对象的规则。看起来合理的框是需要检查的证据，并不能证明计数正确。"
+      },
+      "practice": {
+        "en": "The official TorchVision detection tutorial fine-tunes Mask R-CNN on Penn-Fudan pedestrian images, using boxes, labels and object masks as structured targets. The NMS reference separately documents score ordering and removal when overlap is strictly greater than the supplied threshold. Reading both distinguishes a complete detection example from one postprocessing operation, and makes the seabird story's duplicate-removal decision precise.",
+        "zh": "TorchVision 官方检测教程在 Penn-Fudan 行人图像上微调 Mask R-CNN，并把框、类别与对象掩码作为结构化目标。NMS 参考文档则单独说明分数排序，以及重叠度严格大于给定阈值时的移除规则。结合阅读两份资料，可以区分完整检测示例与单个后处理操作，也能精确定义海鸟故事中的去重决策。"
+      },
+      "formula": "IoU(A, B) = |A ∩ B| / (|A| + |B| − |A ∩ B|)\n|A| = (x₂ − x₁)(y₂ − y₁)\nscore(B) < score(A) ∧ IoU(A, B) > τ ⇒ B ∉ K",
+      "symbols": {
+        "en": "A is a kept box and B is a lower-scoring candidate of the same class. Vertical bars denote continuous area, and ∩ denotes intersection. The coordinates (x₁, y₁) and (x₂, y₂) are A's opposite corners, with increasing horizontal and vertical coordinates. Area uses coordinate differences without an inclusive-pixel plus one. Both boxes have positive area. score assigns the ranking value, and τ is the chosen IoU suppression threshold. The displayed rule assumes unequal scores; a tie needs an implementation-specific selection rule. IoU ranges from zero to one. K is the retained set; ∧ means both conditions hold and ⇒ implies exclusion of B.",
+        "zh": "A 是已保留的框，B 是同一类别中分数较低的候选框。竖线表示连续面积，∩ 表示交集。(x₁, y₁) 和 (x₂, y₂) 是 A 的两个对角，水平与垂直坐标均递增。面积使用坐标差计算，不采用包含端点的像素计数加一规则。两个框的面积都为正。score 给出排序分数，τ 是选定的 IoU 抑制阈值。所示规则假设分数不相同；分数相同时，需要按具体实现的规则选择。IoU 的取值范围为 0 到 1。 K 是保留框集合；∧ 表示两个条件同时成立，⇒ 表示由此推出 B 不属于 K。"
+      },
+      "calculation": {
+        "en": "Consider three synthetic gull boxes: A = (0, 0, 4, 4), B = (1, 1, 5, 5), and C = (6, 0, 8, 2), with scores 0.9, 0.8 and 0.7. A and B each have area 16. Their intersection has width 3 and height 3, hence area 9. Their union is 16 + 16 − 9 = 23, giving IoU = 9 / 23, approximately 0.3913. At τ = 0.3, keep A and suppress B. C does not overlap A, so keep C: two boxes remain. At τ = 0.5, B also remains, giving three boxes. These results demonstrate threshold mechanics; without annotations they cannot tell whether A and B describe one gull or two overlapping gulls.",
+        "zh": "考虑三个自拟海鸥框：A = (0, 0, 4, 4)、B = (1, 1, 5, 5)、C = (6, 0, 8, 2)，分数分别为 0.9、0.8、0.7。A 与 B 的面积均为 16。它们的交集宽为 3、高为 3，因此面积为 9。并集面积为 16 + 16 − 9 = 23，所以 IoU = 9 / 23，约为 0.3913。当 τ = 0.3 时，保留 A、抑制 B。C 与 A 没有重叠，因此保留 C，最终剩下两个框。当 τ = 0.5 时，B 也被保留，共有三个框。这些结果说明阈值的作用；没有标注，仍无法判断 A 与 B 指向同一只海鸥，还是两只相互遮挡的海鸥。"
+      },
+      "limits": {
+        "en": "The pencil-circle analogy explains duplicate proposals, but high overlap does not prove shared identity. Greedy suppression can remove real neighbours, and a high score can belong to an inaccurate box. Different detectors may use other duplicate-handling designs; the rule here describes a common operation, not every detection architecture.",
+        "zh": "铅笔圈的类比解释了重复候选，但高重叠度不能证明它们对应同一对象。贪心抑制可能移除真实邻居，高分框也可能定位不准。不同检测器可能采用其他去重设计；这里介绍的是常见操作，并非所有检测架构都使用的规则。"
+      },
+      "takeaway": {
+        "en": "Treat boxes as candidates, define overlap precisely, and validate duplicate removal separately from the rule used to judge detection quality.",
+        "zh": "把框视为候选，精确定义重叠，并把去重规则与检测质量的判定规则分别验证。"
+      },
+      "sources": [
+        "torchvision-detection",
+        "torchvision-nms"
+      ]
+    },
+    {
+      "id": "segmentation-regions",
+      "title": {
+        "en": "From a rectangle to the pixels that belong",
+        "zh": "从一个矩形走向真正属于对象的像素"
+      },
+      "story": {
+        "en": "Priya helps a river group compare photographs of floating leaves in a shallow observation tray. Bounding boxes locate each leaf, but they also include water, so adding box areas exaggerates leaf coverage. She switches to masks that label leaf pixels and measures the combined foreground region. That answers the coverage question until another volunteer asks how many leaves are present. Two touching leaves form one connected region, showing that a shared category mask does not preserve individual identity. Priya prepares separate instance annotations for counting and keeps the semantic mask for coverage. She also replaces overall pixel accuracy with foreground overlap because most tray pixels are water. The group now has two explicit questions and two suitable outputs, rather than one impressive number that silently answers the wrong question.",
+        "zh": "Priya 帮助河流观察小组比较浅观察盘中漂浮叶片的照片。标注框可以定位每片叶子，却也包含水面，因此把框面积相加会夸大叶片覆盖率。她改用标记叶片像素的掩码，测量合并后的前景区域。这回答了覆盖率问题，直到另一位志愿者询问叶片数量。两片相接的叶子形成一个连通区域，说明共享类别掩码不能保留个体身份。Priya 为计数准备逐实例标注，同时保留用于覆盖率的语义掩码。由于观察盘的大多数像素都是水，她还用前景重叠指标替代总体像素准确率。小组于是拥有两个明确问题和两种适当输出，而不是一个看似出色、却悄悄回答了错误问题的数字。"
+      },
+      "concept": {
+        "en": "Semantic segmentation assigns a class to each pixel; all leaves can share one class regardless of individual identity. Instance segmentation distinguishes separate objects as well as their pixels. A binary foreground mask can be compared with its reference using IoU or Dice overlap. Neither metric rewards correctly predicted background pixels directly, making the foreground comparison informative when background dominates. Dice counts the shared foreground twice and divides by the sum of mask sizes. These hard-mask metrics differ from differentiable training losses that may use probabilities, smoothing or other reductions. Specify which version and averaging convention you report.",
+        "zh": "语义分割为每个像素赋予类别；所有叶片都可以共享一个类别，而不区分个体。实例分割除了判断对象像素，还区分不同对象。二值前景掩码可以通过 IoU 或 Dice 重叠度与参考掩码比较。这两个指标都不会直接奖励正确预测的背景像素，因此在背景占主导时，前景比较尤其有信息量。Dice 把共同前景计数两次，再除以两个掩码大小之和。这些硬掩码指标不同于可微训练损失，后者可能使用概率、平滑项或其他汇总方式。报告结果时，需要说明使用的版本与平均规则。"
+      },
+      "application": {
+        "en": "Choose semantic labels when the question concerns material coverage, and instance labels when separate objects matter. Overlay masks on originals to inspect boundaries and small regions. Keep foreground overlap alongside class frequencies and representative mistakes, and document whether scores average over images, objects or classes. Define empty-mask handling before evaluation, so images without foreground do not silently change the meaning of the reported average.",
+        "zh": "问题涉及某种材料的覆盖范围时，选择语义标签；需要区分不同对象时，选择实例标签。把掩码叠加在原图上，检查边界与小区域。报告前景重叠度时，同时保留类别频率和代表性错误，并说明是在图像、对象还是类别之间取平均。评估前先定义空掩码处理规则，避免没有前景的图片悄悄改变平均分数的含义。"
+      },
+      "practice": {
+        "en": "TorchVision documents an FCN model with a ResNet-50 backbone for semantic segmentation. Its detection tutorial instead uses Mask R-CNN and Penn-Fudan annotations to distinguish individual pedestrians and their masks. These are concrete examples of the two output types. The scikit-learn metrics guide supplies the related Jaccard and F-measure definitions, which can be applied to flattened binary pixel labels under an explicit foreground convention.",
+        "zh": "TorchVision 文档提供了用于语义分割、采用 ResNet-50 主干的 FCN 模型。其检测教程则使用 Mask R-CNN 与 Penn-Fudan 标注，区分不同行人及其掩码。这是两类输出的具体实例。scikit-learn 指标指南给出了相关的 Jaccard 与 F 度量定义；在明确前景约定后，可以把这些定义用于展平的二值像素标签。"
+      },
+      "formula": "IoU = |P ∩ G| / |P ∪ G|\nDice = 2|P ∩ G| / (|P| + |G|)\nDice = 2IoU / (1 + IoU)  (|P ∪ G| > 0)",
+      "symbols": {
+        "en": "P is the set of pixels predicted as foreground, and G is the reference foreground set. Vertical bars count pixels; ∩ selects pixels in both sets, while ∪ selects pixels in either set. IoU means intersection over union, and Dice is the overlap coefficient defined above. Both lie between zero and one when the denominator is positive. If both masks are empty, these raw fractions are undefined; choose and report a convention such as scoring agreement as one or excluding that case from a specified average.",
+        "zh": "P 是被预测为前景的像素集合，G 是参考前景集合。竖线表示像素数量；∩ 选取同时属于两个集合的像素，∪ 选取属于任一集合的像素。IoU 表示交并比，Dice 是上式定义的重叠系数。分母为正时，两者均介于 0 与 1 之间。如果两个掩码都为空，原始分式没有定义；必须选择并报告一种约定，例如把这种一致情况计为 1，或在指定的平均方式中排除这种情况。"
+      },
+      "calculation": {
+        "en": "Use a synthetic image with 1000 pixels and 40 reference leaf pixels. An all-background prediction achieves 960 / 1000 = 96% pixel accuracy, yet foreground IoU and Dice are both zero because it finds no leaf pixels. A second prediction marks 50 pixels as leaves, with 30 correctly overlapping the reference. The union contains 50 + 40 − 30 = 60 pixels, so IoU = 30 / 60 = 0.5. Dice = 60 / 90, approximately 0.6667, matching 2 × 0.5 / 1.5. There are 20 false foreground pixels and 10 missed leaf pixels. The two overlap scores describe the same masks on different scales; neither should be compared numerically with pixel accuracy as if they measured the same quantity.",
+        "zh": "设一张自拟图像包含 1000 个像素，参考标注中有 40 个叶片像素。全部预测为背景时，像素准确率达到 960 / 1000 = 96%，但由于没有找到任何叶片像素，前景 IoU 与 Dice 均为 0。第二个预测把 50 个像素标为叶片，其中 30 个与参考前景重合。并集包含 50 + 40 − 30 = 60 个像素，所以 IoU = 30 / 60 = 0.5。Dice = 60 / 90，约为 0.6667，也等于 2 × 0.5 / 1.5。该预测有 20 个误报前景像素，漏掉 10 个叶片像素。两个重叠分数用不同尺度描述相同掩码；不能把它们与像素准确率直接作数值比较，仿佛三者衡量的是同一种量。"
+      },
+      "limits": {
+        "en": "A coloured region is only as meaningful as its annotation rules. Ambiguous boundaries, transparent objects and overlapping instances may require careful conventions. High average overlap can still hide missed tiny objects or important boundary errors, and foreground area alone cannot establish the number of individual objects.",
+        "zh": "一个着色区域的含义取决于标注规则。模糊边界、透明对象和相互重叠的实例可能需要细致约定。较高的平均重叠度仍可能掩盖小对象漏检或重要边界错误，而仅凭前景面积无法确定个体数量。"
+      },
+      "takeaway": {
+        "en": "Match the mask to the question, inspect minority foreground, and state exactly how overlap and empty cases are scored.",
+        "zh": "让掩码类型对应实际问题，检查占少数的前景，并明确重叠度与空掩码情况的评分方式。"
+      },
+      "sources": [
+        "torchvision-fcn",
+        "torchvision-detection",
+        "sklearn-evaluation"
+      ]
+    },
+    {
+      "id": "visual-tokens",
+      "title": {
+        "en": "Let image patches exchange information",
+        "zh": "让图像块交换信息"
+      },
+      "story": {
+        "en": "Mateo is building a teaching display that sorts photographs of handmade kites by their overall design. A stripe near one corner matters only in relation to the tail, so he wants to understand how a model can connect distant image regions. He draws a grid over each photograph and treats every square as a short numerical description. A transformer can let these descriptions exchange information before the final decision. Mateo initially assumes that halving the square width only doubles the work. Counting the grid changes his mind: there are four times as many patches, and many more pairs can interact. He keeps the first display small and shows the token count beside each image. The display now explains both the model's reach across the picture and the computational price of finer visual pieces.",
+        "zh": "Mateo 正在制作一个教学展示，按整体图案给手工风筝照片分类。角落附近的一条纹路，只有结合尾部才能体现意义，因此他想理解模型如何联系图像中相距较远的区域。他在每张照片上画出网格，把每个方块看成一段简短的数值描述。Transformer 可以让这些描述在最终判断前交换信息。Mateo 最初以为，把方块宽度减半只会使工作量翻倍。数清网格后，他改变了看法：图像块数量变成四倍，可以相互作用的成对组合更多。他让第一版展示保持较小规模，并在每张图片旁显示词元数量。这样，展示既解释了模型如何跨区域联系图像，也解释了视觉单元变细所带来的计算代价。"
+      },
+      "concept": {
+        "en": "The original Vision Transformer divides an image into nonoverlapping patches, flattens each patch and applies a shared learned linear projection. Position embeddings preserve information about where tokens occur. A learned class token joins the sequence, and its final representation supports image classification. Self-attention allows tokens to combine information from other tokens. For full attention, the number of token pairs grows quadratically with sequence length. This describes an attention component, not a universal scaling law for total runtime: projections, other layers, hardware and implementation details also contribute. Patches are numerical units, not necessarily recognizable objects.",
+        "zh": "原始 Vision Transformer 把图像划分为不重叠的图像块，将每块展平，再使用共享的可学习线性投影。位置嵌入保留词元所处位置的信息。一个可学习的类别词元加入序列，其最终表示用于图像分类。自注意力让词元结合其他词元的信息。对于全注意力，词元对的数量随序列长度呈平方增长。这描述的是注意力中的一部分，并非总运行时间的通用缩放规律：投影、其他层、硬件与实现细节同样会产生开销。图像块是数值单元，不一定对应可辨认的对象。"
+      },
+      "application": {
+        "en": "Before choosing image resolution and patch size, calculate the patch count and the sequence length including special tokens. Check whether the image dimensions divide evenly or require an explicit resizing or padding policy. Compare detail retention against measured resource use, and preserve the pretrained model's positional handling. For a new task, inspect whether useful evidence is lost during resizing before attributing every error to attention.",
+        "zh": "选择图像分辨率与图像块大小之前，先计算图像块数量，以及包括特殊词元在内的序列长度。检查图像尺寸能否整除，还是需要明确的缩放或填充规则。比较细节保留程度与实际资源消耗，并遵循预训练模型的位置处理方式。对于新任务，先检查缩放是否丢失有用证据，再分析注意力是否造成了错误。"
+      },
+      "practice": {
+        "en": "The original ViT paper demonstrates image classification by combining projected patches with a transformer encoder and studies transfer after large-scale pretraining. TorchVision's VisionTransformer implementation makes patch projection and the added class token inspectable. The original Transformer paper explains the attention operation underlying this exchange. These sources support the design being illustrated; the handmade-kite display and its small numerical example are original teaching scenarios.",
+        "zh": "原始 ViT 论文通过投影后的图像块与 Transformer 编码器完成图像分类，并研究大规模预训练后的迁移。TorchVision 的 VisionTransformer 实现使图像块投影和额外类别词元可以直接检查。原始 Transformer 论文解释了这种信息交换背后的注意力运算。这些资料支持这里介绍的设计；手工风筝展示及其小型数值例子是原创教学情景。"
+      },
+      "formula": "N = (H / P)(W / P); L = N + 1\nxᵢ ∈ ℝ^(P²C); E ∈ ℝ^(D × P²C); tᵢ = Exᵢ + eᵢ\nS = L²",
+      "symbols": {
+        "en": "H and W are image height and width; P is square patch width, assumed to divide both. C is channel count, N is patch count, and L includes one class token. xᵢ is flattened patch i as a column vector. ℝ denotes real-valued entries. E projects it into D embedding dimensions; eᵢ is its positional vector and tᵢ the resulting patch token. This simplified expression omits projection bias. S counts token-pair score entries per full-attention head, not total operations or guaranteed allocated memory.",
+        "zh": "H、W 分别是图像高度与宽度；P 是正方形图像块的边长，假设它能整除这两个尺寸。C 是通道数，N 是图像块数量，L 还包括一个类别词元。xᵢ 是将第 i 个图像块展平后得到的列向量。ℝ 表示元素为实数。E 把它投影到 D 维嵌入空间；eᵢ 是位置向量，tᵢ 是由此得到的图像块词元。这个简化表达式省略了投影偏置。S 统计每个全注意力头的词元对分数条目数，并非总运算次数，也不保证实现会分配相应大小的内存。"
+      },
+      "calculation": {
+        "en": "Take a synthetic 32-by-32 RGB image and square patches of width 8. There are (32 / 8)² = 16 patches. Each patch contains 8² × 3 = 192 values. With embedding width D = 64, the projection matrix has shape 64 by 192 and produces one vector of 64 numbers per patch. Adding one class token gives L = 17 and S = 17² = 289 token-pair scores per head. Halving patch width to 4 produces 64 patches, L = 65 and S = 4225. The score count rises by 4225 / 289, approximately 14.62 times, rather than exactly sixteen because of the class token. This comparison fixes image size and embedding width; it does not predict an equal increase in complete model runtime.",
+        "zh": "取一张自拟的 32×32 RGB 图像，正方形图像块边长为 8。图像块共有 (32 / 8)² = 16 个，每块包含 8² × 3 = 192 个数值。嵌入宽度 D = 64 时，投影矩阵形状为 64×192，为每个图像块产生一个含 64 个数的向量。加入一个类别词元后，L = 17，每个注意力头的词元对分数条目数 S = 17² = 289。把块边长减半到 4 后，有 64 个图像块，L = 65，S = 4225。分数条目数增加到原来的 4225 / 289，约为 14.62 倍；由于包含类别词元，并非恰好十六倍。这里固定了图像尺寸与嵌入宽度，并不能据此预测完整模型的运行时间也增加相同比例。"
+      },
+      "limits": {
+        "en": "The exchange-of-descriptions analogy does not mean tokens reason like people or that attention weights explain every decision. The simplified arithmetic concerns ordinary full attention with fixed embedding width. Other architectures can use windows, pooling or different token designs, and finer patches alone do not guarantee better recognition.",
+        "zh": "交换描述的类比，并不意味着词元像人一样推理，也不意味着注意力权重可以解释每次判断。简化计算针对嵌入宽度固定的普通全注意力。其他架构可以使用窗口、池化或不同词元设计，而更细的图像块本身也不保证识别更好。"
+      },
+      "takeaway": {
+        "en": "Count patches and special tokens explicitly: finer visual units increase possible interactions, while useful detail and actual runtime still require measurement.",
+        "zh": "明确计算图像块与特殊词元：更细的视觉单元会增加可能的交互，而有用细节与实际运行时间仍需测量。"
+      },
+      "sources": [
+        "vit-paper",
+        "torchvision-vit-source",
+        "transformer-paper"
+      ]
+    },
+    {
+      "id": "evaluation-shift",
+      "title": {
+        "en": "Test on the next capture, not a familiar neighbour",
+        "zh": "用下一次采集检验，而非只看熟悉的邻帧"
+      },
+      "story": {
+        "en": "Hana volunteers with a wildlife group whose cameras produce bursts of nearly identical photographs. A randomly shuffled evaluation looks excellent, but predictions deteriorate when the camera moves to a shaded trail. She discovers that neighbouring burst frames appeared in both training and evaluation, letting familiar backgrounds and animals cross the boundary. Hana rebuilds the split around capture groups and reserves a camera location for a separate shift check. The scores fall, yet the mistakes become useful: dark empty frames trigger false wildlife alerts, while small distant animals are missed. She reports precision and recall with the number of evaluated examples, then collects representative shaded-trail images for a later development cycle. The lower score gives the group a clearer picture of what the model can do when the next photograph is genuinely new.",
+        "zh": "Hana 在野生动物观察小组做志愿者，相机会连拍出几乎相同的照片。随机打乱后的评估表现很好，但相机移到阴暗小径后，预测明显变差。她发现，同一连拍中的相邻帧同时出现在训练集与评估集中，让熟悉的背景和动物跨过了数据边界。Hana 按采集组重新划分，并留出一个相机地点，单独检查环境偏移。分数下降了，错误却更有用途：较暗的空场景会触发错误的动物提示，而远处小动物容易漏掉。她报告精确率、召回率以及评估样本数量，再为下一轮开发采集有代表性的阴暗小径图片。这个较低的分数，让小组更清楚地了解，当下一张照片确实陌生时，模型能做到什么。"
+      },
+      "concept": {
+        "en": "Evaluation estimates performance under a defined sampling process. Related frames, repeated subjects or shared capture sessions can leak information when split independently. Grouping them keeps the chosen source of dependence within one partition; the group definition should match the intended generalization question. Domain shift occurs when deployment images differ from development data, for example in camera location or illumination. Precision measures how many predicted positives are correct, while recall measures how many actual positives are found. Neither substitutes for checking groups, label quality, sample counts or the operational decision threshold.",
+        "zh": "评估估计的是特定抽样过程下的表现。相关帧、重复个体或共同采集时段如果被独立划分，可能造成信息泄漏。把它们分组，可以将所选的相关性来源限制在一个数据分区内；分组定义应符合希望检验的泛化问题。部署图像与开发数据不同时，例如相机地点或光照改变，就会发生领域偏移。精确率衡量预测为正的样本中有多少正确，召回率衡量实际正例中有多少被找到。两者都不能代替对分组、标签质量、样本数量与实际决策阈值的检查。"
+      },
+      "application": {
+        "en": "Write the future-use question before constructing a split: new frames from familiar cameras, new sessions, or new locations require different evidence. Group related captures accordingly and preserve a final test set. Select thresholds on validation data, inspect errors by relevant conditions, and report both aggregate and group-level counts. Treat a new environment as something to measure explicitly rather than assuming one pooled score transfers unchanged.",
+        "zh": "划分数据前，先写清未来使用问题：熟悉相机的新帧、新采集时段，或全新地点，需要不同证据。据此对相关采集记录分组，并保留最终测试集。用验证数据选择阈值，按相关条件检查错误，同时报告总体与各组的计数。应明确测量新环境中的表现，而不是假设一个汇总分数能够原样迁移。"
+      },
+      "practice": {
+        "en": "The WILDS research benchmark includes wildlife monitoring shifts across camera traps, giving a documented example of why image source matters. Scikit-learn's GroupKFold documentation shows how group identities can remain separate across training and test folds. Its evaluation guide defines precision and recall. These sources motivate capture-aware evaluation; a grouped split alone does not establish robustness to every future camera or season.",
+        "zh": "WILDS 研究基准包含野生动物监测中跨野外自动相机的分布偏移，提供了图像来源为何重要的具体记录。scikit-learn 的 GroupKFold 文档展示如何在训练折与测试折之间保持组身份分离，其评估指南则定义了精确率与召回率。这些资料支持考虑采集来源的评估方式；单凭分组划分，仍不能证明模型能适应未来每一台相机或每一个季节。"
+      },
+      "formula": "Precision = TP / (TP + FP)\nRecall = TP / (TP + FN)\nF₁ = 2TP / (2TP + FP + FN)",
+      "symbols": {
+        "en": "TP counts positive examples correctly predicted positive, FP counts negative examples incorrectly predicted positive, and FN counts positive examples incorrectly predicted negative. Here an example is one image and positive means wildlife is present; these are not pixel counts or matched detection boxes. Precision and recall use the displayed denominators, and F₁ combines them through their harmonic mean when defined. Scores assume a fixed decision threshold. If a denominator is zero, report the chosen undefined-case convention and the underlying counts instead of silently inventing a value.",
+        "zh": "TP 统计正确预测为正的正例，FP 统计被错误预测为正的负例，FN 统计被错误预测为负的正例。这里每个样本是一张图像，正例表示存在野生动物；这些计数不是像素数，也不是匹配后的检测框数。精确率与召回率分别使用所示分母；定义成立时，F₁ 通过调和平均结合两者。分数假设决策阈值固定。如果某个分母为零，应报告所采用的未定义情况处理约定及原始计数，而不是默默填入一个数值。"
+      },
+      "calculation": {
+        "en": "Suppose a synthetic held-out group contains 100 images: 20 show wildlife and 80 are empty. At the chosen threshold, the model flags 25 images. Of these, 15 contain wildlife, so TP = 15 and FP = 10. It misses five wildlife images, giving FN = 5. Precision is 15 / 25 = 0.60, recall is 15 / 20 = 0.75, and F₁ is 30 / 45, approximately 0.6667. The remaining 70 empty images are correctly rejected. Overall accuracy is therefore 85 / 100 = 85%, but that number alone hides the ten false alerts and five misses. These counts describe this sampled group at this threshold, not a guarantee about an unseen camera location.",
+        "zh": "假设一个自拟留出组包含 100 张图片，其中 20 张有野生动物，80 张为空场景。在选定阈值下，模型对 25 张图片发出提示，其中 15 张确有动物，因此 TP = 15、FP = 10。它漏掉了 5 张有动物的图片，所以 FN = 5。精确率为 15 / 25 = 0.60，召回率为 15 / 20 = 0.75，F₁ 为 30 / 45，约为 0.6667。其余 70 张空场景被正确排除。因此总体准确率为 85 / 100 = 85%，但单看这个数字，会掩盖十次误报与五次漏报。这些计数描述的是该抽样组在该阈值下的表现，不能保证模型在未见过的相机地点上也有同样表现。"
+      },
+      "limits": {
+        "en": "The unfamiliar-photograph analogy helps expose leakage, but novelty has several dimensions. Separate sessions may still share the same camera background, and new locations can change class frequencies. Small evaluation groups produce uncertain estimates; always retain sample counts and avoid interpreting a single split as a universal performance certificate.",
+        "zh": "陌生照片的类比有助于发现泄漏，但陌生程度有多个维度。不同采集时段仍可能共享同一相机背景，新地点也可能改变类别频率。小评估组的估计具有不确定性；应始终保留样本数量，避免把一次划分当成通用性能证明。"
+      },
+      "takeaway": {
+        "en": "A trustworthy vision score names its population, separates related captures, and reveals the false positives and missed positives behind the average.",
+        "zh": "可信的视觉分数应明确目标总体，隔离相关采集记录，并揭示平均值背后的误报与漏报。"
+      },
+      "sources": [
+        "sklearn-evaluation",
+        "sklearn-groupkfold",
+        "wilds-paper"
+      ]
+    }
+  ],
+  "references": [
+    {
+      "id": "opencv-pixels",
+      "title": {
+        "en": "Basic Operations on Images",
+        "zh": "图像基本操作"
+      },
+      "url": "https://docs.opencv.org/4.x/d3/df2/tutorial_py_basic_ops.html",
+      "publisher": "OpenCV",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "opencv-filters",
+      "title": {
+        "en": "Smoothing Images",
+        "zh": "图像平滑"
+      },
+      "url": "https://docs.opencv.org/4.x/d4/d13/tutorial_py_filtering.html",
+      "publisher": "OpenCV",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "opencv-filter2d",
+      "title": {
+        "en": "Image filtering: filter2D",
+        "zh": "图像滤波：filter2D"
+      },
+      "url": "https://docs.opencv.org/4.x/d4/d86/group__imgproc__filter.html",
+      "publisher": "OpenCV",
+      "kind": "Official reference"
+    },
+    {
+      "id": "opencv-geometry",
+      "title": {
+        "en": "Geometric Transformations of Images",
+        "zh": "图像几何变换"
+      },
+      "url": "https://docs.opencv.org/4.x/da/d6e/tutorial_py_geometric_transformations.html",
+      "publisher": "OpenCV",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-transfer",
+      "title": {
+        "en": "Transfer Learning for Computer Vision",
+        "zh": "计算机视觉迁移学习"
+      },
+      "url": "https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "torchvision-detection",
+      "title": {
+        "en": "TorchVision Object Detection Finetuning Tutorial",
+        "zh": "TorchVision 目标检测微调教程"
+      },
+      "url": "https://docs.pytorch.org/tutorials/intermediate/torchvision_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "torchvision-nms",
+      "title": {
+        "en": "Non-maximum suppression",
+        "zh": "非极大值抑制"
+      },
+      "url": "https://docs.pytorch.org/vision/stable/generated/torchvision.ops.nms.html",
+      "publisher": "TorchVision",
+      "kind": "Official reference"
+    },
+    {
+      "id": "torchvision-fcn",
+      "title": {
+        "en": "FCN with a ResNet-50 backbone",
+        "zh": "使用 ResNet-50 主干的 FCN"
+      },
+      "url": "https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.segmentation.fcn_resnet50.html",
+      "publisher": "TorchVision",
+      "kind": "Official reference"
+    },
+    {
+      "id": "torchvision-transforms",
+      "title": {
+        "en": "Transforming images, videos, boxes and more",
+        "zh": "变换图像、视频、框等数据"
+      },
+      "url": "https://docs.pytorch.org/vision/stable/transforms.html",
+      "publisher": "TorchVision",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "stanford-cs231n",
+      "title": {
+        "en": "CS231n: Deep Learning for Computer Vision",
+        "zh": "CS231n：计算机视觉深度学习"
+      },
+      "url": "https://cs231n.stanford.edu/2025/schedule.html",
+      "publisher": "Stanford University",
+      "kind": "University course"
+    },
+    {
+      "id": "vit-paper",
+      "title": {
+        "en": "An Image is Worth 16x16 Words",
+        "zh": "一幅图像相当于 16×16 个词"
+      },
+      "url": "https://arxiv.org/abs/2010.11929",
+      "publisher": "Dosovitskiy et al.",
+      "kind": "Research paper"
+    },
+    {
+      "id": "sklearn-evaluation",
+      "title": {
+        "en": "Metrics and scoring: quantifying prediction quality",
+        "zh": "指标与评分：量化预测质量"
+      },
+      "url": "https://scikit-learn.org/stable/modules/model_evaluation.html",
+      "publisher": "scikit-learn",
+      "kind": "Official guide"
+    },
+    {
+      "id": "torchvision-vit-source",
+      "title": {
+        "en": "VisionTransformer implementation",
+        "zh": "VisionTransformer 实现"
+      },
+      "url": "https://docs.pytorch.org/vision/stable/_modules/torchvision/models/vision_transformer.html",
+      "publisher": "TorchVision",
+      "kind": "Official reference"
+    },
+    {
+      "id": "transformer-paper",
+      "title": {
+        "en": "Attention Is All You Need",
+        "zh": "注意力就是你所需要的一切"
+      },
+      "url": "https://arxiv.org/abs/1706.03762",
+      "publisher": "Vaswani et al.",
+      "kind": "Research paper"
+    },
+    {
+      "id": "sklearn-groupkfold",
+      "title": {
+        "en": "GroupKFold: cross-validation with non-overlapping groups",
+        "zh": "GroupKFold：组间不重叠的交叉验证"
+      },
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupKFold.html",
+      "publisher": "scikit-learn",
+      "kind": "Official guide"
+    },
+    {
+      "id": "wilds-paper",
+      "title": {
+        "en": "WILDS: A Benchmark of in-the-Wild Distribution Shifts",
+        "zh": "WILDS：真实环境中的分布偏移基准"
+      },
+      "url": "https://arxiv.org/abs/2012.07421",
+      "publisher": "Koh et al.",
+      "kind": "Research paper"
+    }
+  ],
+  "review": [
+    {
+      "title": {
+        "en": "Trace one pixel",
+        "zh": "追踪一个像素"
+      },
+      "body": {
+        "en": "Follow a known colour through channel order, axis layout, scaling and normalization. A valid shape does not guarantee a valid colour interpretation.",
+        "zh": "追踪一个已知颜色在通道顺序、轴布局、缩放和归一化中的变化。形状合法，并不保证颜色解释正确。"
+      }
+    },
+    {
+      "title": {
+        "en": "Name the local question",
+        "zh": "明确局部问题"
+      },
+      "body": {
+        "en": "Explain which variation a filter should suppress or reveal. Check kernel orientation and boundary handling before judging whether smoothing preserves useful evidence.",
+        "zh": "说明滤波器要抑制或揭示哪种变化。判断平滑是否保留有用证据之前，先检查核的方向与边界处理。"
+      }
+    },
+    {
+      "title": {
+        "en": "Move the annotation too",
+        "zh": "让标注一起移动"
+      },
+      "body": {
+        "en": "Transform images and targets together. Recalculate the box corners, then check clipping and whether the transformed image still supports its original label.",
+        "zh": "让图像与目标一起变换。重新计算框的顶点，再检查裁剪，以及变换后的图像是否仍支持原标签。"
+      }
+    },
+    {
+      "title": {
+        "en": "Separate features from decisions",
+        "zh": "区分特征与决策"
+      },
+      "body": {
+        "en": "Identify the reused backbone and new prediction head. State which parameters can change, and compare adaptation on independent capture groups.",
+        "zh": "识别被复用的主干与新的预测头。说明哪些参数可以改变，并在独立采集组上比较调整效果。"
+      }
+    },
+    {
+      "title": {
+        "en": "Compute overlap before suppressing",
+        "zh": "先算重叠，再做抑制"
+      },
+      "body": {
+        "en": "For the two area-16 boxes, intersection 9 gives IoU 9/23. A threshold of 0.3 suppresses the lower-scoring same-class box; 0.5 retains it.",
+        "zh": "两个面积为 16 的框，交集为 9，因此 IoU 为 9/23。阈值为 0.3 时抑制同类别低分框，为 0.5 时保留。"
+      }
+    },
+    {
+      "title": {
+        "en": "Challenge background-heavy accuracy",
+        "zh": "质疑背景主导的准确率"
+      },
+      "body": {
+        "en": "An all-background mask can score 96% accuracy while finding no foreground. Explain semantic versus instance outputs, then state overlap averaging and empty-mask conventions.",
+        "zh": "全背景掩码即使找不到任何前景，也可能获得 96% 准确率。解释语义与实例输出的区别，再说明重叠度平均方式和空掩码约定。"
+      }
+    },
+    {
+      "title": {
+        "en": "Count the extra token",
+        "zh": "别漏掉额外词元"
+      },
+      "body": {
+        "en": "Sixteen image patches plus one class token produce 17 tokens and 289 pairwise scores per full-attention head. Pair counts alone do not determine runtime.",
+        "zh": "十六个图像块加一个类别词元，共有 17 个词元，每个全注意力头产生 289 个成对分数。仅凭词元对数量无法确定运行时间。"
+      }
+    },
+    {
+      "title": {
+        "en": "Name the next image population",
+        "zh": "说明下一批图像来自哪里"
+      },
+      "body": {
+        "en": "Choose groups that match the future-use question. Report the evaluated counts behind precision and recall, and inspect performance when camera conditions change.",
+        "zh": "选择符合未来使用问题的分组方式。报告精确率与召回率背后的评估计数，并检查相机条件改变后的表现。"
+      }
+    }
+  ]
+}

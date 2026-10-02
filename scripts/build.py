@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Build an offline-capable static portfolio and course library from reviewed JSON."""
+from pathlib import Path
+import html,json,re
+from build_paths import build_all,home_section,readme_section
+ROOT=Path(__file__).resolve().parents[1]
+SITE=ROOT/'site'; CONTENT=ROOT/'content'
+ORDER=['INFO1113','COMP2017','COMP2123','COMP2022','COMP3308']
+E=lambda x:html.escape(str(x),quote=True)
+def para(x):return ''.join('<p>'+E(p).replace('\n','<br>')+'</p>' for p in x.split('\n\n') if p)
+def badge(x):return f'<span class="pill">{E(x)}</span>'
+def shell(title,body,depth=0,description='Computer science, research and study notes by Guoliang Wang.',course=False):
+ base='../'*depth
+ gh=f'<a class="nav-github" href="{E(profile["github"])}">GitHub ↗</a>' if profile['github'] else ''
+ return f'''<!doctype html>
+<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="{E(description)}"><meta name="theme-color" content="#090e17"><meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(description)}"><meta property="og:type" content="website"><title>{E(title)} | Guoliang</title><link rel="icon" href="{base}assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="{base}assets/style.css"><script defer src="{base}assets/app.js"></script></head><body><a class="skip" href="#main">Skip to content</a><header class="topbar"><div class="wrap"><a class="brand" href="{base}index.html"><span class="monogram">GW</span> Guoliang<span style="color:var(--accent)">.</span></a><nav aria-label="Main navigation"><a href="{base}index.html#learning">Learning</a><a class="nav-ai" href="{base}index.html#ai">AI</a><a class="nav-research" href="{base}index.html#research">Research</a><a href="{base}index.html#about">About</a>{gh}<button class="theme-button" type="button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap">{body}<footer class="footer"><div><span class="watermark">Guoliang</span><br>Research, ideas & learning in public.</div><div>Original explanations · Computer science & AI<br><a href="{base}index.html#learning">Explore the learning library ↑</a></div><span>© 2026 Guoliang Wang</span></footer></main></body></html>'''
+def orbital():
+ return '''<div class="orbital" aria-label="Diagram connecting research, systems and learning"><svg viewBox="0 0 460 365" role="img" aria-labelledby="orbitTitle"><title id="orbitTitle">Ideas connect across research, systems and learning</title><defs><radialGradient id="glow"><stop stop-color="#b8ee91" stop-opacity=".09"/><stop offset="1" stop-color="#b8ee91" stop-opacity="0"/></radialGradient></defs><circle cx="236" cy="178" r="177" fill="url(#glow)"/><circle class="orbit" cx="236" cy="178" r="155"/><circle class="orbit" cx="236" cy="178" r="118" stroke-dasharray="3 8"/><ellipse class="orbit" cx="236" cy="178" rx="181" ry="78" transform="rotate(-35 236 178)"/><ellipse class="orbit" cx="236" cy="178" rx="181" ry="78" transform="rotate(35 236 178)"/><path class="path" d="M117 79L358 100L367 245L150 297L117 79M117 79L367 245M358 100L150 297"/><circle class="dot" cx="117" cy="79" r="4"/><circle class="dot" cx="358" cy="100" r="4"/><circle class="dot" cx="367" cy="245" r="4"/><circle class="dot" cx="150" cy="297" r="4"/><circle class="core" cx="236" cy="178" r="52"/><text class="core-label" x="236" y="178" text-anchor="middle">GW</text><text class="core-sub" x="236" y="197" text-anchor="middle">CONNECT IDEAS</text><text x="55" y="61">MULTIMODAL AI</text><text x="335" y="80">SYSTEMS</text><text x="341" y="268">REASONING</text><text x="70" y="320">LEARNING</text><text x="231" y="31" font-size="8">01 / EXPLORE</text></svg><span class="figure-caption">RESEARCH × FOUNDATIONS × EXPLANATION</span></div>'''
+def home(courses,guides):
+ cards=''.join(f'''<a class="course-card" href="courses/{c['code'].lower()}.html" style="--card-color:{E(c['color'])}"><div class="card-top"><span class="course-code">{E(c['code'])}</span><span>0{i+1} / NOTES</span></div><h3>{E(c['title'])}</h3><p>{E(c['subtitle'])}</p><div class="card-foot"><span>{len(c['topics']):02d} TOPICS · MAP · CHEATSHEET</span><span class="arrow" aria-hidden="true">↗</span></div></a>''' for i,c in enumerate(courses))
+ cards += '<a class="course-card" href="downloads/guoliang-cheatsheet-collection.pdf" style="--card-color:var(--accent)"><div class="card-top"><span class="course-code">THE REFERENCE DESK</span><span>PDF / 05 PAGES</span></div><h3>Five courses.<br>One page each.</h3><p>Bring the core formulas, models, and decision rules together in one printable collection.</p><div class="card-foot"><span>GUOLIANG / CHEATSHEET COLLECTION</span><span class="arrow">↓</span></div></a>'
+ ed=''.join(f'<li><time>{E(x["period"])}</time><h3>{E(x["institution"])}</h3><p>{E(x["degree"])}<br>{E(x["detail"])}</p></li>' for x in profile['education'])
+ exp=''.join(f'<li><time>{E(x["period"])}</time><h3>{E(x["role"])}</h3><p>{E(x["organization"])}<br>{E(x["detail"])}</p></li>' for x in profile['experience'])
+ r=profile['research'];count=sum(len(c['topics']) for c in courses)
+ body=f'''<div class="hero"><div><div class="eyebrow"><span class="live-dot"></span> GUOLIANG WANG / RESEARCH & NOTES</div><h1>Exploring intelligence.<br><span>Sharing understanding.</span></h1><p class="intro">{E(profile['bio'])}</p><div class="actions"><a class="button primary" href="#learning">Explore the courses <span>↗</span></a><a class="button" href="#research">View research <span>↓</span></a></div><p class="hero-note">HONG KONG · SYDNEY &nbsp; / &nbsp; CURIOSITY, MADE PRACTICAL</p></div>{orbital()}</div><div class="meta-strip"><div class="meta-item"><div class="meta-symbol">⌘</div><div><strong>MSc student</strong><span>The University of Hong Kong · 2026 - Present</span></div></div><div class="meta-item"><div class="meta-symbol">✳</div><div><strong>Evidence-grounded video understanding</strong><span>Co-first author · AAAI 2026</span></div></div><div class="meta-item"><div class="meta-symbol">05</div><div><strong>Computer science learning paths</strong><span>{count} explanations · Five one-page references</span></div></div></div>
+<section id="learning" class="section"><div class="section-head"><div><span class="number">01 / THE LEARNING LIBRARY</span><h2>Start with a story. Leave with a model.</h2></div><p>Explore a course, follow its knowledge map, and connect intuition to the mathematics.</p></div><div class="course-grid">{cards}</div><div class="method"><div><b>01 / IMAGINE</b><h3>An analogy story</h3><p>A familiar situation gives an abstract idea somewhere to begin.</p></div><div><b>02 / UNDERSTAND</b><h3>The underlying principle</h3><p>Explain the mechanism, its assumptions, and where the analogy stops.</p></div><div><b>03 / FORMALIZE</b><h3>The formula, unpacked</h3><p>Read each symbol and connect the equation to its meaning.</p></div><div><b>04 / APPLY</b><h3>A worked example</h3><p>Trace concrete steps, then test your understanding with a fresh question.</p></div></div><div class="actions"><a class="text-link" href="downloads/guoliang-cheatsheet-collection.pdf" download>Download all five one-page cheatsheets ↓</a></div></section>
+{home_section(guides)}
+<section id="research" class="section"><div class="section-head"><div><span class="number">03 / SELECTED RESEARCH</span><h2>Answers should come with evidence.</h2></div></div><article class="research-panel"><div>{badge(r['venue'])}{badge(r['role'])}<h3>{E(r['title'])}</h3><p>{E(r['summary'])}</p><a class="text-link" href="{E(r['url'])}">Read the publication ↗</a></div><div class="research-side"><h4>My contribution</h4><p>{E(r['contribution'])}</p><p><span class="pill">Long video</span><span class="pill">Evaluation</span></p></div></article></section>
+<section id="about" class="section"><div class="section-head"><div><span class="number">04 / A LITTLE CONTEXT</span><h2>A background built across disciplines.</h2></div><p>I use stories, small examples, and careful definitions to make technical ideas easier to revisit.</p></div><div class="about-grid"><div><p class="eyebrow">EDUCATION</p><ul class="timeline">{ed}</ul><div class="skills">{''.join(f'<span>{E(s)}</span>' for s in profile['skills'])}</div><p>{E(profile['languages'])}</p></div><div><p class="eyebrow">EXPERIENCE</p><ul class="timeline">{exp}</ul><a class="text-link" href="mailto:{E(profile['email'])}">Get in touch ↗</a></div></div></section>'''
+ (SITE/'index.html').write_text(shell('Guoliang Wang — Research & Learning',body))
+def course(c):
+ slug=c['code'].lower(); topics={t['id']:t for t in c['topics']}
+ toc=''.join(f'<li><a href="#{E(t["id"])}">{E(t["title"])}</a></li>' for t in c['topics'])
+ stages=''.join(f'<div class="map-stage"><h3>{i+1:02d} / {E(s["title"])}</h3><div class="map-nodes">'+''.join(f'<a href="#{E(k)}">{E(topics[k]["title"])}</a>' for k in s['topics'])+'</div></div>' for i,s in enumerate(c['map']))
+ lessons=[]
+ for i,t in enumerate(c['topics']):
+  code=f'<pre class="code"><code>{E(t["code"])}</code></pre>' if t.get('code') else ''
+  lessons.append(f'''<article class="topic" id="{E(t['id'])}"><div class="topic-head"><span class="topic-number">{c['code']} / {i+1:02d}</span><span class="watermark">Guoliang</span></div><h2>{E(t['title'])}</h2><div class="story-principle"><div class="story"><h3>01 / The story</h3>{para(t['story'])}</div><div class="principle"><h3>02 / The principle</h3>{para(t['principle'])}</div></div><div class="formula"><h3>03 / The formula</h3><pre>{E(t['formula'])}</pre>{para(t['symbols'])}</div><div class="example"><h3>04 / A worked example</h3>{para(t['example'])}{code}</div><div class="pitfall"><strong>Watch out.</strong> {E(t['pitfall'])}</div><details class="check"><summary>Check your understanding: {E(t['check']['question'])}</summary>{para(t['check']['answer'])}</details><a class="back-top" href="#framework">↑ Back to knowledge map</a></article>''')
+ refs=''.join(f'<li><a href="{E(x["url"])}">{E(x["title"])}</a></li>' for x in c.get('references',[]))
+ body=f'''<header class="course-hero" id="top"><div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><a href="../index.html#learning">Learning</a><span>/</span><span>{c['code']}</span></div><div class="eyebrow">{c['code']} / GUOLIANG'S STUDY NOTES</div><h1>{E(c['title'])}</h1><p>{E(c['description'])}</p><div class="actions"><a class="button primary" href="#framework">Explore the knowledge map ↓</a><a class="button" href="../downloads/{c['code']}-cheatsheet.pdf" download>One-page cheatsheet ↓</a><a class="button" href="../notes/{c['code']}.md" download>Markdown notes ↓</a></div><p class="course-meta">{len(c['topics'])} TOPICS · STORY → PRINCIPLE → FORMULA → EXAMPLE</p></header><div class="course-layout"><aside class="toc" aria-label="Course contents"><details open><summary>IN THIS COURSE</summary><a class="toc-group" href="#framework">Knowledge map</a><ol>{toc}</ol><a class="toc-group" href="../cheatsheets/{slug}.html">Cheatsheet overview ↗</a></details></aside><div class="course-body"><section class="overview"><h2>The route through this course</h2><p class="scope">{E(c['coverage'])}</p><div class="overview-cols"><div><h3>Before you start</h3><ul>{''.join(f'<li>{E(x)}</li>' for x in c['prerequisites'])}</ul></div><div><h3>What you will learn</h3><ul>{''.join(f'<li>{E(x)}</li>' for x in c['outcomes'])}</ul></div></div></section><section class="framework" id="framework"><h2>A connected knowledge map</h2><p>Follow the stages in order, or choose a concept to jump into its explanation.</p>{stages}</section>{''.join(lessons)}<div class="download-panel"><h2>Keep the key ideas close.</h2><p>A compact reference for revisiting the course's main models and decision rules.</p><div class="actions"><a class="button primary" href="../downloads/{c['code']}-cheatsheet.pdf" download>Download the one-page PDF ↓</a><a class="button" href="../cheatsheets/{slug}.html">Read the cheatsheet ↗</a></div></div><section class="references"><h2>Continue exploring</h2><ul>{refs}</ul><p class="scope">Original topical explanations and examples, organized by Guoliang. Course codes identify the corresponding study paths.</p></section></div></div>'''
+ (SITE/'courses'/f'{slug}.html').write_text(shell(c['title'],body,1,c['description'],True))
+ cheat=f'''<div class="cheat-page"><header class="course-hero"><div class="breadcrumb"><a href="../courses/{slug}.html">← Return to {c['code']}</a></div><div class="eyebrow">GUOLIANG / ONE-PAGE REFERENCE</div><h1>{E(c['title'])}</h1><p>{c['code']} · Core concepts, formulas, and conditions at a glance.</p><div class="actions"><a class="button primary" href="../downloads/{c['code']}-cheatsheet.pdf" download>Download the one-page PDF ↓</a><button class="button" data-print type="button">Print this view</button></div></header><div class="cheat-grid">'''+''.join(f'<section class="cheat-item"><h2>{i+1:02d} / {E(x["title"])}</h2>{para(x["body"])}</section>' for i,x in enumerate(c['cheatsheet']))+'</div><span class="watermark">Guoliang</span></div>'
+ (SITE/'cheatsheets'/f'{slug}.html').write_text(shell(c['code']+' Cheatsheet',cheat,1))
+ md=[f'# {c["code"]} — {c["title"]}', '> Guoliang | Original computer science study notes',c['description'], '## Scope',c['coverage'],'## Knowledge framework']
+ for s in c['map']:md.append('### '+s['title']+'\n'+ '\n'.join(f'- [{topics[k]["title"]}](#{k})' for k in s['topics']))
+ for t in c['topics']:
+  md +=[f'<a id="{t["id"]}"></a>',f'## {t["title"]}', '### The story',t['story'],'### The principle',t['principle'],'### The formula','```text\n'+t['formula']+'\n```',t['symbols'],'### A worked example',t['example']]
+  if t.get('code'):md.append('```'+t.get('language','text')+'\n'+t['code']+'\n```')
+  md +=['**Watch out:** '+t['pitfall'],'<details>\n<summary>Check your understanding</summary>\n\n'+t['check']['question']+'\n\n'+t['check']['answer']+'\n\n</details>']
+ md+=['## Further reading']+[f'- [{x["title"]}]({x["url"]})' for x in c.get('references',[])]+['\n---\nGuoliang']
+ for dest in [ROOT/'notes'/f'{c["code"]}.md',SITE/'notes'/f'{c["code"]}.md']:dest.write_text('\n\n'.join(md)+'\n')
+def readme(courses,guides):
+ r=profile['research'];username=profile['github'].rstrip('/').rsplit('/',1)[-1] if profile['github'] else ''
+ site_url=f'https://{username}.github.io/{username}/' if username else ''
+ rows='\n'.join(f'| [{c["code"]}](notes/{c["code"]}.md) | {c["title"]} | {len(c["topics"])} | [PDF](site/downloads/{c["code"]}-cheatsheet.pdf) |' for c in courses)
+ txt=f'''<p align="center"><img src="site/assets/profile-banner.svg" alt="Guoliang Wang — Exploring intelligence. Sharing understanding." width="100%"></p>
+
+<p align="center"><b>MSc student @ HKU</b> · <b>Multimodal AI & Long-Video Understanding</b></p>
+
+{('[Explore my learning website ↗]('+site_url+') · ') if site_url else ''}[Research](#selected-research) · [Learning library](#learning-library) · [Background](#background) · [Contact](mailto:{profile['email']})
+
+{profile['bio']}
+
+## Selected research
+
+**[{r['title']}]({r['url']})**  
+{r['venue']} · {r['role']} · DOI: {r['doi']}
+
+{r['summary']}
+
+{r['contribution']}
+
+## Learning library
+
+Original English study notes that connect **analogy stories → principles → formulas → worked examples**. Every course includes a clickable knowledge framework, explained notation, common pitfalls, and a one-page cheatsheet.
+
+| Course | Learning path | Topics | One-page reference |
+| :--- | :--- | :---: | :--- |
+{rows}
+
+[Download the complete five-page cheatsheet collection](site/downloads/guoliang-cheatsheet-collection.pdf)
+
+{readme_section(guides,site_url)}## Background
+
+'''
+ for x in profile['education']:txt+=f'- **{x["institution"]}** · {x["degree"]} ({x["period"]}). {x["detail"]}\n'
+ txt+='\n## Experience\n\n'
+ for x in profile['experience']:txt+=f'- **{x["role"]}**, {x["organization"]} ({x["period"]}). {x["detail"]}\n'
+ txt+='\n**Tools & interests:** '+ ' · '.join(profile['skills'])+'\n\n**Languages:** '+profile['languages']+'\n\n---\n<sub>Guoliang · Research, ideas & learning in public.</sub>\n'
+ (ROOT/'README.md').write_text(txt)
+ (ROOT/'profile'/'bio.txt').write_text('MSc student @ HKU | Multimodal AI, LLM agents & long-video understanding | AAAI 2026 co-first author | Learning through stories & examples\n')
+if __name__=='__main__':
+ profile=json.loads((CONTENT/'profile.json').read_text())
+ courses=[json.loads((CONTENT/(c+'.json')).read_text()) for c in ORDER]
+ for name in ['courses','cheatsheets','downloads','notes','assets']:(SITE/name).mkdir(parents=True,exist_ok=True)
+ (ROOT/'notes').mkdir(exist_ok=True)
+ (ROOT/'profile').mkdir(exist_ok=True)
+ for c in courses:course(c)
+ guides=build_all(ROOT,profile)
+ home(courses,guides);readme(courses,guides)
+ (SITE/'.nojekyll').write_text('')
+ print(f'Built {len(courses)} English courses ({sum(len(c["topics"]) for c in courses)} topics) and {len(guides)} bilingual AI guides ({sum(len(g["topics"]) for g in guides)} topics), HTML and Markdown.')

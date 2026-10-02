@@ -1,0 +1,506 @@
+{
+  "code": "COMP2123",
+  "title": "Data Structures & Algorithms: Design, Proof & Performance",
+  "subtitle": "Choose the right representation, preserve its invariant, and justify the algorithm's cost.",
+  "description": "Study the core structures and algorithmic techniques behind efficient programs, from lists and balanced trees to graph optimization and randomized search. Each topic pairs an original concrete example with the invariant, proof idea and complexity assumptions needed to use it responsibly.",
+  "coverage": "Covers the major knowledge points in the supplied lectures from weeks 1–13: analysis, data structures, graphs, greedy methods, divide and conquer, randomization and a brief cryptography extension. This is a topical study companion, not an official course or a reproduction of assignment or examination material; implementation libraries and advanced cryptographic security proofs are outside its scope.",
+  "color": "#fb923c",
+  "prerequisites": [
+    "Python-style pseudocode, loops and recursion",
+    "Basic algebra, logarithms and summations",
+    "Sets, functions, elementary probability and induction"
+  ],
+  "outcomes": [
+    "Choose representations from operation requirements and complexity assumptions",
+    "Explain tree, heap and hash-table invariants",
+    "Trace graph algorithms and distinguish path and spanning-tree objectives",
+    "Prove greedy choices and solve divide-and-conquer recurrences",
+    "Distinguish worst-case, amortized, expected and probabilistic guarantees"
+  ],
+  "map": [
+    {
+      "title": "Specify and analyze core structures",
+      "topics": [
+        "analysis-correctness",
+        "lists-representations",
+        "stacks-queues",
+        "trees-traversal",
+        "bst-range-queries",
+        "avl-balance",
+        "priority-queues-heaps",
+        "sorting-baselines",
+        "hashing-collisions",
+        "cuckoo-maps-sets"
+      ]
+    },
+    {
+      "title": "Traverse and optimize networks",
+      "topics": [
+        "graph-models",
+        "dfs-bridges",
+        "bfs-distance",
+        "dijkstra-relaxation",
+        "minimum-spanning-trees"
+      ]
+    },
+    {
+      "title": "Prove local optimization choices",
+      "topics": [
+        "greedy-fractional",
+        "interval-partitioning",
+        "huffman-coding"
+      ]
+    },
+    {
+      "title": "Split problems and control uncertainty",
+      "topics": [
+        "recurrences-merge-sort",
+        "quicksort-lower-bound",
+        "pareto-maxima",
+        "karatsuba-master",
+        "selection-pivots",
+        "random-permutations",
+        "skip-lists",
+        "cryptography-complexity"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "analysis-correctness",
+      "title": "Analyze growth and prove correctness",
+      "story": "A kitchen compares two ways to prepare many lunch boxes. Timing one batch is useful, but it mixes the recipe with the cook's speed, the oven and the batch composition. Counting the operations that grow with the order size reveals a more portable comparison. Yet a fast recipe that omits ingredients is not a solution, so correctness needs its own argument. Think of an invariant as a label on the workbench saying exactly what has been completed after each round. As the batch grows, that label supports a proof rather than a hope based on several successful tastings.",
+      "principle": "Separate the problem specification, the algorithm and its implementation. Define input size and a cost model before counting work; constant-time arithmetic typically assumes machine-sized operands. Big-O is an asymptotic upper bound, Ω a lower bound and Θ a matching two-sided bound. A worst-case bound maximizes over inputs of a given size. Expected cost averages over an explicitly stated random source; amortized cost averages over an operation sequence without requiring randomness. Correctness proofs often use a loop invariant or induction on input size. Establish a base case, show each step preserves the claim, and connect termination to the required output. Prove termination separately when it is not immediate. Experiments can reveal bugs or practical constants but cannot replace those universal arguments.",
+      "formula": "f(n) ∈ O(g(n)) ⇔ ∃c>0, n₀: 0≤f(n)≤cg(n) for all n≥n₀\n1+2+⋯+n = n(n+1)/2",
+      "symbols": "n is input size, f the measured operation count and g a comparison growth function. c and n₀ are fixed constants independent of n. The inequality need only hold from n₀ onward. The sum counts a triangular nested loop whose inner work grows from one to n steps. Θ(n²) describes this sum tightly; O(n³) is also true but less informative. State whether a claim concerns worst-case, expected or amortized work.",
+      "example": "To compute prefix totals of [4,−1,6,2], keep a running sum s starting at zero. After reading each item, record s, producing [4,3,9,11]. The invariant is that after i iterations, s equals the sum of the first i input values and the first i outputs are correct. It holds initially for i=0 and remains true when the next value is added. Four iterations give the whole answer. Computing each prefix from scratch would make 1+2+3+4=10 additions, while the running version uses four. For length n the respective counts grow quadratically and linearly.",
+      "pitfall": "Calling O(n) an exact running time, or using an expected bound as though it were a worst-case guarantee.",
+      "check": {
+        "question": "If an algorithm is Θ(n), is it also O(n²)?",
+        "answer": "Yes, for n≥1 a linear bound is also quadratic. Θ(n) is the more informative tight statement."
+      }
+    },
+    {
+      "id": "lists-representations",
+      "title": "Arrays, linked lists and ADT contracts",
+      "story": "A row of numbered lockers makes the locker at index 40 easy to locate, but adding a locker in the middle may require shifting many contents. A chain of railcars makes local coupling convenient once the target car is known, but finding the fortieth car requires walking along the train. Arrays and linked lists make a similar tradeoff. The important phrase is “once known”: a fast local edit does not make locating its position free. An abstract list contract states which operations clients can request; the physical representation determines how expensive those requests become.",
+      "principle": "An ADT specifies values, operations and boundary behavior without selecting an implementation. An array-based list stores consecutive indexed elements, enabling constant-time get and set in the standard RAM model. Inserting or removing at an interior index shifts a suffix, taking linear time in the worst case. A linked list stores nodes connected by pointers. A doubly linked list supports constant-time insertion or removal at a known valid node because predecessor and successor links are available. Searching by index still takes linear time. A singly linked list cannot generally remove a known node or insert before it in constant time without access to its predecessor under the usual node-identity semantics. Sentinels simplify boundaries; they do not eliminate the need to maintain size and pointer invariants.",
+      "formula": "Array address(i) = base + i·cell_size\nArray indexed access: O(1)\nLinked-list indexed access: O(n); local doubly linked edit: O(1)",
+      "symbols": "i is a zero-based index and cell_size is a fixed storage width under the array model. n is the number of elements. A local linked edit assumes a direct reference to a valid position and, for deletion, links to both neighbors. These costs do not include a preceding search. Resizable arrays add allocation behavior; append may be amortized constant time under geometric resizing, while a single resizing append can still take linear time.",
+      "example": "Store [L,M,N,P] in an array. Inserting X at index 1 shifts M, N and P one position right, then writes X, yielding [L,X,M,N,P]. In a doubly linked representation with a direct reference to M, let left=M.prev and create X. Set X.prev=left, X.next=M, left.next=X and M.prev=X. Only a fixed number of links change. But if the request arrives merely as “insert at index 1,” the list must first find that position; for a general index near the far end, that traversal can dominate. The contract must also reject invalid positions or define their behavior.",
+      "pitfall": "Saying all linked-list operations are O(1). Only certain operations at already located positions have that bound.",
+      "check": {
+        "question": "Which representation is a natural fit for millions of random indexed reads and rare middle insertions?",
+        "answer": "An array-based list, because direct indexing is constant time and its occasional shifting cost may be acceptable."
+      }
+    },
+    {
+      "id": "stacks-queues",
+      "title": "Stacks, queues and circular storage",
+      "story": "A stack of trays exposes the most recently placed tray first. A waiting line serves the earliest arrival first. These two simple access rules produce very different behavior despite storing the same objects. A browser's undo history needs the tray discipline, while a fair service desk needs the waiting-line discipline. Restricting access is useful: clients do not need arbitrary edits, and implementations can exploit that simpler contract. For a queue in a fixed row of storage slots, imagine the row bent into a ring. Reusing vacated slots avoids shifting every waiting item whenever the front leaves.",
+      "principle": "A stack supports push, pop and top under last-in-first-out order. It models nested work, including function calls and matching brackets. A queue supports enqueue, dequeue and front under first-in-first-out order. It models buffering, breadth-first exploration and round-robin service. Linked endpoints or an array with an appropriate index scheme can implement each basic operation in constant time, subject to capacity and resizing conventions. A circular array queue tracks the front index and size; the next insertion position is computed modulo capacity. Size distinguishes full from empty even when indices coincide. For bracket matching, push opening delimiters, require each closer to match the current top, and accept only if the stack is empty at the end.",
+      "formula": "Queue insertion index = (front + size) mod capacity\nAfter dequeue: front ← (front+1) mod capacity; size ← size−1",
+      "symbols": "front identifies the oldest item, size counts stored elements and capacity is the number of array slots. The modulo operation wraps an index back to zero at the end. Enqueue requires spare capacity or a defined resizing policy; dequeue requires a nonempty queue. Updating size is essential because indices alone may not distinguish a full ring from an empty one. These formulas describe storage management, not a change to FIFO order.",
+      "example": "Use a capacity-five queue with front=3 and size=3. Its items A, B and C occupy indices 3, 4 and 0. Enqueue D at (3+3) mod 5=1, raising size to four. Dequeue returns A, advances front to 4 and reduces size to three. The logical order is now B,C,D even though the occupied physical slots wrap across the array boundary. No items are shifted. As a separate stack trace, the string ([ ]) with spaces ignored pushes ( then [, pops [ on ], and pops ( on ); the final empty stack confirms proper nesting.",
+      "pitfall": "Using a queue to validate nesting, or shifting an entire array on every dequeue when a circular index scheme would suffice.",
+      "check": {
+        "question": "Why does the bracket string ([)] fail despite equal counts of openers and closers?",
+        "answer": "The first closer ) does not match the current stack top [. Correct nesting requires matching the most recent unmatched opener."
+      }
+    },
+    {
+      "id": "trees-traversal",
+      "title": "Tree structure and traversal order",
+      "story": "A project directory contains subdirectories that contain further files. One report wants each folder heading before its contents; another wants the total storage of each folder after all child totals are known. Both visit the same hierarchy, but they need different orders. Preorder announces a node before its descendants, while postorder finishes descendants before their parent. The analogy assumes an actual tree: if shortcuts create shared children or cycles, blindly following every link may revisit objects or never finish. Establish the structural model before borrowing a traversal designed for a hierarchy with unique parent relationships.",
+      "principle": "A rooted tree has a distinguished root, and each other node has one parent. Depth counts edges from the root; height counts the longest downward path to a leaf. A binary tree has at most two ordered children, usually left and right. Preorder visits a node before its children, postorder after them, and binary inorder visits left subtree, node, right subtree. Recursive algorithms mirror this structure. A postorder computation can determine subtree size or evaluate an expression after child results are available. With constant work per node and each edge traversed a constant number of times, traversal costs O(n). Recursive auxiliary space is O(h), where h is tree height, so an unbalanced chain may need linear stack space. Empty-tree height conventions must be stated consistently.",
+      "formula": "size(v) = 1 + Σu child of v size(u)\nheight(v) = 1 + maxu child of v height(u)\nLeaf height = 0",
+      "symbols": "v is a node and u ranges over its children. size(v) counts v itself and every descendant. Height measures edges, so a leaf has height zero; the displayed height recurrence is used for nonleaves. n denotes total nodes and h the root's height. A binary implementation may assign height −1 to an empty child to make one uniform recurrence work. Do not mix edge-count and node-count height conventions. An Euler tour unifies preorder, inorder and postorder as the first, middle and final visits around each binary node.",
+      "example": "Let root R have children A and B. Let A have children C and D, and B have one child E. Preorder is R,A,C,D,B,E; postorder is C,D,A,E,B,R. In postorder, C,D and E each report size one. A combines its children to obtain three, B obtains two, and R obtains six. Heights are zero for the leaves, one for A and B, and two for R. The recursion computes each result once. An algorithm that recomputes every subtree size separately at each ancestor could waste quadratic work on a chain, despite using the same recurrence conceptually.",
+      "pitfall": "Assuming every binary tree is balanced. “Binary” limits children per node; it does not bound height logarithmically.",
+      "check": {
+        "question": "Which traversal naturally deletes an entire tree when children must be removed before their parent?",
+        "answer": "Postorder, because each subtree is processed before the node that owns it."
+      }
+    },
+    {
+      "id": "bst-range-queries",
+      "title": "Binary search trees and output-sensitive queries",
+      "story": "A librarian organizes a search game around signposts. At each sign, every title in the left section comes before that title, and every title in the right section comes after it. A lookup follows only the section that could contain its target. A request for every title between two bounds can skip entire sections known to lie outside the range. The speed depends on the signpost layout: a balanced hierarchy makes short routes, while a long chain makes searching nearly as slow as checking a list. Sorted relationships alone do not guarantee a compact hierarchy.",
+      "principle": "A BST maintains a global ordering invariant: all keys in a node's left subtree are smaller, and all in its right subtree are larger, assuming unique keys. Search compares at each visited node and follows one child. Insert attaches at a failed search position. Delete handles leaves and one-child nodes directly; for a two-child node, replace its entry with a successor or predecessor and delete that replacement node. Each operation takes O(h), where h is height. Inorder traversal yields sorted keys. A range query prunes subtrees outside [a,b] and reports only in-range entries, taking O(h+k), where k is output size, under the standard pruned traversal. Duplicate-key handling must be explicit, such as updating the existing map value.",
+      "formula": "∀u in left(v), key(u)<key(v); ∀w in right(v), key(v)<key(w)\nSearch/update: O(h); report range: O(h+k)",
+      "symbols": "v is any BST node, and the inequalities apply to all descendants in the specified subtree, not just immediate children. h is the tree height and k the number of entries returned by a range query. The output term cannot generally be removed because writing k answers needs Ω(k) time. A balanced tree gives h=O(log n); an ordinary BST can have h=Θ(n).",
+      "example": "Insert keys 18, 9, 27, 4, 13, 22 and 31 into an empty BST. Searching for 22 visits 18,27,22. A query for [10,28] reports 13,18,22,27 in order, pruning the subtree rooted at 4 and the branch to 31. To delete 18, choose its inorder successor 22, the smallest key in the right subtree. Move the entry 22 into the root position and remove its old node, which has no left child. The resulting tree keeps the ordering invariant. Merely replacing the root with an arbitrary descendant, such as 31, would violate the placement of smaller keys in the right subtree.",
+      "pitfall": "Checking only that a left child is smaller and a right child larger. The ordering restriction applies to entire subtrees.",
+      "check": {
+        "question": "What happens if increasing keys are inserted into an ordinary empty BST?",
+        "answer": "They form a rightward chain, giving linear height and linear worst-case lookup despite the BST ordering invariant."
+      }
+    },
+    {
+      "id": "avl-balance",
+      "title": "AVL balance and local rotations",
+      "story": "A well-run organization prevents one reporting chain from becoming much deeper than its sibling branch. When an insertion creates a long chain, a small local reorganization changes who reports directly to whom while preserving the overall ordering of responsibilities. AVL rotations perform this kind of repair. The operation is local, but its purpose is global: keep the full search hierarchy logarithmic in size. A diagram helps, yet the most reliable check is to list the involved subtrees in sorted order before and after. Those ordered blocks must remain in exactly the same relative sequence.",
+      "principle": "An AVL tree is a BST with a height difference of at most one between the children of every node. Store heights so an update can recompute them from child metadata in constant time per visited node. Insert or delete using BST rules, then repair imbalance along the affected ancestor path. A single rotation fixes an outer-heavy case; a double rotation handles an inner-heavy case. Rotations preserve inorder key order while reducing excessive height. The minimum number of nodes at height h satisfies a Fibonacci-like recurrence, forcing h=O(log n). Search and updates therefore have logarithmic worst-case cost. After deletion, repairs may need to continue upward because subtree height can keep decreasing; stopping after the first repaired node is not generally safe.",
+      "formula": "|height(left(v))−height(right(v))| ≤ 1\nN(h)=1+N(h−1)+N(h−2), N(−1)=0, N(0)=1",
+      "symbols": "height uses the edge convention, with an empty child assigned −1 and a leaf assigned zero. N(h) is the smallest number of actual nodes in an AVL tree of height h. To minimize nodes while retaining AVL balance, one child has height h−1 and the other h−2. The recurrence grows exponentially with h, implying logarithmic height in node count. Balance metadata must be updated after every structural rotation.",
+      "example": "Insert 30,20,10 into an initially empty AVL tree. Before repair, 30 has a left child 20, which has a left child 10. Node 30 has child heights one and −1, a difference of two. Rotate right at 30: 20 becomes the subtree root, 10 its left child and 30 its right child. Inorder remains 10,20,30, so the BST property is unchanged, while all balance differences become zero. For insertion order 30,10,20, the heavy path bends inward. Rotate left at 10 first, then right at 30; the same balanced result is obtained through a double rotation.",
+      "pitfall": "Rebalancing from stale heights, or assuming one rotation is enough for every case. Identify the child and grandchild directions and update metadata consistently.",
+      "check": {
+        "question": "Does a rotation change the sorted order returned by inorder traversal?",
+        "answer": "No. A correct rotation rearranges parent relationships while preserving the relative inorder sequence of all keys and attached subtrees."
+      }
+    },
+    {
+      "id": "priority-queues-heaps",
+      "title": "Priority queues and binary heaps",
+      "story": "A repair desk always handles the ticket with the smallest urgency number. It does not need every ticket kept in complete sorted order; it only needs rapid access to the next one. A heap exploits that weaker requirement. Picture a tournament hierarchy in which every parent has priority no worse than its children. The best ticket must reach the top, but cousins need not be ordered against each other. Adding a ticket lets it move upward until the hierarchy is valid; removing the top brings a replacement down until it finds an appropriate position.",
+      "principle": "A priority queue exposes operations such as insert, minimum and remove-min. A binary min-heap implements it with two invariants: heap order, where each parent key is at most its children's keys, and complete-tree shape, which fills levels left to right. The complete shape gives height Θ(log n). Insert appends at the next position and bubbles upward. Remove-min swaps in the final element, shrinks the heap and bubbles that element downward, choosing the smaller child when a repair is needed. Minimum is O(1); insertion and removal are O(log n). An array stores the complete shape without child pointers. Bottom-up heap construction can run in O(n), because many nodes are near leaves; repeated insertion instead gives an O(n log n) upper bound.",
+      "formula": "parent(i)=⌊(i−1)/2⌋; left(i)=2i+1; right(i)=2i+2\nA[parent(i)] ≤ A[i] for i>0",
+      "symbols": "A is a zero-indexed heap array and i is a valid node index. Children exist only when their computed indices are below the current heap size. The parent inequality characterizes a min-heap but does not imply the array is sorted. n is the item count. Ties may be broken using an additional sequence number if stable service order is required; stability is not automatic from heap order alone.",
+      "example": "Begin with min-heap array [3,8,5,12,10]. Insert 4 at index 5, whose parent is index 2 holding 5. Swap those entries to obtain [3,8,4,12,10,5]; 4 is now below 3, so stop. Remove the minimum 3 by placing the final 5 at the root and reducing size: [5,8,4,12,10]. Compare children 8 and 4, swap with the smaller child 4, and finish at [4,8,5,12,10]. The removed value was correct because heap order puts a minimum at the root. Notice that 8 precedes 5 in the array; a heap is not a sorted list.",
+      "pitfall": "Using a heap as though it supported arbitrary-key search in O(log n). Without an auxiliary index, locating an arbitrary key can require O(n).",
+      "check": {
+        "question": "Why swap a sinking element with the smaller child in a min-heap?",
+        "answer": "Using the larger child could leave that parent larger than its other child, violating heap order immediately."
+      }
+    },
+    {
+      "id": "sorting-baselines",
+      "title": "Selection, insertion and heap sorting",
+      "story": "A teacher sorts numbered folders in three ways. One method repeatedly searches the unsorted pile for its smallest folder. Another keeps a sorted pile and inserts each new folder into its proper position. A third stores folders in a priority structure that can repeatedly supply the next extreme efficiently. All three reach the same order, but they spend work at different moments. The best choice depends on input size, how nearly sorted the folders already are and whether equal labels must preserve their earlier order. “Sorting” specifies an outcome; it does not identify one universally best implementation.",
+      "principle": "Selection sort repeatedly finds the minimum remaining item and swaps it into the next output position. It performs Θ(n²) comparisons regardless of initial order, though only O(n) swaps. Insertion sort grows a sorted prefix by shifting larger entries right before inserting the next item; its time is Θ(n²) in the worst case but Θ(n) on already sorted input with the standard early-stopping loop. Choosing not to move equal keys past each other makes it stable. Heap sort first builds a heap, then repeatedly removes an extreme. An in-place ascending version uses a max-heap and places each removed maximum at the array's shrinking right boundary. Its worst-case time is O(n log n), with constant extra array storage in an iterative implementation, but it is generally unstable.",
+      "formula": "Selection comparisons = (n−1)+(n−2)+⋯+1 = n(n−1)/2\nInsertion shifts = number of inversions\nHeap sort = O(n log n) worst-case time",
+      "symbols": "n is the number of items. An inversion is a pair of positions i<j with A[i]>A[j]. Each insertion-sort shift repairs one such inverted pair under the ordinary strict-greater-than implementation. Stability means equal-key records retain their original relative order, which matters when records carry additional fields. The heap-sort bound includes heap construction and all removals; constant auxiliary storage excludes the input array and assumes swaps and comparisons take constant time.",
+      "example": "Sort [5,2,4,1] by insertion. Start with sorted prefix [5]. Insert 2 by shifting 5 once, giving [2,5,4,1]. Insert 4 by shifting 5 once, giving [2,4,5,1]. Insert 1 by shifting 5,4 and 2, finishing [1,2,4,5]. There were five shifts, matching the original inversions (5,2),(5,4),(5,1),(2,1),(4,1). Selection sort instead makes six comparisons across suffixes of lengths four, three and two, regardless of whether the input was already sorted. Heap sort avoids quadratic comparison growth on large arbitrary inputs by maintaining only the heap invariant between removals.",
+      "pitfall": "Assuming all in-place sorting algorithms are stable, or equating insertion sort’s quadratic worst case with its cost on nearly sorted data.",
+      "check": {
+        "question": "Why can insertion sort be useful for small or nearly sorted arrays despite its worst-case bound?",
+        "answer": "Its control overhead is small and work tracks inversions. Few inversions mean few shifts, so the worst-case quadratic pattern may not arise."
+      }
+    },
+    {
+      "id": "hashing-collisions",
+      "title": "Hashing, chaining and probing",
+      "story": "A mailroom sorts letters into numbered bins using a rule based on recipient names. The rule makes finding a likely bin quick, but two names can share a bin. One design stores a short list in each bin; another places overflow into later empty bins and follows the same route during lookup. Both designs need an explicit collision policy. An attractive rule does not guarantee balanced bins for every possible name collection. Expected speed depends on how keys are distributed, how the hash function is chosen and how crowded the table becomes.",
+      "principle": "A hash table implements a map by converting keys into bucket indices. Equal keys must hash consistently, and collisions require comparing actual keys. Separate chaining stores colliding entries in a bucket container; under suitable uniform hashing, expected lookup cost is O(1+α), with load factor α=n/m. Keeping α bounded supports expected constant cost, but a worst-case collision pattern can still take O(n). Open addressing stores all entries in the table. Linear probing examines consecutive slots until it finds the key or a never-used empty slot. Deletion needs a tombstone or careful cluster repair so searches do not stop too early. Resizing requires reinserting entries because their bucket indices depend on capacity. Expected cost and amortized resizing cost describe different sources of averaging.",
+      "formula": "α = n/m\nLinear probe j: (h(k)+j) mod m, j=0,1,…\nExpected chaining lookup = O(1+α) under uniform hashing assumptions",
+      "symbols": "n is the stored entry count, m the bucket or slot count, k a key and h its initial bucket function. α may exceed one for chaining but must remain below one for an open-addressed table with free slots. j counts probe offsets. The expected bound assumes an appropriate hash-distribution model; α alone does not guarantee good behavior if many keys systematically collide. A tombstone marks a deleted slot without ending later searches.",
+      "example": "Take a seven-slot linear-probing table with h(k)=k mod 7. Insert keys 10,17 and 24. All hash to 3, so they occupy slots 3,4 and 5 respectively. To find 24, inspect 3, then 4, then 5. Now remove 17. If slot 4 becomes a never-used empty slot, a later search for 24 stops there and incorrectly reports absence. A tombstone lets that search continue. With separate chaining, the three keys would instead share bucket 3 and be checked in its local container. This example shows that a correct deletion policy is as important as a fast hash computation.",
+      "pitfall": "Claiming unconditional O(1) hash lookup, or treating a collision as proof that two keys are equal.",
+      "check": {
+        "question": "Why does changing table capacity usually require rehashing existing keys?",
+        "answer": "The compression into bucket indices depends on capacity, so old positions may no longer lie on each key’s correct lookup path."
+      }
+    },
+    {
+      "id": "cuckoo-maps-sets",
+      "title": "Cuckoo hashing and collection semantics",
+      "story": "An office assigns every employee two possible desks, one in each wing. To locate someone, a receptionist checks only those two desks. When a new employee arrives and both choices are occupied, one occupant may move to their alternative desk, displacing another person in turn. This creates a chain of relocations and may cycle, requiring a new desk assignment scheme. Cuckoo hashing uses that tradeoff: lookup is tightly bounded because each key has only two homes, while insertion may perform substantial rearrangement. The policy needs spare capacity and suitable randomized choices to keep expensive rebuilds uncommon.",
+      "principle": "In basic two-table cuckoo hashing, a stored key k is placed at either T₁[h₁(k)] or T₂[h₂(k)]. Lookup and removal inspect at most two candidate cells, giving worst-case constant probes when hashes are constant-time computable. Insertion may evict a resident into its other location; a long eviction sequence triggers rehashing or resizing. Expected amortized constant insertion requires suitable hash families and a sufficiently low load regime; it is not a worst-case guarantee for one insertion. Independently of representation, distinguish map, set and multiset contracts. A map associates at most one value per key, a set records membership and a multiset records multiplicity. A set can use map keys with dummy values; a multiset can map each key to a positive count.",
+      "formula": "location(k) ∈ {T₁[h₁(k)], T₂[h₂(k)]}\nMultiset total size = Σk count(k)",
+      "symbols": "T₁ and T₂ are separate arrays and h₁,h₂ select a candidate slot in each. The location invariant holds for every currently stored key. count(k) is the number of occurrences of k in a multiset, not merely an indicator of membership. Summing these counts gives total items, while the number of stored keys gives distinct items. Cuckoo lookup bounds count candidate probes; they do not include arbitrarily expensive key comparison or hash computation.",
+      "example": "Suppose key A occupies its first-table slot 0, with alternative second-table slot 2 free. A new key B also chooses first-table slot 0. Place B there, evict A, then place A in its alternative slot 2. Both keys now satisfy the two-home invariant, and searching A checks only those two locations. If relocations instead return to an earlier occupied arrangement, rebuild with fresh hash choices rather than loop forever. Separately, inserting red, blue, red into a set yields two distinct members; into a multiset it yields counts red:2 and blue:1, totaling three occurrences. The collection contract determines which behavior is correct.",
+      "pitfall": "Transferring cuckoo lookup’s worst-case bound to insertion. An individual insertion can trigger many evictions and a rebuild.",
+      "check": {
+        "question": "If a multiset map stores {x:4,y:2}, how many distinct elements and total occurrences are present?",
+        "answer": "Two distinct elements and six occurrences. These are different size measures and should be named explicitly."
+      }
+    },
+    {
+      "id": "graph-models",
+      "title": "Graphs and representation choices",
+      "story": "A city map can record every pair of intersections in a large grid, marking whether a road exists. Alternatively, each intersection can carry a short list of its actual neighboring intersections. The grid answers a particular pair query immediately, but most cells are wasted if only a few roads leave each intersection. Neighbor lists make route exploration economical on a sparse network. Neither format is universally best. Before choosing one, decide whether roads are one-way, whether parallel roads matter and what edge weights mean. An incorrect model cannot be repaired merely by applying a faster graph algorithm.",
+      "principle": "A graph G=(V,E) models objects as vertices and relationships as edges. Directed edges distinguish source and destination; undirected edges do not. State whether self-loops or parallel edges are allowed. A path connects consecutive vertices through edges, and a cycle returns to its start. An undirected tree is connected and acyclic, with n−1 edges. Adjacency lists use O(n+m) space and enumerate a vertex's neighbors in time proportional to its degree. An adjacency matrix uses O(n²) space and supports constant-time edge existence queries, but scanning a row costs O(n). These representation costs affect every traversal and optimization bound. In an undirected adjacency list, each edge usually appears twice, which changes constant factors but not the asymptotic total.",
+      "formula": "G=(V,E); n=|V|; m=|E|\nUndirected graph: Σv∈V degree(v)=2m\nTree with n≥1 vertices: m=n−1",
+      "symbols": "V is the vertex set, E the edge collection, and vertical bars denote cardinality. degree(v) counts incident edge ends in an undirected graph; a self-loop contributes two under the standard convention. The tree identity assumes connectivity and absence of cycles. For directed graphs, total outdegree and total indegree each equal m. These counts help verify a representation and justify total work when each adjacency entry is scanned once.",
+      "example": "Model five rooms A,B,C,D,E with undirected corridors AB,AC,BD,CD. Here n=5 and m=4. Degrees are 2,2,2,2,0, summing to eight as expected. Although m=n−1, this graph is not a tree: A,B,D,C form a cycle and E is isolated. An adjacency matrix allocates 25 entries; neighbor lists use five list headers containing eight neighbor references in total. The example warns against using the edge-count identity alone as a complete tree test; connectivity or acyclicity must also be established.",
+      "pitfall": "Assuming m=n−1 proves a graph is a tree. That count alone does not exclude a cycle in one component and an isolated vertex elsewhere.",
+      "check": {
+        "question": "Which representation is usually preferable for traversing a very sparse graph?",
+        "answer": "Adjacency lists, because they store and scan actual edges in O(n+m) total space and traversal work."
+      }
+    },
+    {
+      "id": "dfs-bridges",
+      "title": "Depth-first search and bridges",
+      "story": "An explorer follows one corridor until no unvisited room remains, then backtracks to the most recent unfinished junction. A record of first entrances forms a tree of the exploration. Some extra corridors return to earlier rooms and provide escape routes around a tree corridor. If a whole explored branch has no such route back above its entrance, that entrance corridor is a bridge: removing it isolates the branch. This intuition explains why simply marking visited rooms is enough for reachability but not enough for bridge detection. The latter needs information about how high each branch can reconnect.",
+      "principle": "DFS marks a vertex when first discovered and recursively explores unvisited neighbors, or uses an explicit stack. Restart from unvisited vertices to obtain a forest for disconnected graphs. With adjacency lists, full traversal takes O(n+m). In a simple undirected graph, bridge detection adds discovery times and low values. low[v] is the earliest discovery time reachable from v's DFS subtree using tree edges downward and at most one back edge. After exploring a child v of u, edge (u,v) is a bridge exactly when low[v]>disc[u]. Exclude the parent edge when processing back edges; with parallel edges, exclude only the exact parent edge identifier, not every edge to the parent vertex. Directed graphs need different reasoning, so do not transfer this bridge rule unmodified.",
+      "formula": "low[u] = min(disc[u], disc[w] for back edges u–w, low[v] for DFS children v)\n(u,v) is a bridge ⇔ low[v]>disc[u]",
+      "symbols": "disc[u] is u's discovery time, assigned from an increasing counter. v is a DFS child and w is a visited neighbor connected through a nonparent edge. low values summarize possible reconnection to ancestors. The strict inequality means the child's subtree cannot reach u or an earlier ancestor without its parent edge. These formulas assume undirected DFS with careful parent-edge handling and low values computed after child recursion finishes.",
+      "example": "Use a graph with triangle A–B–C–A and one extra edge C–D. Start DFS at A, visiting B, then C, then D, with discovery times 0,1,2,3. At C, the back edge to A makes low[C]=0. D has no return edge, so low[D]=3. Since 3>disc[C]=2, C–D is a bridge. On return, low[B] becomes zero through C, so A–B is not a bridge; B–C is not one either. Removing C–D isolates D, while removing any triangle edge leaves an alternate route. The low values turn this geometric observation into a linear-time test.",
+      "pitfall": "Updating low values with the parent edge as though it were a back edge. That would hide true bridges in a simple undirected graph.",
+      "check": {
+        "question": "Why is the bridge condition strict rather than low[v]≥disc[u]?",
+        "answer": "Equality means the subtree can reconnect directly to u through another route, forming a cycle and protecting the tree edge from being a bridge."
+      }
+    },
+    {
+      "id": "bfs-distance",
+      "title": "Breadth-first search and unweighted distance",
+      "story": "A rescue team first checks every room one corridor away from its base, then every room two corridors away, and so on. A queue maintains this expanding frontier: newly found rooms wait behind rooms from earlier layers. The first time a room is reached therefore gives the smallest number of corridor crossings. This statement depends on treating every corridor as one equal step. If one corridor takes an hour and another takes a minute, the fewest crossings may not be the fastest journey. The same traversal pattern can still find reachability, but its distance interpretation must change.",
+      "principle": "BFS uses a FIFO queue and marks each vertex when enqueuing it. Set the source distance to zero; an undiscovered neighbor of u receives distance d[u]+1 and parent u. The queue processes vertices in nondecreasing distance layers. This invariant proves that a vertex's first assigned distance is its minimum number of edges from the source. Parent pointers reconstruct a shortest path. A BFS from one source visits only its reachable component; a surrounding loop handles the rest when a full forest is needed. With adjacency lists, complexity is O(n+m), including initialization. BFS works for directed graphs by following outgoing edges, but ordinary BFS does not solve shortest paths with arbitrary edge weights. Marking at dequeue can enqueue duplicates and obscure the clean work bound.",
+      "formula": "d[s]=0\nOn first discovery of v from u: d[v]=d[u]+1, parent[v]=u\nUnreachable vertices retain d[v]=∞",
+      "symbols": "s is the source, u the currently removed queue vertex and v an undiscovered outgoing neighbor. d counts edges, not geometric length or monetary cost. Infinity represents no discovered path. A parent pointer is set once at first discovery; following it repeatedly reaches s and yields one shortest path in reverse. When multiple shortest paths exist, adjacency order can change the selected parent without changing the correct distance.",
+      "example": "Let undirected edges be S–A,S–B,A–C,B–D,C–E,D–E. Start with queue [S]. Removing S discovers A and B at distance one. Removing A discovers C at two; removing B discovers D at two. Removing C discovers E at three. When D later examines E, E is already marked, so no duplicate enqueue is needed. One parent chain is E,C,A,S, giving the path S–A–C–E of length three. The alternative S–B–D–E is equally short. BFS need not find every shortest route to certify the minimum distance, but it can be extended to record multiple predecessors.",
+      "pitfall": "Using BFS to minimize total weight when edge costs differ. Its layer invariant minimizes number of edges only.",
+      "check": {
+        "question": "If every edge has weight seven, can BFS still find a minimum-weight path?",
+        "answer": "Yes. Minimizing edge count also minimizes total weight 7 times that count because all edges have the same positive weight."
+      }
+    },
+    {
+      "id": "dijkstra-relaxation",
+      "title": "Dijkstra and the meaning of a settled distance",
+      "story": "A courier dispatch center keeps tentative travel costs to every destination. It repeatedly chooses the destination with the smallest tentative cost and certifies that value, then uses its outgoing roads to improve other estimates. Certification is safe because roads cannot refund travel already spent: every remaining edge cost is nonnegative. A negative-cost coupon changes that logic, because a destination that looks expensive now might later lead to a cheaper route back to a certified place. This explains the central assumption of Dijkstra's algorithm rather than treating nonnegative weights as an arbitrary rule to memorize.",
+      "principle": "Dijkstra solves single-source shortest paths in graphs with nonnegative edge weights. Initialize the source label to zero and all others to infinity. Repeatedly extract an unsettled vertex with minimum tentative distance, settle it, and relax its outgoing edges. Relaxation replaces d[v] when d[u]+w(u,v) is smaller and updates the predecessor. The correctness invariant is that every settled label equals the true shortest distance; nonnegative remaining path lengths justify the next settlement. With adjacency lists and an indexed binary heap supporting decrease-key, time is O((n+m)log n). A simple array priority implementation gives O(n²+m). A lazy heap that inserts replacement entries must discard stale entries, and its bound depends on the number of queued edge relaxations. Unreachable vertices retain infinity.",
+      "formula": "d[v] ← min(d[v], d[u]+w(u,v))\nw(e)≥0 for every edge e\nBinary-heap implementation: O((n+m)log n)",
+      "symbols": "d[v] is the current upper bound supplied by a discovered path from source s to v. w(u,v) is the edge weight, and relaxation compares the known route with one going through u. n counts vertices and m edges. The stated heap bound assumes constant-time arithmetic and an indexed heap with logarithmic key updates. Zero-weight edges are allowed. Negative edges violate the settlement proof even if no negative cycle exists.",
+      "example": "Use directed edges S→A of weight 6, S→B of weight 2, B→A of weight 1, B→C of weight 7 and A→C of weight 3. After settling S, labels are A:6 and B:2. Settle B next, improving A to 3 and setting C to 9. Settle A at 3, improving C to 6. Finally settle C at 6. Its predecessor chain is C,A,B,S, so the shortest path is S→B→A→C with total 2+1+3=6. The direct-looking route through the first edge to A costs 9 instead. Each improvement reflects a concrete discovered path.",
+      "pitfall": "Using Prim’s update rule d[v]=min(d[v],w(u,v)) for shortest paths. Dijkstra must include the distance already spent reaching u.",
+      "check": {
+        "question": "Does Dijkstra require distinct positive edge weights?",
+        "answer": "No. Equal weights and zero weights are valid. All weights must be nonnegative for the standard correctness guarantee."
+      }
+    },
+    {
+      "id": "minimum-spanning-trees",
+      "title": "Minimum spanning trees, cuts and union-find",
+      "story": "A community wants to connect every building with cable while minimizing total cable cost. It needs a connected network, not the cheapest travel route from one chosen building to every other. Any cycle contains a redundant connection for connectivity, so an optimal network can be a tree. To extend a partial network, consider a boundary separating buildings into two groups. A cheapest edge crossing an appropriate boundary is safe to add: an exchange argument can replace a more expensive crossing edge in an optimal tree. This local choice supports both a growing-tree method and a globally sorted-edge method.",
+      "principle": "An MST of a connected undirected weighted graph spans every vertex and minimizes the sum of selected edge weights. The cut property states that a minimum-weight crossing edge is safe for a partial forest when the cut does not split an already chosen component. Ties may yield multiple MSTs; negative edge weights are allowed. Prim grows one tree by repeatedly choosing the cheapest connection from the tree to an outside vertex. Kruskal scans all edges by increasing weight and adds an edge only when its endpoints lie in different components. Union-find supports that test and component merge. Sorting dominates Kruskal at O(m log m); union by rank or size with path compression adds near-linear amortized component operations. On disconnected graphs, these methods produce a minimum spanning forest instead.",
+      "formula": "Minimize Σe∈T w(e), subject to T spanning and acyclic\nKruskal: add (u,v) iff find(u)≠find(v), then union(u,v)",
+      "symbols": "T is the chosen edge set and w(e) its edge weight. A spanning tree on n vertices contains n−1 edges. find returns a representative of a connected component in the current forest; union merges two such components. Representatives are implementation details, not graph distances. Prim's priority for a vertex is its cheapest connecting edge, whereas Dijkstra's priority is a complete path cost. These quantities solve different optimization problems.",
+      "example": "Take vertices A,B,C,D with edges AB:1,BC:2,AC:4,CD:3 and BD:6. Kruskal considers AB first and merges A with B. It takes BC next, joining C to that component. It then takes CD, adding D and completing a tree of total weight 1+2+3=6. Edge AC would be rejected because its endpoints are already connected and adding it forms a cycle. A shortest-path tree rooted at A has a different objective: in other graphs it may choose extra costly edges to shorten individual routes. The MST guarantees cheapest total infrastructure, not the shortest route between every pair.",
+      "pitfall": "Confusing an MST with a shortest-path tree, or rejecting negative weights merely because Dijkstra cannot handle them.",
+      "check": {
+        "question": "If two crossing edges tie for minimum weight, is every MST forced to contain both?",
+        "answer": "No. A light edge is safe for some compatible MST, but ties can produce different optimal trees. Uniqueness needs stronger conditions."
+      }
+    },
+    {
+      "id": "greedy-fractional",
+      "title": "Greedy choices and exchange proofs",
+      "story": "A cargo drone has limited weight capacity and can carry divisible quantities of several powders. Each powder has a value per kilogram. Filling the drone with the most valuable kilograms first is natural because a kilogram of one powder can replace a kilogram of another without changing total weight. That exchange is the heart of the proof. If the cargo instead consists of indivisible sealed boxes, the replacement may be impossible and the same rule can fail. A greedy method should therefore be understood through the feasible exchanges its problem allows, not through the slogan “take the best next item.”",
+      "principle": "A greedy algorithm commits to locally preferred choices without revisiting them. Correctness requires more than intuition: show that an optimal solution can be transformed to contain the greedy choice, then solve the remaining compatible subproblem. For fractional knapsack, sort items by value density vᵢ/wᵢ and take as much as possible in that order. If a proposed optimum uses some lower-density material while leaving higher-density material available, exchanging an equal weight cannot reduce value. Repeating exchanges produces the greedy solution. This assumes divisible items, positive weights and a capacity constraint with no other interactions. Sorting takes O(n log n), followed by a linear scan. The same density rule is not generally correct for 0/1 knapsack because whole-item constraints break the equal-weight exchange.",
+      "formula": "Maximize Σᵢ vᵢxᵢ subject to Σᵢ wᵢxᵢ≤W, 0≤xᵢ≤1\nGreedy order: descending ρᵢ=vᵢ/wᵢ",
+      "symbols": "wᵢ is the positive weight of the entire item, vᵢ its value, xᵢ the fraction selected and W the capacity. ρᵢ is value per unit weight. The objective assumes value scales linearly with the chosen fraction. In the 0/1 variant, xᵢ is restricted to zero or one; that small-looking domain change invalidates the fractional exchange proof. Nonpositive-value items may be skipped when capacity is an upper bound.",
+      "example": "A drone can carry 10 kg. Powder A has weight 4 kg and value 28, B has weight 5 kg and value 25, and C has weight 6 kg and value 18. Their densities are 7,5 and 3. Take all of A and B, using 9 kg for value 53, then one kilogram of C for value 3. The total is 56. Any solution that replaces an A kilogram with a C kilogram loses four units of value without saving weight. For indivisible boxes, such a kilogram exchange is not permitted, so this reasoning cannot simply be reused.",
+      "pitfall": "Treating a successful greedy example as a proof. Identify a safe exchange or a stays-ahead invariant that applies to every instance.",
+      "check": {
+        "question": "Can density-greedy fail for 0/1 knapsack with capacity 10 and items (weight,value)=(6,12),(5,9),(5,9)?",
+        "answer": "Yes. It picks the density-2 item for value 12, while the two weight-5 items fit together and give value 18."
+      }
+    },
+    {
+      "id": "interval-partitioning",
+      "title": "Scheduling intervals with the fewest resources",
+      "story": "A studio rents recording rooms to sessions with fixed start and finish times. Sessions that overlap cannot share a room, but a room can be reused immediately when a session ends. The manager processes sessions by starting time and gives each one a room that has become free, opening a new room only when every existing room is occupied. When a new room is necessary, the simultaneous sessions themselves prove that fewer rooms could not work. This is a particularly satisfying greedy proof: the moment of expense also supplies a lower-bound certificate matching that expense.",
+      "principle": "Interval partitioning assigns every interval to a resource while minimizing the number of resources. Sort intervals by nondecreasing start time. Maintain a min-priority queue of resource finish times; reuse the resource with the earliest finish when it is available, otherwise create a new resource. Adopt half-open intervals [s,f), so a session ending at time t does not conflict with one starting at t. The maximum number of overlapping intervals, called depth, is a lower bound on any schedule. Whenever the greedy algorithm creates resource k, k−1 earlier-started sessions remain active, so depth is at least k. The algorithm therefore uses exactly the minimum number. Sorting and heap operations take O(n log n). This differs from interval selection, which chooses a maximum compatible subset instead of scheduling every interval.",
+      "formula": "depth = maxₜ |{i : sᵢ≤t<fᵢ}|\nMinimum number of resources = depth",
+      "symbols": "sᵢ and fᵢ are interval i's start and finish, with sᵢ<fᵢ. t is a time point and the set counts sessions active then. Half-open endpoints permit back-to-back use. The equality applies to the standard interval-partitioning problem with identical resources and no setup times. If cleaning delays or resource-specific compatibility constraints exist, first incorporate those requirements into the model rather than assuming the same proof still applies.",
+      "example": "Schedule intervals A=[1,4), B=[2,5), C=[4,6) and D=[5,7). Process A into room 1 and B into room 2. At time 4, room 1 is free, so C reuses it. At time 5, room 2 is free, so D reuses it. Two rooms suffice. They are necessary because A and B overlap between times 2 and 4. The assignment is room 1:A then C, room 2:B then D. If endpoints were both closed, A and C would conflict exactly at time 4; this shows why the endpoint convention is part of the problem statement.",
+      "pitfall": "Using earliest-finish interval selection and accidentally discarding sessions. Partitioning must assign every interval.",
+      "check": {
+        "question": "Why is the smallest current finish time enough to test whether any room is available?",
+        "answer": "If even the earliest-finishing room ends after the new start, all rooms are busy. Otherwise that earliest room is safe to reuse."
+      }
+    },
+    {
+      "id": "huffman-coding",
+      "title": "Huffman coding and weighted path length",
+      "story": "A radio operator wants short signal words for frequent messages and can afford longer words for rare ones. But the stream has no spaces, so no complete codeword may be the beginning of another. A binary tree makes that rule visible: messages sit at leaves, and a receiver follows bits until reaching a leaf. Huffman's idea is to place the two least frequent messages deepest together, treating their shared parent as one combined message for the next round. The goal is average length for the given frequencies, not making every codeword short or producing a unique-looking codebook.",
+      "principle": "A binary prefix code assigns symbols to leaves so that no codeword is a prefix of another. Its total encoded length is the frequency-weighted sum of leaf depths. Huffman's algorithm repeatedly removes the two minimum-frequency nodes from a priority queue, combines them into a parent whose weight is their sum, and reinserts it. An exchange argument shows some optimal tree places two least frequent symbols as deepest siblings; contracting that pair leaves a smaller optimal subproblem. This proves the greedy construction. For k symbols, tree construction takes O(k log k) after frequencies are counted. Equal frequencies permit multiple optimal codes. The codebook and any transmission overhead matter in practice, while the standard objective counts payload bits. A one-symbol alphabet needs an explicit encoding convention.",
+      "formula": "Encoded length = Σc f(c)·depth(c)\nMerge weights a,b into a+b\nTotal encoded length = sum of all merge weights",
+      "symbols": "c ranges over symbols, f(c) is the number of occurrences and depth(c) is codeword length in bits. a and b are the two smallest current subtree weights. Each merge increases the depth of every symbol in those subtrees by one, adding a+b bits to the objective. This explains the merge-sum identity. Assigning zero and one to left and right edges may change codewords without changing their lengths or total cost.",
+      "example": "Let frequencies be A:12, B:7, C:4 and D:2. Merge D and C into weight 6; merge 6 with B into 13; merge 12 with 13 into 25. One codebook is A=0, B=10, C=110 and D=111. The payload uses 12×1+7×2+4×3+2×3=44 bits. The same result follows from merge weights 6+13+25=44. A fixed two-bit code would use 50 bits for the 25 symbols. The six-bit saving concerns payload only; for a short message, transmitting the codebook could outweigh it. C and D can swap codes without changing the objective.",
+      "pitfall": "Confusing prefix-free with equal-length coding. Huffman deliberately uses unequal lengths while retaining unambiguous decoding.",
+      "check": {
+        "question": "Why can Huffman merge subtrees rather than only original symbols?",
+        "answer": "A merged subtree acts as one aggregate symbol whose weight is the total frequency inside it. Moving that subtree one level deeper adds exactly its aggregate weight to cost."
+      }
+    },
+    {
+      "id": "recurrences-merge-sort",
+      "title": "Divide and conquer, binary search and merge sort",
+      "story": "A records team splits a large stack into smaller stacks, lets each assistant sort a portion, and merges the sorted results. The division itself does not make work disappear: every level may still handle all records during merging. Binary search uses a different pattern, keeping only one half after a comparison. Both shrink the problem, but one recurses on two parts while the other follows one. A recurrence is an accounting sheet for these choices. It records the number and size of recursive jobs as well as the local work, so “divide by two” alone is never enough to infer logarithmic running time.",
+      "principle": "Divide and conquer specifies a base case, a split into smaller instances, recursive solutions and a combination step. Prove correctness by assuming smaller calls satisfy their contracts, then showing the combination solves the original instance. Binary search on a sorted random-access array recurses into one half and uses constant local work, yielding logarithmic time. On a linked list, locating the midpoint costs linear work, changing the total bound. Merge sort recursively sorts both halves and merges them by repeatedly taking the smaller front element. Merge's invariant is that the produced prefix is sorted and contains the smallest already selected items. Its linear merge cost occurs at every one of logarithmically many levels, giving Θ(n log n) time and typically Θ(n) auxiliary array storage.",
+      "formula": "Binary search: T(n)=T(n/2)+Θ(1)=Θ(log n)\nMerge sort: T(n)=2T(n/2)+Θ(n)=Θ(n log n)",
+      "symbols": "T(n) is running time on n items. These recurrences suppress floor and ceiling details and assume constant-size base cases. The first assumes direct array indexing without copying a whole slice at each call. In the second, two recursive calls each receive about half the items, and Θ(n) accounts for merging. Complexity follows from the full recurrence, including local work, rather than from the number of recursion levels alone.",
+      "example": "Sort [8,3,7,1]. Divide into [8,3] and [7,1], then singletons. Merge [8] with [3] into [3,8], and [7] with [1] into [1,7]. At the final merge compare 3 with 1 and output 1; compare 3 with 7 and output 3; compare 8 with 7 and output 7; append remaining 8. The result is [1,3,7,8]. Each comparison chooses the smallest remaining front because both input halves are sorted. For eight elements, each of three merge levels handles at most eight items, illustrating the n log₂n work pattern without suggesting an exact universal instruction count.",
+      "pitfall": "Ignoring slicing or midpoint-access costs. An implementation can change the recurrence even when its high-level recursion tree looks familiar.",
+      "check": {
+        "question": "What is the cost of binary search on a linked list if each midpoint requires a scan of the current segment?",
+        "answer": "Θ(n) under that implementation: n+n/2+n/4+⋯ is Θ(n), so logarithmic depth does not yield logarithmic total work."
+      }
+    },
+    {
+      "id": "quicksort-lower-bound",
+      "title": "Quicksort and comparison limits",
+      "story": "A tournament organizer selects one player as a reference, separates everyone into weaker and stronger groups, and repeats within each group. If the reference is near the middle each time, the groups shrink rapidly. If it is always the weakest, almost the entire group remains for the next round. Random selection makes repeated extreme choices unlikely, but does not make them impossible. Sorting also has an information requirement: enough comparisons must distinguish all possible orders. This explains why a good comparison sort reaches a logarithmic number of decisions per item on average without promising that every particular run behaves equally well.",
+      "principle": "Quicksort partitions around a pivot and recursively sorts the less-than and greater-than regions. A three-way partition also isolates equal keys, avoiding pointless recursion on duplicates. Each partition uses linear work. Balanced splits give Θ(n log n), while repeated extreme splits give Θ(n²). With independent uniform random pivot choices, expected time is O(n log n) for any fixed input; the expectation is over the algorithm's randomness, not an assumed friendly input distribution. Comparison sorting has an Ω(n log n) worst-case lower bound for distinct arbitrary keys: a binary decision tree must distinguish n! permutations. That bound applies to the comparison model, so counting or radix methods can escape it by using additional assumptions about key representation or range.",
+      "formula": "T(n)=T(k)+T(n−k−1)+Θ(n)\nComparison decision-tree height ≥ log₂(n!) = Ω(n log n)",
+      "symbols": "n is the number of distinct keys in the simple two-way recurrence, and k is the number smaller than the chosen pivot. The remaining n−k−1 keys are larger. Equal-key handling changes the recurrence and should be specified. A decision tree has one branch per comparison outcome under the distinct-key model and at least n! distinguishable outcomes. Its height bounds the worst-case number of comparisons, not all machine operations in every sorting model.",
+      "example": "Partition [9,2,7,4,6] around pivot 6. The smaller region contains [2,4], the pivot occupies its final rank, and the larger region contains [9,7]. Sorting those regions yields [2,4,6,7,9]. A pivot sequence near the middle keeps recursive work shallow. On already sorted input, always taking the first element creates subproblems of sizes 4,3,2,1 in this example, with increasingly poor splits. Random pivots remove that deterministic input-triggered pattern in expectation. For three distinct keys there are six possible orders, so a binary comparison decision tree needs height at least ceiling(log₂6)=3.",
+      "pitfall": "Saying randomized quicksort has O(n log n) worst-case time. Its standard guarantee is expected time, and bad pivot sequences remain possible.",
+      "check": {
+        "question": "Does the comparison lower bound rule out linear-time sorting of a list of bits?",
+        "answer": "No. Bits have a tiny known key universe; counting zeros and ones uses information beyond arbitrary-key pairwise comparisons."
+      }
+    },
+    {
+      "id": "pareto-maxima",
+      "title": "Pareto maxima and geometric pruning",
+      "story": "A shopper compares devices by battery life and processing speed, preferring more of each. One device is clearly unnecessary if another is at least as good on both measures and strictly better on one. The remaining devices form a frontier of tradeoffs: improving one measure may sacrifice the other. Finding this frontier is different from choosing a single winner, because no overall preference between the two measures has been supplied. Sorting by one measure makes the remaining comparison simpler. Once every inspected device already has at least as much battery life, only the best speed among them matters.",
+      "principle": "A point dominates another when it is at least as large in both coordinates and strictly larger in at least one. The Pareto maxima are undominated points. With distinct x coordinates, sort by increasing x, split, recursively compute maxima on each side, and discard left-side maxima whose y value is no greater than the largest y among right-side points. Right-side maxima cannot be dominated by left points because their x values are larger. This gives O(n log n) total time with suitable linear combining and sorting. A simpler equivalent scan processes points by decreasing x and keeps a point only when its y exceeds the largest y already seen. Ties require a defined grouping rule; duplicate points represent the same objective pair but may correspond to multiple records.",
+      "formula": "p dominates q ⇔ pₓ≥qₓ and pᵧ≥qᵧ and p≠q\nDescending-x scan: keep p when pᵧ>best_y, then update best_y",
+      "symbols": "pₓ and pᵧ are coordinates of point p, with both objectives maximized. The p≠q condition refers to coordinate inequality, ensuring at least one strict improvement. The simple scan formula assumes distinct x coordinates and uses best_y from previously processed points with larger x. With equal x, first handle the group together, retaining only its maximum y objective pair before comparing with larger-x groups. Reverse signs or inequalities for minimization objectives.",
+      "example": "Consider points A=(1,8), B=(3,5), C=(4,7), D=(6,4) and E=(7,2). Scan by descending x: keep E with best_y=2; keep D and raise it to 4; keep C and raise it to 7; discard B because C has both larger x and larger y; keep A and raise it to 8. The frontier is {A,C,D,E}. None of those four dominates another because their y values decrease as x increases. B is the only discarded point, with C as a concrete domination witness. The result deliberately contains several choices because the problem supplies no exchange rate between the two objectives.",
+      "pitfall": "Retaining a point just because it beats one neighbor. A domination test must account for all points with sufficiently large x, summarized by their maximum y.",
+      "check": {
+        "question": "If p=(5,7) and q=(5,6), does p dominate q under this definition?",
+        "answer": "Yes. p is equal in x and strictly better in y. Distinct-coordinate simplifications must not silently change the intended domination relation."
+      }
+    },
+    {
+      "id": "karatsuba-master",
+      "title": "Fewer recursive products and the Master theorem",
+      "story": "A workshop assembles a large rectangular panel from four corner products. A clever accountant notices that the two cross terms can be recovered from one product of sums after subtracting two already known products. The final panel is unchanged, but each recursive level needs three multiplications instead of four. This saving compounds because every multiplication itself breaks into smaller multiplications. The extra additions are worthwhile when numbers are large enough. The analogy highlights the cost-model issue: treating an arbitrarily large integer multiplication as one constant-time instruction would hide the very work the algorithm is designed to reduce.",
+      "principle": "Split n-digit numbers into high and low halves. Ordinary multiplication expands into four half-size products. Karatsuba computes the high product, low product and product of the two sums; subtracting the first two from the third gives the cross term. Addition, subtraction and positional shifts cost linear time in digit length, so the recurrence becomes T(n)=3T(n/2)+Θ(n), giving Θ(n^log₂3). Extra carry digits do not change the asymptotic result. The Master theorem analyzes balanced recurrences T(n)=aT(n/b)+f(n) by comparing f(n) with n^log_b a. Its standard cases require stated growth conditions, including a regularity condition in the polynomially larger case. It does not directly solve unequal-subproblem recurrences such as deterministic selection.",
+      "formula": "x=x₁B+x₀; y=y₁B+y₀\nz₂=x₁y₁; z₀=x₀y₀; z₁=(x₁+x₀)(y₁+y₀)−z₂−z₀\nxy=z₂B²+z₁B+z₀\nMaster: T(n)=aT(n/b)+f(n), p=log_b a\nf(n)=O(n^(p−ε)) ⇒ T(n)=Θ(n^p)\nf(n)=Θ(n^p) ⇒ T(n)=Θ(n^p log n)\nf(n)=Ω(n^(p+ε)) and af(n/b)≤cf(n), c<1 ⇒ T(n)=Θ(f(n))",
+      "symbols": "x and y are n-digit inputs; x₁,y₁ are high halves and x₀,y₀ low halves. B shifts by the half-length in the numeral base. z₂,z₀,z₁ denote high, low and combined cross products. For the Master theorem, a≥1 counts calls, b>1 is the shrink factor, f(n) is nonnegative local work, and p=log_b a. ε>0 and c<1 are fixed constants; the last inequality must hold for sufficiently large n. These cases assume a constant-size base case and balanced recurrence; they do not cover every possible f.",
+      "example": "Multiply 23 by 47 using B=10. The high product is z₂=2×4=8 and the low product z₀=3×7=21. The product of sums is (2+3)(4+7)=5×11=55, giving z₁=55−8−21=26. Recombine as 8×100+26×10+21=1081, matching ordinary multiplication. For a recurrence comparison, merge sort has a=2,b=2,f(n)=Θ(n), so local work matches n^log₂2=n and contributes a logarithmic factor. Karatsuba has a=3,b=2 and linear local work smaller than n^log₂3, so recursive leaf growth determines its order.",
+      "pitfall": "Applying the Master theorem solely because recursion exists, or counting big-integer arithmetic as constant time while analyzing digit-level multiplication.",
+      "check": {
+        "question": "Why does reducing four half-size multiplications to three change the exponent?",
+        "answer": "At depth log₂n, recursive branching creates about 4^log₂n=n² leaves versus 3^log₂n=n^log₂3. The saving repeats at every level."
+      }
+    },
+    {
+      "id": "selection-pivots",
+      "title": "Selection without fully sorting",
+      "story": "A race official wants the fifth-fastest time, not a complete ranking of every runner. Choosing a reference runner divides the field into faster, equal and slower groups. Only one group can contain the target rank; sorting the others wastes work. A poor reference still leaves nearly everyone to inspect again, so pivot quality controls efficiency. Random pivots give good expected progress. A more elaborate referee can guarantee a reasonably central pivot by grouping runners and comparing group medians. The goal is not necessarily to find the exact median immediately, but to discard a fixed fraction safely at each stage.",
+      "principle": "Selection returns the k-th smallest item without sorting all n items. Partition into less-than, equal-to and greater-than pivot regions. Compare k with their sizes and recurse into only the relevant region, adjusting the rank when discarding earlier regions. Random-pivot quickselect has expected O(n) time, but Θ(n²) worst-case time. Deterministic median-of-medians groups items in fives, finds each group median, recursively selects the median of those medians, then partitions around it. Enough full groups contribute three elements on each side to guarantee at least about 3n/10 items can be discarded, up to boundary constants. The recurrence T(n)≤T(⌈n/5⌉)+T(7n/10+O(1))+O(n) yields O(n). Grouping in threes does not yield the same linear-time proof.",
+      "formula": "If k≤|L|: select(L,k)\nIf |L|<k≤|L|+|E|: return pivot\nOtherwise: select(R,k−|L|−|E|)",
+      "symbols": "k is a one-based target rank, L contains keys smaller than the pivot, E equal keys and R larger keys. Their sizes sum to n. The middle case handles duplicates without unnecessary recursion. After discarding L and E, subtract their sizes from k because the remaining rank is relative to R. Both quickselect variants preserve this correctness rule; they differ in how the pivot is selected and what runtime guarantee follows.",
+      "example": "Find the fourth-smallest value in [12,3,9,5,7,1,10]. Choose pivot 7, obtaining L=[3,5,1], E=[7] and R=[12,9,10]. Since |L|=3 and k=4 falls in the equal region, return 7 immediately. If the requested rank were six, recurse only into R with rank 6−3−1=2, whose second-smallest value is 10. No ordering within L is needed for either answer. With duplicates, such as three copies of 7, the entire equal block occupies several consecutive ranks, all answered by the same pivot value. Rank bookkeeping makes those cases precise.",
+      "pitfall": "Recursing into both partition sides, which turns selection back into sorting, or forgetting to adjust k after discarding smaller items.",
+      "check": {
+        "question": "Why does an exact-median pivot not automatically give a complete linear-time selection algorithm?",
+        "answer": "Finding that exact median is itself a selection problem. Its cost must be included; assuming it is free makes the argument circular."
+      }
+    },
+    {
+      "id": "random-permutations",
+      "title": "Uniform shuffling and random choices",
+      "story": "A host mixes name cards for a fair prize draw. Repeatedly swapping each card with a random card from the entire deck sounds random, but randomness alone does not imply that all final orders are equally likely. Some orders can be produced by more sequences of swaps than others. Fisher–Yates avoids this imbalance by fixing one final position at a time and choosing uniformly from the remaining unfixed cards. Fairness comes from a counting argument about complete outcomes. The source of random numbers matters too: a correct algorithm cannot repair a biased index generator automatically.",
+      "principle": "To shuffle an array of n distinct items uniformly, process i from n−1 down to 1, choose j uniformly from {0,…,i}, and swap positions i and j. After each step, position i is fixed and future steps affect only the prefix. Every permutation corresponds to exactly one sequence of choices, giving probability 1/n!. The algorithm uses O(n) swaps and constant auxiliary storage, assuming constant-time random-index generation. Choosing j from the entire array at every step is a different algorithm and is generally biased. Expected runtime and probability of an incorrect output are separate issues: Fisher–Yates always outputs a permutation, while uniformity describes its distribution. A predictable pseudorandom generator may be adequate for simulations but should not automatically be treated as suitable for adversarial security tasks.",
+      "formula": "P(a particular permutation)=1/n · 1/(n−1) · ⋯ · 1/2 = 1/n!\nFor i=n−1,…,1: j uniform in {0,…,i}; swap A[i],A[j]",
+      "symbols": "n is array length and i is the current final position being fixed. j ranges over all remaining unfixed positions, including i itself, so doing nothing is a valid choice. n! counts permutations of distinct items. Independence and uniformity of the successive choices support the product probability. If equal values occur, reason first about distinct labeled items; multiple labeled permutations may display the same value sequence.",
+      "example": "Shuffle [A,B,C]. At i=2 choose j=0, swapping C with A to get [C,B,A]. At i=1 choose j=1, leaving the prefix unchanged. The output is [C,B,A]. This exact sequence of choices has probability (1/3)(1/2)=1/6, as does every final order. Contrast an algorithm that makes three swaps, each using an independently uniform position among all three: it has 3³=27 equally likely choice sequences. Six outputs cannot each receive the same integer number of those sequences because 27 is not divisible by six. Therefore that particular full-range-swap scheme cannot be uniform.",
+      "pitfall": "Choosing j from {0,…,n−1} at every iteration, or excluding j=i. Both change the distribution and invalidate the standard proof.",
+      "check": {
+        "question": "Why is a self-swap allowed?",
+        "answer": "The card already at the current position must have the same chance to remain there as any other remaining card has to move there."
+      }
+    },
+    {
+      "id": "skip-lists",
+      "title": "Skip lists: random towers over a sorted list",
+      "story": "A long pedestrian street has express walkways above it. The ground level reaches every shop, the first walkway stops at some shops, and higher walkways stop at progressively fewer. To find a shop, travel right while you will not overshoot, then descend for a finer search. Skip lists create these express lanes by independent coin flips rather than by deterministic rotations. A particular random layout can be unfortunate, but averaged over the promotion choices the routes remain short. The layout is a data-structure choice, not an assumption that customers request shops in a random or favorable order.",
+      "principle": "A skip list maintains a sorted base list and promoted copies of some keys on higher levels. Each key is independently promoted again with probability one half until the first failure, creating a geometric-height tower. Search moves right while the next key is smaller than the target, then descends. Insert first finds predecessors at each level, chooses a tower height and splices in the new nodes; deletion removes that key's tower. Expected search and update time is O(log n), with expected O(n) storage. These are expectations over promotion randomness. A union bound shows that very tall towers are unlikely, but a logarithmic-height statement alone is not the complete proof of logarithmic search time; horizontal movement also needs analysis. This differs from AVL's deterministic worst-case balancing guarantee.",
+      "formula": "P(key reaches level ℓ)=2⁻ℓ, with base level ℓ=0\nExpected total nodes = nΣℓ≥₀2⁻ℓ = 2n\nP(height≥h)≤n·2⁻ʰ",
+      "symbols": "n is the number of stored keys, excluding constant-factor sentinel overhead. ℓ counts levels above the base and h is a height threshold in the same convention. Independent fair promotion coins make reaching level ℓ require ℓ consecutive successes. Linearity of expectation gives the storage sum; the union bound gives the height tail by considering every key. An expectation is an average over random constructions, not a promise about each realized structure.",
+      "example": "Suppose the base list is 3,8,11,17,24,29, level one contains 3,11,24, and level two contains 11. To search for 17, start at the top-left sentinel, move right to 11, then descend because the next step would overshoot or reach the end. At level one the next key is 24, so descend again. At the base level, move from 11 to 17 and find the target. For n=64 keys, the expected number reaching level three is 64/8=8. A particular insertion may build a taller tower, but the geometric probabilities keep total expected storage linear.",
+      "pitfall": "Combining “expected” and “with high probability” as though they were identical claims. Each needs its own bound and random model.",
+      "check": {
+        "question": "If every promotion coin happened to fail immediately, would search still be correct?",
+        "answer": "Yes. The structure becomes a sorted linked list: correctness survives, but search can take linear time in that unlucky realization."
+      }
+    },
+    {
+      "id": "cryptography-complexity",
+      "title": "A brief bridge to algorithmic cryptography",
+      "story": "A puzzle designer wants a task that is easy to create with a secret but difficult to reverse from its public result. Modular exponentiation supplies a candidate pattern: generating a power can be fast even when recovering its exponent appears hard in a suitable group. This is an algorithmic asymmetry, not proof that nobody will ever discover a faster attack. A communication protocol also needs more than a hard puzzle. Two people can agree on a mathematical secret and still be deceived about whom they are speaking to. Separate the algebraic calculation, the hardness assumption and the authentication requirements.",
+      "principle": "In a cyclic group generated by g, the discrete-log problem asks for x given g and gˣ. Repeated squaring computes exponentiation using O(log x) group multiplications. Generic discrete-log methods such as baby-step–giant-step use roughly O(√q) group operations for group order q, with similar storage, while some group families admit stronger specialized attacks. Because input length is about log₂q, square-root-in-q work is still exponential in that bit length. Diffie–Hellman exchanges gᵃ and gᵇ and derives gᵃᵇ, relying on an appropriate hardness assumption. Unauthenticated exchange does not prevent an active intermediary attack. Shor's quantum algorithm gives polynomial-time discrete logarithms on a suitable quantum computation model; this motivates different assumptions in post-quantum cryptography. This topic introduces connections, not a production protocol design.",
+      "formula": "A=gᵃ; B=gᵇ; shared value Bᵃ=Aᵇ=gᵃᵇ\nIf q≈2ᵏ, then √q≈2^(k/2)",
+      "symbols": "g generates a chosen cyclic group of order q; a and b are secret exponents reduced modulo that order. A and B are public group elements. The shared equality follows from exponent laws in the group. k is the approximate bit length of q. The second line translates a numeric-size bound into an input-length bound. Small numeric examples illustrate algebra only; they do not provide cryptographic security or specify a safe group, encoding or authentication method.",
+      "example": "Use multiplication modulo 23 with generator 5 as a tiny arithmetic illustration. Choose a=3 and b=4. The public values are A=5³ mod 23=10 and B=5⁴ mod 23=4. One side computes B³ mod 23=64 mod 23=18. The other computes A⁴ mod 23: 10² mod 23=8, then 8² mod 23=18. Both obtain 18. An observer can solve this toy instance by trying a handful of exponents, so agreement alone does not demonstrate secrecy. The protocol calculation is distinct from the security claim about computationally bounded observers in appropriately chosen groups.",
+      "pitfall": "Equating “no efficient attack known” with a proof of impossibility, or treating Diffie–Hellman agreement as authentication by itself.",
+      "check": {
+        "question": "Why can O(√q) be expensive even though the square-root function grows slowly?",
+        "answer": "The input encodes q in about k=log₂q bits. Then √q is about 2^(k/2), exponential in input bit length."
+      }
+    }
+  ],
+  "cheatsheet": [
+    {
+      "title": "Name the guarantee",
+      "body": "Worst-case maximizes over inputs; expected averages over stated randomness; amortized averages over a sequence. Input size and arithmetic cost model must be explicit before interpreting any bound."
+    },
+    {
+      "title": "Representation tradeoffs",
+      "body": "Array indexing is O(1), interior shifts O(n). Doubly linked edits at known positions are O(1), but locating an index is O(n). Include both search and modification costs."
+    },
+    {
+      "title": "BST versus AVL",
+      "body": "BST search and update cost O(h); range reporting costs O(h+k). AVL maintains child-height difference at most one, ensuring h=O(log n). k is output size."
+    },
+    {
+      "title": "Heap priorities",
+      "body": "A min-heap keeps each parent no larger than its children. Minimum is O(1); insert and remove-min are O(log n). A heap array is not fully sorted."
+    },
+    {
+      "title": "Hash-table assumptions",
+      "body": "With suitable uniform hashing, chaining lookup is expected O(1+α), α=n/m. Linear probing needs tombstones or cluster repair after deletion. Cuckoo insertion can trigger expensive rebuilding."
+    },
+    {
+      "title": "Graph traversals",
+      "body": "Adjacency-list BFS and DFS cost O(n+m). BFS minimizes edge count. Undirected DFS tree edge (u,v) is a bridge when low[v]>disc[u], with parent edges handled correctly."
+    },
+    {
+      "title": "Path versus tree",
+      "body": "Dijkstra relaxes d[u]+w(u,v) and requires nonnegative weights. Prim uses w(u,v) to connect a new vertex. MSTs minimize total network weight, not source-to-vertex distances."
+    },
+    {
+      "title": "Greedy proof certificates",
+      "body": "Fractional knapsack uses density and equal-weight exchange. Interval partitioning matches overlap depth. Huffman combines two minimum frequencies. Each proof depends on its specific feasible-choice structure."
+    },
+    {
+      "title": "Recurrences",
+      "body": "T(n)=T(n/2)+Θ(1) gives Θ(log n); 2T(n/2)+Θ(n) gives Θ(n log n); 3T(n/2)+Θ(n) gives Θ(n^log₂3). Include split and combination costs."
+    },
+    {
+      "title": "Sort versus select",
+      "body": "Randomized quicksort sorts both sides in expected O(n log n). Quickselect follows one side in expected O(n). Both can take Θ(n²) on unlucky pivot sequences."
+    },
+    {
+      "title": "Random structures",
+      "body": "Fisher–Yates chooses j uniformly in {0,…,i} before fixing position i. Skip-list promotion probability one half gives expected O(log n) operations and expected O(n) storage."
+    },
+    {
+      "title": "Read the input length",
+      "body": "For q encoded in k≈log₂q bits, √q≈2^(k/2). A polynomial in the numerical value may be exponential in bit length; this distinction matters for cryptographic complexity."
+    }
+  ],
+  "references": [
+    {
+      "title": "Sedgewick and Wayne — Algorithms, 4th Edition",
+      "url": "https://algs4.cs.princeton.edu/home/"
+    },
+    {
+      "title": "Pat Morin — Open Data Structures",
+      "url": "https://opendatastructures.org/"
+    },
+    {
+      "title": "Pat Morin — Skip lists and their probabilistic analysis",
+      "url": "https://opendatastructures.org/ods-python/4_Skiplists.html"
+    },
+    {
+      "title": "Sedgewick and Wayne — Quicksort",
+      "url": "https://algs4.cs.princeton.edu/23quicksort/"
+    },
+    {
+      "title": "Boneh and Shoup — A Graduate Course in Applied Cryptography",
+      "url": "https://toc.cryptobook.us/"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+# Bilingual AI field-guide content contract
+
+Each file is a JSON object with id (ml, dl, vision, multimodal), code, color, title, subtitle, description, coverage, prerequisites, outcomes, map, topics, references, review.
+All prose except publisher, reference kind and shared mathematical notation is localized: {"en":"...", "zh":"..."}. prerequisites and outcomes are {"en":["..."],"zh":["..."]}.
+map: [{"title":{"en":"...","zh":"..."},"topics":["stable-topic-id"]}].
+topics: [{"id":"stable-ascii-id", "title":localized, "story":localized, "concept":localized, "application":localized, "practice":localized, "formula":"plain-text Unicode formula with newlines", "symbols":localized, "calculation":localized, "limits":localized, "takeaway":localized, "sources":["reference-id"]}].
+references: [{"id":"reference-id","title":localized,"url":"verified primary URL","publisher":"organization","kind":"Official tutorial / University course / Research paper"}].
+review: [{"title":localized,"body":localized}], exactly 8 concise entries, one per topic.
+
+Eight substantial topics per guide. English stories 110–170 words each must be complete miniature narratives: named situation, obstacle, decision, outcome and bridge to the concept; do not copy sources. English concept 70–120 words; application 50–90; practice 50–90; symbols 70–110; calculation 100–160 with checked numeric steps; limits 35–70; takeaway 15–35. Accurate complete Chinese translation of every English section. Shared formulas must have all variables explained in both languages. No assignments/exams or copied provider material. Stories, examples and commentary original, Guoliang branding applied by renderer. Cite exact official primary sources supporting real-use claims; don't imply official endorsement or authorship of their tutorials. References should cover at least 8 distinct substantive primary pages, with clear topic mapping. Avoid speculative claims, stale benchmark rankings and runnable dependency-specific code unless tested. No more than 25 verbatim non-lyrical words per source; minimize close paraphrase.

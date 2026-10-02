@@ -1,0 +1,62 @@
+{
+  "name": "Guoliang Wang",
+  "brand": "Guoliang",
+  "headline": "Exploring intelligent systems. Making complex ideas clear.",
+  "bio": "I am an MSc student at the University of Hong Kong, working on AI. My interests include multimodal models, LLM agents, long-video understanding and generation, and efficient video inference. I enjoy turning complex ideas into clear, practical learning resources.",
+  "email": "zetongw6@gmail.com",
+  "github": "https://github.com/leon1111-wgl",
+  "education": [
+    {
+      "period": "2026 - Present",
+      "institution": "The University of Hong Kong",
+      "degree": "MSc",
+      "detail": "Working on AI. Enrolled September 2026."
+    },
+    {
+      "period": "2023 - 2026",
+      "institution": "The University of Sydney",
+      "degree": "Bachelor of Commerce",
+      "detail": "Major in Finance; minor in Computer Science. Dalyell Scholar. Graduated June 2026."
+    },
+    {
+      "period": "Dec 2024 - Jan 2025",
+      "institution": "Zhejiang University",
+      "degree": "Exchange study",
+      "detail": "Short-term exchange experience."
+    }
+  ],
+  "research": {
+    "title": "Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence",
+    "venue": "AAAI 2026",
+    "role": "Co-first author",
+    "url": "https://ojs.aaai.org/index.php/AAAI/article/view/38031",
+    "doi": "10.1609/aaai.v40i13.38031",
+    "summary": "Long videos require answers that can be checked against visual evidence. This work introduces EV²-Bench and DynamicSelect to study evidence-grounded understanding and efficient video processing.",
+    "contribution": "My contributions included benchmark construction, temporal and visual evidence annotation, model evaluation, and evidence scoring using temporal IoU, text similarity, and bipartite matching."
+  },
+  "experience": [
+    {
+      "period": "2025 - 2026",
+      "role": "Long-video research",
+      "organization": "EV²-Bench & model evaluation",
+      "detail": "Contributed to dataset construction and reproducible evaluation with lmms-eval, structured model outputs, and evidence precision, recall, and F1."
+    },
+    {
+      "period": "Jul - Aug 2025",
+      "role": "AI Algorithm Intern",
+      "organization": "Shenzhen Beidou Applied Technology Research Institute",
+      "detail": "Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring."
+    }
+  ],
+  "skills": [
+    "Python",
+    "Java",
+    "C",
+    "Multimodal evaluation",
+    "lmms-eval",
+    "Instruction tuning",
+    "Knowledge distillation",
+    "Model quantization"
+  ],
+  "languages": "Mandarin Chinese and English (IELTS 7.5)"
+}

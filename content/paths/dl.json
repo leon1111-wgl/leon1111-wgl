@@ -1,0 +1,652 @@
+{
+  "id": "dl",
+  "code": "DL",
+  "color": "#8c6ae8",
+  "title": {
+    "en": "Deep Learning",
+    "zh": "深度学习"
+  },
+  "subtitle": {
+    "en": "From tensor shapes to adaptable representations",
+    "zh": "从张量形状到可迁移的表征"
+  },
+  "description": {
+    "en": "Follow eight connected ideas through original miniature stories, explicit equations, and checked calculations. Learn how neural networks represent inputs, receive gradients, change during training, and earn trust on unseen data. The stories are illustrative; documented uses are identified separately and linked to primary sources.",
+    "zh": "通过八个相互衔接的主题，以原创短篇情境、明确公式和经过核算的示例，理解神经网络如何表示输入、获得梯度、在训练中更新，以及如何在未见数据上接受检验。故事均为说明性情境；有文献依据的实际用法单独说明，并链接至一手来源。"
+  },
+  "coverage": {
+    "en": "8 topics · tensors → representations → gradients → optimization → regularization → convolution → attention → transfer",
+    "zh": "8 个主题 · 张量 → 表征 → 梯度 → 优化 → 正则化 → 卷积 → 注意力 → 迁移"
+  },
+  "prerequisites": {
+    "en": [
+      "Vectors and matrix multiplication",
+      "Functions, derivatives, and the chain rule",
+      "Training, validation, and test splits",
+      "Basic probability and logarithms"
+    ],
+    "zh": [
+      "向量与矩阵乘法",
+      "函数、导数与链式法则",
+      "训练集、验证集和测试集划分",
+      "基础概率与对数"
+    ]
+  },
+  "outcomes": {
+    "en": [
+      "Track a batch through a network without losing axis meaning",
+      "Derive a small backward pass and compare optimizer updates",
+      "Separate training behavior from evaluation behavior",
+      "Explain convolution, residual paths, and attention numerically",
+      "Plan transfer learning with an honest validation boundary"
+    ],
+    "zh": [
+      "跟踪批次在网络中的流动，并保留各维度的含义",
+      "推导小型网络的反向传播，并比较优化器更新",
+      "区分训练行为与评估行为",
+      "通过数值解释卷积、残差路径和注意力",
+      "在可靠的验证边界下规划迁移学习"
+    ]
+  },
+  "map": [
+    {
+      "title": {
+        "en": "Represent and differentiate",
+        "zh": "表示与求导"
+      },
+      "topics": [
+        "dl-tensors",
+        "dl-representations",
+        "dl-autograd"
+      ]
+    },
+    {
+      "title": {
+        "en": "Optimize and control",
+        "zh": "优化与约束"
+      },
+      "topics": [
+        "dl-optimization",
+        "dl-regularization"
+      ]
+    },
+    {
+      "title": {
+        "en": "Build structure and adapt",
+        "zh": "构建结构与适应任务"
+      },
+      "topics": [
+        "dl-convolution",
+        "dl-attention",
+        "dl-transfer"
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "id": "dl-tensors",
+      "title": {
+        "en": "Tensors: give every axis a meaning",
+        "zh": "张量：让每个维度都有含义"
+      },
+      "story": {
+        "en": "Mina is building a small classifier for recordings from three laboratory sensors. Each recording becomes three summary numbers, and she wants to process several recordings together. Her first version runs without an error, yet its predictions change when she replaces the other recordings in the batch. The problem is not mysterious learning behavior: she has averaged across the batch axis while preparing each example. Mina draws a table with recordings as rows and sensor features as columns. She labels the intended shape before every operation, then checks one row by hand. After moving the reduction to the feature axis, each recording has its own summary again. This repair gives her a durable habit: a tensor shape describes both the amount of data and the meaning of its organization.",
+        "zh": "Mina 正在为三个实验室传感器的记录构建一个小型分类器。每条记录被转换为三个汇总数值，她希望一次处理多条记录。第一版程序没有报错，但只要替换批次中的其他记录，预测就会变化。问题并不是什么神秘的学习行为：她在准备每个样本时，沿批次维度求了平均。Mina 画了一张表，让记录对应行、传感器特征对应列。她在每个运算之前标注预期形状，再手工核对其中一行。将归约运算移到特征维度后，每条记录重新拥有了自己的汇总值。这次修复让她形成一个长期习惯：张量形状既描述数据量，也描述数据的组织含义。"
+      },
+      "concept": {
+        "en": "A tensor is an indexed collection of numbers. Its axes can represent examples, channels, positions, or learned features; the numbers alone do not encode those roles. A dense layer combines the feature axis with a weight matrix while preserving the batch axis. Broadcasting can add one bias vector to every example, but compatible shapes do not guarantee compatible meanings. Reshaping changes the grouping of entries, whereas transposing changes their axis order. Tracking shape, data type, and device together turns many apparent modeling failures into ordinary, inspectable data transformations.",
+        "zh": "张量是一组可按索引访问的数值。其维度可以表示样本、通道、位置或学习得到的特征；数值本身并不包含这些角色。全连接层通过权重矩阵组合特征维度，同时保留批次维度。广播机制可以给每个样本加上同一个偏置向量，但形状兼容并不保证含义兼容。重塑改变元素的分组方式，转置则改变维度顺序。共同追踪形状、数据类型和设备位置，能把许多看似建模失败的问题转化为普通、可检查的数据变换。"
+      },
+      "application": {
+        "en": "Write a shape contract at the data loader boundary and at each layer boundary. State which axis is the batch, how features are ordered, and whether a reduction should preserve one result per example. Before a large run, send two deliberately different examples through the pipeline. Inspect whether changing one example unexpectedly changes the other, and distinguish intended batch statistics from accidental mixing.",
+        "zh": "在数据加载器入口和每层的边界写下形状约定。明确哪个维度代表批次、特征按什么顺序排列，以及归约后是否应为每个样本保留一个结果。大规模运行之前，先让两个刻意不同的样本经过流程。检查改变其中一个样本是否意外影响另一个，并区分有意计算的批次统计量与意外的数据混合。"
+      },
+      "practice": {
+        "en": "The official PyTorch Tensors tutorial represents inputs and model parameters with tensors, inspects their shape, data type, and device, and distinguishes matrix multiplication from elementwise multiplication. These are concrete preparation and inspection operations used before neural network training. The tutorial also demonstrates explicit device transfers, showing why a correct mathematical expression still requires compatible storage locations in an actual implementation.",
+        "zh": "PyTorch 官方张量教程用张量表示输入和模型参数，检查其形状、数据类型与设备，并区分矩阵乘法和逐元素乘法。这些都是神经网络训练前实际使用的数据准备与检查操作。教程还演示了显式设备转移，说明为什么一个数学上正确的表达式，在具体实现中仍然需要彼此兼容的存储位置。"
+      },
+      "formula": "X ∈ ℝ^(B×d), W ∈ ℝ^(d×k), b ∈ ℝ^k\nY = XW + b\nY[i,j] = Σ(r=1…d) X[i,r]W[r,j] + b[j]",
+      "symbols": {
+        "en": "X is the input matrix; B counts examples and d counts features per example. W is the learned weight matrix, and k is the number of output features. b is a length k bias vector broadcast across rows. Y is the resulting B by k output matrix. i identifies an example, j identifies an output feature, and r indexes an input feature being summed. ℝ denotes real numbers, × specifies axis sizes, and Σ adds the products over all d input features. Brackets select individual entries.",
+        "zh": "X 是输入矩阵；B 是样本数，d 是每个样本的特征数。W 是学习得到的权重矩阵，k 是输出特征数。b 是长度为 k、沿各行广播的偏置向量。Y 是所得的 B 行 k 列输出矩阵。i 指定样本，j 指定输出特征，r 指定求和中的输入特征。ℝ 表示实数，× 标明各维度大小，Σ 将全部 d 个输入特征对应的乘积相加。方括号用于选取单个元素。"
+      },
+      "calculation": {
+        "en": "Take two recordings with X = [[2, 1, 0], [0, 3, 1]]. Choose W = [[1, −1], [2, 0], [0, 3]] and b = [0.5, −0.5]. The first row produces [2×1 + 1×2 + 0×0 + 0.5, 2×(−1) + 1×0 + 0×3 − 0.5] = [4.5, −2.5]. The second produces [6.5, 2.5], so Y has shape 2 by 2. Averaging across recordings gives [5.5, 0], one mean per output feature. Averaging across features instead gives [1, 4.5], one mean per recording. Both operations return two numbers; only axis meaning tells us which answers the intended question. The dense layer uses six weights and two biases, independently of this batch size.",
+        "zh": "取两条记录 X = [[2, 1, 0], [0, 3, 1]]。选择 W = [[1, −1], [2, 0], [0, 3]]，b = [0.5, −0.5]。第一行得到 [2×1 + 1×2 + 0×0 + 0.5, 2×(−1) + 1×0 + 0×3 − 0.5] = [4.5, −2.5]。第二行得到 [6.5, 2.5]，因此 Y 的形状为 2 行 2 列。沿记录维度求平均得到 [5.5, 0]，即每个输出特征一个均值。沿特征维度求平均则得到 [1, 4.5]，即每条记录一个均值。两个运算都返回两个数；只有维度含义能告诉我们哪一个回答了预期问题。这个全连接层使用六个权重和两个偏置，与当前批次大小无关。"
+      },
+      "limits": {
+        "en": "Shape checks cannot detect swapped feature names, mismatched physical units, or labels attached to the wrong rows. Broadcasting may silently produce a larger result than intended. Batch dependent layers also create legitimate interactions between examples, so independence checks must be interpreted with the architecture and its training mode in mind.",
+        "zh": "形状检查无法发现特征名称调换、物理单位不匹配，或标签对应了错误行等问题。广播可能悄悄产生比预期更大的结果。依赖批次的层也会让样本之间出现合理交互，因此解释独立性检查时，需要考虑网络结构及其训练模式。"
+      },
+      "takeaway": {
+        "en": "Treat every tensor axis as a named contract; matching dimensions is necessary, but preserving their meaning is what makes the computation correct.",
+        "zh": "把每个张量维度视为有名称的约定；维度匹配是必要条件，而保留其含义才能保证计算正确。"
+      },
+      "sources": [
+        "pytorch-tensors"
+      ]
+    },
+    {
+      "id": "dl-representations",
+      "title": {
+        "en": "MLPs: learn useful intermediate features",
+        "zh": "多层感知机：学习有用的中间特征"
+      },
+      "story": {
+        "en": "Ravi monitors two gauges that should normally agree. A large reading on either gauge is harmless when the other rises with it, so a simple weighted average produces many false alarms. He first adds another linear layer, hoping that extra depth will uncover the disagreement. The model still behaves like one straight transformation. Ravi then introduces two hidden units: one responds when the first gauge exceeds the second by a margin, and the other responds to the reverse situation. A rectifier suppresses negative responses, allowing the final layer to combine two directions of disagreement. His small demonstration now distinguishes common movement from mismatch. The important change was not the layer count alone; it was a representation that preserved the particular relationship the task needed.",
+        "zh": "Ravi 监测两个通常应保持一致的仪表。如果一个读数上升时另一个也一起上升，高读数本身并无问题，因此简单的加权平均会产生许多误报。他最初增加了一个线性层，希望更深的结构能找出不一致。模型却仍然像一次直接的线性变换。随后，Ravi 引入两个隐藏单元：一个在第一只仪表比第二只高出一定幅度时响应，另一个响应相反情况。整流激活将负响应抑制为零，使最后一层能够合并两个方向的不一致。这个小型演示终于区分了共同变化与读数失配。关键变化不只是层数增加，而是中间表征保留了任务需要的特定关系。"
+      },
+      "concept": {
+        "en": "A multilayer perceptron alternates affine transformations with nonlinear activations. Hidden units construct intermediate features that a later layer recombines. Without nonlinearities, a sequence of affine layers collapses into a single affine map, regardless of depth. ReLU keeps positive inputs and maps negative inputs to zero, producing different linear behavior in different regions of input space. Representation learning means choosing these intermediate transformations through training rather than specifying every feature manually. The resulting features can help a task without corresponding to recognizable human concepts or providing a causal explanation.",
+        "zh": "多层感知机交替使用仿射变换和非线性激活。隐藏单元构建中间特征，后面的层再组合这些特征。没有非线性时，无论多深，一串仿射层都能合并成单个仿射映射。ReLU 保留正输入，并将负输入变成零，使输入空间的不同区域具有不同的线性行为。表征学习是通过训练选择这些中间变换，而不是手工指定全部特征。所得特征可能有助于完成任务，但未必对应人类可识别的概念，也未必提供因果解释。"
+      },
+      "application": {
+        "en": "Start with a compact network whose input features and output meaning are explicit. Choose the last layer and loss together: classification logits, probabilities, and continuous predictions have different roles. Inspect activation distributions to find units that are always zero or unusually large. Increase width or depth only after checking data quality and validation behavior, so additional capacity addresses an observed limitation.",
+        "zh": "从输入特征和输出含义都明确的小型网络开始。将最后一层与损失函数一起选择：分类原始分数、概率和连续预测值承担不同角色。检查激活分布，找出始终为零或异常大的单元。检查数据质量与验证表现之后，再增加宽度或深度，让额外容量用于解决已经观察到的限制。"
+      },
+      "practice": {
+        "en": "PyTorch’s Build the Neural Network tutorial constructs a FashionMNIST classifier from a flattening operation, linear layers, and ReLU activations. It separates the network’s raw class scores from probabilities obtained by a later softmax operation. This official example shows how a basic MLP connects image entries to class outputs; the gauge scenario and all numbers here are independent illustrations.",
+        "zh": "PyTorch 的构建神经网络教程使用展平操作、线性层和 ReLU 激活构建 FashionMNIST 分类器。教程区分网络输出的原始类别分数，以及随后经过 softmax 运算得到的概率。这个官方示例展示了基础多层感知机如何将图像元素连接到类别输出；本节的仪表情境及全部数值均为独立设计的说明。"
+      },
+      "formula": "h = ReLU(W₁x + b₁), ReLU(u) = max(0,u)\nŷ = W₂h + b₂\nP = Hd + H + kH + k",
+      "symbols": {
+        "en": "x is a column vector containing d input features. W₁ has H rows and d columns, while b₁ contains H hidden biases. h is the length H hidden representation. W₂ has k rows and H columns, and b₂ contains k output biases. ŷ is the length k prediction vector. ReLU applies max(0,u) separately to each scalar preactivation u. P counts every weight and bias in this two layer network. Subscripts 1 and 2 identify the two affine layers; they are not powers or time steps.",
+        "zh": "x 是包含 d 个输入特征的列向量。W₁ 有 H 行 d 列，b₁ 包含 H 个隐藏层偏置。h 是长度为 H 的隐藏表征。W₂ 有 k 行 H 列，b₂ 包含 k 个输出偏置。ŷ 是长度为 k 的预测向量。ReLU 对每个标量预激活值 u 分别应用 max(0,u)。P 统计这个两层网络的所有权重和偏置。下标 1 和 2 指代两个仿射层，不表示乘方或时间步。"
+      },
+      "calculation": {
+        "en": "Let d = 2, H = 2, and k = 1. Set W₁ = [[1, −1], [−1, 1]], b₁ = [−1, −1], W₂ = [[1, 1]], and b₂ = 0. For x = [3, 1], the hidden preactivations are [1, −3], so h = [1, 0] and ŷ = 1. Swapping the inputs to [1, 3] gives h = [0, 1], again producing 1. Equal inputs [2, 2] yield [−1, −1] before ReLU and a prediction of 0. This network measures disagreement beyond a one unit tolerance in either direction. Its parameter count is 2×2 + 2 + 1×2 + 1 = 9. These chosen weights demonstrate representational capacity; they are not a claim that training must discover this solution.",
+        "zh": "令 d = 2、H = 2、k = 1。设 W₁ = [[1, −1], [−1, 1]]，b₁ = [−1, −1]，W₂ = [[1, 1]]，b₂ = 0。对于 x = [3, 1]，隐藏层预激活值为 [1, −3]，因此 h = [1, 0]，ŷ = 1。将输入交换为 [1, 3]，得到 h = [0, 1]，输出仍为 1。相同输入 [2, 2] 在 ReLU 前得到 [−1, −1]，预测值为 0。这个网络测量两个方向上超出一个单位容差的不一致。参数量为 2×2 + 2 + 1×2 + 1 = 9。这些手选权重展示的是表示能力，并不意味着训练必然找到这一解。"
+      },
+      "limits": {
+        "en": "An MLP does not automatically exploit image locality or sequence order. More parameters can increase memorization, computation, and sensitivity to preprocessing. ReLU units receiving negative inputs throughout training may receive no useful gradient through that branch. A convincing fitted relationship also remains different from evidence that the relationship will generalize.",
+        "zh": "多层感知机不会自动利用图像的局部性或序列顺序。更多参数可能增加记忆训练数据的程度、计算量以及对预处理的敏感性。若 ReLU 单元在整个训练中都接收负输入，该分支可能无法获得有用梯度。拟合出的关系即使看起来合理，也不等于已经证明它能泛化。"
+      },
+      "takeaway": {
+        "en": "Nonlinear hidden layers matter because they change the available representations; extra linear depth alone cannot create a nonlinear decision rule.",
+        "zh": "非线性隐藏层的重要性在于改变可用的表征；仅增加线性层的深度，无法构建非线性的决策规则。"
+      },
+      "sources": [
+        "pytorch-build-model"
+      ]
+    },
+    {
+      "id": "dl-autograd",
+      "title": {
+        "en": "Backpropagation: follow the chain of dependence",
+        "zh": "反向传播：沿依赖链求导"
+      },
+      "story": {
+        "en": "Elena adds a trainable scaling factor to a tiny sensor model, then watches the loss stay unchanged through several iterations. The optimizer exists, the forward calculation works, and the printed output looks plausible. Rather than replacing the optimizer, she writes the computation as a chain: input, affine value, activation, prediction, loss. She calculates the derivative along each link and expects a nonzero gradient at the first weight. The implementation reports no gradient there. A conversion made for logging had detached the activation before it reached the prediction. Elena keeps the original tensor in the model and converts only a separate logging value. The next backward pass reaches the weight. Her debugging question has changed from whether learning is happening to exactly which dependencies the program has preserved.",
+        "zh": "Elena 给一个小型传感器模型添加了可训练的缩放系数，却发现损失在多次迭代中保持不变。优化器已经创建，前向计算正常，打印的输出也看起来合理。她没有更换优化器，而是把计算写成一条链：输入、仿射值、激活、预测、损失。她沿每个环节计算导数，预期第一个权重应获得非零梯度。然而，实现中该处没有梯度。原来，用于日志记录的一次转换在激活到达预测步骤之前就切断了依赖。Elena 在模型中保留原始张量，只转换单独的日志数值。下一次反向传播终于到达这个权重。她的调试问题从“是否在学习”，转变为“程序究竟保留了哪些依赖关系”。"
+      },
+      "concept": {
+        "en": "Backpropagation applies the chain rule to a recorded computation, carrying the loss sensitivity backward through intermediate values. Automatic differentiation combines local derivatives using the executed graph; it does not guess gradients by repeatedly perturbing each parameter. The forward pass supplies both a prediction and information needed for the backward pass. A gradient describes local change in a specified objective, with other quantities held fixed. Computing that gradient and using it to update parameters are separate actions. Graph breaks, disabled gradient recording, and unsuitable operations can interrupt the intended dependency path.",
+        "zh": "反向传播将链式法则应用于记录下来的计算，把损失的敏感度通过中间值向后传递。自动微分沿实际执行的计算图组合局部导数，并不是反复扰动每个参数来猜测梯度。前向传播既产生预测，也提供反向传播所需的信息。梯度描述在其他量固定时，特定目标函数的局部变化。计算梯度与利用梯度更新参数是两个独立动作。计算图断裂、关闭梯度记录，以及不适当的操作，都可能打断预期的依赖路径。"
+      },
+      "application": {
+        "en": "For a suspicious model, shrink the forward computation until a single example and a few parameters can be differentiated by hand. Check whether each trainable parameter receives a gradient and whether its sign makes sense. Clear accumulated gradients at the intended update boundary. Keep logging, conversion, and inference operations separate from the tensor path whose derivatives training requires.",
+        "zh": "如果模型表现可疑，就缩小前向计算，直到能够手工对单个样本和少量参数求导。检查每个可训练参数是否获得梯度，以及梯度符号是否合理。在预定的更新边界清除累积梯度。将日志、数值转换和推理操作，与训练求导所依赖的张量路径分开。"
+      },
+      "practice": {
+        "en": "The official autograd tutorial enables gradient tracking for parameters, constructs a loss, calls backward, and reads parameter gradients. It also demonstrates disabling tracking and detaching tensors. The optimization tutorial documents gradient accumulation and resetting. Together these examples show actual framework mechanisms behind the dependency chain: a valid forward result is insufficient evidence that the required backward route still exists.",
+        "zh": "官方 autograd 教程为参数启用梯度跟踪，构造损失，调用 backward，并读取参数梯度。它还演示了关闭跟踪和分离张量。优化教程说明了梯度累积与重置。两者共同展示了依赖链背后的具体框架机制：前向结果有效，并不足以证明所需的反向路径仍然存在。"
+      },
+      "formula": "z = wx + b, a = max(0,z), ŷ = va\nL = ½(ŷ − y)²\n∂L/∂v = (ŷ − y)a\n∂L/∂w = (ŷ − y)v·1[z>0]·x\n∂L/∂b = (ŷ − y)v·1[z>0]\nθ_new = θ − η·∂L/∂θ",
+      "symbols": {
+        "en": "x and y are one scalar input and its target. w and b define the first affine operation, z is its preactivation, and a is the rectified activation. v scales a into prediction ŷ. L is half the squared prediction error. The symbol ∂ denotes a partial derivative with other independent inputs fixed. 1[z>0] is one for positive z and zero for negative z; at zero this example uses derivative zero. θ stands for any of w, b, or v, θ_new is its updated value, and η is the learning rate.",
+        "zh": "x 和 y 分别是一个标量输入及其目标值。w 和 b 定义第一个仿射运算，z 是预激活值，a 是整流后的激活值。v 将 a 缩放为预测 ŷ。L 是预测误差平方的一半。符号 ∂ 表示在其他独立输入固定时的偏导数。z 为正时 1[z>0] 等于一，为负时等于零；本例在零处采用零导数。θ 可以指 w、b 或 v 中的任意参数，θ_new 是其更新值，η 是学习率。"
+      },
+      "calculation": {
+        "en": "Use x = 2, y = 1, w = 0.5, b = 0, and v = 2. Forward evaluation gives z = 1, a = 1, ŷ = 2, and L = 0.5. The prediction error is 1, so the gradients are ∂L/∂v = 1, ∂L/∂w = 4, and ∂L/∂b = 2. With η = 0.05, update all three parameters from these same old gradients: v becomes 1.95, w becomes 0.3, and b becomes −0.1. The new z is 0.3×2 − 0.1 = 0.5, making ŷ = 0.975. The new loss is 0.5×(−0.025)² = 0.0003125. This decrease verifies this particular step, not a universal guarantee for every learning rate or example.",
+        "zh": "取 x = 2、y = 1、w = 0.5、b = 0、v = 2。前向计算得到 z = 1、a = 1、ŷ = 2，以及 L = 0.5。预测误差为 1，所以梯度为 ∂L/∂v = 1、∂L/∂w = 4、∂L/∂b = 2。令 η = 0.05，使用这组在旧参数处计算的梯度同步更新三个参数：v 变为 1.95，w 变为 0.3，b 变为 −0.1。新的 z 为 0.3×2 − 0.1 = 0.5，因此 ŷ = 0.975。新损失为 0.5×(−0.025)² = 0.0003125。这次下降验证了这个具体更新，并不保证所有学习率或所有样本都会下降。"
+      },
+      "limits": {
+        "en": "Gradients can vanish, explode, or fail to reflect useful progress across nondifferentiable choices. Autograd differentiates the implemented objective, including any mistakes in that objective. Floating point arithmetic also limits precision. A small finite difference check can expose errors in a smooth toy case, but cannot certify an entire training pipeline.",
+        "zh": "梯度可能消失、爆炸，或无法反映跨越不可微选择时的有效进展。Autograd 对实际实现的目标求导，也会对其中的错误照样求导。浮点运算还会限制精度。小型有限差分检查能在光滑的玩具示例中暴露错误，但无法证明整个训练流程都正确。"
+      },
+      "takeaway": {
+        "en": "A gradient is a trace of dependency through the actual computation; preserve that trace before expecting an optimizer to improve the model.",
+        "zh": "梯度是实际计算中依赖关系的轨迹；在期待优化器改善模型之前，先确保这条轨迹保持完整。"
+      },
+      "sources": [
+        "pytorch-autograd",
+        "pytorch-optimization"
+      ]
+    },
+    {
+      "id": "dl-optimization",
+      "title": {
+        "en": "Minibatches and optimizers: turn gradients into steps",
+        "zh": "小批次与优化器：将梯度转化为更新"
+      },
+      "story": {
+        "en": "Noah trains a model on measurements collected over many days. Processing the entire archive before every update is slow, so he switches to small batches. The displayed loss begins to bounce, and he assumes the new procedure is broken. Looking closer, he finds that different batches contain different weather conditions and therefore different difficulty. He compares a moving training trend with a fixed validation set instead of judging one batch at a time. He also discovers that changing from SGD to Adam while keeping every setting unchanged changes the scale of early parameter updates. Noah records batch size, learning rate, and optimizer state together. The experiment becomes understandable once he treats the gradient estimate and the rule that converts it into a step as two separate design choices.",
+        "zh": "Noah 用多天采集的测量记录训练模型。每次更新前处理整个档案太慢，因此他改用小批次。显示的损失开始上下波动，他以为新流程出了问题。仔细检查后，他发现不同批次包含不同天气条件，难度也不同。他转而比较训练损失的移动趋势与固定验证集上的表现，不再逐个批次下结论。他还发现，在其他设置不变的情况下，从 SGD 切换到 Adam 会改变早期参数更新的尺度。Noah 开始一起记录批次大小、学习率和优化器状态。当他把梯度估计与将梯度转换为更新步的规则看作两个独立设计选择时，实验就变得可以理解了。"
+      },
+      "concept": {
+        "en": "A minibatch gradient averages loss derivatives over a subset of examples. It is a noisy estimate of the dataset gradient under appropriate sampling, trading statistical variability for cheaper updates. Basic SGD multiplies this estimate by a learning rate. Adam also maintains moving averages of the gradient and its square, corrects their initial bias, and rescales each parameter’s step. Batch size, loss reduction, sampling, and optimizer settings therefore interact. An epoch counts a pass through the dataset; an optimization step counts an update, so the two are not interchangeable units of progress.",
+        "zh": "小批次梯度在部分样本上平均损失导数。在适当的抽样方式下，它是整个数据集梯度的带噪估计，以统计波动换取更低的单次更新成本。基础 SGD 用学习率乘以这个估计。Adam 还维护梯度及其平方的移动平均，修正初始偏差，并重新缩放每个参数的更新。因此，批次大小、损失归约方式、抽样方法和优化器设置会相互影响。一个 epoch 表示遍历数据集一次；一个优化步骤表示一次更新，两者不能作为进度单位互换。"
+      },
+      "application": {
+        "en": "Define whether the loss is averaged or summed before selecting a learning rate. Shuffle training examples when that matches the data assumptions, and preserve grouping where observations are dependent. Record update counts as well as epochs. Compare optimizers under a controlled validation procedure, and save optimizer state when a resumed run should continue its existing momentum and adaptation history.",
+        "zh": "选择学习率之前，先明确损失是取平均还是求和。在符合数据假设时打乱训练样本；若观测相互依赖，则保留必要的分组。同时记录更新次数和 epoch 数。在受控的验证流程下比较优化器；如果恢复运行时应延续已有动量与自适应历史，就需要保存优化器状态。"
+      },
+      "practice": {
+        "en": "PyTorch’s optimization tutorial uses an explicit training loop with loss calculation, backward propagation, parameter updates, and gradient resetting. Its Adam reference gives the moving average and bias correction algorithm. These primary sources support two concrete implementations of the same training interface: gradients supply local information, while an optimizer determines how stored state and hyperparameters turn that information into changed weights.",
+        "zh": "PyTorch 优化教程使用显式训练循环，其中包含损失计算、反向传播、参数更新和梯度重置。Adam 参考文档给出了移动平均与偏差修正算法。这些一手来源支持同一训练接口下的两种具体实现：梯度提供局部信息，而优化器决定怎样利用保存的状态和超参数将信息转化为权重变化。"
+      },
+      "formula": "gₜ = (1/B) Σ(i=1…B) ∇θ ℓᵢ(θₜ₋₁)\nSGD: θₜ = θₜ₋₁ − ηgₜ\nAdam: mₜ = β₁mₜ₋₁ + (1−β₁)gₜ\nvₜ = β₂vₜ₋₁ + (1−β₂)gₜ²\nm̂ₜ = mₜ/(1−β₁ᵗ), v̂ₜ = vₜ/(1−β₂ᵗ)\nθₜ = θₜ₋₁ − ηm̂ₜ/(√v̂ₜ + ε), m₀ = v₀ = 0",
+      "symbols": {
+        "en": "θ is the parameter vector, t counts updates, and η is the learning rate. B is batch size; i indexes its examples. ℓᵢ is example i’s loss, ∇θ means its parameter gradient, Σ sums those gradients, and gₜ is their average. mₜ and vₜ track first and second gradient moments. β₁ and β₂ are decay factors between zero and one; their superscript t means a power. Hats mark bias correction. ε is a positive stabilizer. Squares, roots, products, and division act elementwise. Initial moments are zero; these formulas omit momentum for SGD and weight decay for both optimizers.",
+        "zh": "θ 是参数向量，t 统计更新次数，η 是学习率。B 是批次大小，i 索引批次内样本。ℓᵢ 是第 i 个样本的损失，∇θ 表示对参数求梯度，Σ 将梯度相加，gₜ 是其平均值。mₜ 和 vₜ 跟踪梯度的一阶矩与二阶矩。β₁ 和 β₂ 是介于零与一之间的衰减系数，其上标 t 表示乘方。帽号表示偏差修正。ε 是正的稳定项。平方、开方、乘积和除法均逐元素进行。初始矩为零；上述公式中 SGD 不含动量，两种优化器都不含权重衰减。"
+      },
+      "calculation": {
+        "en": "Consider two scalar targets, 2 and 4, with predictions θ and per example loss ½(θ−y)². At θ₀ = 0, the gradients are −2 and −4, so g₁ = −3. SGD with η = 0.1 gives θ₁ = 0.3 and mean loss 4.145, down from 5. For Adam, independently restart at zero with β₁ = 0.9, β₂ = 0.999, and ε = 10⁻⁸. Its first moments are m₁ = −0.3 and v₁ = 0.009. Bias correction gives m̂₁ = −3 and v̂₁ = 9. The update is approximately +0.1, producing mean loss approximately 4.705. Equal learning rates thus need not mean equal steps. This single batch calculation compares update mechanics, not eventual generalization or which optimizer is better.",
+        "zh": "考虑两个标量目标 2 和 4，预测均为 θ，每个样本的损失为 ½(θ−y)²。在 θ₀ = 0 时，梯度分别为 −2 和 −4，因此 g₁ = −3。SGD 取 η = 0.1，得到 θ₁ = 0.3，平均损失从 5 降至 4.145。对于 Adam，独立地从零重新开始，取 β₁ = 0.9、β₂ = 0.999、ε = 10⁻⁸。首次得到 m₁ = −0.3、v₁ = 0.009。偏差修正后，m̂₁ = −3、v̂₁ = 9。参数增量约为 +0.1，平均损失约为 4.705。因此，相同学习率未必意味着相同更新幅度。这个单批次计算比较的是更新机制，并不是最终泛化表现，也不能判断哪个优化器更好。"
+      },
+      "limits": {
+        "en": "A noisy batch loss alone does not diagnose divergence. Conversely, a smooth training curve does not establish generalization. Adam’s adaptation cannot repair mislabeled targets, leakage, or a poor objective. Gradient accumulation also requires consistent normalization; accumulating several batch means without appropriate scaling changes the effective gradient and may change the intended step.",
+        "zh": "单个批次损失有噪声，并不足以诊断发散；反过来，平滑的训练曲线也不能证明泛化。Adam 的自适应无法修复错误标签、数据泄漏或不合理目标。梯度累积还需要一致的归一化：累积多个批次均值却不适当缩放，会改变有效梯度，也可能改变预期更新。"
+      },
+      "takeaway": {
+        "en": "Separate the gradient estimate from the update rule, and compare learning dynamics with batch size, normalization, and optimizer state visible.",
+        "zh": "区分梯度估计与更新规则，并在明确批次大小、归一化方式和优化器状态的条件下比较学习过程。"
+      },
+      "sources": [
+        "pytorch-optimization",
+        "pytorch-adam"
+      ]
+    },
+    {
+      "id": "dl-regularization",
+      "title": {
+        "en": "Regularization: train with noise, evaluate deliberately",
+        "zh": "正则化：训练时引入噪声，评估时明确模式"
+      },
+      "story": {
+        "en": "Sofia trains a network to recognize a small collection of instrument sounds. Training accuracy rises steadily while validation accuracy stops improving. She adds dropout, and the next run learns more slowly but performs more consistently on the reserved recordings. During a demonstration, however, the same recording receives slightly different scores each time. Sofia initially suspects file corruption. She then checks the model’s mode and finds that the demonstration still uses training behavior, so different activations disappear on every pass. Switching to evaluation mode removes that source of randomness. She keeps gradient recording disabled separately for ordinary inference. The episode connects two lessons: regularization changes how a model learns, and deploying that model requires an explicit decision about how its layers should behave.",
+        "zh": "Sofia 训练一个网络识别少量仪器声音。训练准确率持续上升，验证准确率却停止改善。她加入 dropout 后，新一轮训练学习得更慢，但在预留录音上的表现更稳定。然而，在演示时，同一段录音每次得到的分数略有不同。Sofia 起初怀疑文件损坏，随后检查模型模式，发现演示仍使用训练行为，因此每次前向传播都会有不同的激活被丢弃。切换到评估模式后，这个随机性来源消失了。对于普通推理，她还单独关闭梯度记录。这段经历连接了两个认识：正则化改变模型学习的方式，而部署模型需要明确决定各层应如何运行。"
+      },
+      "concept": {
+        "en": "Regularization changes the learning problem to discourage brittle solutions that fit the training data too specifically. Dropout does this by randomly removing selected activations during training. In inverted dropout, surviving activations are divided by their survival probability, preserving each activation’s expectation. At evaluation, that dropout layer passes inputs through unchanged. This expectation statement concerns the layer output, not the exact prediction of an arbitrary nonlinear network. Training mode and gradient recording are separate controls: evaluation mode changes certain modules, while disabling gradients controls whether derivative history is recorded.",
+        "zh": "正则化通过改变学习问题，抑制过度贴合训练数据的脆弱解。Dropout 在训练中随机删除部分激活来实现这一点。倒置 dropout 将保留的激活除以其存活概率，从而保持每个激活的期望。在评估时，该 dropout 层原样传递输入。这里的期望结论针对该层输出，并不意味着任意非线性网络的预测也完全相同。训练模式与梯度记录是两个独立控制项：评估模式改变某些模块的行为，而关闭梯度控制是否记录导数历史。"
+      },
+      "application": {
+        "en": "Compare regularization settings using the same reserved data and a clearly defined selection metric. Keep training and evaluation mode changes visible in the workflow. During ordinary validation, select evaluation behavior and avoid recording gradients unless the analysis needs them. If scores remain unstable, inspect augmentation and other random operations as well; changing the dropout mode cannot remove every source of variation.",
+        "zh": "使用同一份预留数据和明确的选择指标比较正则化设置。在工作流程中显式标明训练与评估模式切换。普通验证时选择评估行为，并在分析不需要梯度时关闭梯度记录。如果分数仍不稳定，还应检查数据增强及其他随机操作；改变 dropout 模式无法消除全部变化来源。"
+      },
+      "practice": {
+        "en": "PyTorch’s Dropout reference specifies random zeroing and survival scaling during training, followed by identity behavior during evaluation. The Module reference documents evaluation mode as affecting modules such as dropout and batch normalization. These are operational distinctions in a real library, not merely terminology. They explain why a saved set of weights must be paired with an appropriate evaluation procedure.",
+        "zh": "PyTorch 的 Dropout 参考文档明确说明了训练时随机置零与按存活概率缩放，以及评估时的恒等行为。Module 参考文档说明，评估模式会影响 dropout 和批归一化等模块。这些是实际库中的运行差异，而不只是术语。它们解释了为什么保存一组权重时，还必须配套适当的评估流程。"
+      },
+      "formula": "mⱼ ∼ Bernoulli(1−p), 0 ≤ p < 1\nh̃ⱼ = mⱼhⱼ/(1−p)\nE[h̃ⱼ | hⱼ] = hⱼ\nVar(h̃ⱼ | hⱼ) = hⱼ²p/(1−p)\nh_eval,ⱼ = hⱼ",
+      "symbols": {
+        "en": "hⱼ is activation j before dropout, treated as fixed when computing the expectation. p is the probability of dropping that activation, so 1−p is its survival probability. mⱼ is a binary mask drawn from a Bernoulli distribution: one means retained and zero means removed. h̃ⱼ is the random training output after survival scaling. E denotes expectation, Var denotes variance, and the vertical bar means conditioning on the original activation. h_eval,ⱼ is the corresponding evaluation output. The subscript j selects one element; ordinary elementwise dropout samples a mask for each element.",
+        "zh": "hⱼ 是 dropout 前的第 j 个激活，在计算期望时将其视为固定值。p 是丢弃该激活的概率，所以 1−p 是存活概率。mⱼ 是来自伯努利分布的二值掩码：一表示保留，零表示删除。h̃ⱼ 是按存活概率缩放后的随机训练输出。E 表示期望，Var 表示方差，竖线表示以原始激活为条件。h_eval,ⱼ 是对应的评估输出。下标 j 选择一个元素；普通逐元素 dropout 会为每个元素采样掩码。"
+      },
+      "calculation": {
+        "en": "Take a fixed activation hⱼ = 4 and dropout probability p = 0.25. With probability 0.75 the output is 4/0.75 = 16/3; otherwise it is zero. Its expectation is 0.75×16/3 = 4. Its second moment is 0.75×(16/3)² = 64/3, so the variance is 64/3 − 4² = 16/3, approximately 5.3333. For a vector [2, 4] and one sampled mask [1, 0], the training output becomes [8/3, 0]. In evaluation it is [2, 4]. One random pass clearly differs from the expected value. Preserving the mean therefore does not remove training noise, nor does it promise that a downstream nonlinear prediction equals the average prediction across all masks.",
+        "zh": "取固定激活 hⱼ = 4，dropout 概率 p = 0.25。输出以 0.75 的概率为 4/0.75 = 16/3，否则为零。其期望为 0.75×16/3 = 4。二阶矩为 0.75×(16/3)² = 64/3，所以方差为 64/3 − 4² = 16/3，约为 5.3333。对于向量 [2, 4] 和一次采样得到的掩码 [1, 0]，训练输出为 [8/3, 0]；评估输出则为 [2, 4]。一次随机前向传播显然不同于期望值。因此，保持均值并不消除训练噪声，也不保证下游非线性预测等于所有掩码下预测的平均值。"
+      },
+      "limits": {
+        "en": "Dropout can hurt when it removes information a small model already struggles to use. Its rate and placement need validation. Evaluation mode does not itself freeze parameters or disable gradients, and disabling gradients does not switch dropout off. Other regularizers, augmentations, and normalization layers have their own behavior and should not be treated as interchangeable.",
+        "zh": "当小模型本来就难以利用信息时，dropout 删除这些信息可能反而有害。其比例和位置需要验证。评估模式本身不会冻结参数，也不会关闭梯度；关闭梯度也不会关闭 dropout。其他正则化方法、增强方式和归一化层各有行为，不能视为可互换的方法。"
+      },
+      "takeaway": {
+        "en": "Regularization is a training choice; evaluation mode and gradient recording are separate execution choices that must match the purpose of each pass.",
+        "zh": "正则化是训练选择；评估模式与梯度记录是独立的执行选择，都必须符合每次前向传播的目的。"
+      },
+      "sources": [
+        "pytorch-dropout",
+        "pytorch-module",
+        "pytorch-autograd-mechanics"
+      ]
+    },
+    {
+      "id": "dl-convolution",
+      "title": {
+        "en": "Convolutions and residual paths: local evidence, preserved routes",
+        "zh": "卷积与残差路径：局部证据与保留的通路"
+      },
+      "story": {
+        "en": "Jun photographs metal samples whose scratches can appear anywhere in the frame. A dense network treats each pixel position separately, so the same scratch shifted sideways looks unnecessarily different. He replaces the first transformation with a small sliding filter that reuses its weights across the surface. The model now has a direct way to detect the same local contrast at different positions. When Jun stacks many such transformations, training becomes harder, even though the model has more capacity. He adds a shortcut around a small group of layers, making the group learn a correction to the incoming features. His diagrams now distinguish two ideas: convolution shares a local detector across space, while a residual path preserves a direct route through a deeper computation.",
+        "zh": "Jun 拍摄金属样本，划痕可能出现在画面的任何位置。全连接网络分别处理各像素位置，因此同一条划痕横向移动后，也会被看作过于不同的输入。他将第一个变换替换为小型滑动滤波器，在整个表面重复使用同一组权重。模型于是能够直接检测不同位置上相同的局部对比。当 Jun 堆叠许多这样的变换时，尽管容量更大，训练却变得更困难。他在一小组层外增加捷径，使这组层学习对输入特征的修正。他的示意图现在区分了两个概念：卷积在空间中共享局部检测器，而残差路径在更深的计算中保留直接通路。"
+      },
+      "concept": {
+        "en": "Convolutional layers combine nearby entries with shared weights, introducing a useful preference for repeated local patterns. The operation commonly called convolution in neural network libraries is cross correlation, without reversing the kernel. Stride, padding, and kernel size determine spatial output dimensions. Residual connections address a different concern: they add an incoming representation to a learned transformation of it. An identity shortcut requires equal shapes; a projection can reconcile different channel counts or spatial sizes. The addition creates another route for information and derivatives, but does not make arbitrary depth effortless to train.",
+        "zh": "卷积层使用共享权重组合邻近元素，引入了偏好重复局部模式的结构。在神经网络库中通常称为卷积的操作，实际上是不翻转卷积核的互相关。步长、填充和卷积核大小决定空间输出尺寸。残差连接处理的是另一个问题：将输入表征加到其学习变换上。恒等捷径要求形状一致；投影可以协调不同的通道数或空间大小。这种相加为信息和导数提供另一条路径，但并不意味着任意深度的网络都会容易训练。"
+      },
+      "application": {
+        "en": "Use local filters when nearby structure and repeated spatial patterns are useful assumptions. Track the spatial size after every change in stride or padding. Before adding a residual branch, confirm that both branches agree in shape and feature alignment. Compare training and validation behavior separately: an optimization improvement from a shortcut does not by itself establish a gain on unseen images.",
+        "zh": "当邻域结构和重复空间模式是有用假设时，使用局部滤波器。每次改变步长或填充后，都要追踪空间尺寸。在加入残差分支之前，确认两条分支的形状和特征位置一致。分别比较训练与验证行为：捷径带来的优化改善，本身并不能证明未见图像上的表现也会提高。"
+      },
+      "practice": {
+        "en": "The original ResNet paper evaluates residual networks for image recognition and also uses their features in object detection experiments. It describes identity shortcuts and projections for mismatched dimensions. PyTorch’s Conv2d reference specifies the cross correlation operation and spatial sizing rules. Together they connect an implemented local operator with a documented architecture that places learned transformations alongside shortcut paths.",
+        "zh": "ResNet 原论文在图像识别中评估残差网络，并在目标检测实验中使用其特征。论文说明了恒等捷径，以及维度不匹配时使用的投影。PyTorch 的 Conv2d 参考文档规定了互相关运算和空间尺寸规则。两者将具体实现的局部算子，与在学习变换旁设置捷径路径的实际网络结构联系起来。"
+      },
+      "formula": "Z[i,j] = b + Σ(u=0…k−1) Σ(v=0…k−1) K[u,v]X[i+u,j+v]\nH_out = floor((H + 2p − k)/s) + 1\ny = x + F(x;θ)",
+      "symbols": {
+        "en": "X is one input image channel, K is a square kernel of width k, b is a scalar bias, and Z is its output. i and j select an output location; u and v index kernel entries. The first equation assumes unit stride and no padding. H is input height, p is padding on each side, s is stride, and H_out is output height with unit dilation; floor rounds downward. In the residual equation, x and y are compatible feature tensors, F is the learned branch, and θ contains its parameters. Σ denotes summation.",
+        "zh": "X 是图像的一个输入通道，K 是边长为 k 的方形卷积核，b 是标量偏置，Z 是输出。i 和 j 选择输出位置，u 和 v 索引卷积核元素。第一个公式假定步长为一且没有填充。H 是输入高度，p 是每侧填充量，s 是步长，H_out 是膨胀率为一时的输出高度；floor 表示向下取整。在残差公式中，x 和 y 是形状兼容的特征张量，F 是学习分支，θ 包含其参数。Σ 表示求和。"
+      },
+      "calculation": {
+        "en": "Let X = [[1, 0, 2], [2, 1, 0], [0, 3, 1]], K = [[1, 0], [0, −1]], and b = 0. With no padding and unit stride, the output height is floor((3−2)/1)+1 = 2, and the width is also 2. The four window calculations are 1−1 = 0, 0−0 = 0, 2−3 = −1, and 1−1 = 0. Thus Z = [[0, 0], [−1, 0]]. Separately, consider a residual input x = [2, −1] and a learned correction F(x;θ) = [0.5, 0.25]. Their sum is [2.5, −0.75]. If this block applies ReLU after the addition, its final output is [2.5, 0]. Distinguishing the sum from the subsequent activation prevents an incorrect shortcut calculation.",
+        "zh": "设 X = [[1, 0, 2], [2, 1, 0], [0, 3, 1]]，K = [[1, 0], [0, −1]]，b = 0。没有填充且步长为一时，输出高度为 floor((3−2)/1)+1 = 2，宽度也为 2。四个窗口的计算依次为 1−1 = 0、0−0 = 0、2−3 = −1，以及 1−1 = 0。因此 Z = [[0, 0], [−1, 0]]。另考虑残差输入 x = [2, −1]，学习得到的修正 F(x;θ) = [0.5, 0.25]。两者之和为 [2.5, −0.75]。如果该残差块在相加后应用 ReLU，最终输出为 [2.5, 0]。区分相加结果与后续激活，能避免错误计算捷径输出。"
+      },
+      "limits": {
+        "en": "Weight sharing does not create complete invariance to translation, rotation, or scale; boundaries and downsampling matter. A shortcut cannot add tensors whose dimensions or semantic alignment disagree. Residual networks still depend on suitable initialization, optimization, data, and capacity. The two dimensional toy filter here illustrates arithmetic, not a complete scratch detector.",
+        "zh": "权重共享不会带来对平移、旋转或尺度的完全不变性；边界和下采样都会产生影响。捷径不能直接相加维度不符或语义位置不一致的张量。残差网络仍依赖合适的初始化、优化、数据和容量。本节二维玩具滤波器只演示算术，并不是完整的划痕检测器。"
+      },
+      "takeaway": {
+        "en": "Convolution shares local evidence across positions; residual connections preserve a route around transformations. Their benefits come from different structural choices.",
+        "zh": "卷积在不同位置共享局部证据；残差连接保留绕过变换的通路。两者的作用来自不同的结构选择。"
+      },
+      "sources": [
+        "pytorch-conv2d",
+        "resnet-original"
+      ]
+    },
+    {
+      "id": "dl-attention",
+      "title": {
+        "en": "Attention: retrieve context with learned comparisons",
+        "zh": "注意力：通过学习到的比较提取上下文"
+      },
+      "story": {
+        "en": "Amara builds a model for short maintenance notes. One note says a pump was replaced after a valve failed; another reverses which component failed. Averaging all word vectors makes the two notes frustratingly similar. She sketches a mechanism that lets each position ask for useful context instead of receiving the same pooled summary. A query compares against keys at other positions, and the resulting weights mix their value vectors. She then notices that the mechanism alone does not explain word order, so she adds positional information to the design. For a version that predicts the next word, she also blocks access to future positions. The model sketch becomes a Transformer only when this contextual mixing is combined with the surrounding feedforward, normalization, and residual components.",
+        "zh": "Amara 为简短的维护记录构建模型。一条记录说阀门故障后更换了泵，另一条则交换了故障部件。将所有词向量取平均，会让两条记录变得过于相似。她设计一种机制，使每个位置主动寻找有用上下文，而不是接收相同的池化摘要。查询向量与其他位置的键向量比较，再按所得权重混合它们的值向量。随后她注意到，这个机制本身并不能表示词序，于是在设计中加入位置信息。对于预测下一个词的版本，她还禁止访问未来位置。只有将这种上下文混合与周围的前馈、归一化和残差组件结合后，这张模型草图才构成 Transformer。"
+      },
+      "concept": {
+        "en": "Attention produces a weighted combination of value vectors using similarities between queries and keys. Scaled dot product attention divides those similarities by the square root of key dimension before normalization. A mask excludes connections that a task must not permit, such as future tokens in autoregressive prediction. Self attention obtains queries, keys, and values from the same sequence; cross attention can obtain them from different sequences. Multiple heads learn different projections. A Transformer additionally organizes attention with feedforward transformations, residual connections, normalization, and a way to represent position.",
+        "zh": "注意力根据查询与键之间的相似度，对值向量进行加权组合。缩放点积注意力在归一化之前，用键维度的平方根除相似度。掩码排除任务不允许的连接，例如自回归预测中的未来词元。自注意力从同一序列获得查询、键和值；交叉注意力可以从不同序列获得它们。多个注意力头学习不同的投影。Transformer 还将注意力与前馈变换、残差连接、归一化，以及位置表示方式组织在一起。"
+      },
+      "application": {
+        "en": "Specify what each query may read before choosing an attention mask. Track query length, key length, and feature dimensions separately, especially in cross attention. Test a tiny case in which a forbidden position contains an extreme value; changing it should not change an output that cannot attend to it. Treat padding and causal restrictions as distinct masking requirements.",
+        "zh": "选择注意力掩码之前，先明确每个查询允许读取哪些位置。分别追踪查询长度、键长度和特征维度，尤其是在交叉注意力中。用一个很小的示例检查掩码：让禁止访问的位置包含极端数值；改变这个数值，不应影响无法关注该位置的输出。将填充限制与因果限制视为不同的掩码要求。"
+      },
+      "practice": {
+        "en": "Vaswani and colleagues introduced the Transformer in Attention Is All You Need and evaluated it on machine translation. The original paper specifies scaled dot product attention, multiple heads, positional encodings, and masked decoder attention. This is a documented sequence modeling use of the mechanism. The maintenance narrative and numerical vectors here explain its operation without reproducing the paper’s experiments or claiming their results.",
+        "zh": "Vaswani 及其同事在《Attention Is All You Need》中提出 Transformer，并在机器翻译上进行评估。原论文说明了缩放点积注意力、多头机制、位置编码和带掩码的解码器注意力。这是该机制在序列建模中的实际研究应用。本节的维护记录情境和数值向量用于解释运算，并未复现论文实验，也不宣称获得了论文结果。"
+      },
+      "formula": "S = QKᵀ/√dₖ + M\nA[i,j] = exp(S[i,j]) / Σ(r=1…nₖ) exp(S[i,r])\nO = AV",
+      "symbols": {
+        "en": "Q contains n_q query rows with dₖ features each. K contains nₖ key rows with the same dₖ features; Kᵀ is its transpose. V contains nₖ value rows with dᵥ features. S is the score matrix and M an additive mask, zero for allowed connections and negative infinity for blocked ones. A contains attention weights, and O contains n_q output rows with dᵥ features. i indexes queries; j and r index keys. exp is the exponential function, Σ sums over keys, and √dₖ is the positive square root. Each query must have an allowed key.",
+        "zh": "Q 包含 n_q 行查询，每行有 dₖ 个特征。K 包含 nₖ 行键，使用相同的 dₖ 个特征；Kᵀ 是其转置。V 包含 nₖ 行值，每行有 dᵥ 个特征。S 是分数矩阵，M 是加性掩码：允许连接的位置为零，禁止连接的位置为负无穷。A 包含注意力权重，O 包含 n_q 行输出，每行有 dᵥ 个特征。i 索引查询；j 和 r 索引键。exp 是指数函数，Σ 沿键求和，√dₖ 是正平方根。每个查询至少必须有一个允许访问的键。"
+      },
+      "calculation": {
+        "en": "Use one query Q = [[√2, 0]], two keys K = [[1, 0], [0, 1]], and values V = [[2, 0], [0, 4]]. The key dimension dₖ is 2. Before masking, scaled scores are [√2/√2, 0/√2] = [1, 0]. Softmax gives [exp(1)/(exp(1)+1), 1/(exp(1)+1)] ≈ [0.731059, 0.268941]. The output is therefore approximately [1.462117, 1.075766], a weighted combination of the two value vectors. If the second key is forbidden, use mask [0, −∞]. Its weight becomes zero and the first weight becomes one, yielding [2, 0]. The mask changes what information is available, not merely how strongly a forbidden position is preferred. These values describe one head before any output projection.",
+        "zh": "使用一个查询 Q = [[√2, 0]]、两个键 K = [[1, 0], [0, 1]]，以及值 V = [[2, 0], [0, 4]]。键维度 dₖ 为 2。加入掩码前，缩放分数为 [√2/√2, 0/√2] = [1, 0]。Softmax 得到 [exp(1)/(exp(1)+1), 1/(exp(1)+1)] ≈ [0.731059, 0.268941]。因此输出约为 [1.462117, 1.075766]，即两个值向量的加权组合。如果禁止访问第二个键，就使用掩码 [0, −∞]。第二个权重变为零，第一个权重变为一，输出为 [2, 0]。掩码改变的是哪些信息可用，而不仅是对禁止位置的偏好强弱。这些数值描述单个注意力头在输出投影之前的结果。"
+      },
+      "limits": {
+        "en": "Dense attention forms a score for every query and key pair, which can be costly for long sequences. Attention weights are not automatically faithful causal explanations. Missing positional information, incorrect masks, or entirely masked rows can invalidate an otherwise plausible computation. The small example omits learned projections and the other components needed for a complete Transformer.",
+        "zh": "稠密注意力为每对查询和键计算分数，长序列下成本可能很高。注意力权重并不自动构成可信的因果解释。缺少位置信息、掩码错误或整行被完全遮蔽，都可能让看似合理的计算失效。这个小示例省略了学习投影及完整 Transformer 所需的其他组件。"
+      },
+      "takeaway": {
+        "en": "Attention chooses how to mix available context; dimensions, positional information, and masks determine what that choice can actually mean.",
+        "zh": "注意力决定如何混合可用上下文；维度、位置信息与掩码，共同决定这种选择究竟具有怎样的含义。"
+      },
+      "sources": [
+        "transformer-original"
+      ]
+    },
+    {
+      "id": "dl-transfer",
+      "title": {
+        "en": "Transfer learning: adapt features without losing the evaluation boundary",
+        "zh": "迁移学习：适应特征，同时守住评估边界"
+      },
+      "story": {
+        "en": "Lina has a modest collection of microscope photographs from several specimen preparation sessions. Training a large image model from random weights quickly memorizes the available pictures. She tries a pretrained encoder and learns only a new classifier on top of its features. The first validation result looks excellent, until she notices that nearly identical photographs of the same specimen appear in both splits. Lina rebuilds the split by specimen and session, then establishes a more modest frozen encoder baseline. She next allows a small portion of the encoder to adapt, using validation results to choose whether the extra flexibility helps. A separate test set remains untouched. Her central decision is no longer simply which weights to unfreeze, but which evidence can fairly justify doing so.",
+        "zh": "Lina 收集了一批数量不多的显微照片，来自多个样本制备批次。大型图像模型从随机权重开始训练时，很快就记住了这些照片。她改用预训练编码器，只在其特征上学习新的分类器。第一次验证结果很好，直到她发现同一样本的近乎相同照片同时出现在两个划分中。Lina 按样本和制备批次重新划分数据，建立了表现更朴实的冻结编码器基线。接着，她允许编码器的一小部分继续适应任务，依据验证结果决定额外灵活性是否有帮助。单独的测试集始终保持未使用状态。她的核心决策不再只是解冻哪些权重，而是什么证据能公平地支持这个决定。"
+      },
+      "concept": {
+        "en": "Transfer learning reuses parameters learned on an earlier task. A frozen encoder provides features while a new prediction head learns the target mapping. Fine tuning updates some or all encoder parameters as well. Success depends on how useful the inherited representation is for the new data and objective. Freezing parameter gradients does not automatically fix mutable layer state, such as batch normalization statistics. Validation guides architecture, hyperparameters, and checkpoint selection; a separate test set estimates performance after those choices are settled. Data grouping must reflect the dependence structure of the intended application.",
+        "zh": "迁移学习复用先前任务中学到的参数。冻结编码器提供特征，新的预测头学习目标映射。微调则还更新部分或全部编码器参数。能否成功取决于继承的表征对新数据和目标有多大帮助。冻结参数梯度并不会自动固定可变的层状态，例如批归一化统计量。验证集用于指导结构、超参数和检查点选择；这些选择确定后，再由独立测试集估计表现。数据分组必须反映预期应用中的依赖结构。"
+      },
+      "application": {
+        "en": "Begin with a frozen feature baseline and preprocessing compatible with the selected pretrained weights. Define train, validation, and test groups before tuning. When unfreezing layers, explicitly include their parameters in the optimizer and decide how normalization statistics should behave. Compare changes on the same validation protocol, record the selected checkpoint, and evaluate the held out test set only after model selection is complete.",
+        "zh": "先建立冻结特征基线，并采用与选定预训练权重兼容的预处理。调参之前确定训练、验证和测试分组。解冻层时，显式将其参数纳入优化器，并决定归一化统计量如何运行。在相同验证流程下比较变化，记录选定检查点，并在模型选择完成后再评估保留测试集。"
+      },
+      "practice": {
+        "en": "PyTorch’s transfer learning tutorial adapts an ImageNet pretrained ResNet for classifying ants and bees. It demonstrates both fine tuning and a fixed feature extractor with a newly trained final layer. Its training function separates training and validation phases and retains the best validation checkpoint. These documented mechanics motivate the workflow here; the microscope story and binary head calculation are original examples.",
+        "zh": "PyTorch 的迁移学习教程将 ImageNet 预训练 ResNet 用于蚂蚁与蜜蜂分类。它同时演示了微调，以及固定特征提取器、仅训练新最后一层的做法。其训练函数区分训练阶段与验证阶段，并保留验证表现最好的检查点。本节流程借鉴这些有文档依据的机制；显微照片故事和二元预测头计算均为原创示例。"
+      },
+      "formula": "z = fθ(x), s = wᵀz + b, p = 1/(1+exp(−s))\nL = −y log(p) − (1−y) log(1−p)\nw_new = w − η(p−y)z\nb_new = b − η(p−y)\nθ_new = θ",
+      "symbols": {
+        "en": "x is an input and fθ is the pretrained encoder with parameters θ. z is its fixed feature column vector. w is the classifier’s weight vector, wᵀ is its transpose, b is its scalar bias, and s is the raw score. p is the sigmoid probability of class one; y is a binary target, either zero or one. L is binary cross entropy, log is the natural logarithm, and exp is the exponential. η is the learning rate. The new subscripts denote simultaneous updates; unchanged θ specifies a frozen encoder for this calculation.",
+        "zh": "x 是输入，fθ 是参数为 θ 的预训练编码器。z 是它输出的固定特征列向量。w 是分类器权重向量，wᵀ 是其转置，b 是标量偏置，s 是原始分数。p 是通过 sigmoid 得到的类别一概率；y 是取零或一的二元目标。L 是二元交叉熵，log 是自然对数，exp 是指数函数。η 是学习率。下标 new 表示同步更新后的数值；θ 保持不变，说明本次计算使用冻结编码器。"
+      },
+      "calculation": {
+        "en": "Suppose the frozen encoder returns z = [2, −1]. Start the head at w = [0.1, 0.2], b = 0, and use target y = 1. The raw score is 0.1×2 + 0.2×(−1) = 0, so p = 0.5 and L ≈ 0.693147. The weight gradient is (0.5−1)[2, −1] = [−1, 0.5], and the bias gradient is −0.5. With η = 0.1, the new weights are [0.2, 0.15] and the new bias is 0.05. The new score is 0.4 − 0.15 + 0.05 = 0.3. Thus p ≈ 0.574443 and L ≈ 0.554355. The encoder did not change. This lower loss on one training example says nothing by itself about whether fine tuning would improve independent validation data.",
+        "zh": "假设冻结编码器返回 z = [2, −1]。预测头初始值为 w = [0.1, 0.2]、b = 0，目标为 y = 1。原始分数为 0.1×2 + 0.2×(−1) = 0，因此 p = 0.5，L ≈ 0.693147。权重梯度为 (0.5−1)[2, −1] = [−1, 0.5]，偏置梯度为 −0.5。取 η = 0.1，新权重为 [0.2, 0.15]，新偏置为 0.05。新的分数为 0.4 − 0.15 + 0.05 = 0.3。因此 p ≈ 0.574443，L ≈ 0.554355。编码器没有改变。一个训练样本的损失下降，本身并不能说明微调是否会改善独立验证数据上的表现。"
+      },
+      "limits": {
+        "en": "Pretraining can transfer irrelevant features or biases, and aggressive fine tuning can erase useful ones. Repeated validation comparisons can overfit the validation set even without direct gradient updates. Small datasets leave substantial uncertainty. A frozen backbone also needs an explicit policy for running statistics and preprocessing; parameter freezing alone is not a complete reproducibility plan.",
+        "zh": "预训练可能迁移无关特征或偏差，而过于激进的微调可能破坏有用特征。即使没有直接进行梯度更新，反复比较验证结果也可能过拟合验证集。小数据集仍带来较大不确定性。冻结主干还需要明确运行统计量与预处理策略；仅冻结参数并不是完整的可复现方案。"
+      },
+      "takeaway": {
+        "en": "Reuse useful representations, change only what evidence supports, and protect the validation and test boundaries that make adaptation claims credible.",
+        "zh": "复用有用表征，只进行证据支持的调整，并保护验证与测试边界，让关于适应新任务的结论值得信任。"
+      },
+      "sources": [
+        "pytorch-transfer",
+        "pytorch-module",
+        "pytorch-batchnorm"
+      ]
+    }
+  ],
+  "references": [
+    {
+      "id": "pytorch-tensors",
+      "title": {
+        "en": "Tensors — Learn the Basics",
+        "zh": "张量——基础入门"
+      },
+      "url": "https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-build-model",
+      "title": {
+        "en": "Build the Neural Network — Learn the Basics",
+        "zh": "构建神经网络——基础入门"
+      },
+      "url": "https://docs.pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-autograd",
+      "title": {
+        "en": "Automatic Differentiation with torch.autograd",
+        "zh": "使用 torch.autograd 自动微分"
+      },
+      "url": "https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-optimization",
+      "title": {
+        "en": "Optimizing Model Parameters — Learn the Basics",
+        "zh": "优化模型参数——基础入门"
+      },
+      "url": "https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-adam",
+      "title": {
+        "en": "Adam — optimizer reference",
+        "zh": "Adam——优化器参考文档"
+      },
+      "url": "https://docs.pytorch.org/docs/main/generated/torch.optim.Adam.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-dropout",
+      "title": {
+        "en": "Dropout — layer reference",
+        "zh": "Dropout——层参考文档"
+      },
+      "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.Dropout.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-module",
+      "title": {
+        "en": "Module — training and evaluation modes",
+        "zh": "Module——训练与评估模式"
+      },
+      "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.Module.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-conv2d",
+      "title": {
+        "en": "Conv2d — convolution reference",
+        "zh": "Conv2d——卷积参考文档"
+      },
+      "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.Conv2d.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "resnet-original",
+      "title": {
+        "en": "Deep Residual Learning for Image Recognition",
+        "zh": "用于图像识别的深度残差学习"
+      },
+      "url": "https://arxiv.org/abs/1512.03385",
+      "publisher": "He et al. / arXiv",
+      "kind": "Research paper"
+    },
+    {
+      "id": "transformer-original",
+      "title": {
+        "en": "Attention Is All You Need",
+        "zh": "注意力机制就是你所需要的"
+      },
+      "url": "https://arxiv.org/abs/1706.03762",
+      "publisher": "Vaswani et al. / arXiv",
+      "kind": "Research paper"
+    },
+    {
+      "id": "pytorch-transfer",
+      "title": {
+        "en": "Transfer Learning for Computer Vision Tutorial",
+        "zh": "计算机视觉迁移学习教程"
+      },
+      "url": "https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-autograd-mechanics",
+      "title": {
+        "en": "Autograd mechanics — gradient and evaluation modes",
+        "zh": "自动微分机制——梯度与评估模式"
+      },
+      "url": "https://docs.pytorch.org/docs/main/notes/autograd.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    },
+    {
+      "id": "pytorch-batchnorm",
+      "title": {
+        "en": "BatchNorm2d — running statistics reference",
+        "zh": "BatchNorm2d——运行统计量参考文档"
+      },
+      "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.BatchNorm2d.html",
+      "publisher": "PyTorch",
+      "kind": "Official tutorial"
+    }
+  ],
+  "review": [
+    {
+      "title": {
+        "en": "Axis meaning comes first",
+        "zh": "维度含义优先"
+      },
+      "body": {
+        "en": "Record batch and feature axes before multiplication or reduction. Equal output sizes can hide entirely different computations.",
+        "zh": "在乘法或归约之前记录批次与特征维度。相同的输出大小可能掩盖完全不同的计算。"
+      }
+    },
+    {
+      "title": {
+        "en": "Nonlinearity creates new representations",
+        "zh": "非线性创造新表征"
+      },
+      "body": {
+        "en": "Hidden features help only when their transformations suit the task. Stacking affine layers without activations still produces one affine map.",
+        "zh": "只有变换适合任务时，隐藏特征才有帮助。没有激活的仿射层堆叠仍然只产生一个仿射映射。"
+      }
+    },
+    {
+      "title": {
+        "en": "Trace the backward path",
+        "zh": "追踪反向路径"
+      },
+      "body": {
+        "en": "A plausible prediction can coexist with a broken gradient route. Check a small chain by hand before blaming the optimizer.",
+        "zh": "合理的预测也可能伴随断裂的梯度路径。在归因于优化器之前，先手工检查一条小型计算链。"
+      }
+    },
+    {
+      "title": {
+        "en": "A learning rate is not a step size",
+        "zh": "学习率不等于实际更新幅度"
+      },
+      "body": {
+        "en": "Averaging versus summing the loss and the optimizer’s state affect the update. Equal learning rates across SGD and Adam need not move weights equally.",
+        "zh": "损失取平均还是求和，以及优化器状态，都会影响更新。SGD 和 Adam 使用相同学习率，权重变化未必相同。"
+      }
+    },
+    {
+      "title": {
+        "en": "Mode and gradients are separate",
+        "zh": "模式与梯度相互独立"
+      },
+      "body": {
+        "en": "Dropout changes behavior between training and evaluation. Evaluation mode does not disable autograd, and disabled autograd does not disable dropout.",
+        "zh": "Dropout 在训练与评估时行为不同。评估模式不会关闭自动微分，关闭自动微分也不会关闭 dropout。"
+      }
+    },
+    {
+      "title": {
+        "en": "Local filters and shortcuts solve different problems",
+        "zh": "局部滤波器与捷径解决不同问题"
+      },
+      "body": {
+        "en": "Convolution shares weights over local regions. A residual connection adds a compatible incoming representation to a learned correction.",
+        "zh": "卷积在局部区域间共享权重。残差连接将形状兼容的输入表征加到学习到的修正上。"
+      }
+    },
+    {
+      "title": {
+        "en": "Masks define available context",
+        "zh": "掩码定义可用上下文"
+      },
+      "body": {
+        "en": "Attention mixes values according to query and key comparisons. Correct positions and masks are part of the model’s information boundary.",
+        "zh": "注意力根据查询与键的比较混合值。正确的位置表示和掩码，是模型信息边界的一部分。"
+      }
+    },
+    {
+      "title": {
+        "en": "Adaptation needs independent evidence",
+        "zh": "适应新任务需要独立证据"
+      },
+      "body": {
+        "en": "A frozen feature baseline makes adaptation measurable. Grouped splits, validation selection, and an untouched test set make the comparison credible.",
+        "zh": "冻结特征基线让任务适应可以衡量。分组划分、验证集选择与未使用的测试集，让比较值得信任。"
+      }
+    }
+  ]
+}
