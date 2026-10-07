@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Build labels and count Unicode units
 public class Main {
 

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Observe a token followed by a line
 import java.util.Scanner;
 

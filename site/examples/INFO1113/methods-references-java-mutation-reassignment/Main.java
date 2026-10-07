@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Compare mutation with reassignment
 import java.util.Arrays;
 

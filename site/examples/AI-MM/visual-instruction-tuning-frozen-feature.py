@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Adjust a connector, keep the feature
 # Python 3.12+ | Run: python visual-instruction-tuning-frozen-feature.py
 fixed_feature = 2.0

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Start here: pass one operation into a loop
 #include <stdio.h>
 #include <stdlib.h>

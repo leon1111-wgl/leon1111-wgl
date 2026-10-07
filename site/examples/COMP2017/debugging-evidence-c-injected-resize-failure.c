@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Inject allocation failure and verify preserved ownership
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

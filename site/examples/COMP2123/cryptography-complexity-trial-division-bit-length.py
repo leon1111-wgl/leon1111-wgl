@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count divisibility tests and input bits
 # Python 3.12+ | Run: python cryptography-complexity-trial-division-bit-length.py
 from math import isqrt

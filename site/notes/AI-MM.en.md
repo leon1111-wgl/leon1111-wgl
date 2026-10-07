@@ -1,10 +1,10 @@
 # Multimodal AI
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-MM.en.md) · [中文](AI-MM.zh.md)
 
-![Guoliang — Learning roadmap](../assets/maps/mm.en.svg)
+![Leon — Learning roadmap](../assets/maps/mm.en.svg)
 
 Sixteen lessons explain how text, images, sound and video become useful evidence together. Begin with token IDs and small number lists, then build toward search, document QA, speech, video timing and evidence-aware generation. Every lesson includes runnable Python and answered teaching questions.
 
@@ -2028,7 +2028,7 @@ Build efficient multimodal search and QA by reusing compatible features, measuri
 
 ## Official tutorials & original research
 
-Original stories, explanations and examples by Guoliang. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
+Original stories, explanations and examples by Leon. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
 
 - [Hugging Face Transformers: CLIP model documentation](https://huggingface.co/docs/transformers/model_doc/clip) — Hugging Face
 

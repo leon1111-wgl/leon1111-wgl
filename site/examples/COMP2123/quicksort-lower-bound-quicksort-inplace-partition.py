@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Partition inside one array
 # Python 3.12+ | Run: python quicksort-lower-bound-quicksort-inplace-partition.py
 values = [4, 1, 3, 2]

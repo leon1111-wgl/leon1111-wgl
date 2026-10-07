@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Handle null rows and checked stores
 public class Main {
 

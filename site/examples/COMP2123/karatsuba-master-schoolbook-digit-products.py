@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # See the four products Karatsuba avoids
 # Python 3.12+ | Run: python karatsuba-master-schoolbook-digit-products.py
 x, y = 23, 47

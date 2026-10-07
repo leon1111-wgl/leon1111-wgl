@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Return success separately from the result
 #include <stdio.h>
 #include <stdlib.h>

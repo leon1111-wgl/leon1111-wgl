@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find distance to the nearest starting point
 # Python 3.12+ | Run: python bfs-distance-multi-source-bfs.py
 from collections import deque

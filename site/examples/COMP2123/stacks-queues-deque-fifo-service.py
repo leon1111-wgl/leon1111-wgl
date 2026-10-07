@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Serve waiting jobs with deque
 # Python 3.12+ | Run: python stacks-queues-deque-fifo-service.py
 from collections import deque

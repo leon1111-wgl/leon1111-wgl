@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Combine only available evidence
 # Python 3.12+ | Run: python early-late-fusion-weighted-fusion.py
 scores = {"image": 0.8, "audio": 0.4}

@@ -20,7 +20,8 @@ def check(condition,message):
 parsers={}
 for f in SITE.rglob('*.html'):
  p=Page();p.feed(f.read_text());parsers[f.resolve()]=p
- check(p.language==('zh-Hans' if f.name.endswith('.zh.html') else 'en'),f'{f.name}: incorrect page language')
+ expected_language='zh-CN' if f.parent.name=='python-zero-to-practice' else ('zh-Hans' if f.name.endswith('.zh.html') else 'en')
+ check(p.language==expected_language,f'{f.name}: incorrect page language')
  check(len(p.ids)==len(set(p.ids)),f'{f.name}: duplicate IDs')
 for f,p in parsers.items():
  for link in p.links:
@@ -50,14 +51,14 @@ for code in CODES:
  check(not re.search(r'BUSS[0-9]{4}',text,re.I),code+' excluded course in JSON')
  pdf=SITE/'downloads'/f'{code}-cheatsheet.pdf';r=PdfReader(pdf)
  check(len(r.pages)==1,code+' PDF not one page')
- check('Guoliang' in r.pages[0].extract_text(),code+' missing watermark')
+ check('Leon' in r.pages[0].extract_text(),code+' missing watermark')
  check(pdf.stat().st_size>10000,code+' empty-looking PDF')
 for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.md']:
  if not f.is_file():continue
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))
   check('TODO' not in s and 'Lorem ipsum' not in s,'Placeholder '+str(f))
 for f in [ROOT/'README.md']+list((ROOT/'notes').glob('*.md')):
@@ -80,6 +81,8 @@ errors.extend(course_errors)
 from validate_projects import validate_projects
 project_errors,project_counts=validate_projects()
 errors.extend(project_errors)
+from validate_python_course import validate_python_course
+errors.extend(validate_python_course())
 for folder in ('courses','ai','projects'):
  for f in (SITE/folder).glob('*.html'):
   page=f.read_text()

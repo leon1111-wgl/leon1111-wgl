@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Calculate dropout outcomes exactly
 # Python 3.12+ | Run: python dl-regularization-dl-dropout-expectation.py
 # Install once with the same Python: python -m pip install numpy

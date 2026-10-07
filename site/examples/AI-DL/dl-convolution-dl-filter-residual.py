@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Slide a filter and add a shortcut
 # Python 3.12+ | Run: python dl-convolution-dl-filter-residual.py
 # Install once with the same Python: python -m pip install numpy

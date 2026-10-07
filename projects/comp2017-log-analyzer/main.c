@@ -1,4 +1,4 @@
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "reader.h"
 #include "record.h"
 #include "stats.h"

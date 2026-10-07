@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Keep unequal colliding keys distinct
 import java.util.*;
 

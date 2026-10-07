@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Validate complete equipment records
 import java.io.BufferedReader;
 import java.io.StringReader;

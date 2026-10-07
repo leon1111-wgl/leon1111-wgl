@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare two possible responses
 # Python 3.12+ | Run: python conditional-generation-response-probability.py
 import math

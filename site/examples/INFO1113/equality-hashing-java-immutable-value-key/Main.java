@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Use immutable seats as value keys
 import java.util.*;
 

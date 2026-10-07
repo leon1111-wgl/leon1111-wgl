@@ -1,6 +1,6 @@
-/* Guoliang | Original teaching project. */
-#ifndef GUOLIANG_PROCESS_H
-#define GUOLIANG_PROCESS_H
+/* Leon | Original teaching project. */
+#ifndef LEON_PROCESS_H
+#define LEON_PROCESS_H
 
 #include <stdbool.h>
 #include <stddef.h>

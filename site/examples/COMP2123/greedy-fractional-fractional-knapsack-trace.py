@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Fill a capacity by density
 # Python 3.12+ | Run: python greedy-fractional-fractional-knapsack-trace.py
 items = [("A", 4, 28), ("B", 5, 25), ("C", 6, 18)]

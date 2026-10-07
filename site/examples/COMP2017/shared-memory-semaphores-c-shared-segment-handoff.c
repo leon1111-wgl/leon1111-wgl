@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Observe explicit shared storage after a child completes
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

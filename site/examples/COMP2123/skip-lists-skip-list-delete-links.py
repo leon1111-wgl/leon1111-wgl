@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Remove a key from every level it occupies
 # Python 3.12+ | Run: python skip-lists-skip-list-delete-links.py
 class Node:

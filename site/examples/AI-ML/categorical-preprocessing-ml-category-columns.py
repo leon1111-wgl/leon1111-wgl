@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Encode known and unseen categories
 # Python 3.12+ | Run: python categorical-preprocessing-ml-category-columns.py
 vocabulary = ['paper', 'wood']

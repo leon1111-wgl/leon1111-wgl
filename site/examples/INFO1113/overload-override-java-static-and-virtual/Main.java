@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Separate class methods from instance methods
 public class Main {
     static class Base {

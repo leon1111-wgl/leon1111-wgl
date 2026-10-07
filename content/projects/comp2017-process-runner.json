@@ -11,8 +11,8 @@
     "zh": "运行一个本地程序，保存有容量上限的标准输出前缀，继续读完其余字节，并准确解释子进程怎样结束。"
   },
   "story": {
-    "en": "Mei checks a sensor report before sharing it with her team. One checker prints a short success message; another prints pages of detail before returning an error. Copying terminal text loses the exit status, and saving every byte wastes memory. She builds a small notebook that keeps the first C bytes, says whether more arrived, and records the child outcome. Her first success is an echo with a space inside one argument. She then faces a full pipe, a missing executable, and a final line without a newline. By the end she can explain every descriptor, every captured byte, and the remaining limits of her tool. This is an original Guoliang learning project, independent of supplied course assignments.",
-    "zh": "小梅在分享团队的传感器报告前，会先运行检查程序。有的检查只输出一句成功提示，有的会打印很多细节后返回错误。复制终端文字容易漏掉退出状态，保存所有字节又浪费内存。她实现一个小记录器，只保留前 C 个字节，说明是否还有更多输出，并记录子进程结果。先从带空格参数的 echo 开始，再解决管道写满、程序不存在、最后一行没有换行的问题。完成后，她能说明每个描述符和保存字节的来历，也能说明工具尚未覆盖的情况。这是国良原创学习项目，与现成课程作业无关。"
+    "en": "Mei checks a sensor report before sharing it with her team. One checker prints a short success message; another prints pages of detail before returning an error. Copying terminal text loses the exit status, and saving every byte wastes memory. She builds a small notebook that keeps the first C bytes, says whether more arrived, and records the child outcome. Her first success is an echo with a space inside one argument. She then faces a full pipe, a missing executable, and a final line without a newline. By the end she can explain every descriptor, every captured byte, and the remaining limits of her tool. This is an original Leon learning project, independent of supplied course assignments.",
+    "zh": "小梅在分享团队的传感器报告前，会先运行检查程序。有的检查只输出一句成功提示，有的会打印很多细节后返回错误。复制终端文字容易漏掉退出状态，保存所有字节又浪费内存。她实现一个小记录器，只保留前 C 个字节，说明是否还有更多输出，并记录子进程结果。先从带空格参数的 echo 开始，再解决管道写满、程序不存在、最后一行没有换行的问题。完成后，她能说明每个描述符和保存字节的来历，也能说明工具尚未覆盖的情况。这是Leon 原创学习项目，与现成课程作业无关。"
   },
   "difficulty": {
     "en": "Intermediate C: one parent, one child, one pipe; complete in five guided milestones.",

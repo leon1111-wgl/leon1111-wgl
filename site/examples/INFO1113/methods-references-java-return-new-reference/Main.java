@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Return a replacement deliberately
 import java.util.Arrays;
 

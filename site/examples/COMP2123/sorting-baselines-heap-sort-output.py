@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Sort by repeatedly removing a heap minimum
 # Python 3.12+ | Run: python sorting-baselines-heap-sort-output.py
 import heapq

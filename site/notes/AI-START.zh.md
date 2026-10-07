@@ -1,10 +1,10 @@
 # 从这里开始：Python 与 AI 基础
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-START.en.md) · [中文](AI-START.zh.md)
 
-![Guoliang — 学习路线图](../assets/maps/start.zh.svg)
+![Leon — 学习路线图](../assets/maps/start.zh.svg)
 
 刚开始学习编程或 AI 数学？先读这八节循序渐进的入门课。听一个故事，跟着数字计算，再运行一个小 Python 程序。
 
@@ -962,7 +962,7 @@ after: w=0.60, loss=5.76
 
 ## 官方教程与原始研究
 
-故事、讲解与计算例子由 Guoliang 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
+故事、讲解与计算例子由 Leon 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
 
 - [Python 入门介绍](https://docs.python.org/3/tutorial/introduction.html) — Python Software Foundation
 

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Inject a recording collaborator
 import java.util.*;
 

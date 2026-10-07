@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Resolve two interface defaults
 public class Main {
     interface Description {

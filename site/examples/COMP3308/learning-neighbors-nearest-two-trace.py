@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find and average two neighbors
 # Python 3.12+ | Run: python learning-neighbors-nearest-two-trace.py
 records = [(0, 2), (4, 10), (7, 16)]

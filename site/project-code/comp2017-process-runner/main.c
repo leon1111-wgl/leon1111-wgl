@@ -1,4 +1,4 @@
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "process.h"
 
 #include <stdio.h>

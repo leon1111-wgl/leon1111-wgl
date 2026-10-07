@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count foreground overlap
 # Python 3.12+ | Run: python segmentation-regions-mask-counts.py
 prediction = [1, 1, 1, 0, 0, 0]

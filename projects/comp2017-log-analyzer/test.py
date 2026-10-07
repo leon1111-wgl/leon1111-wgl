@@ -1,4 +1,4 @@
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Behavior tests: run `make test`; every generated input stays in a temp dir."""
 from pathlib import Path
 import shutil

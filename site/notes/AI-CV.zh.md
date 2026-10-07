@@ -1,10 +1,10 @@
 # 计算机视觉：从像素到感知
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-CV.en.md) · [中文](AI-CV.zh.md)
 
-![Guoliang — 学习路线图](../assets/maps/cv.zh.svg)
+![Leon — 学习路线图](../assets/maps/cv.zh.svg)
 
 十六课从像素与简单 Python 列表出发，逐步进入识别、检测、跟踪、OCR 和可靠图像系统。每课都有故事、逐步计算、可运行代码、已解答问题及两个练习情境。
 
@@ -1973,7 +1973,7 @@ OCR 可用于扫描件搜索、标签识别与文档阅读。应保留原图区�
 
 ## 官方教程与原始研究
 
-故事、讲解与计算例子由 Guoliang 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
+故事、讲解与计算例子由 Leon 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
 
 - [图像基本操作](https://docs.opencv.org/4.x/d3/df2/tutorial_py_basic_ops.html) — OpenCV
 

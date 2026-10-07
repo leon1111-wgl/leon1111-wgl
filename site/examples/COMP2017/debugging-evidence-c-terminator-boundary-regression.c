@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Test the last payload byte and its terminator
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

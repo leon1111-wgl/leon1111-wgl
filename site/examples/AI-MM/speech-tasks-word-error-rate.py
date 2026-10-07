@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count a changed word
 # Python 3.12+ | Run: python speech-tasks-word-error-rate.py
 reference = "bring the new box".split()

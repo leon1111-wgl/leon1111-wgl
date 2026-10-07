@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Build real forward-link towers
 # Python 3.12+ | Run: python skip-lists-skip-list-links-and-insert.py
 class Node:

@@ -1,6 +1,6 @@
 # Project 2: A bounded process notebook
 
-Guoliang | Original teaching project.
+Leon | Original teaching project.
 
 Mei runs a small local check before sharing her team's sensor report. She needs
 three facts: what the check printed, whether she kept all of it, and how it ended.

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Use one lock order for both directions
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

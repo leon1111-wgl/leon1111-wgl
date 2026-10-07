@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Model a lost update without a C data race
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

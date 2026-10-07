@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare the first SGD and Adam steps
 # Python 3.12+ | Run: python dl-optimization-dl-sgd-adam-first-step.py
 # Install once with the same Python: python -m pip install numpy

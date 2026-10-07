@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Check the time before matching
 # Python 3.12+ | Run: python audio-text-alignment-audio-duration.py
 duration = 4

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Give each traversal its own cursor
 import java.util.*;
 

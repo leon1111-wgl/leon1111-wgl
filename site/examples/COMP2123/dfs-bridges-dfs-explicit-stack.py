@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Explore without recursive calls
 # Python 3.12+ | Run: python dfs-bridges-dfs-explicit-stack.py
 graph = {"A": ["B", "C"], "B": ["D"], "C": ["D"], "D": [], "X": []}

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Inspect rounding and total delay
 # Python 3.12+ | Run: python inference-pipelines-pipeline-budget.py
 values = [0.12, 0.26, 0.91]

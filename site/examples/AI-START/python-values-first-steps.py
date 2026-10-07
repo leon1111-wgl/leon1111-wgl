@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Numbers, names and a first program
 # Python 3.12+ | Run: python python-values-first-steps.py
 celsius = 20

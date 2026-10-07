@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Calculate an ideal bound and explicit overhead
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

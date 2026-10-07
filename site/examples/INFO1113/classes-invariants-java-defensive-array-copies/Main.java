@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Protect an internal array
 import java.util.Arrays;
 

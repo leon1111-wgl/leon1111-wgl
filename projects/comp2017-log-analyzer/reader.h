@@ -1,4 +1,4 @@
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef READER_H
 #define READER_H
 

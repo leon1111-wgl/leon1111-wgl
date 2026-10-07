@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Lists, positions and repeated steps
 # Python 3.12+ | Run: python lists-loops-first-steps.py
 values = [18, 21, 24]

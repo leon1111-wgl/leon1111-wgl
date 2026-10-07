@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Slopes, gradients and one learning step
 # Python 3.12+ | Run: python slopes-gradients-first-steps.py
 def loss(weight):

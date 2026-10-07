@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Run a complete toy pre-norm block
 # Python 3.12+ | Run: python dl-transformer-block-dl-tiny-transformer-block.py
 # Install once with the same Python: python -m pip install numpy

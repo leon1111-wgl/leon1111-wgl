@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Measure two proposed boxes
 # Python 3.12+ | Run: python detection-overlap-box-overlap.py
 a = (0, 0, 4, 4)

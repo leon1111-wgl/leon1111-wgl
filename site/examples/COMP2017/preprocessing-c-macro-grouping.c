@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Compare token substitution with a function call
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

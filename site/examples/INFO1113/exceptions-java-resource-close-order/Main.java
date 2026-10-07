@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Observe cleanup during exception propagation
 public class Main {
     static final class Resource implements AutoCloseable {

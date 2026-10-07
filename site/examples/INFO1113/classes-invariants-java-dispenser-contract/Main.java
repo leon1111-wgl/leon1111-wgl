@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Protect a capacity invariant
 public class Main {
     static final class Dispenser {

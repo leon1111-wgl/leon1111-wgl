@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Contrast FIFO and LIFO with a deque
 import java.util.*;
 

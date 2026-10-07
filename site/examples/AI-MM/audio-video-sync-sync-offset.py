@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find a delayed clap
 # Python 3.12+ | Run: python audio-video-sync-sync-offset.py
 visual = [0, 1, 0, 0, 0]

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Check every shuffle path for three cards
 # Python 3.12+ | Run: python random-permutations-fisher-yates-enumerate.py
 from itertools import product

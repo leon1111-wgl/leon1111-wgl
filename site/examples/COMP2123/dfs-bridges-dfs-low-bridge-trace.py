@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find a bridge with discovery and low values
 # Python 3.12+ | Run: python dfs-bridges-dfs-low-bridge-trace.py
 graph = {"A": ["B", "C"], "B": ["A", "C"],

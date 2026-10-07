@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Return an answer with its evidence ID
 # Python 3.12+ | Run: python multimodal-rag-retrieve-cite.py
 query = set("model opening upward".split())

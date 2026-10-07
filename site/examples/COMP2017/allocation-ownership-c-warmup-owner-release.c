@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Start here: one allocation, one owner, one release
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Read bytes until the operation reports the end
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Check one sigmoid update
 # Python 3.12+ | Run: python backpropagation-sigmoid-one-update.py
 import math

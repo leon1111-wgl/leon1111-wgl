@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Keep complete devices together
 # Python 3.12+ | Run: python framing-splits-leakage-ml-group-split.py
 groups = [device for device in range(12) for _ in range(10)]

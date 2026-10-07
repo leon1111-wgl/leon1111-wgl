@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compute a two-word classifier
 # Python 3.12+ | Run: python text-naive-bayes-ml-naive-bayes-counts.py
 # Install once with the same Python: python -m pip install numpy

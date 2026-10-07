@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Run five transparent training steps
 # Python 3.12+ | Run: python dl-training-loop-dl-one-weight-training-loop.py
 # Install once with the same Python: python -m pip install numpy

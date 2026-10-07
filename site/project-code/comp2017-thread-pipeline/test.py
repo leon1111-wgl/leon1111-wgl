@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Build only in a temporary copy; use independent byte oracles and timeouts."""
 import argparse
 import os
@@ -133,7 +133,7 @@ def run_tests(root, flags):
             assert output == reference, (repeat, workers)
     print("PASS 48 repeated schedules: 37 jobs, workers 1/2/4/16, stable output")
 
-    probe = r'''/* Guoliang | Original teaching project. */
+    probe = r'''/* Leon | Original teaching project. */
 #include "queue.h"
 #include <assert.h>
 int main(void) {
@@ -162,7 +162,7 @@ int main(void) {
     print("PASS queue close drains FIFO entries and rejects new work")
 
     for after in (0, 2):
-        shim = r'''/* Guoliang | Original teaching project. */
+        shim = r'''/* Leon | Original teaching project. */
 #include <errno.h>
 #include <pthread.h>
 static unsigned int calls;
@@ -185,7 +185,7 @@ int fixture_create(pthread_t *thread, const pthread_attr_t *attributes,
         body = "errno = EIO; return -1;" if mode == "error" else (
             "static int first = 1; if (first) { first = 0; errno = EINTR; return -1; }"
             " return read(descriptor, buffer, count);")
-        shim = r'''/* Guoliang | Original teaching project. */
+        shim = r'''/* Leon | Original teaching project. */
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>

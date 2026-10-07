@@ -1,6 +1,6 @@
 # 项目 2：有容量上限的进程记录器
 
-Guoliang | Original teaching project. 国良原创教学项目。
+Leon | Original teaching project. Leon 原创教学项目。
 
 小梅在分享团队的传感器报告前，会运行一个本地检查程序。她需要知道三件事：
 程序输出了什么、是否保留了全部输出，以及程序怎样结束。为了理解进程和管道，

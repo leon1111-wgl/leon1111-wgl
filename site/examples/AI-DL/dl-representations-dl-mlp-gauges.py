@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Trace two hidden units
 # Python 3.12+ | Run: python dl-representations-dl-mlp-gauges.py
 # Install once with the same Python: python -m pip install numpy

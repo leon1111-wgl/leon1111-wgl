@@ -1,4 +1,4 @@
-# Guoliang teaching sources
+# Leon teaching sources
 
 The five public course codes are INFO1113, COMP2017, COMP2123, COMP2022 and COMP3308. All explanations, stories and worked problems are original. Do not publish supplied assignments, exams, answers, slides, provider branding or business teaching.
 

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Keep a focused arithmetic regression test
 public class Main {
     static double average(int[] values) {

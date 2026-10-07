@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Build an MST with union-find
 # Python 3.12+ | Run: python minimum-spanning-trees-kruskal-union-find.py
 vertices = ["A", "B", "C", "D"]

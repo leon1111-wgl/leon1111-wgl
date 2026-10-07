@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Inspect a probability bin
 # Python 3.12+ | Run: python calibration-monitoring-ml-calibration-bin.py
 # Install once with the same Python: python -m pip install numpy

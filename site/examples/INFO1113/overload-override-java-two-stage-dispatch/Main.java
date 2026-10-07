@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Trace overload then override
 public class Main {
     static class Printer {

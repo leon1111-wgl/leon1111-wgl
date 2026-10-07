@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Preserve types through a box and a method
 public class Main {
     static final class Box<T> {

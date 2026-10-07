@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Follow one channel
 # Python 3.12+ | Run: python pixels-contracts-pixel-scale.py
 bgr = [255, 0, 0]

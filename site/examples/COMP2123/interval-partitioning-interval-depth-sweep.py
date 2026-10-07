@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Independently certify the room lower bound
 # Python 3.12+ | Run: python interval-partitioning-interval-depth-sweep.py
 sessions = [(1, 4), (2, 5), (4, 6), (5, 7)]

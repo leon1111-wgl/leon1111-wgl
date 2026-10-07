@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Predict and gate one track
 # Python 3.12+ | Run: python tracking-identity-track-gate.py
 previous, current = 2, 5

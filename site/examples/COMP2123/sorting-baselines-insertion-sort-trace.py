@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Watch insertion sort grow a prefix
 # Python 3.12+ | Run: python sorting-baselines-insertion-sort-trace.py
 values = [5, 2, 4, 1]

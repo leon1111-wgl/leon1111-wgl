@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Drain a bounded queue and then shut down
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Traverse with a begin and end pointer
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

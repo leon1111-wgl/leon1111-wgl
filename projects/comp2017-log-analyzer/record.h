@@ -1,4 +1,4 @@
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef RECORD_H
 #define RECORD_H
 

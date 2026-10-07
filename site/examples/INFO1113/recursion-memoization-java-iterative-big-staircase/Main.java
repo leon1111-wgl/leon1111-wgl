@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Replace deep recursion with an iterative exact count
 public class Main {
     static java.math.BigInteger ways(int n) {

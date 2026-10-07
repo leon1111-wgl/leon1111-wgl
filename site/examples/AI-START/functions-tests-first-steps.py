@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Functions, choices and small checks
 # Python 3.12+ | Run: python functions-tests-first-steps.py
 def label_temperature(value):

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare allowed and masked context
 # Python 3.12+ | Run: python dl-attention-dl-attention-mask.py
 # Install once with the same Python: python -m pip install numpy

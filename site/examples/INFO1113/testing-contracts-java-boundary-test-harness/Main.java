@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Run boundary tests without a test dependency
 public class Main {
     static final class Seats {

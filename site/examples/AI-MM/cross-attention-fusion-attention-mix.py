@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Let a query mix two values
 # Python 3.12+ | Run: python cross-attention-fusion-attention-mix.py
 import math

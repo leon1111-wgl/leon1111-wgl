@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count the cost of growing storage
 # Python 3.12+ | Run: python analysis-correctness-doubling-array-cost.py
 capacity = 1

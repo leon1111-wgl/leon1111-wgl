@@ -1,10 +1,10 @@
 # 多模态人工智能
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-MM.en.md) · [中文](AI-MM.zh.md)
 
-![Guoliang — 学习路线图](../assets/maps/mm.zh.svg)
+![Leon — 学习路线图](../assets/maps/mm.zh.svg)
 
 十六课解释文字、图像、声音与视频如何共同提供有用证据。从词元编号和小型数值列表出发，逐步进入搜索、文档问答、语音、视频时序及依据证据生成。每课都有可运行 Python 与已解答教学问题。
 
@@ -2026,7 +2026,7 @@ ASR 可用于字幕与录音搜索，再按任务评估文字与时间戳。翻�
 
 ## 官方教程与原始研究
 
-故事、讲解与计算例子由 Guoliang 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
+故事、讲解与计算例子由 Leon 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
 
 - [Hugging Face Transformers：CLIP 模型文档](https://huggingface.co/docs/transformers/model_doc/clip) — Hugging Face
 

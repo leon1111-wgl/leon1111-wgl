@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Remove an isolated speck
 # Python 3.12+ | Run: python edges-morphology-binary-opening.py
 mask = [0, 1, 0, 0, 1, 1, 1, 0]

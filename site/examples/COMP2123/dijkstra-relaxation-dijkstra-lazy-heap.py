@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Trace shorter routes with a lazy heap
 # Python 3.12+ | Run: python dijkstra-relaxation-dijkstra-lazy-heap.py
 import heapq

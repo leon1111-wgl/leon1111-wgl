@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Guard null and stop at the first match
 public class Main {
 

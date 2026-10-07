@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Repair an inner-heavy branch
 # Python 3.12+ | Run: python avl-balance-avl-double-rotation.py
 class Node:

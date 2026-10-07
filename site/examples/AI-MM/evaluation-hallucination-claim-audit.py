@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count unsupported mentions and coverage
 # Python 3.12+ | Run: python evaluation-hallucination-claim-audit.py
 mentions, unsupported = 40, 6

@@ -1,6 +1,6 @@
 # Project 3 · A bounded file-statistics pipeline
 
-Guoliang | Original teaching project. [中文说明](README.zh.md)
+Leon | Original teaching project. [中文说明](README.zh.md)
 
 Mina helps a school robotics club archive its daily notes. She receives a list of small text files and wants a count of their bytes, lines, and words. Some notes are empty. One ends without a newline. A missing file must remain visible in the report while the other notes are still counted. She wants to try several workers, but the report must always follow her original file list.
 

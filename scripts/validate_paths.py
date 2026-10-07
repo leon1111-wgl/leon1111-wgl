@@ -67,7 +67,7 @@ def validate_paths(require_all=True):
     for id in ids:check(f'id="{id}"' in text,name+' missing '+lang+' anchor '+id)
     check(f'data-language="{lang}" aria-current="page"' in text,name+' active language indicator')
     check(text.count('class="topic guide-topic"')==size,name+' topic rendering')
-    check('Guoliang' in text,name+' branding absent')
+    check('Leon' in text,name+' branding absent')
     check('data-reading-size="large"' in text,name+' reading size control absent')
  profile=json.loads((ROOT/'content'/'profile.json').read_text())
  check(profile['github']=='https://github.com/leon1111-wgl','Incorrect GitHub destination')

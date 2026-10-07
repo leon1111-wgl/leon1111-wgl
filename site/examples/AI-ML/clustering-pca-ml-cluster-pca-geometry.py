@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Measure groups and PCA variance
 # Python 3.12+ | Run: python clustering-pca-ml-cluster-pca-geometry.py
 # Install once with the same Python: python -m pip install numpy

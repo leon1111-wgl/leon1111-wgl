@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Represent events, uniqueness, and counts
 import java.util.*;
 

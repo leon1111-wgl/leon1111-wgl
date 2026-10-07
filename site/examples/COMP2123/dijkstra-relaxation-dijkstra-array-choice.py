@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Choose a minimum without a heap
 # Python 3.12+ | Run: python dijkstra-relaxation-dijkstra-array-choice.py
 graph = {"S": [("A", 0), ("B", 5)], "A": [("B", 2)], "B": [], "X": []}

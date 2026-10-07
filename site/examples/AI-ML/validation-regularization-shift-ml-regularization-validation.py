@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Separate fitting objective and validation
 # Python 3.12+ | Run: python validation-regularization-shift-ml-regularization-validation.py
 candidates = {'A': (1.0, 9), 'B': (1.4, 1)}

@@ -10,11 +10,11 @@ def selected():
   if not p.is_file() or any(x in EXCLUDED for x in p.relative_to(ROOT).parts) or 'output/previews/' in p.relative_to(ROOT).as_posix() or p.suffix=='.pyc' or (p.suffix=='.log' and not ('comp2017-log-analyzer' in p.parts and p.parent.name=='fixtures')):continue
   yield p
 if __name__=='__main__':
- archive=ROOT.parent/'Guoliang-GitHub-Learning-Kit.zip'
+ archive=ROOT.parent/'Leon-GitHub-Learning-Kit.zip'
  files=list(selected())
  for p in files:
   relative=p.relative_to(ROOT)
-  if re.search(r'BUSS|(?<![a-z])assignments?(?![a-z])|exam.?solution|source-review|Guoliang_Wang_CV',str(relative),re.I):raise SystemExit('Unexpected file: '+str(relative))
+  if re.search(r'BUSS|(?<![a-z])assignments?(?![a-z])|exam.?solution|source-review|(?:[A-Za-z]+_)?Wang_CV',str(relative),re.I):raise SystemExit('Unexpected file: '+str(relative))
   if p.suffix=='.pdf' and not (p.name.endswith('-cheatsheet.pdf') or p.name=='guoliang-cheatsheet-collection.pdf'):raise SystemExit('Unexpected PDF: '+str(relative))
  with ZipFile(archive,'w',ZIP_DEFLATED,compresslevel=9) as z:
   for p in files:z.write(p,Path(ROOT.name)/p.relative_to(ROOT))

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Reject before mutating state
 public class Main {
     static final class Store {

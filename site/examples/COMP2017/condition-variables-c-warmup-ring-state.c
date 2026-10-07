@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Before threads: understand the queue state
 #include <stdio.h>
 #include <stdlib.h>

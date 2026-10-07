@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Replace a child with a fresh copy of this program
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # See an array insertion shift values
 # Python 3.12+ | Run: python lists-representations-array-insert-shifts.py
 items = ["L", "M", "N", "P"]

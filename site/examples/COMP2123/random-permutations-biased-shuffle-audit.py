@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Expose a nearly plausible biased shuffle
 # Python 3.12+ | Run: python random-permutations-biased-shuffle-audit.py
 from itertools import product

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Insert keys and record the search route
 # Python 3.12+ | Run: python bst-range-queries-bst-build-search.py
 class Node:

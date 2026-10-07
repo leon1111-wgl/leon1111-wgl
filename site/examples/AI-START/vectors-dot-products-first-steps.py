@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Vectors and the dot product
 # Python 3.12+ | Run: python vectors-dot-products-first-steps.py
 features = [3, 4]

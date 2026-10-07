@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Average a small patch
 # Python 3.12+ | Run: python filters-neighborhoods-local-filter.py
 patch = [10, 10, 10, 10, 19, 10, 10, 10, 10]

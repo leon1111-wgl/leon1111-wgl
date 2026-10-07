@@ -17,16 +17,24 @@ def artwork(root, courses, guides):
     hero = '''<ellipse cx="705" cy="150" rx="230" ry="200" fill="url(#glow)"/>
 <path d="M36 37H804" stroke="#2a3b4b"/>
 <g fill="#b8ee91"><circle cx="42" cy="36" r="5"/><circle cx="62" cy="36" r="5" opacity=".6"/><circle cx="82" cy="36" r="5" opacity=".3"/></g>
-<text x="32" y="123" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="64" font-weight="700" letter-spacing="-2">Guoliang Wang</text>
+<text x="32" y="123" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="64" font-weight="700" letter-spacing="-2">Leon Wang</text>
 <text x="36" y="179" fill="#b8ee91" font-family="Arial,sans-serif" font-size="34">MSc @ HKU · AI</text>
 <g fill="none" stroke="#527e86"><circle cx="665" cy="159" r="86"/><circle cx="665" cy="159" r="61" stroke-dasharray="3 9"/><ellipse cx="665" cy="159" rx="122" ry="45" transform="rotate(-35 665 159)"/><path d="M611 89L751 181L606 219L611 89M751 181L665 159L611 89"/></g>
 <g fill="#b8ee91"><circle cx="611" cy="89" r="5"/><circle cx="751" cy="181" r="5"/><circle cx="606" cy="219" r="5"/></g>
 <circle cx="665" cy="159" r="35" fill="#101d29" stroke="#b8ee91"/>
-<text x="665" y="170" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="31">GW</text>
+<text x="665" y="170" text-anchor="middle" fill="#f2f6fb" font-family="monospace" font-size="31">LW</text>
 <rect x="36" y="222" width="365" height="62" rx="9" fill="#b8ee91"/>
 <text x="58" y="263" fill="#152214" font-family="Arial,sans-serif" font-size="32" font-weight="700">Explore my site</text>
 <path d="M346 263l19-19m-19 0h19v19" fill="none" stroke="#152214" stroke-width="3"/>'''
-    (assets / 'profile-banner.svg').write_text(svg(hero,840,320,'Guoliang Wang — MSc student at HKU, working on AI. Enter my website.'))
+    (assets / 'profile-banner.svg').write_text(svg(hero,840,320,'Leon Wang — MSc student at HKU, working on AI. Enter my website.'))
+    python_card='''<path d="M32 30H112" stroke="#b8ee91" stroke-width="4"/>
+<text x="32" y="92" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="52" font-weight="700">Python</text>
+<text x="32" y="152" fill="#b8ee91" font-family="Arial,sans-serif" font-size="38">Zero to Practice</text>
+<text x="555" y="93" fill="#8cdde9" font-family="monospace" font-size="25">READ · RUN</text>
+<text x="555" y="137" fill="#8cdde9" font-family="monospace" font-size="25">BUILD · CHECK</text>
+<circle cx="771" cy="155" r="25" fill="none" stroke="#b8ee91"/>
+<path d="M761 165l20-20m-20 0h20v20" fill="none" stroke="#b8ee91" stroke-width="3"/>'''
+    (assets / 'profile-python.svg').write_text(svg(python_card,840,210,'Python — Zero to Practice. Open the Chinese self-study handbook.'))
     for filename,title,code,color in [('profile-foundations.svg','Foundations','CS','#b8ee91'),('profile-ai.svg','AI guides','AI','#8cdde9')]:
         body=f'''<path d="M30 30H110" stroke="{color}" stroke-width="4"/>
 <text x="30" y="95" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="50" font-weight="700">{title}</text>
@@ -42,7 +50,7 @@ def build_profile(root, profile, courses, guides):
     site = f'https://{username}.github.io/{username}/'
     r = profile['research']
     # External page URLs make the same profile links work on GitHub and in previews.
-    text = f'''<a href="{site}"><img src="site/assets/profile-banner.svg" width="100%" alt="Guoliang Wang — MSc student at HKU, working on AI. Click to enter my website." /></a>
+    text = f'''<a href="{site}"><img src="site/assets/profile-banner.svg" width="100%" alt="Leon Wang — MSc student at HKU, working on AI. Click to enter my website." /></a>
 
 <p align="center">
   <a href="{site}"><strong>ENTER MY WEBSITE ↗</strong></a> &nbsp; / &nbsp;
@@ -91,6 +99,12 @@ def build_profile(root, profile, courses, guides):
 
 Choose a card to enter the teaching website. Follow **story → concept → formula → worked example**. All five courses have English and Chinese editions. Follow algorithms in Python, objects in Java and systems in C. Trace the output, work through the mathematics and compare alternatives.
 
+<a href="{site}python-zero-to-practice/index.html"><img src="site/assets/profile-python.svg" width="100%" alt="Python — Zero to Practice. Open the Chinese self-study handbook." /></a>
+
+**Python — Zero to Practice** · Chinese handbook · 19 learning units · 91 runnable examples · 100 self-study exercises · 4 complete projects.
+
+[Read online ↗]({site}python-zero-to-practice/index.html) · [Download the complete learning kit ↓]({site}downloads/Python-Zero-to-Practice.zip) · [Browse the source](site/python-zero-to-practice/)
+
 **New to Python or AI?** [Start here in English]({site}ai/start.en.html) · [Start here in Chinese]({site}ai/start.zh.html) · [Python examples]({site}downloads/guoliang-python-examples.zip) · [All Python, Java and C examples]({site}downloads/guoliang-code-examples.zip)
 
 **Build with C:** [COMP2017 guided path]({site}courses/comp2017.html#study-plan) · [Three complete engineering projects]({site}courses/comp2017.html#projects) · [Download project source]({site}downloads/COMP2017-projects.zip)
@@ -103,7 +117,7 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 </table>
 
 <details>
-<summary><strong>Go straight to a course — all nine learning paths</strong></summary>
+<summary><strong>Go straight to a course</strong></summary>
 
 ### Computer science foundations
 
@@ -120,7 +134,7 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 </details>
 
-<p align="center"><sub>Guoliang · Research, ideas & learning in public.</sub><br /><a href="{site}"><strong>Explore my personal website ↗</strong></a></p>
+<p align="center"><sub>Leon · Research, ideas & learning in public.</sub><br /><a href="{site}"><strong>Explore my personal website ↗</strong></a></p>
 '''
     (root / 'README.md').write_text(text)
     (root / 'profile' / 'bio.txt').write_text('MSc student @ HKU | Multimodal AI, LLM agents & long-video understanding | AAAI 2026 co-first author\n')

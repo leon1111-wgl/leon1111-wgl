@@ -1,10 +1,10 @@
 # 机器学习
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-ML.en.md) · [中文](AI-ML.zh.md)
 
-![Guoliang — 学习路线图](../assets/maps/ml.zh.svg)
+![Leon — 学习路线图](../assets/maps/ml.zh.svg)
 
 通过十六个循序渐进的章节学习机器学习。从行与标签开始，构建小模型、检查误差，再走向文本过滤、推荐与可靠性检查。每章都有原创故事、带答案的引导问题、两个练习案例与可运行 Python。
 
@@ -1964,7 +1964,7 @@ Brier score: 0.34
 
 ## 官方教程与原始研究
 
-故事、讲解与计算例子由 Guoliang 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
+故事、讲解与计算例子由 Leon 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
 
 - [数据集：划分原始数据集](https://developers.google.com/machine-learning/crash-course/overfitting/dividing-datasets) — Google
 

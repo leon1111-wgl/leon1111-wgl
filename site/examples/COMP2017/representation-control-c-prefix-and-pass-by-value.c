@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Trace a prefix sum and a copied parameter
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

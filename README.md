@@ -1,4 +1,4 @@
-<a href="https://leon1111-wgl.github.io/leon1111-wgl/"><img src="site/assets/profile-banner.svg" width="100%" alt="Guoliang Wang — MSc student at HKU, working on AI. Click to enter my website." /></a>
+<a href="https://leon1111-wgl.github.io/leon1111-wgl/"><img src="site/assets/profile-banner.svg" width="100%" alt="Leon Wang — MSc student at HKU, working on AI. Click to enter my website." /></a>
 
 <p align="center">
   <a href="https://leon1111-wgl.github.io/leon1111-wgl/"><strong>ENTER MY WEBSITE ↗</strong></a> &nbsp; / &nbsp;
@@ -47,6 +47,12 @@ My contributions included benchmark construction, temporal and visual evidence a
 
 Choose a card to enter the teaching website. Follow **story → concept → formula → worked example**. All five courses have English and Chinese editions. Follow algorithms in Python, objects in Java and systems in C. Trace the output, work through the mathematics and compare alternatives.
 
+<a href="https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html"><img src="site/assets/profile-python.svg" width="100%" alt="Python — Zero to Practice. Open the Chinese self-study handbook." /></a>
+
+**Python — Zero to Practice** · Chinese handbook · 19 learning units · 91 runnable examples · 100 self-study exercises · 4 complete projects.
+
+[Read online ↗](https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html) · [Download the complete learning kit ↓](https://leon1111-wgl.github.io/leon1111-wgl/downloads/Python-Zero-to-Practice.zip) · [Browse the source](site/python-zero-to-practice/)
+
 **New to Python or AI?** [Start here in English](https://leon1111-wgl.github.io/leon1111-wgl/ai/start.en.html) · [Start here in Chinese](https://leon1111-wgl.github.io/leon1111-wgl/ai/start.zh.html) · [Python examples](https://leon1111-wgl.github.io/leon1111-wgl/downloads/guoliang-python-examples.zip) · [All Python, Java and C examples](https://leon1111-wgl.github.io/leon1111-wgl/downloads/guoliang-code-examples.zip)
 
 **Build with C:** [COMP2017 guided path](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.html#study-plan) · [Three complete engineering projects](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.html#projects) · [Download project source](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2017-projects.zip)
@@ -59,7 +65,7 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 </table>
 
 <details>
-<summary><strong>Go straight to a course — all nine learning paths</strong></summary>
+<summary><strong>Go straight to a course</strong></summary>
 
 ### Computer science foundations
 
@@ -84,4 +90,4 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 </details>
 
-<p align="center"><sub>Guoliang · Research, ideas & learning in public.</sub><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/"><strong>Explore my personal website ↗</strong></a></p>
+<p align="center"><sub>Leon · Research, ideas & learning in public.</sub><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/"><strong>Explore my personal website ↗</strong></a></p>

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Build a majority-label baseline
 # Python 3.12+ | Run: python features-labels-baselines-ml-majority-baseline.py
 from collections import Counter

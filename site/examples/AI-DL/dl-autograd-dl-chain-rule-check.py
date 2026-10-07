@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Check a gradient and update the network
 # Python 3.12+ | Run: python dl-autograd-dl-chain-rule-check.py
 x, target = 2., 1.

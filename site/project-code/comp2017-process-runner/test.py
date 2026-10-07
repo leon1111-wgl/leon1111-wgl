@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Build a temporary copy and exercise only bounded, local fixture programs."""
 import os
 from pathlib import Path

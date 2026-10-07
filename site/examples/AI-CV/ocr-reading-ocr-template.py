@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count symbol mismatches
 # Python 3.12+ | Run: python ocr-reading-ocr-template.py
 templates = {"H": [1, 0, 1, 1, 1, 0, 1], "I": [0, 1, 0, 1, 0, 1, 0]}

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Trace two Lloyd steps
 # Python 3.12+ | Run: python kmeans-lloyd-two-clusters.py
 points = [1, 3, 9, 11]

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # A running total and its invariant
 # Python 3.12+ | Run: python analysis-correctness-prefix-total-trace.py
 values = [4, -1, 6, 2]

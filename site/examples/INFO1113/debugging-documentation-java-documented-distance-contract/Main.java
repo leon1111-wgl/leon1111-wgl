@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Turn documentation into executable checks
 public class Main {
     /**

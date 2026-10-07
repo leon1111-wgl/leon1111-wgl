@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Start here: a string needs an ending byte
 #include <stdio.h>
 #include <stdlib.h>

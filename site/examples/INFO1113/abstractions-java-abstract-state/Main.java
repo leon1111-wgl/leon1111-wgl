@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Share construction while requiring behavior
 public class Main {
     static abstract class Shape {

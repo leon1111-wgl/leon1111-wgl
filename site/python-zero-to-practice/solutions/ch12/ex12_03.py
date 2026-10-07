@@ -1,0 +1,13 @@
+# 第 12_03 题 CSV 字符串求和
+# 实现 csv_total(text)，CSV 含 amount 列，内容为整数字符串；返回合计。打印对 "amount\n10\n20\n" 的结果 30。
+# 预期程序输出：
+# 30
+
+import csv
+import io
+
+def csv_total(text):
+    reader = csv.DictReader(io.StringIO(text))
+    return sum(int(row["amount"]) for row in reader)
+
+print(csv_total("amount\n10\n20\n"))

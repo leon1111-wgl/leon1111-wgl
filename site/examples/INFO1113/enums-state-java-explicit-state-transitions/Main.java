@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Accept and reject workflow events
 public class Main {
     enum State { QUEUED, RUNNING, DONE }

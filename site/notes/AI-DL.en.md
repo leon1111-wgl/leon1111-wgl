@@ -1,10 +1,10 @@
 # Deep Learning
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-DL.en.md) · [中文](AI-DL.zh.md)
 
-![Guoliang — Learning roadmap](../assets/maps/dl.en.svg)
+![Leon — Learning roadmap](../assets/maps/dl.en.svg)
 
 Build deep-learning understanding in sixteen patient chapters. Begin with arrays and functions. Trace shapes, losses, gradients, and a complete small training loop. Then assemble convolution, embeddings, attention, a toy Transformer block, and adaptation. Every chapter includes explained Python, answered questions, and two practice cases.
 
@@ -1998,7 +1998,7 @@ Separate trainable-parameter savings, numerical equivalence, task quality, and m
 
 ## Official tutorials & original research
 
-Original stories, explanations and examples by Guoliang. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
+Original stories, explanations and examples by Leon. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
 
 - [Tensors — Learn the Basics](https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html) — PyTorch
 

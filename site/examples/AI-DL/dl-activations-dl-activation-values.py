@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Print values and slopes
 # Python 3.12+ | Run: python dl-activations-dl-activation-values.py
 from math import exp

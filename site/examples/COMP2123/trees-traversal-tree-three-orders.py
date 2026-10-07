@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare three traversal orders
 # Python 3.12+ | Run: python trees-traversal-tree-three-orders.py
 tree = ("R", ("A", ("C", None, None), None), ("B", None, None))

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Preserve a superclass contract
 public class Main {
     static class Counter {

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Partition and recursively sort both sides
 # Python 3.12+ | Run: python quicksort-lower-bound-quicksort-three-way.py
 def quicksort(values):

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Turn features into three scores
 # Python 3.12+ | Run: python recognition-transfer-classification-head.py
 import math

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Report a range without visiting every branch
 # Python 3.12+ | Run: python bst-range-queries-bst-pruned-range.py
 tree = (18, (9, (4, None, None), (13, None, None)),

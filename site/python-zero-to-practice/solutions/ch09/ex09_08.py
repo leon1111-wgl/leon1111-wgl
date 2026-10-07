@@ -1,0 +1,12 @@
+# 第 09_08 题 优惠后的新列表
+# 实现 discounted(prices, rate=0.9)，返回每个价格乘 rate 的新列表，不改输入。打印 [100,200] 的默认结果。
+# 预期程序输出：
+# [90.0, 180.0]
+
+def discounted(prices, rate=0.9):
+    result = []
+    for price in prices:
+        result.append(price * rate)
+    return result
+
+print(discounted([100, 200]))

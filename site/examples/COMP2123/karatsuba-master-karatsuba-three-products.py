@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Multiply using three recursive products
 # Python 3.12+ | Run: python karatsuba-master-karatsuba-three-products.py
 def karatsuba(x, y):

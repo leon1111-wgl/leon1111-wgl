@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Store colliding keys in one bucket
 # Python 3.12+ | Run: python hashing-collisions-hash-chaining-buckets.py
 buckets = [[] for _ in range(7)]

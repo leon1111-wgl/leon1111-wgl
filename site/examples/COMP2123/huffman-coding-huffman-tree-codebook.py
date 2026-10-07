@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Build the tree and read its codewords
 # Python 3.12+ | Run: python huffman-coding-huffman-tree-codebook.py
 import heapq

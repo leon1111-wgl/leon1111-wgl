@@ -1,8 +1,8 @@
 # COMP2017 — 有容量上限的进程记录器
 
-> Guoliang | Original engineering workshop
+> Leon | Original engineering workshop
 
-![Guoliang learning route](../assets/maps/comp2017-process-runner.zh.svg)
+![Leon learning route](../assets/maps/comp2017-process-runner.zh.svg)
 
 [English](comp2017-process-runner.en.md) · [中文](comp2017-process-runner.zh.md)
 
@@ -12,7 +12,7 @@
 
 ## 故事
 
-小梅在分享团队的传感器报告前，会先运行检查程序。有的检查只输出一句成功提示，有的会打印很多细节后返回错误。复制终端文字容易漏掉退出状态，保存所有字节又浪费内存。她实现一个小记录器，只保留前 C 个字节，说明是否还有更多输出，并记录子进程结果。先从带空格参数的 echo 开始，再解决管道写满、程序不存在、最后一行没有换行的问题。完成后，她能说明每个描述符和保存字节的来历，也能说明工具尚未覆盖的情况。这是国良原创学习项目，与现成课程作业无关。
+小梅在分享团队的传感器报告前，会先运行检查程序。有的检查只输出一句成功提示，有的会打印很多细节后返回错误。复制终端文字容易漏掉退出状态，保存所有字节又浪费内存。她实现一个小记录器，只保留前 C 个字节，说明是否还有更多输出，并记录子进程结果。先从带空格参数的 echo 开始，再解决管道写满、程序不存在、最后一行没有换行的问题。完成后，她能说明每个描述符和保存字节的来历，也能说明工具尚未覆盖的情况。这是Leon 原创学习项目，与现成课程作业无关。
 
 ### 开始前先读
 
@@ -644,9 +644,9 @@ argv 参数边界保持不变。无路径程序名使用继承的 PATH；明确�
 [下载文件](../project-code/comp2017-process-runner/process.h)
 
 ```c
-/* Guoliang | Original teaching project. */
-#ifndef GUOLIANG_PROCESS_H
-#define GUOLIANG_PROCESS_H
+/* Leon | Original teaching project. */
+#ifndef LEON_PROCESS_H
+#define LEON_PROCESS_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -683,7 +683,7 @@ int process_run(char *const argv[], unsigned char *buffer, size_t capacity,
 [下载文件](../project-code/comp2017-process-runner/main.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "process.h"
 
 #include <stdio.h>
@@ -796,7 +796,7 @@ int main(int argc, char **argv)
 [下载文件](../project-code/comp2017-process-runner/process.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "process.h"
 
 #include <errno.h>
@@ -940,7 +940,7 @@ int process_run(char *const argv[], unsigned char *buffer, size_t capacity,
 [下载文件](../project-code/comp2017-process-runner/fixtures/child.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -1000,7 +1000,7 @@ int main(int argc, char **argv)
 
 ```python
 #!/usr/bin/env python3
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Build a temporary copy and exercise only bounded, local fixture programs."""
 import os
 from pathlib import Path
@@ -1147,7 +1147,7 @@ if __name__ == "__main__":
 [下载文件](../project-code/comp2017-process-runner/Makefile)
 
 ```make
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -pthread
 CPPFLAGS = -D_POSIX_C_SOURCE=200809L
@@ -1205,4 +1205,4 @@ clean:
 - [The Open Group: POSIX _Exit and _exit](https://pubs.opengroup.org/onlinepubs/9799919799/functions/_exit.html)
 
 ---
-Guoliang
+Leon

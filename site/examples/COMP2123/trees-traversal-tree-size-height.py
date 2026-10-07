@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Calculate size and height together
 # Python 3.12+ | Run: python trees-traversal-tree-size-height.py
 tree = ("R", ("A", ("C", None, None), None), ("B", None, None))

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Choose a pivot from small-group medians
 # Python 3.12+ | Run: python selection-pivots-median-of-medians-select.py
 def select(values, rank):

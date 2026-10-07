@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Transfer a heap result through join
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

@@ -1,0 +1,9 @@
+{"id":"a","text":"  Hello   Python "}
+{"id":"b","text":"Learn Python"}
+{"id":"c","text":"hello python"}
+{"id":"d","text":"  "}
+{"id":"e","text":42}
+not valid json
+{"id":"f"}
+{"id":"g","text":"Hello world"}
+{"id":"a","text":"different text"}

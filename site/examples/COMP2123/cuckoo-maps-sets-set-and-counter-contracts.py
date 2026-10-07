@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Separate membership from multiplicity
 # Python 3.12+ | Run: python cuckoo-maps-sets-set-and-counter-contracts.py
 from collections import Counter

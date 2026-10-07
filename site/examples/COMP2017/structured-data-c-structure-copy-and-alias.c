@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Copy embedded data and share pointed-to data
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

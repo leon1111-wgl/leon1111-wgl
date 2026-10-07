@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare two patch descriptions
 # Python 3.12+ | Run: python classical-features-descriptor-distance.py
 import math

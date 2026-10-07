@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Match brackets with a stack
 # Python 3.12+ | Run: python stacks-queues-stack-bracket-check.py
 def balanced(text):

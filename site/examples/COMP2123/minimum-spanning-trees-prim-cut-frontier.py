@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Grow a minimum spanning tree across a cut
 # Python 3.12+ | Run: python minimum-spanning-trees-prim-cut-frontier.py
 import heapq

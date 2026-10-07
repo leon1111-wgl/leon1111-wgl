@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find and check the top two
 # Python 3.12+ | Run: python image-text-search-search-ranking.py
 query = [1.0, 0.0]

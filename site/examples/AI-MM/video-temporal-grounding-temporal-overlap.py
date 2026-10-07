@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Sample a video and compare intervals
 # Python 3.12+ | Run: python video-temporal-grounding-temporal-overlap.py
 timestamps = list(range(0, 12, 2))

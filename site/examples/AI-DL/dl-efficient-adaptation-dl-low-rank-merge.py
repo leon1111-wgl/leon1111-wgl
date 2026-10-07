@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare separate and merged adapter paths
 # Python 3.12+ | Run: python dl-efficient-adaptation-dl-low-rank-merge.py
 # Install once with the same Python: python -m pip install numpy

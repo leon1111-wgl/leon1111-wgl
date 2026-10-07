@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Inspect every nearest-neighbour vote
 # Python 3.12+ | Run: python nearest-neighbours-ml-knn-vote.py
 # Install once with the same Python: python -m pip install numpy

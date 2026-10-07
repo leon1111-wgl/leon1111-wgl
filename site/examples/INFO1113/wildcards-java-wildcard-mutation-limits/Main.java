@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Separate type knowledge from mutability
 import java.util.*;
 

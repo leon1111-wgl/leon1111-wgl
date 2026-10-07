@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Assign every session to a room
 # Python 3.12+ | Run: python interval-partitioning-interval-room-heap.py
 import heapq

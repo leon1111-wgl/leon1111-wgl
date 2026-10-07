@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Use a Number bound for a stated conversion
 public class Main {
     static <T extends Number> double sum(java.util.List<T> values) {

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Remove safely and keep reachability visible
 import java.util.*;
 

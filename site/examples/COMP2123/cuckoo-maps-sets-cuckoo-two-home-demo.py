@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Follow a bounded cuckoo insertion
 # Python 3.12+ | Run: python cuckoo-maps-sets-cuckoo-two-home-demo.py
 first = [None] * 3

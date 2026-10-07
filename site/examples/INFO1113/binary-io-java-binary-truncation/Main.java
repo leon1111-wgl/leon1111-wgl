@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Inspect exact bytes and reject truncation
 import java.io.*;
 

@@ -1,0 +1,8 @@
+{"id":"s1","text":"I love python","label":1}
+{"id":"s2","text":"This lesson is useful","label":1}
+{"id":"s3","text":"I dislike bugs","label":0}
+{"id":"s4","text":"The code is confusing","label":0}
+{"id":"s5","text":"Learning is fun","label":1}
+{"id":"s6","text":"The file is missing","label":0}
+{"id":"s7","text":"Practice helps me","label":1}
+{"id":"s8","text":"This error is annoying","label":0}

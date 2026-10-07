@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Print the shape at every layer
 # Python 3.12+ | Run: python dl-shape-tracing-dl-shape-path.py
 # Install once with the same Python: python -m pip install numpy

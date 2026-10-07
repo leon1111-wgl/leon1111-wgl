@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Decode explicit enum codes
 public class Main {
     enum Mode {

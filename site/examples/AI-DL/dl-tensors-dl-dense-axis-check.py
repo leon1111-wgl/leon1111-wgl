@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Name the axes of a dense layer
 # Python 3.12+ | Run: python dl-tensors-dl-dense-axis-check.py
 # Install once with the same Python: python -m pip install numpy

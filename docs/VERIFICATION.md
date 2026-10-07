@@ -1,6 +1,16 @@
 # Delivery verification
 
-Checked on 3 October 2026.
+Python handbook and display-name update checked on 7 October 2026. Earlier course execution and editorial evidence below was recorded on 3 October 2026 unless stated otherwise.
+
+## Python handbook and display name
+
+The Chinese Python — Zero to Practice handbook has 19 units, 91 runnable examples, 100 self-study exercises and four complete projects. Its generated portable ZIP contains 329 files. Fresh isolated execution from that ZIP passed 91/91 examples, 100/100 reference solutions and 4/4 project checks. Tests used the bundled Python runtime on macOS in a temporary path containing spaces and Chinese characters. These finite checks do not establish behavior on every Python version or operating system.
+
+The source validator checks all handbook Python files against Python 3.10 syntax, chapter counts, manifests, homepage/profile entries and byte equality between every ZIP entry and the published source. The complete website now has 38 validated HTML pages. The supplied exercise, example and project files remain unchanged; adaptation is limited to the book builder, style and generated presentation files.
+
+The public name is Leon Wang. The site, profile artwork, Markdown, learning maps, code signatures and PDF watermarks were rebuilt with Leon branding and the LW monogram. Existing account URLs, download routes and saved browser preference keys remain stable. All five individual references still contain one page, and their collection contains five pages.
+
+Fresh checks also passed all three existing C workshops and all 456 rendered source comparisons after the branding changes. An archive scan confirmed the new name throughout public text, PDF metadata and downloadable ZIP contents. The Python ZIP rebuild is deterministic. Desktop browser checks confirmed handbook search and deep links, an interactive alias demonstration, progress persistence after reload, light/dark themes and the new homepage entry. All five rebuilt PDF pages were rendered and inspected. The browser did not apply the requested narrow viewport override in this run, so no new phone-sized visual verification is claimed for the imported handbook.
 
 ## Teaching coverage
 
@@ -44,6 +54,6 @@ Independent integration review found and corrected blank lines that broke Markdo
 
 Primary references include official Python, Java, POSIX, NumPy, Google, scikit-learn, PyTorch, OpenCV, Hugging Face and original research sources. These are independent teaching notes, not official translations or endorsed courses.
 
-Only the reviewed project and `site/` deployment artifact are public. Supplied slides, assignments, examinations, solutions, the original CV and the private source audit remain outside this repository. Published material uses Guoliang branding. The HKU qualification is MSc, with AI interests; no Computer Science MSc claim is introduced.
+Only the reviewed project and `site/` deployment artifact are public. Supplied university slides, assignments, examinations and assessment solutions, the original CV and the private source audit remain outside this repository. The explicitly requested Python handbook includes its own self-study exercises and reference solutions. Published material uses Leon branding. The HKU qualification is MSc, with AI interests; no Computer Science MSc claim is introduced.
 
 The authenticated publishing account is leon1111-wgl. Release verification checks the deployed Git commit and publicly served files after deployment. Current release identifiers are kept in the private release audit, avoiding a self-referential commit hash inside this document.

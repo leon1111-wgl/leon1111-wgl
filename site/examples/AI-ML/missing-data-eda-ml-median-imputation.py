@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Fit a median, then reuse it
 # Python 3.12+ | Run: python missing-data-eda-ml-median-imputation.py
 # Install once with the same Python: python -m pip install numpy

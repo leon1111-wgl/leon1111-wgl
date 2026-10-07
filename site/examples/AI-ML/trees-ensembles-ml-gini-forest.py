@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Score a split and average trees
 # Python 3.12+ | Run: python trees-ensembles-ml-gini-forest.py
 def gini(positive, total):

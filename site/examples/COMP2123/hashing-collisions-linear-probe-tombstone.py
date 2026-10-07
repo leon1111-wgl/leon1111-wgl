@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Delete without breaking a probe chain
 # Python 3.12+ | Run: python hashing-collisions-linear-probe-tombstone.py
 deleted = object()

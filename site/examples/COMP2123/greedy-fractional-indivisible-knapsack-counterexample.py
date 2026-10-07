@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Check where a greedy proof stops working
 # Python 3.12+ | Run: python greedy-fractional-indivisible-knapsack-counterexample.py
 from itertools import product

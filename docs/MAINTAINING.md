@@ -1,5 +1,7 @@
 # Maintaining the profile and learning library
 
+The public name is Leon Wang; short signatures and watermarks use Leon, and the monogram is LW. Keep existing account URLs, download filenames and browser preference keys stable when changing the display name.
+
 The personal homepage is English. All five foundational courses, four AI field guides and the eight-lesson beginner primer provide complete English and Chinese editions with a language switch. The five original learning paths are INFO1113, COMP2017, COMP2123, COMP2022 and COMP3308. Business courses, raw slides, examinations and assignment solutions are excluded. The notes explain concepts using independently written stories and examples.
 
 ## Files
@@ -25,6 +27,14 @@ The personal homepage is English. All five foundational courses, four AI field g
 - `scripts/validate.py`: validate local navigation, course scope and PDF structure.
 
 The supplied source PDFs and extraction audit remain outside this project. Do not copy the parent directory into a public repository.
+
+## Python — Zero to Practice
+
+The Chinese handbook lives at `site/python-zero-to-practice/`. Its 19 units, 91 runnable examples, 100 self-study exercises with reference solutions, four complete projects and blank note templates come from the author-supplied learning ZIP. The website and profile label it as a Chinese edition. It is separate from the bilingual AI beginner primer.
+
+Edit its `source/build.py` and `source/style.css` for presentation, and its course/project data for lessons. `python3 scripts/build_python_course.py` rebuilds the handbook and the complete portable `site/downloads/Python-Zero-to-Practice.zip`; the main builder also calls it. The ZIP preserves every published teaching file exactly. Do not add local learning progress, filled notes, generated outputs or Python caches to this directory. To verify it, extract the generated ZIP into a temporary folder and run `tools/verify_examples.py`, `tools/check_practice.py --all --solutions` and `tools/check_projects.py` there. Use Python 3.10 or newer. These checks execute the code; review changes before running them.
+
+Search, chapter navigation, preset visual demonstrations and progress controls work locally. Progress stays in the reader's browser and can be exported as a JSON backup. No progress is uploaded to GitHub. Home and full-package links point to the published website; lessons and code are also available offline.
 
 ## Preview
 

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compute powers by repeated squaring
 # Python 3.12+ | Run: python cryptography-complexity-modular-power-and-toy-agreement.py
 def power_mod(base, exponent, modulus):

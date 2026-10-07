@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Move both box corners
 # Python 3.12+ | Run: python geometry-augmentation-move-box.py
 corners = [(10, 20), (30, 50)]

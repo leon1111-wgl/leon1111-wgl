@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Drain a pipe after closing the writer
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

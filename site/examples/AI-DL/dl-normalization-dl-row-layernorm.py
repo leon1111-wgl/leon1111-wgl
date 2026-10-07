@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Normalize features within each row
 # Python 3.12+ | Run: python dl-normalization-dl-row-layernorm.py
 # Install once with the same Python: python -m pip install numpy

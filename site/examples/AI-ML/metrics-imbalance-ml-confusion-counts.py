@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compute four metrics from counts
 # Python 3.12+ | Run: python metrics-imbalance-ml-confusion-counts.py
 tp, tn, fp, fn = 8, 78, 12, 2

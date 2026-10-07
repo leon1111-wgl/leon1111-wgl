@@ -1,4 +1,4 @@
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CPPFLAGS = -D_POSIX_C_SOURCE=200809L
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -O2 -pthread

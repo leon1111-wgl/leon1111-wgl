@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // See which object this names
 public class Main {
     static final class Presenter {

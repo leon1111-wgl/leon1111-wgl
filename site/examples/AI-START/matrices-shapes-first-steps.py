@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Matrices: several examples at once
 # Python 3.12+ | Run: python matrices-shapes-first-steps.py
 rows = [[1, 2], [3, 4]]

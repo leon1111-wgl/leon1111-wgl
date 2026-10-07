@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Start here: a copy and an address
 #include <stdio.h>
 #include <stdlib.h>

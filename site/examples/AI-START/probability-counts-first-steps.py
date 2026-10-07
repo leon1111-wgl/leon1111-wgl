@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Probability: choose the denominator
 # Python 3.12+ | Run: python probability-counts-first-steps.py
 all_days = 10

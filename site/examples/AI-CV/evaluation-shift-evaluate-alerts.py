@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count alerts and misses
 # Python 3.12+ | Run: python evaluation-shift-evaluate-alerts.py
 true_positive, false_positive, false_negative = 15, 10, 5

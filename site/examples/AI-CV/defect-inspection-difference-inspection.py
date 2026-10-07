@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Locate the largest change
 # Python 3.12+ | Run: python defect-inspection-difference-inspection.py
 reference = [10, 10, 10, 10]

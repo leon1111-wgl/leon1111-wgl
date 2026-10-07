@@ -1,8 +1,8 @@
 # COMP2017 — A streaming log analyzer
 
-> Guoliang | Original engineering workshop
+> Leon | Original engineering workshop
 
-![Guoliang learning route](../assets/maps/comp2017-log-analyzer.en.svg)
+![Leon learning route](../assets/maps/comp2017-log-analyzer.en.svg)
 
 [English](comp2017-log-analyzer.en.md) · [中文](comp2017-log-analyzer.zh.md)
 
@@ -12,7 +12,7 @@ Turn a robot simulator trace into a trustworthy command-line report. Build a sma
 
 ## The story
 
-Guoliang is testing a classroom robot simulator. Each simulated action writes a severity and a duration, such as WARN 40. A slow action is easy to miss in a long trace, and a damaged row can make a careless average misleading. Guoliang starts with one good row, defines exactly what a record means, then adds a stream reader and a running summary. The finished tool reports how many INFO, WARN, and ERROR events occurred, their latency range and mean, and how many rows were rejected. All data is synthetic. This is an original engineering project and its own concept checks, not a supplied course exercise or solution.
+Leon is testing a classroom robot simulator. Each simulated action writes a severity and a duration, such as WARN 40. A slow action is easy to miss in a long trace, and a damaged row can make a careless average misleading. Leon starts with one good row, defines exactly what a record means, then adds a stream reader and a running summary. The finished tool reports how many INFO, WARN, and ERROR events occurred, their latency range and mean, and how many rows were rejected. All data is synthetic. This is an original engineering project and its own concept checks, not a supplied course exercise or solution.
 
 ### Before this project
 
@@ -496,7 +496,7 @@ Record interface
 [Download file](../project-code/comp2017-log-analyzer/record.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef RECORD_H
 #define RECORD_H
 
@@ -532,7 +532,7 @@ Strict complete-row parsing
 [Download file](../project-code/comp2017-log-analyzer/record.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "record.h"
 
 #include <stddef.h>
@@ -606,7 +606,7 @@ Line and byte-budget interface
 [Download file](../project-code/comp2017-log-analyzer/reader.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef READER_H
 #define READER_H
 
@@ -648,7 +648,7 @@ Physical-line framing
 [Download file](../project-code/comp2017-log-analyzer/reader.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "reader.h"
 
 #include <stdbool.h>
@@ -711,7 +711,7 @@ State and statistics interface
 [Download file](../project-code/comp2017-log-analyzer/stats.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef STATS_H
 #define STATS_H
 
@@ -757,7 +757,7 @@ Updates and report formatting
 [Download file](../project-code/comp2017-log-analyzer/stats.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "stats.h"
 #include "reader.h"
 
@@ -825,7 +825,7 @@ CLI, orchestration, and cleanup
 [Download file](../project-code/comp2017-log-analyzer/main.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "reader.h"
 #include "record.h"
 #include "stats.h"
@@ -918,7 +918,7 @@ Reproducible multi-file build
 [Download file](../project-code/comp2017-log-analyzer/Makefile)
 
 ```make
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -pthread
 OBJECTS = main.o reader.o record.o stats.o
@@ -1013,7 +1013,7 @@ Executable behavior tests
 [Download file](../project-code/comp2017-log-analyzer/test.py)
 
 ```python
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Behavior tests: run `make test`; every generated input stays in a temp dir."""
 from pathlib import Path
 import shutil
@@ -1236,4 +1236,4 @@ The mixed fixture in strict mode returns 3, warns only about line 2, and prints 
 - [Python documentation — subprocess management](https://docs.python.org/3/library/subprocess.html)
 
 ---
-Guoliang
+Leon

@@ -40,10 +40,10 @@ for code in ORDER:
  rows=math.ceil(len(items)/3);gap=10;left=29;right=29;top=H-134;bottom=48
  cw=(W-left-right-gap*2)/3;ch=(top-bottom-gap*(rows-1))/rows
  path=OUT/f'{code}-cheatsheet.pdf';c=canvas.Canvas(str(path),pagesize=(W,H),pageCompression=1)
- c.setTitle(code+' — '+course['title']+' | Guoliang');c.setAuthor('Guoliang Wang');c.setSubject('One-page original computer science study reference')
+ c.setTitle(code+' — '+course['title']+' | Leon');c.setAuthor('Leon Wang');c.setSubject('One-page original computer science study reference')
  c.setFillColor(PAPER);c.rect(0,0,W,H,fill=1,stroke=0)
- c.setFillColor(INK);c.roundRect(left,H-40,27,21,5,fill=1,stroke=0);c.setFillColor(PAPER);c.setFont('GuideBold',9);c.drawCentredString(left+13.5,H-33,'GW')
- c.setFont('GuideBold',9);c.setFillColor(GREEN);c.drawString(left+38,H-32,'GUOLIANG / ONE-PAGE REFERENCE')
+ c.setFillColor(INK);c.roundRect(left,H-40,27,21,5,fill=1,stroke=0);c.setFillColor(PAPER);c.setFont('GuideBold',9);c.drawCentredString(left+13.5,H-33,'LW')
+ c.setFont('GuideBold',9);c.setFillColor(GREEN);c.drawString(left+38,H-32,'LEON / ONE-PAGE REFERENCE')
  c.setFont('Guide',9);c.setFillColor(MUTED);c.drawRightString(W-right,H-32,code)
  title_size=22
  while pdfmetrics.stringWidth(course['title'],'GuideBold',title_size)>W-left-right:title_size-=.5
@@ -55,7 +55,7 @@ for code in ORDER:
   c.setFont('GuideBold',8.5);c.setFillColor(GREEN);c.drawString(x+8,H-105,f'{stage+1:02d} / '+label)
   if stage<len(ROUTES[code])-1:c.drawString(x+route_width+3,H-105,'→')
  # Print-friendly original-brand watermark, beneath the foreground content.
- c.saveState();c.translate(W/2,H/2);c.rotate(18);c.setFillColor(Color(.2,.4,.27,alpha=.035));c.setFont('GuideBold',95);c.drawCentredString(0,-30,'Guoliang');c.restoreState()
+ c.saveState();c.translate(W/2,H/2);c.rotate(18);c.setFillColor(Color(.2,.4,.27,alpha=.035));c.setFont('GuideBold',95);c.drawCentredString(0,-30,'Leon');c.restoreState()
  minfont=20
  for i,item in enumerate(items):
   col=i%3;row=i//3;x=left+col*(cw+gap);y=top-row*(ch+gap)
@@ -68,17 +68,17 @@ for code in ORDER:
    size-=.2
    if size<7.6:raise ValueError(f'{code}: block {i} needs editing; too much text')
   minfont=min(minfont,size);hp.drawOn(c,x+11,y-11-hh);bp.drawOn(c,x+11,y-11-hh-8-bh)
- c.saveState();c.translate(W/2,H/2);c.rotate(18);c.setFillColor(Color(.2,.4,.27,alpha=.035));c.setFont('GuideBold',95);c.drawCentredString(0,-30,'Guoliang');c.restoreState()
- c.setStrokeColor(LINE);c.line(left,33,W-right,33);c.setFont('GuideBold',9);c.setFillColor(GREEN);c.drawString(left,18,'Guoliang')
+ c.saveState();c.translate(W/2,H/2);c.rotate(18);c.setFillColor(Color(.2,.4,.27,alpha=.035));c.setFont('GuideBold',95);c.drawCentredString(0,-30,'Leon');c.restoreState()
+ c.setStrokeColor(LINE);c.line(left,33,W-right,33);c.setFont('GuideBold',9);c.setFillColor(GREEN);c.drawString(left,18,'Leon')
  c.setFont('Guide',7.5);c.setFillColor(MUTED);c.drawCentredString(W/2,18,'STORY → PRINCIPLE → FORMULA → EXAMPLE');c.drawRightString(W-right,18,code+' / 1 PAGE')
  c.showPage();c.save()
  reader=PdfReader(path);assert len(reader.pages)==1
- assert 'Guoliang' in reader.pages[0].extract_text()
+ assert 'Leon' in reader.pages[0].extract_text()
  metadata.append({'course':code,'pages':1,'smallest_body_font':round(minfont,1),'blocks':len(items),'filename':path.name})
 if set(ORDER)==set(ALL_ORDER):
  writer=PdfWriter()
  for code in ALL_ORDER:writer.append(str(OUT/f'{code}-cheatsheet.pdf'))
- writer.add_metadata({'/Title':'Guoliang — Computer Science Cheatsheet Collection','/Author':'Guoliang Wang'})
+ writer.add_metadata({'/Title':'Leon — Computer Science Cheatsheet Collection','/Author':'Leon Wang'})
  with open(OUT/'guoliang-cheatsheet-collection.pdf','wb') as f:writer.write(f)
 FINAL=ROOT/'output'/'pdf';FINAL.mkdir(parents=True,exist_ok=True)
 for code in ORDER:shutil.copy2(OUT/f'{code}-cheatsheet.pdf',FINAL/f'{code}-cheatsheet.pdf')

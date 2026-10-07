@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Commit a resize only after success
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare a full pass and a shortlist
 # Python 3.12+ | Run: python efficient-evidence-systems-cascade-budget.py
 candidate_count = 100

@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Trace shallow and row-wise copies
 import java.util.Arrays;
 

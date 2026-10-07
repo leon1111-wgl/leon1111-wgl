@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Keep points that improve the best second score
 # Python 3.12+ | Run: python pareto-maxima-pareto-descending-scan.py
 points = [("A", 1, 8), ("B", 3, 5), ("C", 4, 7),

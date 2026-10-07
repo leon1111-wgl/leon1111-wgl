@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Standardize and take one step
 # Python 3.12+ | Run: python gradient-descent-scaling-ml-gradient-step.py
 # Install once with the same Python: python -m pip install numpy

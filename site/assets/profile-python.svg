@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="210" viewBox="0 0 840 210" role="img" aria-labelledby="title">
+<title id="title">Python — Zero to Practice. Open the Chinese self-study handbook.</title>
+<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#253647" stroke-width=".65"/></pattern><radialGradient id="glow"><stop stop-color="#60c9ce" stop-opacity=".2"/><stop offset="1" stop-color="#0b111c" stop-opacity="0"/></radialGradient></defs>
+<rect width="840" height="210" rx="18" fill="#0b111c"/>
+<rect width="840" height="210" rx="18" fill="url(#grid)"/>
+<path d="M32 30H112" stroke="#b8ee91" stroke-width="4"/>
+<text x="32" y="92" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="52" font-weight="700">Python</text>
+<text x="32" y="152" fill="#b8ee91" font-family="Arial,sans-serif" font-size="38">Zero to Practice</text>
+<text x="555" y="93" fill="#8cdde9" font-family="monospace" font-size="25">READ · RUN</text>
+<text x="555" y="137" fill="#8cdde9" font-family="monospace" font-size="25">BUILD · CHECK</text>
+<circle cx="771" cy="155" r="25" fill="none" stroke="#b8ee91"/>
+<path d="M761 165l20-20m-20 0h20v20" fill="none" stroke="#b8ee91" stroke-width="3"/></svg>

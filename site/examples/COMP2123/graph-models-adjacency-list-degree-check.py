@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Build an undirected adjacency list
 # Python 3.12+ | Run: python graph-models-adjacency-list-degree-check.py
 vertices = ["A", "B", "C", "D", "E"]

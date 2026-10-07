@@ -1,4 +1,4 @@
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>

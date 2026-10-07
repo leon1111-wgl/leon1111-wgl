@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Use heapq to serve priorities
 # Python 3.12+ | Run: python priority-queues-heaps-heapq-priority-service.py
 import heapq

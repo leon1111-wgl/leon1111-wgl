@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Implement merge sort from its stopping case
 # Python 3.12+ | Run: python recurrences-merge-sort-merge-sort-real-merge.py
 def merge_sort(values):

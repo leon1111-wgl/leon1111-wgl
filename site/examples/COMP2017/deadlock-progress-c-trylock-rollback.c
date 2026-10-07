@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Release a partial acquisition after a failed try
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

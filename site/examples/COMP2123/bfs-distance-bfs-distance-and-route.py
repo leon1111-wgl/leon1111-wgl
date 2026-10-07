@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Use a queue to find distance and a route
 # Python 3.12+ | Run: python bfs-distance-bfs-distance-and-route.py
 from collections import deque

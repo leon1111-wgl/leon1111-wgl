@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Handle an exec failure without duplicating buffers
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

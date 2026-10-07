@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Look up tokens and ignore padding
 # Python 3.12+ | Run: python dl-token-embeddings-dl-embedding-mask-mean.py
 # Install once with the same Python: python -m pip install numpy

@@ -1,4 +1,4 @@
-name: Publish Guoliang Learning
+name: Publish Leon Learning
 on:
   push:
     branches: [main]

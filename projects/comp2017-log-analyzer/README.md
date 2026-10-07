@@ -1,10 +1,10 @@
 # Streaming log analyzer
 
-Guoliang | Original teaching project for COMP2017. [中文版](README.zh.md).
+Leon | Original teaching project for COMP2017. [中文版](README.zh.md).
 
-Guoliang is testing a small classroom robot simulator. After each simulated action,
+Leon is testing a small classroom robot simulator. After each simulated action,
 it writes a severity and a duration, such as `WARN 40`. Reading the whole trace by
-eye makes it easy to miss a slow action. Guoliang wants a tool that counts each
+eye makes it easy to miss a slow action. Leon wants a tool that counts each
 severity and summarizes durations. Some records are broken, so the report must
 also say how much data was rejected. All fixtures are invented teaching data.
 This is an original engineering project, not a supplied course assignment.

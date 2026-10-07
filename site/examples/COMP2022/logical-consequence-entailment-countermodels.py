@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find every countermodel
 # Python 3.12+ | Run: python logical-consequence-entailment-countermodels.py
 from itertools import product

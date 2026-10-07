@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Look up and pool two tokens
 # Python 3.12+ | Run: python tokens-embeddings-toy-token-table.py
 text = "red kite"

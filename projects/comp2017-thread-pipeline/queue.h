@@ -1,4 +1,4 @@
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef QUEUE_H
 #define QUEUE_H
 

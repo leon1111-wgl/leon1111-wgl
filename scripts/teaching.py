@@ -33,8 +33,8 @@ def glossary_html(topic, lang='en'):
 
 
 DETAIL_LABELS = {
-    'en': dict(code='Run a complete example', syntax='Read the syntax', trace='Follow the changing state', problems='Work through a problem', strategy='Choose the method', answer='Interpret the answer', check='Check the reasoning', insights="Guoliang's further thinking", walk='Follow the execution', download='Download source', command='Run it locally', scroll='Scroll sideways for long lines. Copy or download keeps the original code.'),
-    'zh': dict(code='运行一个完整示例', syntax='读懂这里的语法', trace='跟踪状态的变化', problems='完整推导一道题', strategy='先选择方法', answer='解释最终答案', check='检验推理', insights='Guoliang 的进一步思考', walk='按执行顺序理解', download='下载源代码', command='在本地运行', scroll='长代码行可左右滚动。复制或下载会保留原始代码。')}
+    'en': dict(code='Run a complete example', syntax='Read the syntax', trace='Follow the changing state', problems='Work through a problem', strategy='Choose the method', answer='Interpret the answer', check='Check the reasoning', insights="Leon's further thinking", walk='Follow the execution', download='Download source', command='Run it locally', scroll='Scroll sideways for long lines. Copy or download keeps the original code.'),
+    'zh': dict(code='运行一个完整示例', syntax='读懂这里的语法', trace='跟踪状态的变化', problems='完整推导一道题', strategy='先选择方法', answer='解释最终答案', check='检验推理', insights='Leon 的进一步思考', walk='按执行顺序理解', download='下载源代码', command='在本地运行', scroll='长代码行可左右滚动。复制或下载会保留原始代码。')}
 
 
 def code_html(code, language='python', id=None):
@@ -168,7 +168,7 @@ def export_examples(documents):
                 path.parent.mkdir(parents=True,exist_ok=True)
                 language = example.get('language','python')
                 prefix = '#' if language == 'python' else '//'
-                header = f'{prefix} Guoliang | Original learning example\n{prefix} '+local(example['title'],'en')+'\n'
+                header = f'{prefix} Leon | Original learning example\n{prefix} '+local(example['title'],'en')+'\n'
                 if language=='python':
                     header += '# Python 3.12+ | Run: python '+path.name+'\n'
                     if 'numpy' in example['code']:header += '# Install once with the same Python: python -m pip install numpy\n'
@@ -178,7 +178,7 @@ def export_examples(documents):
     folder.mkdir(exist_ok=True)
     manifest_text=json.dumps(manifest,indent=2,ensure_ascii=False)+'\n'
     (folder/'manifest.json').write_text(manifest_text)
-    readme = '# Guoliang code examples\n\nEach example has a complete program, expected output and a step-by-step explanation on its topic page. These small examples explain mechanisms; they are not complete production systems.\n\n## Python\n\nUse Python 3.12+. Run `python filename.py`. If the file imports NumPy, first run `python -m pip install numpy` using the same Python. No model or dataset downloads are needed.\n\n## Java\n\nUse JDK 8 or newer. Open one example folder, then run `javac -encoding UTF-8 Main.java` and `java -ea Main`. Each folder is an independent program; do not compile all Main.java files together.\n\n## C\n\nUse a C11 compiler on macOS or a POSIX system such as Linux. Open an example folder and compile the chosen file with `cc -std=c11 -Wall -Wextra -pedantic -pthread filename.c -lm -o demo`, then run `./demo`. Windows needs a POSIX environment such as WSL for the process and thread examples. Programs create only temporary/local demo data.\n\n## Index\n\n' + '\n'.join(f'- [{x["group"]}: {x["title"]}]({x["path"].removeprefix("examples/")})' for x in manifest)+'\n'
+    readme = '# Leon code examples\n\nEach example has a complete program, expected output and a step-by-step explanation on its topic page. These small examples explain mechanisms; they are not complete production systems.\n\n## Python\n\nUse Python 3.12+. Run `python filename.py`. If the file imports NumPy, first run `python -m pip install numpy` using the same Python. No model or dataset downloads are needed.\n\n## Java\n\nUse JDK 8 or newer. Open one example folder, then run `javac -encoding UTF-8 Main.java` and `java -ea Main`. Each folder is an independent program; do not compile all Main.java files together.\n\n## C\n\nUse a C11 compiler on macOS or a POSIX system such as Linux. Open an example folder and compile the chosen file with `cc -std=c11 -Wall -Wextra -pedantic -pthread filename.c -lm -o demo`, then run `./demo`. Windows needs a POSIX environment such as WSL for the process and thread examples. Programs create only temporary/local demo data.\n\n## Index\n\n' + '\n'.join(f'- [{x["group"]}: {x["title"]}]({x["path"].removeprefix("examples/")})' for x in manifest)+'\n'
     (folder/'README.md').write_text(readme)
     for filename, entries in [('guoliang-code-examples.zip',manifest),('guoliang-python-examples.zip',[x for x in manifest if x['language']=='python'])]:
         destination=ROOT/'site'/'downloads'/filename

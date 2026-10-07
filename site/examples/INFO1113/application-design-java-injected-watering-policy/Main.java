@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Replace one policy without rewriting the controller
 public class Main {
     static int apply(int current, java.util.function.IntUnaryOperator policy) {

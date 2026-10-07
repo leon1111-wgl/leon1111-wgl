@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Decode by waiting for a complete codeword
 # Python 3.12+ | Run: python huffman-coding-prefix-code-decode.py
 codes = {"A": "0", "B": "10", "C": "110", "D": "111"}

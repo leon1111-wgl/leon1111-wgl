@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Count a parent-only creation loop
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

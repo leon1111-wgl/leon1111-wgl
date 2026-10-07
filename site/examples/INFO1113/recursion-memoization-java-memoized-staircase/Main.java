@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Cache each staircase state once
 import java.util.*;
 

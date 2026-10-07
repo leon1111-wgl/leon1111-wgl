@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Count patches and comparisons
 # Python 3.12+ | Run: python visual-tokens-patch-budget.py
 height, width, channels = 32, 32, 3

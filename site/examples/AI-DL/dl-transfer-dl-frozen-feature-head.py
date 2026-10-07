@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Train a head on fixed features
 # Python 3.12+ | Run: python dl-transfer-dl-frozen-feature-head.py
 # Install once with the same Python: python -m pip install numpy

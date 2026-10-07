@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Write the heap insertion repair
 # Python 3.12+ | Run: python priority-queues-heaps-heap-bubble-up.py
 heap = [3, 8, 5, 12, 10]

@@ -1,4 +1,4 @@
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -pthread
 OBJECTS = main.o reader.o record.o stats.o

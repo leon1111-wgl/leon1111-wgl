@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Find a rank without sorting both sides
 # Python 3.12+ | Run: python selection-pivots-quickselect-one-branch.py
 def select(values, rank):

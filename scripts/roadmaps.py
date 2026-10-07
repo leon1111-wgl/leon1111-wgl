@@ -20,7 +20,7 @@ def roadmap_html(document, lang='en', prefix=''):
         purpose=local(stage.get('purpose',''),lang)
         count=f'{len(stage["topics"])} 个主题' if zh else f'{len(stage["topics"])} topics'
         stages.append(f'<li><a class="route-node" href="{prefix}#{first}"><span class="route-step">{i:02d} <span aria-hidden="true">→</span></span><h3>{E(local(stage["title"],lang))}</h3>'+ (f'<p>{E(purpose)}</p>' if purpose else '') +f'<span class="route-count">{count} ↗</span></a></li>')
-    return f'<section class="learning-route" aria-labelledby="route-title"><div class="route-heading"><div><span class="eyebrow">GUOLIANG / LEARNING MAP</span><h2 id="route-title">{heading}</h2></div><p>{intro}</p></div><ol class="route-flow">'+''.join(stages)+'</ol></section>'
+    return f'<section class="learning-route" aria-labelledby="route-title"><div class="route-heading"><div><span class="eyebrow">LEON / LEARNING MAP</span><h2 id="route-title">{heading}</h2></div><p>{intro}</p></div><ol class="route-flow">'+''.join(stages)+'</ol></section>'
 
 
 def wrapped(text, width):
@@ -43,7 +43,7 @@ def build_roadmap(document,lang='en'):
     top=96+24*max(0,len(title_lines)-1)
     height=top+50+len(stages)*row_height
     items=['<rect width="1040" height="'+str(height)+'" rx="20" fill="#101925"/>', f'<path d="M90 {top+60}V{height-75}" stroke="#497a83" stroke-width="3"/>']
-    items.append('<text x="40" y="38" fill="#abdca0" font-size="17" letter-spacing="2">GUOLIANG / '+E(document['code'])+' / LEARNING ROUTE</text>')
+    items.append('<text x="40" y="38" fill="#abdca0" font-size="17" letter-spacing="2">LEON / '+E(document['code'])+' / LEARNING ROUTE</text>')
     for i,line in enumerate(title_lines):items.append(f'<text x="40" y="{78+i*30}" fill="#f0f4fa" font-size="28" font-weight="600">{E(line)}</text>')
     for i,stage in enumerate(stages):
         y=top+32+i*row_height
@@ -53,7 +53,7 @@ def build_roadmap(document,lang='en'):
             items.append(f'<text x="150" y="{y+15+j*27}" fill="#f0f4fa" font-size="23">{E(line)}</text>')
         text=local(stage['count_label'],lang) if stage.get('count_label') else (f'{len(stage["topics"])} 个主题' if lang=='zh' else f'{len(stage["topics"])} topics')
         items.append(f'<text x="150" y="{y+77}" fill="#b7c9dc" font-size="18">{text}</text>')
-    image=f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title"><title id="title">Guoliang — {E(title)}</title><g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">'+''.join(items)+'</g></svg>'
+    image=f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title"><title id="title">Leon — {E(title)}</title><g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">'+''.join(items)+'</g></svg>'
     path=ROOT/'site'/'assets'/'maps'/f'{slug(document)}.{lang}.svg'
     path.parent.mkdir(exist_ok=True,parents=True);path.write_text(image)
     return '../assets/maps/'+path.name
@@ -62,4 +62,4 @@ def build_roadmap(document,lang='en'):
 def roadmap_markdown(document,lang='en'):
     image=build_roadmap(document,lang)
     label='学习路线图' if lang=='zh' else 'Learning roadmap'
-    return f'![Guoliang — {label}]({image})'
+    return f'![Leon — {label}]({image})'

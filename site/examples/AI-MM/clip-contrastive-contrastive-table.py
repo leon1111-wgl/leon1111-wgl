@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Score the correct partners both ways
 # Python 3.12+ | Run: python clip-contrastive-contrastive-table.py
 import math

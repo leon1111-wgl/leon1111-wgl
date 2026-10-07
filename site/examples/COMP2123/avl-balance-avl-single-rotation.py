@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Rotate an outer-heavy branch right
 # Python 3.12+ | Run: python avl-balance-avl-single-rotation.py
 class Node:

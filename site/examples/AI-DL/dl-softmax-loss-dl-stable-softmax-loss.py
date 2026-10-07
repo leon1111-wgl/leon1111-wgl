@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compute stable probabilities and cross-entropy
 # Python 3.12+ | Run: python dl-softmax-loss-dl-stable-softmax-loss.py
 # Install once with the same Python: python -m pip install numpy

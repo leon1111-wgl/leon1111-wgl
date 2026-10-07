@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Sort without subtracting arbitrary integers
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>

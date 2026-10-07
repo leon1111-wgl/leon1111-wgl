@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Compare two descriptions
 # Python 3.12+ | Run: python modalities-alignment-cosine-alignment.py
 import math

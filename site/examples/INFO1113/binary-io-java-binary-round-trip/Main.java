@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Write and read a sensor record
 import java.io.*;
 

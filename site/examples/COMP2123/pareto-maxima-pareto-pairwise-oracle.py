@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Check ties with the dominance definition
 # Python 3.12+ | Run: python pareto-maxima-pareto-pairwise-oracle.py
 points = [("A", 3, 5), ("B", 3, 5), ("C", 3, 4), ("D", 2, 6)]

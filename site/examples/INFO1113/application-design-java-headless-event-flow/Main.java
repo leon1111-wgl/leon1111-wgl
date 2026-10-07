@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Follow a command through a small application
 public class Main {
     static final class Bed {

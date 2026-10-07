@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Locate the first wrong intermediate value
 public class Main {
 

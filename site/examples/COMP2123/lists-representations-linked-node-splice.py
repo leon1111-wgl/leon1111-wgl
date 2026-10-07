@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Insert a real node into a linked chain
 # Python 3.12+ | Run: python lists-representations-linked-node-splice.py
 class Node:

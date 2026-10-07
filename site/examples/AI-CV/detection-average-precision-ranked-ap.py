@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Read three ranked detections
 # Python 3.12+ | Run: python detection-average-precision-ranked-ap.py
 matches = [True, False, True]

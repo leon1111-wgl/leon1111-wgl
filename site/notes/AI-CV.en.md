@@ -1,10 +1,10 @@
 # Computer Vision: From Pixels to Perception
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-CV.en.md) · [中文](AI-CV.zh.md)
 
-![Guoliang — Learning roadmap](../assets/maps/cv.en.svg)
+![Leon — Learning roadmap](../assets/maps/cv.en.svg)
 
 Sixteen connected lessons start with pixels and simple Python lists, then build toward recognition, detection, tracking, OCR and reliable image systems. Every lesson includes a story, explained arithmetic, runnable code, answered questions and two practice cases.
 
@@ -1965,7 +1965,7 @@ Build reproducible preprocessing and postprocessing around a model. Compare outp
 
 ## Official tutorials & original research
 
-Original stories, explanations and examples by Guoliang. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
+Original stories, explanations and examples by Leon. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
 
 - [Basic Operations on Images](https://docs.opencv.org/4.x/d3/df2/tutorial_py_basic_ops.html) — OpenCV
 

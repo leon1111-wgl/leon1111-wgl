@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Copy from a producer into a consumer
 import java.util.*;
 

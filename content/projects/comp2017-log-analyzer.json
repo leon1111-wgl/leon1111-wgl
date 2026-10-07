@@ -11,8 +11,8 @@
     "zh": "把机器人模拟器的轨迹变成可信的命令行报告。用一个小型 C 程序练习有边界地读行、校验记录、累积统计和解释失败。"
   },
   "story": {
-    "en": "Guoliang is testing a classroom robot simulator. Each simulated action writes a severity and a duration, such as WARN 40. A slow action is easy to miss in a long trace, and a damaged row can make a careless average misleading. Guoliang starts with one good row, defines exactly what a record means, then adds a stream reader and a running summary. The finished tool reports how many INFO, WARN, and ERROR events occurred, their latency range and mean, and how many rows were rejected. All data is synthetic. This is an original engineering project and its own concept checks, not a supplied course exercise or solution.",
-    "zh": "Guoliang 正在测试课堂用的机器人模拟器。每个模拟动作都会记录级别与耗时，例如 WARN 40。长日志中的慢动作很容易被漏掉，损坏的记录又可能让平均值失真。我们先让一条有效记录走通，再明确记录规则，加入连续读行和累积统计。完成后的工具能够报告 INFO、WARN、ERROR 的次数、耗时范围与平均值，还能说明丢弃了多少行。所有数据都是人工构造。这是原创工程项目及其概念检查，不是课程提供的作业或答案。"
+    "en": "Leon is testing a classroom robot simulator. Each simulated action writes a severity and a duration, such as WARN 40. A slow action is easy to miss in a long trace, and a damaged row can make a careless average misleading. Leon starts with one good row, defines exactly what a record means, then adds a stream reader and a running summary. The finished tool reports how many INFO, WARN, and ERROR events occurred, their latency range and mean, and how many rows were rejected. All data is synthetic. This is an original engineering project and its own concept checks, not a supplied course exercise or solution.",
+    "zh": "Leon 正在测试课堂用的机器人模拟器。每个模拟动作都会记录级别与耗时，例如 WARN 40。长日志中的慢动作很容易被漏掉，损坏的记录又可能让平均值失真。我们先让一条有效记录走通，再明确记录规则，加入连续读行和累积统计。完成后的工具能够报告 INFO、WARN、ERROR 的次数、耗时范围与平均值，还能说明丢弃了多少行。所有数据都是人工构造。这是原创工程项目及其概念检查，不是课程提供的作业或答案。"
   },
   "difficulty": {
     "en": "Project 1 · beginner engineering · functions, arrays, and basic pointers first. Read the five stages in order; compile the complete files before studying extracts.",

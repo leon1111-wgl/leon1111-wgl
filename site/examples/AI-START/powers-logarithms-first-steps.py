@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Powers and logarithms without mystery
 # Python 3.12+ | Run: python powers-logarithms-first-steps.py
 import math

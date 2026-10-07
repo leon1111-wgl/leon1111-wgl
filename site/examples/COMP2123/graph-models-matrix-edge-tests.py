@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Trade matrix space for direct edge tests
 # Python 3.12+ | Run: python graph-models-matrix-edge-tests.py
 vertices = ["A", "B", "C"]

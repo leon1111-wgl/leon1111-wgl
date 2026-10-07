@@ -1,4 +1,4 @@
-// Guoliang | Original learning example
+// Leon | Original learning example
 // Capture a threshold and a mutable log
 public class Main {
 

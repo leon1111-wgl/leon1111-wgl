@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # One probability, two decisions
 # Python 3.12+ | Run: python logistic-thresholds-ml-sigmoid-cutoffs.py
 from math import exp

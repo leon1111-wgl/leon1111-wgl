@@ -1,4 +1,4 @@
-# Guoliang | Original learning example
+# Leon | Original learning example
 # Halve a search interval without copying data
 # Python 3.12+ | Run: python recurrences-merge-sort-binary-search-indices.py
 values = [2, 5, 8, 12, 16, 23, 38]
