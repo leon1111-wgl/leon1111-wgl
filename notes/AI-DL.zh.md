@@ -1,10 +1,10 @@
 # 深度学习
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-DL.en.md) · [中文](AI-DL.zh.md)
 
-![Guoliang — 学习路线图](../site/assets/maps/dl.zh.svg)
+![Leon — 学习路线图](../site/assets/maps/dl.zh.svg)
 
 用十六个耐心引导的章节理解深度学习。从数组与函数开始，追踪形状、损失、梯度和完整的小型训练循环，再组合卷积、嵌入、注意力、玩具 Transformer 模块与适应方法。每章都含有解释的 Python、带答案问题与两个练习案例。
 
@@ -1998,7 +1998,7 @@ Transformer 由熟悉操作按特定结构组合而成。逐分支追踪，并�
 
 ## 官方教程与原始研究
 
-故事、讲解与计算例子由 Guoliang 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
+故事、讲解与计算例子由 Leon 原创编写。链接中的教程和研究属于各自作者；本资料为独立学习笔记，并非官方译本或官方认可课程。
 
 - [张量——基础入门](https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html) — PyTorch
 

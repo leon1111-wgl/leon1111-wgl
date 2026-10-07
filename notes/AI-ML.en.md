@@ -1,10 +1,10 @@
 # Machine Learning
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-ML.en.md) · [中文](AI-ML.zh.md)
 
-![Guoliang — Learning roadmap](../site/assets/maps/ml.en.svg)
+![Leon — Learning roadmap](../site/assets/maps/ml.en.svg)
 
 Learn machine learning in sixteen guided chapters. Start with rows and labels. Build small models, inspect their errors, and work toward text filtering, recommendation, and reliability checks. Each chapter includes an original story, answered questions, two practice cases, and runnable Python.
 
@@ -1964,7 +1964,7 @@ Confidence needs frequency checks. Model quality needs fresh labels, especially 
 
 ## Official tutorials & original research
 
-Original stories, explanations and examples by Guoliang. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
+Original stories, explanations and examples by Leon. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
 
 - [Datasets: Dividing the original dataset](https://developers.google.com/machine-learning/crash-course/overfitting/dividing-datasets) — Google
 

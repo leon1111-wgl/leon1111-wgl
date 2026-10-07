@@ -1,8 +1,8 @@
 # COMP2017 — A bounded process notebook
 
-> Guoliang | Original engineering workshop
+> Leon | Original engineering workshop
 
-![Guoliang learning route](../site/assets/maps/comp2017-process-runner.en.svg)
+![Leon learning route](../site/assets/maps/comp2017-process-runner.en.svg)
 
 [English](comp2017-process-runner.en.md) · [中文](comp2017-process-runner.zh.md)
 
@@ -12,7 +12,7 @@ Run one local program, retain a bounded stdout prefix, drain every remaining byt
 
 ## The story
 
-Mei checks a sensor report before sharing it with her team. One checker prints a short success message; another prints pages of detail before returning an error. Copying terminal text loses the exit status, and saving every byte wastes memory. She builds a small notebook that keeps the first C bytes, says whether more arrived, and records the child outcome. Her first success is an echo with a space inside one argument. She then faces a full pipe, a missing executable, and a final line without a newline. By the end she can explain every descriptor, every captured byte, and the remaining limits of her tool. This is an original Guoliang learning project, independent of supplied course assignments.
+Mei checks a sensor report before sharing it with her team. One checker prints a short success message; another prints pages of detail before returning an error. Copying terminal text loses the exit status, and saving every byte wastes memory. She builds a small notebook that keeps the first C bytes, says whether more arrived, and records the child outcome. Her first success is an echo with a space inside one argument. She then faces a full pipe, a missing executable, and a final line without a newline. By the end she can explain every descriptor, every captured byte, and the remaining limits of her tool. This is an original Leon learning project, independent of supplied course assignments.
 
 ### Before this project
 
@@ -644,9 +644,9 @@ Public data and ownership contract
 [Download file](../projects/comp2017-process-runner/process.h)
 
 ```c
-/* Guoliang | Original teaching project. */
-#ifndef GUOLIANG_PROCESS_H
-#define GUOLIANG_PROCESS_H
+/* Leon | Original teaching project. */
+#ifndef LEON_PROCESS_H
+#define LEON_PROCESS_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -683,7 +683,7 @@ CLI validation, byte display, and exit-code mapping
 [Download file](../projects/comp2017-process-runner/main.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "process.h"
 
 #include <stdio.h>
@@ -796,7 +796,7 @@ Pipe setup, fork/exec, continuous drain, and wait
 [Download file](../projects/comp2017-process-runner/process.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "process.h"
 
 #include <errno.h>
@@ -940,7 +940,7 @@ Finite synthetic output and status generator
 [Download file](../projects/comp2017-process-runner/fixtures/child.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -1000,7 +1000,7 @@ Fourteen real-process regression tests
 
 ```python
 #!/usr/bin/env python3
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Build a temporary copy and exercise only bounded, local fixture programs."""
 import os
 from pathlib import Path
@@ -1147,7 +1147,7 @@ Strict, repeatable all/test/clean entry points
 [Download file](../projects/comp2017-process-runner/Makefile)
 
 ```make
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -pthread
 CPPFLAGS = -D_POSIX_C_SOURCE=200809L
@@ -1205,4 +1205,4 @@ A controlled child exceeding its budget yields a timeout outcome within a bounde
 - [The Open Group: POSIX _Exit and _exit](https://pubs.opengroup.org/onlinepubs/9799919799/functions/_exit.html)
 
 ---
-Guoliang
+Leon

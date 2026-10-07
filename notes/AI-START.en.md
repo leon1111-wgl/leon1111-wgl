@@ -1,10 +1,10 @@
 # Start Here: Python and AI Basics
 
-> Guoliang | AI Field Guides
+> Leon | AI Field Guides
 
 [EN](AI-START.en.md) · [中文](AI-START.zh.md)
 
-![Guoliang — Learning roadmap](../site/assets/maps/start.en.svg)
+![Leon — Learning roadmap](../site/assets/maps/start.en.svg)
 
 New to programming or AI mathematics? Begin with eight gentle lessons. Read a story, follow the numbers, and run a small Python program.
 
@@ -962,7 +962,7 @@ The gradient describes local change. Subtract learning rate times gradient, then
 
 ## Official tutorials & original research
 
-Original stories, explanations and examples by Guoliang. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
+Original stories, explanations and examples by Leon. The linked tutorials and research belong to their respective authors; these independent companions are not official translations or endorsed courses.
 
 - [An informal introduction to Python](https://docs.python.org/3/tutorial/introduction.html) — Python Software Foundation
 

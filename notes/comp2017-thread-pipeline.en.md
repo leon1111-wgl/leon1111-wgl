@@ -1,8 +1,8 @@
 # COMP2017 — A bounded file-statistics pipeline
 
-> Guoliang | Original engineering workshop
+> Leon | Original engineering workshop
 
-![Guoliang learning route](../site/assets/maps/comp2017-thread-pipeline.en.svg)
+![Leon learning route](../site/assets/maps/comp2017-thread-pipeline.en.svg)
 
 [English](comp2017-thread-pipeline.en.md) · [中文](comp2017-thread-pipeline.zh.md)
 
@@ -18,7 +18,7 @@ She begins with one precise scanner and checks it against tiny synthetic notes. 
 
 The last job being submitted is not the same as the last job being finished. Mina closes the queue to announce that no more jobs will arrive, lets consumers drain the remaining jobs, and joins all workers. Only then does she print the result slots in original input order. A missing file becomes a clearly marked failed slot, not a misleading row of zeros.
 
-Finally, she tests short and long inputs, repeated schedules, and carefully injected failures. The project demonstrates a correct coordination pattern; these small examples make no claim that more threads are faster. All code, fixtures, and explanations are original Guoliang teaching material, independent of supplied assignments.
+Finally, she tests short and long inputs, repeated schedules, and carefully injected failures. The project demonstrates a correct coordination pattern; these small examples make no claim that more threads are faster. All code, fixtures, and explanations are original Leon teaching material, independent of supplied assignments.
 
 ### Before this project
 
@@ -575,7 +575,7 @@ The result contract and bounded file size
 [Download file](../projects/comp2017-thread-pipeline/stats.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef STATS_H
 #define STATS_H
 
@@ -622,7 +622,7 @@ One worker’s independent regular-file scanner
 [Download file](../projects/comp2017-thread-pipeline/stats.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "stats.h"
 
 #include <errno.h>
@@ -731,7 +731,7 @@ The shared state and ownership boundary
 [Download file](../projects/comp2017-thread-pipeline/queue.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef QUEUE_H
 #define QUEUE_H
 
@@ -777,7 +777,7 @@ Locked ring transitions and close-and-drain behavior
 [Download file](../projects/comp2017-thread-pipeline/queue.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "queue.h"
 
 #include <stdio.h>
@@ -878,7 +878,7 @@ CLI, lifetime management, worker loop, and ordered output
 [Download file](../projects/comp2017-thread-pipeline/main.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "queue.h"
 #include "stats.h"
 
@@ -1021,7 +1021,7 @@ Strict build, isolated tests, and local cleanup
 [Download file](../projects/comp2017-thread-pipeline/Makefile)
 
 ```make
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CPPFLAGS = -D_POSIX_C_SOURCE=200809L
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -O2 -pthread
@@ -1058,7 +1058,7 @@ Independent oracle, boundary tests, stress, and controlled faults
 
 ```python
 #!/usr/bin/env python3
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Build only in a temporary copy; use independent byte oracles and timeouts."""
 import argparse
 import os
@@ -1192,7 +1192,7 @@ def run_tests(root, flags):
             assert output == reference, (repeat, workers)
     print("PASS 48 repeated schedules: 37 jobs, workers 1/2/4/16, stable output")
 
-    probe = r'''/* Guoliang | Original teaching project. */
+    probe = r'''/* Leon | Original teaching project. */
 #include "queue.h"
 #include <assert.h>
 int main(void) {
@@ -1221,7 +1221,7 @@ int main(void) {
     print("PASS queue close drains FIFO entries and rejects new work")
 
     for after in (0, 2):
-        shim = r'''/* Guoliang | Original teaching project. */
+        shim = r'''/* Leon | Original teaching project. */
 #include <errno.h>
 #include <pthread.h>
 static unsigned int calls;
@@ -1244,7 +1244,7 @@ int fixture_create(pthread_t *thread, const pthread_attr_t *attributes,
         body = "errno = EIO; return -1;" if mode == "error" else (
             "static int first = 1; if (first) { first = 0; errno = EINTR; return -1; }"
             " return read(descriptor, buffer, count);")
-        shim = r'''/* Guoliang | Original teaching project. */
+        shim = r'''/* Leon | Original teaching project. */
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>
@@ -1417,4 +1417,4 @@ Counts remain byte-for-byte identical. Report repeated measurements and their va
 - [The Open Group POSIX.1-2024 — read](https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html)
 
 ---
-Guoliang
+Leon

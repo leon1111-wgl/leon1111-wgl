@@ -1,8 +1,8 @@
 # COMP2017 — 流式日志分析器
 
-> Guoliang | Original engineering workshop
+> Leon | Original engineering workshop
 
-![Guoliang learning route](../site/assets/maps/comp2017-log-analyzer.zh.svg)
+![Leon learning route](../site/assets/maps/comp2017-log-analyzer.zh.svg)
 
 [English](comp2017-log-analyzer.en.md) · [中文](comp2017-log-analyzer.zh.md)
 
@@ -12,7 +12,7 @@
 
 ## 故事
 
-Guoliang 正在测试课堂用的机器人模拟器。每个模拟动作都会记录级别与耗时，例如 WARN 40。长日志中的慢动作很容易被漏掉，损坏的记录又可能让平均值失真。我们先让一条有效记录走通，再明确记录规则，加入连续读行和累积统计。完成后的工具能够报告 INFO、WARN、ERROR 的次数、耗时范围与平均值，还能说明丢弃了多少行。所有数据都是人工构造。这是原创工程项目及其概念检查，不是课程提供的作业或答案。
+Leon 正在测试课堂用的机器人模拟器。每个模拟动作都会记录级别与耗时，例如 WARN 40。长日志中的慢动作很容易被漏掉，损坏的记录又可能让平均值失真。我们先让一条有效记录走通，再明确记录规则，加入连续读行和累积统计。完成后的工具能够报告 INFO、WARN、ERROR 的次数、耗时范围与平均值，还能说明丢弃了多少行。所有数据都是人工构造。这是原创工程项目及其概念检查，不是课程提供的作业或答案。
 
 ### 开始前先读
 
@@ -496,7 +496,7 @@ getline 的可增长缓冲区很方便，但第一个项目用 128 字节固定�
 [下载文件](../projects/comp2017-log-analyzer/record.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef RECORD_H
 #define RECORD_H
 
@@ -532,7 +532,7 @@ bool parse_record(const char *line, struct record *out);
 [下载文件](../projects/comp2017-log-analyzer/record.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "record.h"
 
 #include <stddef.h>
@@ -606,7 +606,7 @@ bool parse_record(const char *line, struct record *out)
 [下载文件](../projects/comp2017-log-analyzer/reader.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef READER_H
 #define READER_H
 
@@ -648,7 +648,7 @@ enum line_status read_line(struct line_reader *reader,
 [下载文件](../projects/comp2017-log-analyzer/reader.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "reader.h"
 
 #include <stdbool.h>
@@ -711,7 +711,7 @@ enum line_status read_line(struct line_reader *reader,
 [下载文件](../projects/comp2017-log-analyzer/stats.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef STATS_H
 #define STATS_H
 
@@ -757,7 +757,7 @@ bool stats_print(FILE *output, const struct stats *s);
 [下载文件](../projects/comp2017-log-analyzer/stats.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "stats.h"
 #include "reader.h"
 
@@ -825,7 +825,7 @@ bool stats_print(FILE *output, const struct stats *s)
 [下载文件](../projects/comp2017-log-analyzer/main.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "reader.h"
 #include "record.h"
 #include "stats.h"
@@ -918,7 +918,7 @@ int main(int argc, char **argv)
 [下载文件](../projects/comp2017-log-analyzer/Makefile)
 
 ```make
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -pthread
 OBJECTS = main.o reader.o record.o stats.o
@@ -1013,7 +1013,7 @@ ERROR 15
 [下载文件](../projects/comp2017-log-analyzer/test.py)
 
 ```python
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Behavior tests: run `make test`; every generated input stays in a temp dir."""
 from pathlib import Path
 import shutil
@@ -1236,4 +1236,4 @@ if __name__ == "__main__":
 - [Python documentation — subprocess management](https://docs.python.org/3/library/subprocess.html)
 
 ---
-Guoliang
+Leon

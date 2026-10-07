@@ -1,8 +1,8 @@
 # COMP2017 — 有界文件统计流水线
 
-> Guoliang | Original engineering workshop
+> Leon | Original engineering workshop
 
-![Guoliang learning route](../site/assets/maps/comp2017-thread-pipeline.zh.svg)
+![Leon learning route](../site/assets/maps/comp2017-thread-pipeline.zh.svg)
 
 [English](comp2017-thread-pipeline.en.md) · [中文](comp2017-thread-pipeline.zh.md)
 
@@ -18,7 +18,7 @@
 
 最后一个任务入队，并不等于最后一个任务已经完成。米娜关闭队列，表示不再有新任务，让消费者处理剩余任务，再等待所有工作线程结束。之后才按输入顺序打印结果槽。打不开的文件会明确标为失败，不会假装得到全零统计。
 
-最后，她用长短不同的输入、重复调度和可控故障检验程序。这个项目展示正确的协调方式，小样例并不证明线程越多越快。代码、样例和说明都是 Guoliang 原创教学内容，与所提供的作业无关。
+最后，她用长短不同的输入、重复调度和可控故障检验程序。这个项目展示正确的协调方式，小样例并不证明线程越多越快。代码、样例和说明都是 Leon 原创教学内容，与所提供的作业无关。
 
 ### 开始前先读
 
@@ -575,7 +575,7 @@ in_word 每读一个块都重新初始化，而不是每个文件初始化一次
 [下载文件](../projects/comp2017-thread-pipeline/stats.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef STATS_H
 #define STATS_H
 
@@ -622,7 +622,7 @@ const char *scan_status_name(ScanStatus status);
 [下载文件](../projects/comp2017-thread-pipeline/stats.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "stats.h"
 
 #include <errno.h>
@@ -731,7 +731,7 @@ const char *scan_status_name(ScanStatus status) {
 [下载文件](../projects/comp2017-thread-pipeline/queue.h)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #ifndef QUEUE_H
 #define QUEUE_H
 
@@ -777,7 +777,7 @@ void queue_destroy(WorkQueue *queue);
 [下载文件](../projects/comp2017-thread-pipeline/queue.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "queue.h"
 
 #include <stdio.h>
@@ -878,7 +878,7 @@ void queue_destroy(WorkQueue *queue) {
 [下载文件](../projects/comp2017-thread-pipeline/main.c)
 
 ```c
-/* Guoliang | Original teaching project. */
+/* Leon | Original teaching project. */
 #include "queue.h"
 #include "stats.h"
 
@@ -1021,7 +1021,7 @@ int main(int argc, char **argv) {
 [下载文件](../projects/comp2017-thread-pipeline/Makefile)
 
 ```make
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 CC = clang
 CPPFLAGS = -D_POSIX_C_SOURCE=200809L
 CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -O2 -pthread
@@ -1058,7 +1058,7 @@ clean:
 
 ```python
 #!/usr/bin/env python3
-# Guoliang | Original teaching project.
+# Leon | Original teaching project.
 """Build only in a temporary copy; use independent byte oracles and timeouts."""
 import argparse
 import os
@@ -1192,7 +1192,7 @@ def run_tests(root, flags):
             assert output == reference, (repeat, workers)
     print("PASS 48 repeated schedules: 37 jobs, workers 1/2/4/16, stable output")
 
-    probe = r'''/* Guoliang | Original teaching project. */
+    probe = r'''/* Leon | Original teaching project. */
 #include "queue.h"
 #include <assert.h>
 int main(void) {
@@ -1221,7 +1221,7 @@ int main(void) {
     print("PASS queue close drains FIFO entries and rejects new work")
 
     for after in (0, 2):
-        shim = r'''/* Guoliang | Original teaching project. */
+        shim = r'''/* Leon | Original teaching project. */
 #include <errno.h>
 #include <pthread.h>
 static unsigned int calls;
@@ -1244,7 +1244,7 @@ int fixture_create(pthread_t *thread, const pthread_attr_t *attributes,
         body = "errno = EIO; return -1;" if mode == "error" else (
             "static int first = 1; if (first) { first = 0; errno = EINTR; return -1; }"
             " return read(descriptor, buffer, count);")
-        shim = r'''/* Guoliang | Original teaching project. */
+        shim = r'''/* Leon | Original teaching project. */
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>
@@ -1417,4 +1417,4 @@ Then rest
 - [The Open Group POSIX.1-2024 — read](https://pubs.opengroup.org/onlinepubs/9799919799/functions/read.html)
 
 ---
-Guoliang
+Leon
