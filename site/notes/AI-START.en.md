@@ -6,6 +6,8 @@
 
 ![Leon — Learning roadmap](../assets/maps/start.en.svg)
 
+
+
 New to programming or AI mathematics? Begin with eight gentle lessons. Read a story, follow the numbers, and run a small Python program.
 
 ### Run the Python examples
@@ -105,6 +107,8 @@ Yes, if x already has a numeric value. Read the old value, add one, then store t
 **What happens if celsius is the text "20"?**
 
 Text and numbers are different types. Convert numeric text with float or int before this calculation. Do not assume a quoted number behaves like a number.
+
+<a id="lab-python-values-first-steps"></a>
 
 ### Numbers, names and a first program
 
@@ -207,6 +211,8 @@ It is 24. Positions 0, 1 and 2 refer to the first, second and third values.
 **Is a Python list already a NumPy vector?**
 
 No. A list is a general Python container. NumPy arrays have different rules for numerical operations. Later examples will name the representation they use.
+
+<a id="lab-lists-loops-first-steps"></a>
 
 ### Lists, positions and repeated steps
 
@@ -318,6 +324,8 @@ A returned value can be stored, compared or passed to another function. Printing
 
 No. They check only their inputs. Add cases that represent other valid values and any invalid inputs the real program must handle.
 
+<a id="lab-functions-tests-first-steps"></a>
+
 ### Functions, choices and small checks
 
 Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.
@@ -426,6 +434,8 @@ No. It means that increasing this feature lowers this particular score, with the
 **What if one vector has an extra entry?**
 
 There is no matching partner for that entry. Stop and fix the data contract instead of silently discarding it.
+
+<a id="lab-vectors-dot-products-first-steps"></a>
 
 ### Vectors and the dot product
 
@@ -537,6 +547,8 @@ It needs three matching weights. Otherwise the intended dot product is not defin
 **Can a correctly shaped matrix still be wrong?**
 
 Yes. A column measured in centimetres cannot silently replace a column measured in metres. Meaning and units matter too.
+
+<a id="lab-matrices-shapes-first-steps"></a>
 
 ### Matrices: several examples at once
 
@@ -650,6 +662,8 @@ The observed rain-given-alert fraction would be undefined because its denominato
 
 No. It summarizes these records under a condition. Future weather may differ, and the sample is small.
 
+<a id="lab-probability-counts-first-steps"></a>
+
 ### Probability: choose the denominator
 
 Save this code in a file ending in .py. Run it with Python 3. No extra packages are needed. The program uses small, fixed inputs so you can check every result.
@@ -757,6 +771,8 @@ No. Python raises a domain error. Real training code uses numerically stable los
 **Is a small loss proof that a model is useful?**
 
 No. Check unseen examples, suitable metrics and the task’s requirements. A loss value answers only its specified question.
+
+<a id="lab-powers-logarithms-first-steps"></a>
 
 ### Powers and logarithms without mystery
 
@@ -868,6 +884,8 @@ The slope and loss are both zero. This quadratic has reached its minimum. Other 
 **What if η = 2 at w = 0?**
 
 The new weight is 12 and the loss is 81. The update jumped too far, so the loss increased.
+
+<a id="lab-slopes-gradients-first-steps"></a>
 
 ### Slopes, gradients and one learning step
 

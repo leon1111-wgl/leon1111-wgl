@@ -3,7 +3,7 @@
   "title": "Systems Programming: C, Processes & Concurrency",
   "subtitle": "Reason about bytes, ownership and coordination from a C program to a parallel system.",
   "description": "Learn C and systems programming in manageable steps. Start with small programs, draw memory and resource ownership, then build complete tools with files, processes and threads.",
-  "coverage": "A complete C11 and POSIX path with 24 chapters and 54 standalone programs. A six-pass study plan leads to three fully worked engineering projects. Follow requirements, interfaces, complete source, debugging and tests. Deeper branches remain available as reference.",
+  "coverage": "A complete C11 and POSIX path with 24 chapters and 57 standalone programs. A six-pass study plan leads to three fully worked engineering projects. Follow requirements, interfaces, complete source, debugging and tests. Deeper branches remain available as reference.",
   "color": "#38bdf8",
   "prerequisites": [
     "Basic programming with variables, loops and functions",
@@ -714,6 +714,10 @@
         {
           "question": "Why check close after successful writing?",
           "answer": "Buffered output may fail only when it is flushed during close."
+        },
+        {
+          "question": "Would fwrite(&record, sizeof record, 1, file) define the same portable format?",
+          "answer": "No. Object layout, padding and byte order may differ. Explicitly encode the fields required by the file contract."
         }
       ],
       "instructor_notes": [
@@ -792,6 +796,35 @@
             "Rewind with a checked seek and request twelve one-byte elements.",
             "Reject the input until all required record bytes exist."
           ]
+        },
+        {
+          "id": "portable-record-format",
+          "title": "Define a file format instead of dumping a struct",
+          "intro": "Mina saves a sensor value on one computer and reads it on another. A raw struct dump makes the file depend on padding and byte order. She replaces that hidden agreement with four explicit bytes: a tag, a version, a high byte and a low byte. She can now write down exactly what a reader should accept before she writes the file code.",
+          "language": "c",
+          "code": "#include <assert.h>\n#include <limits.h>\n#include <stdint.h>\n#include <stdio.h>\n#if CHAR_BIT != 8\n#error This teaching format requires eight-bit bytes\n#endif\nstatic void encode(uint16_t value, unsigned char out[4]) {\n    out[0] = 0x4c; out[1] = 1;\n    out[2] = (unsigned char)(value >> 8);\n    out[3] = (unsigned char)(value & 0xffu);\n}\nstatic int decode(const unsigned char *in, size_t size, uint16_t *value) {\n    if (size != 4 || in[0] != 0x4c || in[1] != 1) return 0;\n    uint16_t result = (uint16_t)(((unsigned)in[2] << 8) | in[3]);\n    *value = result;\n    return 1;\n}\nint main(void) {\n    unsigned char wire[4]; encode(513, wire);\n    printf(\"wire: %u %u %u %u\\n\", (unsigned)wire[0], (unsigned)wire[1],\n           (unsigned)wire[2], (unsigned)wire[3]);\n    FILE *file = tmpfile();\n    if (file == NULL) return 1;\n    if (fwrite(wire, 1, sizeof wire, file) != sizeof wire ||\n        fseek(file, 0, SEEK_SET) != 0) { fclose(file); return 1; }\n    unsigned char readback[5];\n    size_t count = fread(readback, 1, sizeof readback, file);\n    int failed = ferror(file);\n    int closed = fclose(file);\n    if (failed || closed != 0) return 1;\n    uint16_t value = 999;\n    int valid = decode(readback, count, &value);\n    assert(valid && value == 513);\n    printf(\"decoded: %u\\n\", (unsigned)value);\n    wire[1] = 2;\n    int wrong_version = decode(wire, 4, &value);\n    int incomplete = decode(wire, 3, &value);\n    assert(!wrong_version && !incomplete && value == 513);\n    puts(\"bad version and short record rejected; output unchanged\");\n    return 0;\n}\n",
+          "output": "wire: 76 1 2 1\ndecoded: 513\nbad version and short record rejected; output unchanged\n",
+          "walkthrough": [
+            "Define each byte. The numeric tag 0x4c is 76; version 1 selects the only supported layout.",
+            "Split 513 into high=2 and low=1. Decode with value = 256*high + low.",
+            "Check write, seek, read-error and close results. Reading up to five bytes also exposes an unexpected extra byte in this one-record format.",
+            "Validate size, tag and version before assigning the caller output. Invalid input preserves the previous output value."
+          ],
+          "explanation": "A struct describes an in-memory object, while a file format is an agreement between writers and readers. Here a record is exactly four eight-bit bytes, and the value is an unsigned integer from 0 to 65535. Endianness is explicit: the high byte comes first. Padding and host byte order never enter the file.\n\nThe bit operation value >> 8 removes the low eight bits. value & 255 keeps only those low bits. Decoding shifts the high byte back and combines the nonoverlapping parts with bitwise OR. For 513 = 2*256 + 1, the encoded pair is [2,1].\n\nThis is a minimal format, not a corruption detector. Many changed payloads remain valid records. A real format may need a checksum, length limits and a documented version migration. A checksum can detect some accidental corruption but does not authenticate a hostile sender. The source uses a temporary file so it cannot overwrite a learner file.",
+          "syntax_notes": [
+            {
+              "syntax": "uint16_t",
+              "meaning": "An exact-width unsigned 16-bit integer on platforms that provide it."
+            },
+            {
+              "syntax": "value & 0xffu",
+              "meaning": "Select the lowest eight bits."
+            },
+            {
+              "syntax": "ferror(file)",
+              "meaning": "Distinguish an I/O error from an ordinary short read at end of file."
+            }
+          ]
         }
       ]
     },
@@ -834,6 +867,10 @@
         {
           "question": "What survives failed nonzero realloc?",
           "answer": "The original allocation remains valid. Preserve its pointer in a separate owner variable."
+        },
+        {
+          "question": "Why must length change after reserve succeeds?",
+          "answer": "Length promises that those elements exist and are initialized. Increasing it before a failed allocation would make the metadata promise data that was never stored."
         }
       ],
       "instructor_notes": [
@@ -955,6 +992,35 @@
             "Initialize the original allocation.",
             "Use a temporary result and commit ownership after success.",
             "Initialize new elements and release the returned allocation base."
+          ]
+        },
+        {
+          "id": "growing-owned-vector",
+          "title": "Grow an owned array without losing it",
+          "intro": "A sensor starts with two readings and keeps producing more. Mina allocates a larger array whenever space runs out. Her first sketch assigns realloc directly to the only pointer. If allocation fails, she can no longer find the old allocation. She rewrites the operation as a small transaction: check the requested size, ask for memory through a temporary pointer, and update the owner only after success.",
+          "language": "c",
+          "code": "#include <assert.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\nstruct Vector { int *data; size_t length; size_t capacity; };\nstatic int reserve(struct Vector *v, size_t need) {\n    const size_t limit = SIZE_MAX / sizeof *v->data;\n    if (need <= v->capacity) return 1;\n    if (need > limit) return 0;\n    size_t next = v->capacity ? v->capacity : 2;\n    while (next < need) {\n        if (next > limit / 2) { next = need; break; }\n        next *= 2;\n    }\n    int *temporary = realloc(v->data, next * sizeof *v->data);\n    if (temporary == NULL) return 0;\n    v->data = temporary;\n    v->capacity = next;\n    return 1;\n}\nstatic int push(struct Vector *v, int value) {\n    if (v->length == SIZE_MAX || !reserve(v, v->length + 1)) return 0;\n    v->data[v->length++] = value;\n    return 1;\n}\nstatic void destroy(struct Vector *v) {\n    free(v->data);\n    *v = (struct Vector){0};\n}\nint main(void) {\n    struct Vector values = {0};\n    for (int n = 1; n <= 5; ++n) {\n        if (!push(&values, n * 10)) { destroy(&values); return 1; }\n        printf(\"length=%zu capacity=%zu\\n\", values.length, values.capacity);\n    }\n    int rejected = !reserve(&values, SIZE_MAX);\n    assert(rejected && values.length == 5 && values.data[0] == 10);\n    printf(\"oversized request rejected: %d\\n\", rejected);\n    printf(\"last value: %d\\n\", values.data[values.length - 1]);\n    destroy(&values);\n    assert(values.data == NULL && values.length == 0 && values.capacity == 0);\n    puts(\"owner reset after free\");\n    return 0;\n}\n",
+          "output": "length=1 capacity=2\nlength=2 capacity=2\nlength=3 capacity=4\nlength=4 capacity=4\nlength=5 capacity=8\noversized request rejected: 1\nlast value: 50\nowner reset after free\n",
+          "walkthrough": [
+            "Maintain length <= capacity. Only entries below length are initialized readings.",
+            "Check need against SIZE_MAX / sizeof(element) before multiplying. Check doubling before it can overflow.",
+            "Keep the old pointer until realloc succeeds. On failure, the old allocation and metadata still describe the same vector.",
+            "Append only after reserve succeeds. Free exactly once, then reset the owner so the empty state is explicit."
+          ],
+          "explanation": "The vector owns its allocation. reserve borrows the owner temporarily; it does not create a second owner. The successful realloc may move storage, so pointers to elements must be treated as invalid after a successful resize. Store an index across growth, then obtain a fresh element pointer.\n\nFor five appends, capacities are 2, 2, 4, 4, 8. Under a model that copies all old elements on growth, the later growths copy 2 + 4 = 6 values. Doubling makes total copying over n appends O(n), so append has O(1) amortized cost. One particular append may still cost O(n). This is a cost model, not a claim that realloc always copies.\n\nThe rejected SIZE_MAX request tests arithmetic protection, not a real operating-system out-of-memory event. A larger test suite should inject allocation failure and verify unchanged contents. The example uses nonzero allocations and assumes a valid Vector created by this interface. It is not a concurrent container.",
+          "syntax_notes": [
+            {
+              "syntax": "sizeof *v->data",
+              "meaning": "Use the pointed-to element type when calculating bytes."
+            },
+            {
+              "syntax": "int *temporary",
+              "meaning": "Hold a possible replacement without losing the original owner."
+            },
+            {
+              "syntax": "(struct Vector){0}",
+              "meaning": "A compound literal that resets every member to zero."
+            }
           ]
         }
       ]
@@ -1849,6 +1915,10 @@
         {
           "question": "Why drain output before waiting for a large writer?",
           "answer": "The child can block on a full pipe; waiting without draining can prevent the child from finishing."
+        },
+        {
+          "question": "Why does one successful write not imply one matching read?",
+          "answer": "The reader chooses a requested size, and a stream read may return fewer available bytes. Application framing and a loop reconstruct the intended message."
         }
       ],
       "instructor_notes": [
@@ -1918,6 +1988,35 @@
             "Close inherited endpoints that the process will not use.",
             "Read and validate each length before reading its payload.",
             "Drain complete frames, close the pipe and reap the writer."
+          ]
+        },
+        {
+          "id": "framed-short-reads",
+          "title": "Read a complete frame from a byte stream",
+          "intro": "Two small programs exchange words. Mina assumes one read call returns one whole word. It works once, then breaks when a read stops after two bytes. She gives each word a one-byte length header. Her reader keeps collecting bytes until the declared payload is complete. It also distinguishes a clean end before the next header from a stream that ends halfway through a word.",
+          "language": "c",
+          "code": "#define _POSIX_C_SOURCE 200809L\n#include <assert.h>\n#include <errno.h>\n#include <stdio.h>\n#include <unistd.h>\nenum Result { COMPLETE, CLEAN_EOF, TRUNCATED, IO_ERROR };\nstatic enum Result read_exact(int fd, unsigned char *out, size_t need) {\n    size_t used = 0;\n    while (used < need) {\n        size_t request = need - used;\n        if (request > 2) request = 2; /* Deliberately fragment reads. */\n        ssize_t n = read(fd, out + used, request);\n        if (n > 0) { used += (size_t)n; continue; }\n        if (n == 0) return used == 0 ? CLEAN_EOF : TRUNCATED;\n        if (errno == EINTR) continue;\n        return IO_ERROR;\n    }\n    return COMPLETE;\n}\nstatic int write_all(int fd, const unsigned char *data, size_t size) {\n    size_t sent = 0;\n    while (sent < size) {\n        ssize_t n = write(fd, data + sent, size - sent);\n        if (n > 0) sent += (size_t)n;\n        else if (n < 0 && errno == EINTR) continue;\n        else return 0;\n    }\n    return 1;\n}\nint main(void) {\n    int channel[2];\n    if (pipe(channel) == -1) return 1;\n    const unsigned char wire[] = {4, 'p', 'i', 'n', 'g', 3, 'o', 'k'};\n    int sent = write_all(channel[1], wire, sizeof wire);\n    int closed = close(channel[1]);\n    if (!sent || closed == -1) { close(channel[0]); return 1; }\n    unsigned char length, payload[16];\n    enum Result header = read_exact(channel[0], &length, 1);\n    if (header != COMPLETE || length == 0 || length > sizeof payload) {\n        close(channel[0]); return 1;\n    }\n    enum Result body = read_exact(channel[0], payload, length);\n    if (body != COMPLETE) { close(channel[0]); return 1; }\n    printf(\"frame: %.*s\\n\", (int)length, (char *)payload);\n    header = read_exact(channel[0], &length, 1);\n    if (header != COMPLETE || length == 0 || length > sizeof payload) {\n        close(channel[0]); return 1;\n    }\n    body = read_exact(channel[0], payload, length);\n    assert(body == TRUNCATED);\n    puts(\"second frame: truncated payload\");\n    enum Result end = read_exact(channel[0], &length, 1);\n    assert(end == CLEAN_EOF);\n    puts(\"next header: clean EOF\");\n    return close(channel[0]) == 0 ? 0 : 1;\n}\n",
+          "output": "frame: ping\nsecond frame: truncated payload\nnext header: clean EOF\n",
+          "walkthrough": [
+            "Write eight bytes, then close the write endpoint. This tiny fixture fits in the pipe; no child process is needed.",
+            "Track used separately from need. A positive short read advances used and the next destination address.",
+            "Check the length before reading into payload. The maximum accepted payload is 16 bytes.",
+            "The second header promises three bytes but only two remain. Report truncation instead of treating those bytes as a full message."
+          ],
+          "explanation": "A stream preserves byte order, not application message boundaries. The loop invariant is that out[0:used] contains exactly the bytes already received for this requested portion. Each positive read reduces need - used. EINTR retries without changing used. EOF and other errors terminate the loop.\n\nThe helper reports CLEAN_EOF when zero bytes of the requested portion were read. Its caller must interpret the context: zero bytes before a new header can be a normal stream end; zero bytes after a positive length header means a missing payload and must also be rejected. The demo rejects every non-COMPLETE payload result.\n\nFor a frame with n payload bytes, reading does O(n) byte-transfer work and needs a bounded payload buffer here. Real blocking streams can wait indefinitely for the rest of a frame. A network service needs a timeout policy, peer-close handling and limits before allocation. This deterministic pipe demo does not implement those policies, and its printable payload is not a general binary-text decoder.",
+          "syntax_notes": [
+            {
+              "syntax": "ssize_t",
+              "meaning": "A signed result type that can hold a byte count or -1."
+            },
+            {
+              "syntax": "out + used",
+              "meaning": "Continue filling after the bytes already received."
+            },
+            {
+              "syntax": "errno == EINTR",
+              "meaning": "Retry this interrupted call without assuming bytes were added."
+            }
           ]
         }
       ]
@@ -3217,6 +3316,10 @@
     {
       "title": "WG14 C11 defect discussion: realloc failure and zero-size requests",
       "url": "https://open-std.org/JTC1/SC22/WG14/issues/c11c17/issue0400.html"
+    },
+    {
+      "title": "Apple developer archive: read(2), short reads and interruptions",
+      "url": "https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/read.2.html"
     }
   ]
 }

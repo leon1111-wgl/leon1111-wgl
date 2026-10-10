@@ -1049,7 +1049,8 @@
       },
       "sources": [
         "clip-repo",
-        "hf-clip"
+        "hf-clip",
+        "clip-paper"
       ],
       "takeaway": {
         "en": "Use text-to-image retrieval for photo libraries and visual archives. Preserve original images and evaluate ambiguity, duplicates and the query’s actual intent.",
@@ -1075,6 +1076,42 @@
           "explanation": {
             "en": "The dictionary comprehension computes a dot product for each image. sorted uses each name’s score and reverse=True puts the largest first. [:2] takes the first two entries. set removes repeated names, & finds relevant returned items, and len counts them. Recall is 0.50 despite a high-scoring first result. This is ranking arithmetic, not a trained image-search service.",
             "zh": "字典推导式为每图计算点积。sorted 按名称对应分数排列，reverse=True 将高分放前。[:2] 取前二。set 去除重复名称，& 找到返回项中相关者，len 计数。即使首位高分，召回率仍是 0.50。这是排序计算，不是训练图像搜索服务。"
+          }
+        },
+        {
+          "id": "multi-query-retrieval-report",
+          "title": {
+            "en": "Evaluate retrieval with several relevant results per query",
+            "zh": "评估每条查询有多个正确结果的检索任务"
+          },
+          "intro": {
+            "en": "Mina searches an image collection with short text descriptions. One query has two valid pictures, another has one, and a third has no labeled match in the collection. A repeated image ID also appears in the ranked output. She removes duplicates, writes down which metric she means by recall, and reports unscored queries separately instead of hiding them.",
+            "zh": "米娜用短文本搜索图像库。一条查询有两张正确图片，另一条只有一张，第三条在库中没有标注匹配。排序结果还出现了重复图片编号。她先去重，明确 recall 的具体定义，并单独报告不能评分的查询，而不是悄悄把它们隐藏。"
+          },
+          "language": "python",
+          "code": "from math import isclose\n\ndef retrieval_report(queries, k):\n    if k <= 0:\n        raise ValueError(\"positive k required\")\n    recalls, hits, reciprocal = [], [], []\n    found_total = relevant_total = unscored = 0\n    for ranked, relevant in queries:\n        ranked = list(dict.fromkeys(ranked))  # Preserve the first occurrence.\n        relevant = set(relevant)\n        if not relevant:\n            unscored += 1\n            continue\n        found = len(set(ranked[:k]) & relevant)\n        recalls.append(found / len(relevant))\n        hits.append(int(found > 0))\n        first = next((i for i, item in enumerate(ranked, 1) if item in relevant), None)\n        reciprocal.append(1 / first if first is not None else 0.0)\n        found_total += found\n        relevant_total += len(relevant)\n    count = len(recalls)\n    if not count:\n        return {\"scored\": 0, \"unscored\": unscored, \"macro_recall\": None,\n                \"micro_recall\": None, \"hit_rate\": None, \"mrr\": None}\n    return {\"scored\": count, \"unscored\": unscored,\n            \"macro_recall\": sum(recalls) / count,\n            \"micro_recall\": found_total / relevant_total,\n            \"hit_rate\": sum(hits) / count,\n            \"mrr\": sum(reciprocal) / count}\n\nqueries = [([\"a\", \"a\", \"x\", \"b\"], {\"a\", \"b\"}),\n           ([\"z\", \"c\", \"d\"], {\"c\"}),\n           ([\"x\", \"z\"], set())]\nreport = retrieval_report(queries, 2)\nassert isclose(report[\"macro_recall\"], 0.75)\nassert isclose(report[\"micro_recall\"], 2 / 3)\nassert report[\"hit_rate\"] == 1.0 and report[\"mrr\"] == 0.75\nassert retrieval_report([([], {\"a\"})], 2)[\"mrr\"] == 0.0\nassert retrieval_report([([], set())], 2)[\"macro_recall\"] is None\nprint(f\"scored: {report['scored']}; unscored: {report['unscored']}\")\nfor metric in [\"macro_recall\", \"micro_recall\", \"hit_rate\", \"mrr\"]:\n    print(f\"{metric}: {report[metric]:.6f}\")\n",
+          "output": "scored: 2; unscored: 1\nmacro_recall: 0.750000\nmicro_recall: 0.666667\nhit_rate: 1.000000\nmrr: 0.750000\n",
+          "walkthrough": [
+            {
+              "en": "Remove duplicate IDs before cutting off the top k. A repeated image must not occupy two result slots in this protocol.",
+              "zh": "本规则先去重，再截取前 k 个；同一图片不能占两个结果位置。"
+            },
+            {
+              "en": "For the first query, top two unique results are a and x. Only one of its two relevant images is found.",
+              "zh": "第一条查询的前两个不同结果是 a、x，只找到两张正确图片中的一张。"
+            },
+            {
+              "en": "The second query finds its only relevant image at rank two. Its recall is one, but reciprocal rank is one half.",
+              "zh": "第二条在第 2 名找到唯一正确图片；召回率为 1，倒数排名为 1/2。"
+            },
+            {
+              "en": "The query with no labeled relevant image is counted as unscored. It contributes to the coverage report, not to a division by zero.",
+              "zh": "没有标注正确结果的查询计为未评分；单独报告覆盖情况，避免除以零。"
+            }
+          ],
+          "explanation": {
+            "en": "For query q, let R_q be its relevant set and T_q the top k unique results. Fractional recall is |T_q intersect R_q|/|R_q|. Macro recall averages these fractions equally across Q scored queries. Micro recall divides total retrieved relevant items by total relevant items. Here macro=(1/2+1)/2=0.75, while micro=(1+1)/(2+1)=2/3.\n\nHit@k averages the indicator that at least one relevant result is retrieved. Here it is 1. MRR averages 1/r_q, where r_q is the first relevant rank in the full supplied, deduplicated list; a missing match contributes zero. Here MRR=(1+1/2)/2=0.75. Some image-text benchmarks call a hit-within-k measure Recall@k. With one positive per query it equals fractional recall; with multiple positives it need not. Always publish the definition.\n\nTwo of three queries are scored. The third may expose missing annotations or an answer absent from the collection. Excluding it does not measure whether a system can correctly abstain; that needs a separate protocol with known unanswerable queries. Similarity scores rank candidates, but do not prove relevance. Compare systems using the same corpus, deduplication, annotations and cutoff. Cost is linear in the supplied ranked lists plus relevance sets with average constant-time hash operations.",
+            "zh": "对查询 q，R_q 是正确结果集合，T_q 是前 k 个不重复结果。比例召回率为 |T_q∩R_q|/|R_q|。宏平均召回率对 Q 条可评分查询的比例等权平均；微平均召回率用找到的正确结果总数除以正确结果总数。本例宏平均=(1/2+1)/2=0.75，微平均=(1+1)/(2+1)=2/3。\n\nHit@k 统计“至少找到一个正确结果”的查询比例，本例为 1。MRR 对 1/r_q 求平均，其中 r_q 是完整输入排序去重后首个正确结果的名次；没有找到则记零。本例 MRR=(1+1/2)/2=0.75。一些图文检索基准把前 k 名命中率称为 Recall@k；每条只有一个正例时，它与比例召回率相同，多正例时未必相同，必须公开定义。\n\n三条查询中两条可评分。第三条可能暴露标注缺失，或库中确实没有答案。排除它并不表示测过正确拒答能力；拒答需要包含已知无答案查询的独立规则。相似度只负责排序，不能证明相关性。比较系统时应固定语料库、去重方式、标注和截断位置。在哈希操作平均常数时间的假设下，成本与输入排序列表及相关集合总大小线性相关。"
           }
         }
       ],
@@ -1139,6 +1176,16 @@
           "answer": {
             "en": "Both relevant items appear, so Recall@3 becomes one for this query. More results also demand more inspection.",
             "zh": "两个相关项都出现，此查询 Recall@3=1，但更多结果需要更多检查。"
+          }
+        },
+        {
+          "question": {
+            "en": "Can two systems have the same Hit@2 but different recall?",
+            "zh": "两个系统的 Hit@2 相同，召回率还能不同吗？"
+          },
+          "answer": {
+            "en": "Yes. For a query with two relevant images, finding one or both gives a hit. Their fractional recalls are one half and one. The metric determines which difference you can see.",
+            "zh": "可以。一条查询有两张正确图片时，找到一张或两张都算命中，但比例召回率分别是 1/2 和 1。指标决定你能看到哪种差异。"
           }
         }
       ],
@@ -1685,6 +1732,42 @@
             "en": "The outer loop tests three shifts; the inner loop visits video positions. j is the audio position to compare. The chained comparison checks its bounds before indexing. Multiplication counts a coincident pair of ones, and += accumulates it. max selects the shift with the highest score, giving +1 or 0.1 seconds of delay. This does not run SyncNet or alter media files.",
             "zh": "外循环测试三个偏移，内循环遍历视频位置。j 为要比较的音频位置。连续比较先检查范围，再索引。相乘统计同时为一的事件对，+= 累加。max 选择最高分偏移，得到 +1，即延迟 0.1 秒。代码没有运行 SyncNet 或修改媒体文件。"
           }
+        },
+        {
+          "id": "timestamp-nearest-alignment",
+          "title": {
+            "en": "Align events with timestamps, offsets and a tolerance",
+            "zh": "用时间戳、偏移和容差对齐事件"
+          },
+          "intro": {
+            "en": "Mina reviews a video with an audio event log. The video has uneven frame intervals. The audio clock reads 20 milliseconds ahead of the video clock. Multiplying time by a guessed frame rate gives wrong matches. She converts the audio timestamps to the video clock, finds the nearest observed frame, and leaves distant events unmatched.",
+            "zh": "米娜核对视频与音频事件日志。视频帧间隔不完全相等，音频时钟比视频时钟快 20 毫秒。用时间乘猜测的帧率，会匹配错帧。她先把音频时间转换到视频时钟，再查找最近的实际帧，距离太远的事件保留为未匹配。"
+          },
+          "language": "python",
+          "code": "from bisect import bisect_left\nfrom math import isclose\n\ndef nearest_frame(timestamps, event_time, offset, tolerance):\n    if tolerance < 0 or not timestamps:\n        raise ValueError(\"nonempty timestamps and nonnegative tolerance required\")\n    if any(a >= b for a, b in zip(timestamps, timestamps[1:])):\n        raise ValueError(\"frame timestamps must be strictly increasing\")\n    target = event_time - offset  # audio_time = video_time + offset\n    insertion = bisect_left(timestamps, target)\n    candidates = [i for i in (insertion - 1, insertion) if 0 <= i < len(timestamps)]\n    best = min(candidates, key=lambda i: (abs(timestamps[i] - target), i))\n    error = abs(timestamps[best] - target)\n    return (best, error) if error <= tolerance else None\n\nvideo = [0.0, 0.041, 0.083, 0.126, 0.168]\nevents = [0.061, 0.104, 0.300]\nmatches = [nearest_frame(video, event, 0.020, 0.010) for event in events]\nassert matches[0][0] == 1 and isclose(matches[0][1], 0.0, abs_tol=1e-12)\nassert matches[1][0] == 2 and isclose(matches[1][1], 0.001)\nassert matches[2] is None\nassert nearest_frame([0.0, 2.0], 1.0, 0.0, 1.0)[0] == 0\nfor event, match in zip(events, matches):\n    if match is None:\n        print(f\"audio {event:.3f}: unmatched\")\n    else:\n        index, error = match\n        print(f\"audio {event:.3f}: frame {index}, error {error:.3f} s\")\n",
+          "output": "audio 0.061: frame 1, error 0.000 s\naudio 0.104: frame 2, error 0.001 s\naudio 0.300: unmatched\n",
+          "walkthrough": [
+            {
+              "en": "State the clock relation: audio time equals video time plus 0.020 seconds. Therefore subtract the offset.",
+              "zh": "先明确时钟关系：音频时间=视频时间+0.020 秒，因此换算时要减去偏移。"
+            },
+            {
+              "en": "Binary search finds the insertion point. Only the frames immediately before and after it can be nearest.",
+              "zh": "二分查找定位插入点，只有紧邻它的前后两帧可能最近。"
+            },
+            {
+              "en": "Choose the smaller distance, breaking exact ties toward the earlier frame.",
+              "zh": "选择距离较小者；距离完全相同时选较早帧。"
+            },
+            {
+              "en": "Reject the last event: 0.300-0.020=0.280, which is 0.112 seconds from the final frame.",
+              "zh": "拒绝最后事件：0.300-0.020=0.280，与最后一帧相差 0.112 秒。"
+            }
+          ],
+          "explanation": {
+            "en": "Let a be an audio timestamp, delta a known clock offset and v_i an observed video timestamp. Search for i_star=argmin_i |v_i-(a-delta)|. Accept only if that minimum is at most tolerance tau. Here tau=0.010 seconds. The first two adjusted events are 0.041 and 0.084; their frame errors are 0 and 0.001 seconds.\n\nThe sign of delta comes from the declared clock equation, not a guess. Use one time unit everywhere. Frame index alone does not encode presentation time when frame intervals vary. This program assumes finite numeric timestamps and a known constant offset. Clock drift may require a calibrated scale as well, such as audio_time=scale*video_time+offset.\n\nEach call validates ordering in O(F), then searches in O(log F), so the full function is O(F). A production index can validate once and reuse the sorted timestamps for O(log F) queries. This is nearest-point matching, not interpolation, one-to-one assignment, or learned audio-visual synchronization. Some applications should match time intervals instead. A nearby frame is not proof that the sound and visible event have the same cause.",
+            "zh": "设音频时间为 a，已知时钟偏移为 delta，实际视频帧时间为 v_i。寻找 i_star=argmin_i |v_i-(a-delta)|，只有最小距离不超过容差 tau 才接受。这里 tau=0.010 秒，前两个校正后事件为 0.041、0.084，与帧相差 0、0.001 秒。\n\ndelta 的正负取决于先声明的时钟方程，不能靠猜。所有量必须使用相同单位。帧间隔不同时，帧编号本身并不等于呈现时间。本程序假设有限数值时间戳与已知恒定偏移；若时钟有漂移，还可能需要标定比例，例如 audio_time=scale×video_time+offset。\n\n每次调用先用 O(F) 检查排序，再做 O(log F) 搜索，所以完整函数为 O(F)。实际索引可以只检查一次，后续每次查询 O(log F)。这是最近点匹配，不是插值、一对一分配，也不是学习式音画同步。有些任务应匹配时间区间；时间相近也不能证明声音与画面事件具有相同成因。"
+          }
         }
       ],
       "glossary": [
@@ -1748,6 +1831,16 @@
           "answer": {
             "en": "No. Check events over time; a changing delay requires more than a single constant correction.",
             "zh": "不能。要随时间检查事件；变化延迟需要超出单个常量的校正。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why not force a match for every event?",
+            "zh": "为什么不强制每个事件都匹配一帧？"
+          },
+          "answer": {
+            "en": "The nearest frame can still be too far away. An explicit unmatched result preserves this uncertainty instead of hiding it inside a false association.",
+            "zh": "最近帧也可能仍然太远。明确返回未匹配，能保留不确定性，避免制造错误关联。"
           }
         }
       ],

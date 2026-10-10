@@ -70,6 +70,20 @@
   .run-help code{font-size:var(--code-font);font-family:var(--mono);overflow-wrap:anywhere;color:var(--accent)}.run-help a{text-decoration:underline;text-underline-offset:3px}
 }
 /* Course studio: route diagrams, readable programs and worked reasoning. */
+.extension-route,.code-example[id],.extension-summary{scroll-margin-top:110px}
+.extension-route .route-flow{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.extension-route .route-flow li{display:flex;flex-direction:column;gap:14px}
+.extension-route .route-node{height:auto;flex:1}
+.extension-prerequisite{font-size:16px;line-height:1.7;color:var(--muted);text-decoration:underline;text-underline-offset:4px;overflow-wrap:anywhere}
+.extension-summary{padding:30px;margin:32px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.extension-summary h3{font-size:28px;line-height:1.4;margin:16px 0}
+.extension-summary p{font-size:18px;line-height:1.85;max-width:80ch;color:var(--text)}
+.extension-summary ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:0 28px;padding:0;margin:24px 0 0}
+.extension-summary li{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;padding:16px 0;border-top:1px solid var(--line);font-size:16px;line-height:1.7}
+.extension-summary li strong{color:var(--accent)}.extension-summary li span{margin-right:auto;color:var(--muted)}
+.extension-summary li a{padding:4px;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:640px){.extension-summary{padding:22px}.extension-summary h3{font-size:25px}}
+@media print{.extension-summary{break-inside:avoid}.extension-prerequisite{color:inherit}}
 .learning-route{padding:36px 0 38px;border-bottom:1px solid var(--line)}
 .route-heading{display:flex;align-items:end;justify-content:space-between;gap:32px;margin-bottom:24px}.route-heading h2{font-size:28px;line-height:1.3;margin:12px 0 0;letter-spacing:-.6px}.route-heading p{max-width:470px;margin:0;color:var(--muted);font-size:17px;line-height:1.8}
 .toc ol{padding-left:2.2em}

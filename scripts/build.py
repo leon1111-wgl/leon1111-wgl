@@ -3,6 +3,7 @@
 from pathlib import Path
 import html,json,re
 from build_paths import build_all,home_section
+from learning_extensions import home_extensions
 from teaching import run_notes,asset_version,glossary_html,teaching_html,teaching_markdown,reading_tools,export_examples
 ROOT=Path(__file__).resolve().parents[1]
 SITE=ROOT/'site'; CONTENT=ROOT/'content'
@@ -30,6 +31,7 @@ def home(courses,guides):
 <section id="research" class="section"><div class="section-head"><div><span class="number">03 / SELECTED RESEARCH</span><h2>Answers should come with evidence.</h2></div></div><article class="research-panel"><div>{badge(r['venue'])}{badge(r['role'])}<h3>{E(r['title'])}</h3><p>{E(r['summary'])}</p><a class="text-link" href="{E(r['url'])}">Read the publication ↗</a></div><div class="research-side"><h4>My contribution</h4><p>{E(r['contribution'])}</p><p><span class="pill">Long video</span><span class="pill">Evaluation</span></p></div></article></section>
 <section id="about" class="section"><div class="section-head"><div><span class="number">04 / A LITTLE CONTEXT</span><h2>A background built across disciplines.</h2></div><p>I use stories, small examples, and careful definitions to make technical ideas easier to revisit.</p></div><div class="about-grid"><div><p class="eyebrow">EDUCATION</p><ul class="timeline">{ed}</ul><div class="skills">{''.join(f'<span>{E(s)}</span>' for s in profile['skills'])}</div><p>{E(profile['languages'])}</p></div><div><p class="eyebrow">EXPERIENCE</p><ul class="timeline">{exp}</ul><a class="text-link" href="mailto:{E(profile['email'])}">Get in touch ↗</a></div></div></section>'''
  body=body.replace('<div class="course-grid">',python_portal+'<div class="course-grid">',1)
+ body=body.replace('<div class="method">',home_extensions(courses,guides)+'<div class="method">',1)
  (SITE/'index.html').write_text(shell('Leon Wang — Research & Learning',body))
 from build_courses import course
 

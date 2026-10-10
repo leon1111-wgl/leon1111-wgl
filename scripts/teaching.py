@@ -84,7 +84,7 @@ def teaching_html(topic, group, lang='en'):
         walk = ''
         if example.get('walkthrough'):
             walk = '<h4>'+detail['walk']+'</h4><ol class="execution-steps">'+''.join('<li>'+paragraphs(local(x,lang))+'</li>' for x in example['walkthrough'])+'</ol>'
-        pieces.append(f'''<section class="code-example"><h3>{detail['code']} · {i:02d}</h3><h4>{E(local(example['title'],lang))}</h4>{paragraphs(local(example['intro'],lang))}<div class="code-actions"><span>{name}</span><button type="button" data-copy-code="{id}">{lab['copy']}</button><a href="../{path}" download>{detail['download']} ↓</a><p class="code-hint">{detail['scroll']}</p></div>{code_html(example['code'],language,id)}<details class="example-run"><summary>{detail['command']}</summary><pre class="code">{E(command_for(path,language))}</pre></details><div class="output-block"><h4>{lab['output']}</h4><pre class="code code-output">{E(example['output'])}</pre></div>{syntax}{walk}{trace_html(example.get('trace'),lang)}<h4>{lab['explain']}</h4>{paragraphs(local(example['explanation'],lang))}</section>''')
+        pieces.append(f'''<section class="code-example" id="lab-{topic["id"]}-{example["id"]}" data-reading-id="lab-{topic["id"]}-{example["id"]}"><h3>{detail['code']} · {i:02d}</h3><h4>{E(local(example['title'],lang))}</h4>{paragraphs(local(example['intro'],lang))}<div class="code-actions"><span>{name}</span><button type="button" data-copy-code="{id}">{lab['copy']}</button><a href="../{path}" download>{detail['download']} ↓</a><p class="code-hint">{detail['scroll']}</p></div>{code_html(example['code'],language,id)}<details class="example-run"><summary>{detail['command']}</summary><pre class="code">{E(command_for(path,language))}</pre></details><div class="output-block"><h4>{lab['output']}</h4><pre class="code code-output">{E(example['output'])}</pre></div>{syntax}{walk}{trace_html(example.get('trace'),lang)}<h4>{lab['explain']}</h4>{paragraphs(local(example['explanation'],lang))}</section>''')
     cases = topic.get('practice_cases', [])
     if cases:
         items = ''.join(f'<article><h4>{E(local(x["title"],lang))}</h4>{paragraphs(local(x["body"],lang))}</article>' for x in cases)
@@ -111,7 +111,7 @@ def teaching_markdown(topic, group, lang='en'):
         parts.extend(['**'+detail['answer']+'**',local(problem['answer'],lang),'**'+detail['check']+'**',local(problem['sanity_check'],lang)])
     for example in topic.get('code_examples', []):
         language = example.get('language','python')
-        parts.extend(['### '+local(example['title'],lang), local(example['intro'],lang), '```'+language+'\n'+example['code'].rstrip()+'\n```', '**'+detail['command']+'**', '```sh\n'+command_for(example_path(group,topic,example),language)+'\n```', '**'+lab['output']+'**', '```text\n'+example['output'].rstrip()+'\n```'])
+        parts.extend([f'<a id="lab-{topic["id"]}-{example["id"]}"></a>', '### '+local(example['title'],lang), local(example['intro'],lang), '```'+language+'\n'+example['code'].rstrip()+'\n```', '**'+detail['command']+'**', '```sh\n'+command_for(example_path(group,topic,example),language)+'\n```', '**'+lab['output']+'**', '```text\n'+example['output'].rstrip()+'\n```'])
         if example.get('syntax_notes'):
             parts.append('**'+detail['syntax']+'**')
             parts.extend('- `'+x['syntax']+'`: '+local(x['meaning'],lang) for x in example['syntax_notes'])

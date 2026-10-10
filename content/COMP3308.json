@@ -185,6 +185,10 @@
         {
           "question": "May two lower bounds be added?",
           "answer": "Not generally; they may count the same necessary work twice."
+        },
+        {
+          "question": "Why is “admissible” alone not enough for a permanent closed set?",
+          "answer": "A state can be expanded before its best g is discovered when the heuristic is inconsistent. The example expands A twice to recover the better path."
         }
       ],
       "instructor_notes": [
@@ -221,6 +225,35 @@
           ],
           "answer": "The heuristic is admissible but inconsistent, so permanent closing needs additional care.",
           "sanity_check": "Along A→B, g rises by 1 but h falls by 3, so f falls by 2, exposing inconsistency."
+        },
+        {
+          "title": "Repair a too-early closed state",
+          "question": "Use the graph and heuristic in the program. Calculate the first cost to G, the improved cost to A and the final cost to G.",
+          "strategy": "Order frontier entries by f, but calculate route improvements using g.",
+          "steps": [
+            "S->A has g=2 and f=2. S->B has g=1 and f=3.5, so A expands first.",
+            "A->G gives g(G)=2+2=4. B still has smaller f and expands next.",
+            "B->A gives g(A)=1+0.5=1.5. Reopen A, then reach G with 1.5+2=3.5."
+          ],
+          "answer": "The optimal path is S,B,A,G with cost 3.5. Keeping A permanently closed would retain cost 4 in this graph.",
+          "sanity_check": "Compare with uniform-cost search using h=0, or enumerate the three simple S-to-G paths: costs 4, 3.5 and 101."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "astar-reopen-states",
+          "title": "Reopen a state when A* finds a better route",
+          "intro": "Mina builds a route planner with a lower-bound estimate for the remaining cost. Every estimate is optimistic, but neighbouring estimates do not change smoothly. The planner first reaches A with cost 2 and later discovers a route costing 1.5. A permanent closed list discards the improvement. Mina keeps the best known cost and allows a state to return to the frontier when that cost improves.",
+          "language": "python",
+          "code": "from heapq import heappop, heappush\nfrom math import inf\n\ndef astar(graph, heuristic, start, goal):\n    best = {start: 0.0}\n    parent = {}\n    frontier = [(heuristic[start], 0.0, start)]\n    expanded = []\n    while frontier:\n        _, cost, node = heappop(frontier)\n        if cost != best[node]:\n            continue\n        expanded.append(node)\n        if node == goal:\n            path = [goal]\n            while path[-1] != start:\n                path.append(parent[path[-1]])\n            return cost, list(reversed(path)), expanded\n        for nxt, step in graph[node]:\n            if step < 0:\n                raise ValueError(\"nonnegative edges required\")\n            candidate = cost + step\n            if candidate < best.get(nxt, inf):\n                best[nxt] = candidate\n                parent[nxt] = node\n                heappush(frontier, (candidate + heuristic[nxt], candidate, nxt))\n    return inf, [], expanded\n\ngraph = {\"S\": [(\"A\", 2), (\"B\", 1)], \"A\": [(\"G\", 2)],\n         \"B\": [(\"A\", 0.5), (\"G\", 100)], \"G\": []}\nh = {\"S\": 3.5, \"A\": 0, \"B\": 2.5, \"G\": 0}\ncost, path, expanded = astar(graph, h, \"S\", \"G\")\nassert cost == 3.5 and path == [\"S\", \"B\", \"A\", \"G\"]\nassert expanded == [\"S\", \"A\", \"B\", \"A\", \"G\"]\nassert astar(graph, {node: 0 for node in graph}, \"S\", \"G\")[0] == cost\nprint(\"expanded:\", expanded)\nprint(\"path:\", path)\nprint(f\"cost: {cost:.1f}\")\n",
+          "output": "expanded: ['S', 'A', 'B', 'A', 'G']\npath: ['S', 'B', 'A', 'G']\ncost: 3.5\n",
+          "walkthrough": [
+            "Store f=g+h in the heap and also keep g. The best dictionary records the cheapest discovered path to each state.",
+            "A better g inserts a fresh heap entry, even if the state was expanded before.",
+            "Skip entries whose g no longer matches best. They describe obsolete routes.",
+            "Stop when the goal is popped with its current best g. Merely generating a goal is too early."
+          ],
+          "explanation": "Admissibility means h(v) <= the true remaining cost. Consistency is the stronger edge condition h(u) <= w(u,v)+h(v). Here h(B)=2.5 is admissible, because B->A->G costs 2.5. It is inconsistent on B->A because 2.5 > 0.5+0.\n\nAfter S, A has f=2 and B has f=3.5. Expanding A discovers G at cost 4. Expanding B then improves A to g=1.5. Reopening A improves G to 3.5. Under the stated finite graph, nonnegative edges, admissible finite heuristic and h(goal)=0, reopening preserves the route needed for optimal A* termination. The function assumes the caller supplies these heuristic conditions; it does not verify admissibility.\n\nWith an inconsistent heuristic, states can be expanded many times. Do not claim the usual one-expansion-per-state complexity. In the special case h=0, this search becomes uniform-cost search. In practice, choose a heuristic whose assumptions you can justify and record both solution quality and expansion count."
         }
       ]
     },
@@ -747,6 +780,10 @@
         {
           "question": "Why use logarithms?",
           "answer": "Products of tiny probabilities can underflow; logs turn products into sums."
+        },
+        {
+          "question": "Why is taking log after multiplying all probabilities too late?",
+          "answer": "The product may already have rounded to zero. log(0) cannot recover information lost during multiplication. Add the logarithms before that happens."
         }
       ],
       "instructor_notes": [
@@ -783,6 +820,35 @@
           ],
           "answer": "The unseen blue estimate is 1/7≈0.142857, avoiding a zero product.",
           "sanity_check": "The numerators 4+2+1=7 match the denominator, so probabilities sum to 1."
+        },
+        {
+          "title": "Normalize two smoothed document scores",
+          "question": "V=3, alpha=1 and class priors are 1/2. Class A counts are red=3, round=1, blue=0; class B counts are red=0, round=1, blue=3. Classify red,red,round.",
+          "strategy": "Compute class token totals and smoothed word probabilities before applying the repeated-word counts.",
+          "steps": [
+            "Each class has four tokens, so the denominator is 4+3=7. A gives red=4/7 and round=2/7.",
+            "A score is (1/2)(4/7)^2(2/7)=16/343. B score is (1/2)(1/7)^2(2/7)=1/343.",
+            "Divide by their sum 17/343: posterior A=16/17 and B=1/17."
+          ],
+          "answer": "The model predicts A with approximate probability 0.941176 under its assumptions.",
+          "sanity_check": "The posterior odds are 16:1. Only the two red occurrences distinguish the classes, each contributing a likelihood ratio of 4."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "log-space-word-counts",
+          "title": "Keep long-text likelihoods in log space",
+          "intro": "A club sorts messages into two topics. Mina multiplies word probabilities and obtains reasonable scores for a short note. For a much longer note, both class scores become zero in floating-point arithmetic. The message did not become impossible; the representation ran out of range. She stores log scores, adds contributions, and normalizes only after subtracting the largest score.",
+          "language": "python",
+          "code": "from math import exp, log, isclose\n\nvocabulary = [\"red\", \"round\", \"blue\"]\ncounts = {\"A\": {\"red\": 3, \"round\": 1, \"blue\": 0},\n          \"B\": {\"red\": 0, \"round\": 1, \"blue\": 3}}\n\ndef log_scores(document):\n    result = {}\n    for label, words in counts.items():\n        denominator = sum(words.values()) + len(vocabulary)\n        score = log(0.5)\n        for word in vocabulary:\n            probability = (words[word] + 1) / denominator\n            score += document.get(word, 0) * log(probability)\n        result[label] = score\n    return result\n\ndef posterior(scores):\n    largest = max(scores.values())\n    weights = {label: exp(value - largest) for label, value in scores.items()}\n    total = sum(weights.values())\n    return {label: value / total for label, value in weights.items()}\n\nshort = {\"red\": 2, \"round\": 1}\nscores = log_scores(short)\nprobabilities = posterior(scores)\nassert isclose(probabilities[\"A\"], 16 / 17)\nprint(f\"short P(A|text): {probabilities['A']:.6f}\")\nlong = {word: count * 1000 for word, count in short.items()}\nlong_scores = log_scores(long)\nprint(\"raw scores underflow:\", [exp(x) == 0 for x in long_scores.values()])\nprint(\"log-space winner:\", max(long_scores, key=long_scores.get))\nassert isclose(sum(posterior(long_scores).values()), 1.0)\n",
+          "output": "short P(A|text): 0.941176\nraw scores underflow: [True, True]\nlog-space winner: A\n",
+          "walkthrough": [
+            "Add one to every class-word count. Add the vocabulary size to each class token total.",
+            "Compute log prior plus count*log likelihood for each word. Repeated words contribute repeatedly.",
+            "Subtract the largest log score before exponentiating. This preserves ratios and keeps the largest weight equal to one.",
+            "Compare the short document to 16/17 and show why raw long-document scores collapse."
+          ],
+          "explanation": "For class c, score(c)=log P(c)+sum over words w of n_w*log((N_cw+alpha)/(N_c+alpha*V)). n_w counts occurrences in the new document. N_cw is the training count for word w in class c. N_c is the total training token count for the class, V is vocabulary size, and alpha=1 here. A word-order-independent multinomial factor is omitted because it is the same for both classes and cancels in normalization.\n\nFor a document with two red tokens and one round token, the unnormalized scores are 16/343 and 1/343, including the equal priors. Normalizing gives P(A|text)=16/17. A fixed vocabulary is used; unseen words are ignored in this small demo. A real pipeline needs a documented unknown-token policy fitted from training data.\n\nStable arithmetic prevents numerical underflow from erasing the comparison. It does not fix the conditional-independence approximation or calibrate the probabilities. Repeating highly dependent words can still make this model overconfident. Keep numerical correctness separate from modeling correctness."
         }
       ]
     },
@@ -903,6 +969,10 @@
         {
           "question": "Why name the positive class?",
           "answer": "Swapping class roles changes precision and recall."
+        },
+        {
+          "question": "Can 90% accuracy prove that every class is recognised?",
+          "answer": "No. The flower recall is zero here. Inspect class counts and choose aggregate metrics that reflect the task priorities."
         }
       ],
       "instructor_notes": [
@@ -939,6 +1009,35 @@
           ],
           "answer": "Choose B under these stated costs; another cost ratio could change the decision.",
           "sanity_check": "Three fewer misses save 30 units; six extra false flags cost 6, net saving 24."
+        },
+        {
+          "title": "Compute macro F1 from three classes",
+          "question": "Eight leaves and one seed are correct. The single flower is called a leaf. Compute all class F1 scores and macro F1.",
+          "strategy": "Create one-vs-rest counts for each class, then average the F1 values rather than averaging precision and recall first.",
+          "steps": [
+            "Leaf: TP=8, FP=1, FN=0, so F1=16/17.",
+            "Flower: TP=0, FP=0, FN=1, so F1=0. Seed has F1=1.",
+            "Macro F1=(16/17+0+1)/3=11/17, approximately 0.647059."
+          ],
+          "answer": "Macro F1 is about 0.6471 despite accuracy 0.9.",
+          "sanity_check": "Pooling gives TP=9, FP=1, FN=1, so micro F1=18/20=0.9, which matches 9/10 accuracy."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "macro-micro-report",
+          "title": "See which class disappears inside an average",
+          "intro": "A classifier recognises ten pictures: eight leaves, one flower and one seed. Mina sees 90% accuracy and thinks every category works well. The report tells a different story: the only flower was called a leaf. She calculates a score for each class before taking an average, so the small class can no longer disappear inside the large one.",
+          "language": "python",
+          "code": "from math import isclose\nlabels = [\"leaf\", \"flower\", \"seed\"]\ntruth = [\"leaf\"] * 8 + [\"flower\", \"seed\"]\npredicted = [\"leaf\"] * 9 + [\"seed\"]\n\ndef report(truth, predicted, labels):\n    if len(truth) != len(predicted) or not truth:\n        raise ValueError(\"nonempty aligned observations required\")\n    if set(truth + predicted) - set(labels):\n        raise ValueError(\"unknown label\")\n    per_class = []\n    total_tp = total_fp = total_fn = 0\n    for label in labels:\n        tp = sum(t == label and p == label for t, p in zip(truth, predicted))\n        fp = sum(t != label and p == label for t, p in zip(truth, predicted))\n        fn = sum(t == label and p != label for t, p in zip(truth, predicted))\n        denominator = 2 * tp + fp + fn\n        f1 = 2 * tp / denominator if denominator else 0.0\n        per_class.append((label, tp, fp, fn, f1))\n        total_tp += tp; total_fp += fp; total_fn += fn\n    macro = sum(row[4] for row in per_class) / len(labels)\n    micro = 2 * total_tp / (2 * total_tp + total_fp + total_fn)\n    return per_class, macro, micro\n\nrows, macro, micro = report(truth, predicted, labels)\nfor label, tp, fp, fn, f1 in rows:\n    print(f\"{label}: TP={tp} FP={fp} FN={fn} F1={f1:.4f}\")\naccuracy = sum(t == p for t, p in zip(truth, predicted)) / len(truth)\nassert isclose(macro, (16/17 + 0 + 1)/3) and isclose(micro, accuracy)\nprint(f\"macro F1={macro:.4f}; micro F1={micro:.4f}; accuracy={accuracy:.4f}\")\n",
+          "output": "leaf: TP=8 FP=1 FN=0 F1=0.9412\nflower: TP=0 FP=0 FN=1 F1=0.0000\nseed: TP=1 FP=0 FN=0 F1=1.0000\nmacro F1=0.6471; micro F1=0.9000; accuracy=0.9000\n",
+          "walkthrough": [
+            "Treat one class as positive at a time. The mistaken flower creates a false positive for leaf and a false negative for flower.",
+            "Compute F1_c=2TP_c/(2TP_c+FP_c+FN_c). State a convention for a zero denominator.",
+            "Macro averages class F1 values equally. Micro first combines counts and then computes one score.",
+            "Check micro F1 against accuracy for this single-label, exhaustive-class setting."
+          ],
+          "explanation": "Macro F1=(1/K) sum over K class-specific F1 values. Every included class receives weight 1/K. Micro F1=2 sum(TP)/(2 sum(TP)+sum(FP)+sum(FN)). In exhaustive single-label classification, each incorrect prediction contributes one FP and one FN, so micro F1 equals accuracy. This identity does not extend automatically to multilabel evaluation or a selected subset of classes.\n\nLeaf has F1=16/17, flower has F1=0, and seed has F1=1. Macro F1 is about 0.6471, while micro F1 and accuracy are 0.9. Neither average replaces the class-level counts. Ten examples are far too few for a reliable deployment estimate.\n\nThe code uses zero for a zero-denominator class and includes the explicitly listed labels. Other reporting conventions can exclude undefined classes. State the rule before comparing reports; otherwise two honest tools can return different macro values from the same data."
         }
       ]
     },
@@ -2075,6 +2174,10 @@
     {
       "title": "scikit-learn official guide — Clustering",
       "url": "https://scikit-learn.org/stable/modules/clustering.html"
+    },
+    {
+      "title": "scikit-learn: Model evaluation and averaging classification metrics",
+      "url": "https://scikit-learn.org/stable/modules/model_evaluation.html"
     }
   ]
 }

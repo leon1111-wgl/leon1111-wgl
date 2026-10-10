@@ -648,6 +648,16 @@
             "en": "Every exponential is equal, so three classes receive probability 1/3 each. The correct-class loss is log(3), about 1.098612.",
             "zh": "各指数相同，三类概率均为 1/3。正确类损失为 log(3)，约 1.098612。"
           }
+        },
+        {
+          "question": {
+            "en": "Why can the displayed target probability be zero while the loss is finite?",
+            "zh": "为什么显示的目标概率为零，损失却仍有限？"
+          },
+          "answer": {
+            "en": "Zero here is floating-point underflow. The logit-based formula represents the log probability without first rounding its exponential to zero.",
+            "zh": "这里的零来自浮点下溢。基于 logits 的公式直接表示对数概率，无须先把指数值舍入成零。"
+          }
         }
       ],
       "practice_cases": [
@@ -688,6 +698,38 @@
           "explanation": {
             "en": "max finds the shift. exp transforms relative scores to positive weights. Division by their sum normalizes them. Indexing with target selects the correct-class probability; log turns it into loss. allclose checks the shift property within floating-point tolerance. The simple loss line is safe for these logits; extreme cases should use stable log-sum-exp loss implementations.",
             "zh": "max 找到平移值。exp 将相对分数转为正权重，除以总和完成归一化。用 target 索引取正确类别概率，再以 log 计算损失。allclose 在浮点容差内检查平移不变性。这行简单损失适合当前 logits；极端情况应使用稳定的 log-sum-exp 损失实现。"
+          }
+        },
+        {
+          "id": "stable-loss-gradient-check",
+          "title": {
+            "en": "Compute a finite loss even when a probability underflows",
+            "zh": "概率下溢时仍能计算有限损失"
+          },
+          "intro": {
+            "en": "Mina sees a network assign a huge score to the wrong class. Its target probability rounds to zero, so computing -log(probability) fails. She goes back to the logits and computes cross-entropy with log-sum-exp. The loss is still finite. Then she nudges one logit at a time and compares the numerical slope with the analytic gradient.",
+            "zh": "米娜发现网络给错误类别极大的分数，目标类别的概率被舍入为零，直接算 -log(概率) 就出问题。她回到 logits，用 log-sum-exp 计算交叉熵，损失仍然有限。随后逐一微调 logit，用数值斜率核对解析梯度。"
+          },
+          "language": "python",
+          "code": "from math import exp, log, isclose\n\ndef probabilities(logits):\n    peak = max(logits)\n    weights = [exp(z - peak) for z in logits]\n    return [w / sum(weights) for w in weights]\n\ndef cross_entropy(logits, target):\n    peak = max(logits)\n    return (peak - logits[target]) + log(sum(exp(z - peak) for z in logits))\n\nlogits = [1000.0, 0.0, -1000.0]\ntarget = 2\np = probabilities(logits)\nloss = cross_entropy(logits, target)\ngradient = [value - int(j == target) for j, value in enumerate(p)]\nepsilon = 1e-4\nnumeric = []\nfor j in range(len(logits)):\n    plus, minus = logits.copy(), logits.copy()\n    plus[j] += epsilon\n    minus[j] -= epsilon\n    numeric.append((cross_entropy(plus, target) - cross_entropy(minus, target)) / (2 * epsilon))\nassert p[target] == 0.0 and loss == 2000.0\nassert all(isclose(a, b, abs_tol=1e-6) for a, b in zip(gradient, numeric))\nprint(\"target probability:\", p[target])\nprint(f\"finite loss: {loss:.1f}\")\nprint(\"analytic gradient:\", gradient)\nprint(\"numeric gradient:\", [round(value, 6) for value in numeric])\n",
+          "output": "target probability: 0.0\nfinite loss: 2000.0\nanalytic gradient: [1.0, 0.0, -1.0]\nnumeric gradient: [1.0, 0.0, -1.0]\n",
+          "walkthrough": [
+            {
+              "en": "Subtract the largest logit before exponentiation. No positive exponent is needed.",
+              "zh": "取指数前减去最大 logit，不需要计算正指数。"
+            },
+            {
+              "en": "Compute log-sum-exp minus the target logit directly, rather than taking log of an already rounded probability.",
+              "zh": "直接计算 log-sum-exp 减去目标 logit，不对已经被舍入的概率取 log。"
+            },
+            {
+              "en": "Compare p_j - 1[j=target] with a central finite difference. Change only one coordinate at a time.",
+              "zh": "把 p_j-1[j=target] 与中心差分比较，每次只改变一个坐标。"
+            }
+          ],
+          "explanation": {
+            "en": "For finite logits z and target t, L=(m-z_t)+log(sum_j exp(z_j-m)), where m=max_j z_j. This equals -log softmax(z)_t algebraically, but avoids first materializing an extremely small target probability. In the example, m-z_t=2000 and the remaining log term is approximately zero.\n\nThe gradient is dL/dz_j=p_j-1[j=t]. The indicator is one only for the target class. The example gives [1,0,-1]: reducing the wrong largest logit or increasing the target logit lowers the loss. A central difference uses (L(z+epsilon*e_j)-L(z-epsilon*e_j))/(2*epsilon), where e_j changes only coordinate j.\n\nFinite differences are a diagnostic, not a replacement for backpropagation. Too large an epsilon introduces approximation error; too small an epsilon loses precision through subtraction. Stable formulas also cannot fix NaN inputs or arbitrary floating-point range limits. Framework cross-entropy interfaces normally expect logits; do not apply softmax twice.",
+            "zh": "对有限 logits z 与目标 t，L=(m-z_t)+log(Σ_j exp(z_j-m))，其中 m=max_j z_j。代数上它等于 -log softmax(z)_t，但避免先生成极小的目标概率。本例 m-z_t=2000，剩余对数项约为零。\n\n梯度为 dL/dz_j=p_j-1[j=t]，指标函数只在目标类别处为一。得到 [1,0,-1]：降低最大的错误 logit，或提高目标 logit，都能降低损失。中心差分为 (L(z+epsilon×e_j)-L(z-epsilon×e_j))/(2×epsilon)，e_j 只改变第 j 个坐标。\n\n有限差分是诊断工具，不是反向传播的替代。epsilon 太大会引入近似误差，太小会在相减时损失精度。稳定公式也不能修复 NaN 输入或任意浮点范围限制。框架交叉熵接口通常接受 logits，不要重复应用 softmax。"
           }
         }
       ]
@@ -1183,7 +1225,8 @@
         "zh": "分开参数更新与模型评估，保存验证实际选择的状态。"
       },
       "sources": [
-        "pytorch-optimization"
+        "pytorch-optimization",
+        "pytorch-zero-grad"
       ],
       "glossary": [
         {
@@ -1247,6 +1290,16 @@
             "en": "No. Validation helped choose it. A final test must be separate from that selection process.",
             "zh": "不能。验证参与了选择。最终测试必须与该选择过程分开。"
           }
+        },
+        {
+          "question": {
+            "en": "When would averaging batch means equally be correct?",
+            "zh": "什么时候可以把批平均梯度同权平均？"
+          },
+          "answer": {
+            "en": "When the batches have equal sample counts, the loss uses the same per-sample reduction, and the gradients are computed at the same parameters. Unequal final batches violate the first condition.",
+            "zh": "当各批样本数相同、损失使用相同逐样本归约方式，且梯度在相同参数处计算时可以。大小不同的最后一批会破坏第一个条件。"
+          }
         }
       ],
       "practice_cases": [
@@ -1287,6 +1340,38 @@
           "explanation": {
             "en": "The first two lines create distinct training and validation inputs. error and gradient use training arrays only. The subtraction updates the scalar weight. Both losses are recomputed after the update for a consistent comparison. The if block saves the best validation state; scalar assignment copies its value. Five epochs here mean five full-batch updates. The synthetic line is learned, but no real neural application is evaluated.",
             "zh": "前两行建立不同的训练与验证输入。error 和 gradient 只用训练数组，减法更新标量权重。两种损失都在更新后重算，确保比较一致。if 保存最佳验证状态，标量赋值会复制数值。这里五轮就是五次整批更新。代码确实学习合成直线，但未评估真实神经网络应用。"
+          }
+        },
+        {
+          "id": "unequal-batch-accumulation",
+          "title": {
+            "en": "Accumulate gradients when microbatches have different sizes",
+            "zh": "微批次大小不同时正确累积梯度"
+          },
+          "intro": {
+            "en": "Mina cannot fit four examples into one training batch. She splits them into three examples and one example. Averaging the two batch gradients gives the final example half of the total weight. She instead weights each batch mean by its sample count, keeps the parameters fixed while accumulating, and performs one optimizer step at the end.",
+            "zh": "米娜的设备一次装不下四个样本，于是拆成三条和一条两个微批次。直接平均两批梯度，会让最后那一个样本占一半权重。她改为按样本数加权各批平均梯度，在累积期间固定参数，最后只做一次优化器更新。"
+          },
+          "language": "python",
+          "code": "from math import isclose\nx = [1.0, 2.0, 3.0, 4.0]\ny = [2.0 * value for value in x]\nweight = 0.0\n\ndef mean_gradient(indices, weight):\n    return sum(2 * (weight * x[i] - y[i]) * x[i] for i in indices) / len(indices)\n\nbatches = [[0, 1, 2], [3]]\nbatch_gradients = [mean_gradient(batch, weight) for batch in batches]\nwrong = sum(batch_gradients) / len(batches)\naccumulated = sum(len(batch) * gradient for batch, gradient in zip(batches, batch_gradients)) / len(x)\nfull = mean_gradient(list(range(len(x))), weight)\nupdated = weight - 0.01 * accumulated\nassert isclose(full, -30.0) and isclose(accumulated, full)\nassert not isclose(wrong, full) and isclose(updated, 0.3)\nprint(\"batch gradients:\", [round(g, 6) for g in batch_gradients])\nprint(f\"unweighted mean: {wrong:.6f}\")\nprint(f\"sample-weighted gradient: {accumulated:.6f}\")\nprint(f\"one optimizer step: {updated:.6f}\")\n",
+          "output": "batch gradients: [-18.666667, -64.0]\nunweighted mean: -41.333333\nsample-weighted gradient: -30.000000\none optimizer step: 0.300000\n",
+          "walkthrough": [
+            {
+              "en": "Use the same weight for both microbatches. Updating after the first one would evaluate the second gradient at a different point.",
+              "zh": "两个微批次使用相同 weight；若第一批后就更新，第二批梯度会在另一个参数点计算。"
+            },
+            {
+              "en": "The first batch contains three samples and the second contains one. Their means must not receive equal weights.",
+              "zh": "第一批三条、第二批一条，两个平均值不能同权。"
+            },
+            {
+              "en": "Multiply each mean gradient by its batch size, sum, then divide by total samples. Perform one update.",
+              "zh": "每批平均梯度乘以该批样本数，累加后除以总数，最后更新一次。"
+            }
+          ],
+          "explanation": {
+            "en": "For N samples, L=(1/N) sum_i l_i. If microbatch b contains n_b samples and its mean gradient is g_b, the full mean gradient is g=sum_b (n_b/N)*g_b. Here squared error l_i=(w*x_i-y_i)^2 has derivative 2(w*x_i-y_i)x_i.\n\nAt w=0 the per-sample gradients are -4,-16,-36,-64. The first mean is -56/3 and the second is -64. Their equally weighted mean is -124/3, about -41.3333. The correct mean is (-4-16-36-64)/4=-30. With learning rate 0.01, w becomes 0.3.\n\nIn an autograd training loop, clear gradients once before accumulation, scale each mean loss by n_b/N, backpropagate each microbatch, then step once. Exact equivalence assumes additive per-sample losses at fixed parameters. Batch-dependent operations such as BatchNorm, stochastic layers, clipping at each microbatch, and finite-precision summation can change the result. Gradient accumulation is not automatically identical to every large-batch training setup.",
+            "zh": "N 个样本的损失 L=(1/N)Σ_i l_i。若微批次 b 有 n_b 条样本，平均梯度为 g_b，则整体平均梯度为 g=Σ_b(n_b/N)g_b。这里平方误差 l_i=(w×x_i-y_i)^2 的导数是 2(w×x_i-y_i)x_i。\n\nw=0 时，逐样本梯度是 -4、-16、-36、-64。第一批均值为 -56/3，第二批为 -64。把两批同权平均会得到 -124/3，约 -41.3333；正确均值是 (-4-16-36-64)/4=-30。学习率 0.01 时，w 更新为 0.3。\n\n自动微分循环中，在累积前清空一次梯度，每批平均损失乘 n_b/N，逐批反向传播，最后更新一次。严格等价要求损失能逐样本相加，且参数固定。BatchNorm 等依赖批次的操作、随机层、每微批次单独裁剪以及浮点求和，都可能改变结果。因此梯度累积并不自动等同于所有大批次训练配置。"
           }
         }
       ]
@@ -2702,6 +2787,16 @@
       "url": "https://arxiv.org/abs/2106.09685",
       "publisher": "Hu et al. / arXiv",
       "kind": "Research paper"
+    },
+    {
+      "id": "pytorch-zero-grad",
+      "title": {
+        "en": "Zeroing out gradients in PyTorch",
+        "zh": "在 PyTorch 中清空梯度"
+      },
+      "url": "https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html",
+      "publisher": "PyTorch",
+      "kind": "Official reference"
     }
   ],
   "review": [

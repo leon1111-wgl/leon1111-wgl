@@ -6,6 +6,16 @@
 
 ![Leon — 学习路线图](../assets/maps/dl.zh.svg)
 
+<a id="extensions"></a>
+
+## 继续深入：完整案例
+
+先读对应章节，再跟着故事预测输出、运行完整程序、核对解释。每个案例都在原有概念上增加一个实际问题。
+
+1. [概率下溢时仍能计算有限损失](#lab-dl-softmax-loss-stable-loss-gradient-check) — 连接 log-sum-exp、交叉熵和梯度核对。
+
+2. [微批次大小不同时正确累积梯度](#lab-dl-training-loop-unequal-batch-accumulation) — 沿损失计算和更新过程跟踪样本权重。
+
 用十六个耐心引导的章节理解深度学习。从数组与函数开始，追踪形状、损失、梯度和完整的小型训练循环，再组合卷积、嵌入、注意力、玩具 Transformer 模块与适应方法。每章都含有解释的 Python、带答案问题与两个练习案例。
 
 ### 运行 Python 示例
@@ -121,6 +131,8 @@ X 是输入矩阵；B 是样本数，d 是每个样本的特征数。W 是学习
 
 不能。维度可能仍匹配。要保持固定特征顺序，并用已知行做手算检查。
 
+<a id="lab-dl-tensors-dl-dense-axis-check"></a>
+
 ### 给全连接层标明各轴
 
 行表示记录，列表示特征。
@@ -234,6 +246,8 @@ z=0 时，sigmoid 为 1/(1+1)=0.5，斜率为 0.5×0.5=0.25。z=2 时，sigmoid 
 
 该点不可导，因为左右斜率不同。库通常为反向传播选一个可用约定，例如零。
 
+<a id="lab-dl-activations-dl-activation-values"></a>
+
 ### 打印函数值与斜率
 
 小型预设输入让计算容易检查。
@@ -344,6 +358,8 @@ x 是包含 d 个输入特征的列向量。W₁ 有 H 行 d 列，b₁ 包含 H
 **输入变了，参数数量会变吗？**
 
 不会。两个输入、两个隐藏单元、一个输出共有 4+2+2+1=9 个参数，与输入数值无关。
+
+<a id="lab-dl-representations-dl-mlp-gauges"></a>
 
 ### 追踪两个隐藏单元
 
@@ -458,6 +474,12 @@ Logits 为 [2,1,0]，减去 2 得 [0,−1,−2]。指数约为 [1,0.367879,0.135
 
 各指数相同，三类概率均为 1/3。正确类损失为 log(3)，约 1.098612。
 
+**为什么显示的目标概率为零，损失却仍有限？**
+
+这里的零来自浮点下溢。基于 logits 的公式直接表示对数概率，无须先把指数值舍入成零。
+
+<a id="lab-dl-softmax-loss-dl-stable-softmax-loss"></a>
+
 ### 计算稳定概率与交叉熵
 
 Python 示例中的类别编号从零开始。
@@ -493,6 +515,75 @@ shift unchanged: True
 **逐步读懂代码**
 
 max 找到平移值。exp 将相对分数转为正权重，除以总和完成归一化。用 target 索引取正确类别概率，再以 log 计算损失。allclose 在浮点容差内检查平移不变性。这行简单损失适合当前 logits；极端情况应使用稳定的 log-sum-exp 损失实现。
+
+<a id="lab-dl-softmax-loss-stable-loss-gradient-check"></a>
+
+### 概率下溢时仍能计算有限损失
+
+米娜发现网络给错误类别极大的分数，目标类别的概率被舍入为零，直接算 -log(概率) 就出问题。她回到 logits，用 log-sum-exp 计算交叉熵，损失仍然有限。随后逐一微调 logit，用数值斜率核对解析梯度。
+
+```python
+from math import exp, log, isclose
+
+def probabilities(logits):
+    peak = max(logits)
+    weights = [exp(z - peak) for z in logits]
+    return [w / sum(weights) for w in weights]
+
+def cross_entropy(logits, target):
+    peak = max(logits)
+    return (peak - logits[target]) + log(sum(exp(z - peak) for z in logits))
+
+logits = [1000.0, 0.0, -1000.0]
+target = 2
+p = probabilities(logits)
+loss = cross_entropy(logits, target)
+gradient = [value - int(j == target) for j, value in enumerate(p)]
+epsilon = 1e-4
+numeric = []
+for j in range(len(logits)):
+    plus, minus = logits.copy(), logits.copy()
+    plus[j] += epsilon
+    minus[j] -= epsilon
+    numeric.append((cross_entropy(plus, target) - cross_entropy(minus, target)) / (2 * epsilon))
+assert p[target] == 0.0 and loss == 2000.0
+assert all(isclose(a, b, abs_tol=1e-6) for a, b in zip(gradient, numeric))
+print("target probability:", p[target])
+print(f"finite loss: {loss:.1f}")
+print("analytic gradient:", gradient)
+print("numeric gradient:", [round(value, 6) for value in numeric])
+```
+
+**在本地运行**
+
+```sh
+python dl-softmax-loss-stable-loss-gradient-check.py
+```
+
+**预期输出**
+
+```text
+target probability: 0.0
+finite loss: 2000.0
+analytic gradient: [1.0, 0.0, -1.0]
+numeric gradient: [1.0, 0.0, -1.0]
+```
+
+**按执行顺序理解**
+
+1. 取指数前减去最大 logit，不需要计算正指数。
+
+2. 直接计算 log-sum-exp 减去目标 logit，不对已经被舍入的概率取 log。
+
+3. 把 p_j-1[j=target] 与中心差分比较，每次只改变一个坐标。
+
+**逐步读懂代码**
+
+对有限 logits z 与目标 t，L=(m-z_t)+log(Σ_j exp(z_j-m))，其中 m=max_j z_j。代数上它等于 -log softmax(z)_t，但避免先生成极小的目标概率。本例 m-z_t=2000，剩余对数项约为零。
+
+梯度为 dL/dz_j=p_j-1[j=t]，指标函数只在目标类别处为一。得到 [1,0,-1]：降低最大的错误 logit，或提高目标 logit，都能降低损失。中心差分为 (L(z+epsilon×e_j)-L(z-epsilon×e_j))/(2×epsilon)，e_j 只改变第 j 个坐标。
+
+有限差分是诊断工具，不是反向传播的替代。epsilon 太大会引入近似误差，太小会在相减时损失精度。稳定公式也不能修复 NaN 输入或任意浮点范围限制。框架交叉熵接口通常接受 logits，不要重复应用 softmax。
 
 ### 这些知识可以用在哪里
 
@@ -572,6 +663,8 @@ B 是批大小，h、w 是图像高宽，d 是展平像素数。H 是隐藏宽�
 **八个元素也能 reshape(4,2) 吗？**
 
 数学上可以，但它把两图变成四行。合法数组运算仍可能破坏预期样本边界。
+
+<a id="lab-dl-shape-tracing-dl-shape-path"></a>
 
 ### 打印每层形状
 
@@ -696,6 +789,8 @@ x 和 y 分别是一个标量输入及其目标值。w 和 b 定义第一个仿�
 
 它适合检查小型光滑例子，但要重复计算损失。权重多时成本高，在不可导点附近也难处理。
 
+<a id="lab-dl-autograd-dl-chain-rule-check"></a>
+
 ### 检查梯度并更新网络
 
 使用手工导数与数值检查，不依赖自动微分库。
@@ -815,6 +910,8 @@ m̂ₜ = mₜ/(1−β₁ᵗ), v̂ₜ = vₜ/(1−β₂ᵗ)
 
 只有每轮恰好一次更新时才相同。100 个样本、批大小 10 时，通常一轮有十次更新。
 
+<a id="lab-dl-optimization-dl-sgd-adam-first-step"></a>
+
 ### 比较 SGD 与 Adam 的第一步
 
 两种方法都从相同标量参数重新开始。
@@ -931,6 +1028,12 @@ w 是唯一权重，xᵢ、yᵢ 是训练行 i 的输入与目标，ŷᵢ 是预
 
 不能。验证参与了选择。最终测试必须与该选择过程分开。
 
+**什么时候可以把批平均梯度同权平均？**
+
+当各批样本数相同、损失使用相同逐样本归约方式，且梯度在相同参数处计算时可以。大小不同的最后一批会破坏第一个条件。
+
+<a id="lab-dl-training-loop-dl-one-weight-training-loop"></a>
+
 ### 运行五步透明训练
 
 用实际学习的单参数回归模型讲解循环结构。
@@ -973,6 +1076,66 @@ best weight: 1.84448
 
 前两行建立不同的训练与验证输入。error 和 gradient 只用训练数组，减法更新标量权重。两种损失都在更新后重算，确保比较一致。if 保存最佳验证状态，标量赋值会复制数值。这里五轮就是五次整批更新。代码确实学习合成直线，但未评估真实神经网络应用。
 
+<a id="lab-dl-training-loop-unequal-batch-accumulation"></a>
+
+### 微批次大小不同时正确累积梯度
+
+米娜的设备一次装不下四个样本，于是拆成三条和一条两个微批次。直接平均两批梯度，会让最后那一个样本占一半权重。她改为按样本数加权各批平均梯度，在累积期间固定参数，最后只做一次优化器更新。
+
+```python
+from math import isclose
+x = [1.0, 2.0, 3.0, 4.0]
+y = [2.0 * value for value in x]
+weight = 0.0
+
+def mean_gradient(indices, weight):
+    return sum(2 * (weight * x[i] - y[i]) * x[i] for i in indices) / len(indices)
+
+batches = [[0, 1, 2], [3]]
+batch_gradients = [mean_gradient(batch, weight) for batch in batches]
+wrong = sum(batch_gradients) / len(batches)
+accumulated = sum(len(batch) * gradient for batch, gradient in zip(batches, batch_gradients)) / len(x)
+full = mean_gradient(list(range(len(x))), weight)
+updated = weight - 0.01 * accumulated
+assert isclose(full, -30.0) and isclose(accumulated, full)
+assert not isclose(wrong, full) and isclose(updated, 0.3)
+print("batch gradients:", [round(g, 6) for g in batch_gradients])
+print(f"unweighted mean: {wrong:.6f}")
+print(f"sample-weighted gradient: {accumulated:.6f}")
+print(f"one optimizer step: {updated:.6f}")
+```
+
+**在本地运行**
+
+```sh
+python dl-training-loop-unequal-batch-accumulation.py
+```
+
+**预期输出**
+
+```text
+batch gradients: [-18.666667, -64.0]
+unweighted mean: -41.333333
+sample-weighted gradient: -30.000000
+one optimizer step: 0.300000
+```
+
+**按执行顺序理解**
+
+1. 两个微批次使用相同 weight；若第一批后就更新，第二批梯度会在另一个参数点计算。
+
+2. 第一批三条、第二批一条，两个平均值不能同权。
+
+3. 每批平均梯度乘以该批样本数，累加后除以总数，最后更新一次。
+
+**逐步读懂代码**
+
+N 个样本的损失 L=(1/N)Σ_i l_i。若微批次 b 有 n_b 条样本，平均梯度为 g_b，则整体平均梯度为 g=Σ_b(n_b/N)g_b。这里平方误差 l_i=(w×x_i-y_i)^2 的导数是 2(w×x_i-y_i)x_i。
+
+w=0 时，逐样本梯度是 -4、-16、-36、-64。第一批均值为 -56/3，第二批为 -64。把两批同权平均会得到 -124/3，约 -41.3333；正确均值是 (-4-16-36-64)/4=-30。学习率 0.01 时，w 更新为 0.3。
+
+自动微分循环中，在累积前清空一次梯度，每批平均损失乘 n_b/N，逐批反向传播，最后更新一次。严格等价要求损失能逐样本相加，且参数固定。BatchNorm 等依赖批次的操作、随机层、每微批次单独裁剪以及浮点求和，都可能改变结果。因此梯度累积并不自动等同于所有大批次训练配置。
+
 ### 这些知识可以用在哪里
 
 **不更新的情况**
@@ -990,6 +1153,8 @@ best weight: 1.84448
 ### 本节资料来源
 
 - [PyTorch: 优化模型参数——基础入门](https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html)
+
+- [PyTorch: 在 PyTorch 中清空梯度](https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html)
 
 <a id="dl-regularization"></a>
 
@@ -1052,6 +1217,8 @@ hⱼ 是 dropout 前的第 j 个激活，在计算期望时将其视为固定值
 **均值相同就保持整个网络预测吗？**
 
 不一定。后续非线性操作可能改变平均。这里的精确结论仅针对 dropout 层激活的期望。
+
+<a id="lab-dl-regularization-dl-dropout-expectation"></a>
 
 ### 精确计算 dropout 结果
 
@@ -1169,6 +1336,8 @@ xⱼ 是单个样本的第 j 个特征，d 是参与归一化的特征数。μ �
 
 按这里逐行规则，不需要。每行提供自己的统计量，与跨批次规则不同。
 
+<a id="lab-dl-normalization-dl-row-layernorm"></a>
+
 ### 逐行归一化特征
 
 使用总体方差约定与明确的 epsilon。
@@ -1284,6 +1453,8 @@ X 是图像的一个输入通道，K 是边长为 k 的方形卷积核，b 是�
 
 不能。轴形状与特征含义必须对齐。仅为了尺寸匹配而重塑，可能悄悄混合不同含义。
 
+<a id="lab-dl-convolution-dl-filter-residual"></a>
+
 ### 滑动滤波器并添加捷径
 
 两个独立计算演示两种不同机制。
@@ -1398,6 +1569,8 @@ robot 映射为 [1,0]，moves 为 [0,2]，填充为 [0,0]。序列 [robot,moves,
 **池化向量能区分 robot moves 与 moves robot 吗？**
 
 这个均值不能。加法忽略顺序。感知位置的结构必须保留或增加无序平均之外的信息。
+
+<a id="lab-dl-token-embeddings-dl-embedding-mask-mean"></a>
 
 ### 查找词元并忽略填充
 
@@ -1517,6 +1690,8 @@ Softmax 对两个有限分数都取指数。exp(0)=1，因此第二位置仍有�
 
 这一行没有允许的信息源。对全负无穷做 softmax 未定义。设计掩码时应确保必要查询有有效来源，或规定明确的特殊规则。
 
+<a id="lab-dl-attention-dl-attention-mask"></a>
+
 ### 比较允许与遮蔽的上下文
 
 这是学习输出投影之前的单头数值示例。
@@ -1632,6 +1807,8 @@ X 是每行一个词元的序列表，LN 是逐词元层归一化，U 是其归�
 **这是原论文的完全相同模块吗？**
 
 不是。这里明确使用前置归一化、单头与恒等投影。原论文的归一化位置不同，参数结构也更丰富。
+
+<a id="lab-dl-transformer-block-dl-tiny-transformer-block"></a>
 
 ### 运行完整玩具前置归一化模块
 
@@ -1757,6 +1934,8 @@ x 是输入，fθ 是参数为 θ 的预训练编码器。z 是它输出的固�
 
 不够。它只说明一次预测头更新改善一个训练样本。冻结与微调需要按有效验证流程比较。
 
+<a id="lab-dl-transfer-dl-frozen-feature-head"></a>
+
 ### 在固定特征上训练预测头
 
 用预设向量代替编码器输出，不加载预训练模型。
@@ -1876,6 +2055,8 @@ A 为 1×4，B 为 3×1，大小相加为四加三。固定的十二项基础矩
 **七个可训练项是否证明质量优于十二项？**
 
 不能。这只描述优化参数数量。质量需要验证，速度和内存需要在真实执行配置下测量。
+
+<a id="lab-dl-efficient-adaptation-dl-low-rank-merge"></a>
 
 ### 比较独立与合并适配器路径
 
@@ -2041,3 +2222,5 @@ Transformer 由熟悉操作按特定结构组合而成。逐分支追踪，并�
 - [词嵌入：编码词汇语义](https://docs.pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html) — PyTorch
 
 - [LoRA：大型语言模型的低秩适应](https://arxiv.org/abs/2106.09685) — Hu et al. / arXiv
+
+- [在 PyTorch 中清空梯度](https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html) — PyTorch

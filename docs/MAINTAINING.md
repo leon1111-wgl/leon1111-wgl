@@ -13,6 +13,9 @@ The personal homepage is English. All five foundational courses, four AI field g
 - `content/translations/COURSE.zh.json`: complete Chinese edition with the same topic IDs and runnable source.
 - `scripts/build_courses.py`: render both course editions, web references and Markdown.
 - `scripts/roadmaps.py`: opening HTML route diagrams and SVG maps for downloaded notes.
+- `content/learning-extensions.json`: bilingual titles, goals and stable targets for guided cases within existing topics.
+- `scripts/learning_extensions.py`: clickable extension routes, prerequisite links and the homepage index.
+- `scripts/validate_extensions.py`: check translated case scaffolds, shared code and HTML/Markdown targets.
 - `content/paths/*.json`: 16 bilingual topics, a framework, a review and primary references for each AI guide.
 - `content/primer.json`: beginner lessons in Python and the mathematics used by the guides.
 - `scripts/teaching.py`: glossary, guided questions, runnable examples, download archive and asset versioning.
@@ -77,6 +80,8 @@ Python, Java and C programs and their ZIP archives are generated into `site/exam
 Output and rendered-code comparisons allow one optional final newline because a displayed text block may omit it. All other whitespace is significant, including indentation, trailing spaces and extra blank lines.
 
 Every foundational topic includes original instructor insights. Programming topics contrast complete examples. Theory topics explain method choice, intermediate steps, the answer and a sanity check. COMP2123 is Algorithm Design and Analysis; data structures are tools used to implement algorithms.
+
+Guided extensions live inside their parent topic's `code_examples`. Retain earlier examples when adding a case. Use `lab-{topic-id}-{example-id}` for case anchors in HTML and Markdown. Both language editions share this anchor and identical runnable code/output. Each extension needs a story, at least three execution steps, explained assumptions, a complexity or numerical discussion, and an answered question. Add the manifest entry only after its target exists. The case route links both to the new example and to the prerequisite lesson. Do not inflate topic counts when enriching an existing topic. Keep compact one-page references concise; rebuild their PDFs only when the reference content changes.
 
 Original course URLs keep the English `.html` route. Chinese editions use `.zh.html`; both share topic anchors. Keep these anchors stable when renaming a title. Single-page PDFs remain English; web cheatsheets have both languages.
 

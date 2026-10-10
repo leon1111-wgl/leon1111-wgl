@@ -1,0 +1,299 @@
+{
+  "updated": "2026-10-11",
+  "groups": {
+    "INFO1113": [
+      {
+        "topic": "classes-invariants",
+        "example": "defensive-snapshot",
+        "title": {
+          "en": "Protect a score snapshot from outside changes",
+          "zh": "保护成绩快照，隔离外部修改"
+        },
+        "goal": {
+          "en": "Follow ownership across constructors and getters.",
+          "zh": "沿构造器和 getter 跟踪数据所有权。"
+        }
+      },
+      {
+        "topic": "equality-hashing",
+        "example": "immutable-grid-key",
+        "title": {
+          "en": "Use a value object as a map key",
+          "zh": "用值对象作为 Map 的键"
+        },
+        "goal": {
+          "en": "Separate identity, value equality and hash collisions.",
+          "zh": "区分引用身份、值相等与哈希冲突。"
+        }
+      },
+      {
+        "topic": "application-design",
+        "example": "undoable-notebook",
+        "title": {
+          "en": "Build a small editor with undo",
+          "zh": "做一个可以撤销的小编辑器"
+        },
+        "goal": {
+          "en": "Turn an object model into a testable feature.",
+          "zh": "把对象模型变成可测试的小功能。"
+        }
+      }
+    ],
+    "COMP2017": [
+      {
+        "topic": "allocation-ownership",
+        "example": "growing-owned-vector",
+        "title": {
+          "en": "Grow an owned array without losing it",
+          "zh": "安全扩容自己拥有的数组"
+        },
+        "goal": {
+          "en": "Connect ownership, overflow checks and amortized cost.",
+          "zh": "把所有权、溢出检查和摊还成本连起来。"
+        }
+      },
+      {
+        "topic": "pipes-fifos",
+        "example": "framed-short-reads",
+        "title": {
+          "en": "Read a complete frame from a byte stream",
+          "zh": "从字节流中读出完整消息"
+        },
+        "goal": {
+          "en": "Separate short reads, clean EOF and truncated payloads.",
+          "zh": "区分短读、正常 EOF 和正文截断。"
+        }
+      },
+      {
+        "topic": "file-streams",
+        "example": "portable-record-format",
+        "title": {
+          "en": "Define a file format instead of dumping a struct",
+          "zh": "定义文件格式，而不是直接写出结构体"
+        },
+        "goal": {
+          "en": "Design, encode, validate and test a tiny binary format.",
+          "zh": "设计、编码、校验并测试小型二进制格式。"
+        }
+      }
+    ],
+    "COMP2123": [
+      {
+        "topic": "greedy-fractional",
+        "example": "indivisible-kit-dp",
+        "title": {
+          "en": "When greedy fails: pack whole science kits",
+          "zh": "贪心失效时：装入不可拆分的科学套件"
+        },
+        "goal": {
+          "en": "Derive a state, prove the recurrence and recover a solution.",
+          "zh": "定义状态、证明递推，再恢复具体解。"
+        }
+      },
+      {
+        "topic": "dijkstra-relaxation",
+        "example": "negative-edge-relaxation",
+        "title": {
+          "en": "Handle a negative edge with Bellman–Ford",
+          "zh": "用 Bellman–Ford 处理负权边"
+        },
+        "goal": {
+          "en": "Replace the settled-node assumption with a pass invariant.",
+          "zh": "用逐轮不变量替代永久确定节点的假设。"
+        }
+      },
+      {
+        "topic": "bfs-distance",
+        "example": "nearest-exit-wavefront",
+        "title": {
+          "en": "Start BFS from every exit at once",
+          "zh": "让 BFS 同时从所有出口出发"
+        },
+        "goal": {
+          "en": "Solve many nearest-source queries in one traversal.",
+          "zh": "用一次遍历解决多个最近源点查询。"
+        }
+      }
+    ],
+    "COMP2022": [
+      {
+        "topic": "regular-decision-problems",
+        "example": "shortest-dfa-counterexample",
+        "title": {
+          "en": "Find a shortest word that separates two DFAs",
+          "zh": "找到区分两个 DFA 的最短单词"
+        },
+        "goal": {
+          "en": "Turn equivalence into reachability and recover a counterexample.",
+          "zh": "把等价性转成可达性，并恢复具体反例。"
+        }
+      },
+      {
+        "topic": "parse-trees-ambiguity",
+        "example": "count-expression-trees",
+        "title": {
+          "en": "Count parse trees instead of assuming one",
+          "zh": "数清语法树，不要默认只有一种解析"
+        },
+        "goal": {
+          "en": "Explain ambiguity with a recurrence and visible trees.",
+          "zh": "通过递推式和可见语法树解释歧义。"
+        }
+      },
+      {
+        "topic": "predicate-logic",
+        "example": "finite-witness-search",
+        "title": {
+          "en": "Search for witnesses and counterexamples in a finite model",
+          "zh": "在有限模型中寻找见证与反例"
+        },
+        "goal": {
+          "en": "Make quantifier order concrete with witnesses.",
+          "zh": "用见证把量词顺序变成具体问题。"
+        }
+      }
+    ],
+    "COMP3308": [
+      {
+        "topic": "astar-heuristics",
+        "example": "astar-reopen-states",
+        "title": {
+          "en": "Reopen a state when A* finds a better route",
+          "zh": "A* 找到更优路径时重新展开状态"
+        },
+        "goal": {
+          "en": "Distinguish admissibility, consistency and reopening.",
+          "zh": "区分可采纳性、一致性和重新展开。"
+        }
+      },
+      {
+        "topic": "naive-bayes",
+        "example": "log-space-word-counts",
+        "title": {
+          "en": "Keep long-text likelihoods in log space",
+          "zh": "在对数空间中计算长文本似然"
+        },
+        "goal": {
+          "en": "Connect smoothing, repeated words and stable normalization.",
+          "zh": "连接平滑、词频与稳定归一化。"
+        }
+      },
+      {
+        "topic": "classification-metrics",
+        "example": "macro-micro-report",
+        "title": {
+          "en": "See which class disappears inside an average",
+          "zh": "看清平均数掩盖了哪个类别"
+        },
+        "goal": {
+          "en": "Calculate class reports before comparing averages.",
+          "zh": "先计算逐类报告，再比较平均指标。"
+        }
+      }
+    ],
+    "AI-ML": [
+      {
+        "topic": "framing-splits-leakage",
+        "example": "memorizer-leakage-audit",
+        "title": {
+          "en": "Expose leakage with a deliberately simple memorizer",
+          "zh": "用刻意简单的记忆器暴露泄漏"
+        },
+        "goal": {
+          "en": "Make the evaluation boundary match deployment.",
+          "zh": "让评估边界匹配部署问题。"
+        }
+      },
+      {
+        "topic": "logistic-thresholds",
+        "example": "validation-cost-threshold",
+        "title": {
+          "en": "Choose a decision threshold with an explicit error cost",
+          "zh": "用明确错误代价选择决策阈值"
+        },
+        "goal": {
+          "en": "Calculate mistakes, costs and the probability decision rule.",
+          "zh": "计算错误、代价与概率决策规则。"
+        }
+      }
+    ],
+    "AI-DL": [
+      {
+        "topic": "dl-softmax-loss",
+        "example": "stable-loss-gradient-check",
+        "title": {
+          "en": "Compute a finite loss even when a probability underflows",
+          "zh": "概率下溢时仍能计算有限损失"
+        },
+        "goal": {
+          "en": "Connect log-sum-exp, cross-entropy and gradient checks.",
+          "zh": "连接 log-sum-exp、交叉熵和梯度核对。"
+        }
+      },
+      {
+        "topic": "dl-training-loop",
+        "example": "unequal-batch-accumulation",
+        "title": {
+          "en": "Accumulate gradients when microbatches have different sizes",
+          "zh": "微批次大小不同时正确累积梯度"
+        },
+        "goal": {
+          "en": "Trace sample weights through the loss and optimizer step.",
+          "zh": "沿损失计算和更新过程跟踪样本权重。"
+        }
+      }
+    ],
+    "AI-CV": [
+      {
+        "topic": "inference-pipelines",
+        "example": "letterbox-coordinate-roundtrip",
+        "title": {
+          "en": "Return a detection box to the original image",
+          "zh": "把检测框还原到原始图像"
+        },
+        "goal": {
+          "en": "Carry coordinate metadata through the entire image pipeline.",
+          "zh": "在整个图像流程中传递坐标变换信息。"
+        }
+      },
+      {
+        "topic": "segmentation-regions",
+        "example": "confusion-matrix-miou",
+        "title": {
+          "en": "Compute segmentation IoU without counting ignored pixels",
+          "zh": "排除忽略像素，计算分割 IoU"
+        },
+        "goal": {
+          "en": "Derive IoU from counts and state the averaging convention.",
+          "zh": "从计数推导 IoU，并说明平均规则。"
+        }
+      }
+    ],
+    "AI-MM": [
+      {
+        "topic": "audio-video-sync",
+        "example": "timestamp-nearest-alignment",
+        "title": {
+          "en": "Align events with timestamps, offsets and a tolerance",
+          "zh": "用时间戳、偏移和容差对齐事件"
+        },
+        "goal": {
+          "en": "Check clocks and missing matches before combining modalities.",
+          "zh": "融合模态前先检查时钟与缺失匹配。"
+        }
+      },
+      {
+        "topic": "image-text-search",
+        "example": "multi-query-retrieval-report",
+        "title": {
+          "en": "Evaluate retrieval with several relevant results per query",
+          "zh": "评估每条查询有多个正确结果的检索任务"
+        },
+        "goal": {
+          "en": "Separate ranking quality, multiple positives and annotation coverage.",
+          "zh": "区分排序质量、多正例与标注覆盖。"
+        }
+      }
+    ]
+  }
+}

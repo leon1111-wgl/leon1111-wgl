@@ -652,6 +652,10 @@
         {
           "question": "Can swapping finals work on a complete DFA?",
           "answer": "Yes. Every input has exactly one complete run, so flipping its final acceptance flips the answer."
+        },
+        {
+          "question": "Why is testing many example words weaker than searching the product graph?",
+          "answer": "A finite sample can miss a longer witness. The product graph covers every possible state pair reached by any word, despite having finitely many nodes."
         }
       ],
       "instructor_notes": [
@@ -688,6 +692,35 @@
           ],
           "answer": "ε is a shortest counterexample, and the languages differ immediately at their start states.",
           "sanity_check": "The string 0 is accepted by both, showing why starting only with nonempty examples could hide the easiest witness."
+        },
+        {
+          "title": "Trace the word aba in two machines",
+          "question": "Compare contains-ab with ends-in-ab. Both machines start at 0 and accept only state 2. Use the transition tables in the program.",
+          "strategy": "Track the pair after each letter and compare acceptance only after the complete word.",
+          "steps": [
+            "Start at (0,0). After a, both reach state 1, giving (1,1).",
+            "After b, the pair is (2,2). The prefix ab is accepted by both.",
+            "After the final a, the pair is (2,1). Only contains-ab accepts."
+          ],
+          "answer": "aba belongs to the symmetric difference, so the languages are not equal.",
+          "sanity_check": "The only words of length below 3 that contain ab are ab itself; it also ends in ab. Thus no shorter witness exists."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "shortest-dfa-counterexample",
+          "title": "Find a shortest word that separates two DFAs",
+          "intro": "Two students build text filters. One accepts words containing ab anywhere. The other accepts words ending in ab. Their tests on ab and aab both pass, so they think the filters agree. Mina stops guessing test words. She runs both machines together and searches for a pair of states where exactly one accepts. The search returns aba, a concrete explanation of the disagreement.",
+          "language": "python",
+          "code": "from collections import deque\nfrom itertools import product\n\ndef witness(a, accepting_a, b, accepting_b):\n    alphabet = (\"a\", \"b\")\n    start = (0, 0)\n    parents = {start: None}\n    queue = deque([start])\n    while queue:\n        pair = queue.popleft()\n        x, y = pair\n        if (x in accepting_a) != (y in accepting_b):\n            letters = []\n            while parents[pair] is not None:\n                previous, letter = parents[pair]\n                letters.append(letter)\n                pair = previous\n            return \"\".join(reversed(letters))\n        for letter in alphabet:\n            nxt = (a[x][letter], b[y][letter])\n            if nxt not in parents:\n                parents[nxt] = (pair, letter)\n                queue.append(nxt)\n    return None\n\ndef accepts(table, word):\n    state = 0\n    for letter in word:\n        state = table[state][letter]\n    return state == 2\n\ncontains = [{\"a\": 1, \"b\": 0}, {\"a\": 1, \"b\": 2}, {\"a\": 2, \"b\": 2}]\nends = [{\"a\": 1, \"b\": 0}, {\"a\": 1, \"b\": 2}, {\"a\": 1, \"b\": 0}]\nword = witness(contains, {2}, ends, {2})\nassert word == \"aba\" and witness(contains, {2}, contains, {2}) is None\nfor size in range(len(word)):\n    for letters in product(\"ab\", repeat=size):\n        test = \"\".join(letters)\n        assert accepts(contains, test) == accepts(ends, test)\nprint(\"shortest witness:\", repr(word))\nprint(\"contains ab:\", accepts(contains, word))\nprint(\"ends in ab:\", accepts(ends, word))\n",
+          "output": "shortest witness: 'aba'\ncontains ab: True\nends in ab: False\n",
+          "walkthrough": [
+            "A product state (x,y) records where both machines are after the same input prefix.",
+            "Mark a pair as visited when enqueuing it. The graph has at most |Q_A|*|Q_B| pairs.",
+            "Accept a product state when exactly one component accepts. This is symmetric difference, not intersection.",
+            "Use parent pointers to recover the word. BFS makes the first witness shortest in number of symbols."
+          ],
+          "explanation": "Two languages differ exactly when their symmetric difference is nonempty: L(A) != L(B) iff there exists w with accept_A(w) XOR accept_B(w). A complete product search decides this condition for the supplied finite machines. If no mismatching pair is reachable, every word leads to an agreeing pair.\n\nWith q_A and q_B states and alphabet size s, time is O(s*q_A*q_B) and stored states use O(q_A*q_B). Completeness matters: every state needs a transition for each alphabet symbol. Missing transitions should first be sent to an explicit rejecting sink.\n\nA returned empty string is a valid witness if the start states disagree. None means no witness exists. The small brute-force check verifies that no shorter word works for this fixture, but the visited-product argument explains why the general search terminates. This method compares DFAs; it is not a general equivalence test for arbitrary programs."
         }
       ]
     },
@@ -886,6 +919,10 @@
         {
           "question": "Does addition precedence also settle subtraction associativity?",
           "answer": "No. Repeated subtraction needs a separate grouping rule."
+        },
+        {
+          "question": "Why multiply inside one split but add across splits?",
+          "answer": "Inside a split, each left tree can pair with every right tree. Across splits, a tree has exactly one root partition, so the sets are disjoint."
         }
       ],
       "instructor_notes": [
@@ -922,6 +959,35 @@
           ],
           "answer": "The two schedules describe one parse tree. They do not establish ambiguity; this grammar is unambiguous.",
           "sanity_check": "Only the first schedule is leftmost throughout, which removes the irrelevant order choice."
+        },
+        {
+          "title": "Calculate five trees from smaller cases",
+          "question": "For E -> E+E | n, calculate T(4) without listing all derivation orders.",
+          "strategy": "Count tree structures by the root split. Different orders of expanding nodes can produce the same tree and must not be counted twice.",
+          "steps": [
+            "T(1)=1 and T(2)=T(1)T(1)=1.",
+            "T(3)=T(1)T(2)+T(2)T(1)=2.",
+            "T(4)=T(1)T(3)+T(2)T(2)+T(3)T(1)=2+1+2."
+          ],
+          "answer": "There are five parse trees. The program prints all five distinct parenthesizations.",
+          "sanity_check": "With three operands, the two trees are ((n+n)+n) and (n+(n+n)). This confirms the first nontrivial case."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "count-expression-trees",
+          "title": "Count parse trees instead of assuming one",
+          "intro": "A calculator accepts n+n+n+n. Mina draws a tree by joining the first pair, but her friend joins the final pair first. Both follow E -> E+E | n. The text is valid, yet its structure is not unique. Mina counts all root splits and then combines the possible left and right trees. She discovers five trees and understands why a parser needs an associativity rule.",
+          "language": "python",
+          "code": "from functools import lru_cache\n\ndef count_trees(operands):\n    if operands < 1:\n        raise ValueError(\"at least one operand required\")\n    ways = [0] * (operands + 1)\n    ways[1] = 1\n    for size in range(2, operands + 1):\n        ways[size] = sum(ways[left] * ways[size - left]\n                         for left in range(1, size))\n    return ways[operands]\n\n@lru_cache(None)\ndef trees(operands):\n    if operands == 1:\n        return (\"n\",)\n    return tuple(f\"({left}+{right})\"\n                 for cut in range(1, operands)\n                 for left in trees(cut)\n                 for right in trees(operands - cut))\n\nassert [count_trees(n) for n in range(1, 6)] == [1, 1, 2, 5, 14]\nassert len(set(trees(4))) == count_trees(4)\nprint(\"four operands:\", count_trees(4), \"parse trees\")\nfor tree in trees(4):\n    print(tree)\n",
+          "output": "four operands: 5 parse trees\n(n+(n+(n+n)))\n(n+((n+n)+n))\n((n+n)+(n+n))\n((n+(n+n))+n)\n(((n+n)+n)+n)\n",
+          "walkthrough": [
+            "With one operand, there is one leaf tree. This is the base case, not zero.",
+            "For a root split after left operands, multiply the counts of left and right trees. Each pair makes one tree.",
+            "Sum across distinct root splits. They cannot describe the same ordered tree because their root partitions differ.",
+            "Enumerate only four operands for display. Counting and materializing every tree have very different output costs."
+          ],
+          "explanation": "Let T(m) count parse trees for m identical operand tokens separated by plus. T(1)=1 and T(m)=sum from k=1 to m-1 of T(k)*T(m-k). k is the number of leaves on the left. For m=4, the three root choices contribute 1*2, 1*1 and 2*1, giving 5.\n\nThe counter takes O(m²) arithmetic operations and O(m) stored integers. Large counts need large integers, so this operation-count model does not claim constant-cost arithmetic for arbitrarily large m. Enumerating every tree costs at least the number of characters printed and grows much faster.\n\nEqual arithmetic results do not make a grammar unambiguous. Ambiguity is about multiple parse trees for the same token string. The grammar E -> E+n | n fixes left association for this simple language. This example assumes an already tokenized plus-only expression; it does not implement a lexer, precedence for other operators or a general grammar parser."
         }
       ]
     },
@@ -1916,6 +1982,10 @@
         {
           "question": "Why use implication for all A are B?",
           "answer": "Only A-objects must pass the B test; non-A objects impose no requirement."
+        },
+        {
+          "question": "Can you exchange the two quantifiers without changing the claim?",
+          "answer": "Not in general. The displayed relation makes forall-exists true but exists-forall false, so it is a countermodel to the proposed equivalence."
         }
       ],
       "instructor_notes": [
@@ -1952,6 +2022,35 @@
           ],
           "answer": "The statement is true. It asserts at least one failure, not that everyone fails.",
           "sanity_check": "A and C pass, so the stronger statement ∀x¬Pass(x) is false."
+        },
+        {
+          "title": "Negate and test a quantified statement",
+          "question": "Use the three students and two mentors in the code. Negate “every student has a mentor” and decide whether the negation becomes true after deleting (Bo,Noah).",
+          "strategy": "Push negation through each quantifier, then look for an explicit witness.",
+          "steps": [
+            "not forall x exists y R(x,y) becomes exists x not exists y R(x,y).",
+            "not exists y becomes forall y not, giving exists x forall y not R(x,y).",
+            "After deletion, R(Bo,Ivy) and R(Bo,Noah) are both false. Choose x=Bo."
+          ],
+          "answer": "The negation is true after deletion. Bo is the witness.",
+          "sanity_check": "Before deletion, each student had a nonempty witness list, so the negation was false."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "finite-witness-search",
+          "title": "Search for witnesses and counterexamples in a finite model",
+          "intro": "Every student in a club has a mentor. Mina hears this and assumes there is one mentor for everybody. A small table disproves her assumption: Ana and Cy work with Ivy, while Bo works with Noah. Each student has someone, but no single mentor covers all three. Mina uses nested loops to make the order of the two quantifiers visible.",
+          "language": "python",
+          "code": "students = [\"Ana\", \"Bo\", \"Cy\"]\nmentors = [\"Ivy\", \"Noah\"]\nrelation = {(\"Ana\", \"Ivy\"), (\"Bo\", \"Noah\"), (\"Cy\", \"Ivy\")}\n\ndef inspect(students, mentors, relation):\n    witnesses = {x: [y for y in mentors if (x, y) in relation] for x in students}\n    every_has_someone = all(witnesses[x] for x in students)\n    shared = [y for y in mentors if all((x, y) in relation for x in students)]\n    uncovered = [x for x in students if all((x, y) not in relation for y in mentors)]\n    assert bool(uncovered) == (not every_has_someone)\n    return witnesses, every_has_someone, shared, uncovered\n\nwitnesses, every, shared, uncovered = inspect(students, mentors, relation)\nprint(\"witnesses:\", witnesses)\nprint(\"every student has a mentor:\", every)\nprint(\"one mentor for everybody:\", bool(shared))\nassert every and not shared\nbroken = relation - {(\"Bo\", \"Noah\")}\nprint(\"counterexample after removal:\", inspect(students, mentors, broken)[3])\nassert inspect([], mentors, relation)[1] is True\nassert inspect(students, [], relation)[1] is False\n",
+          "output": "witnesses: {'Ana': ['Ivy'], 'Bo': ['Noah'], 'Cy': ['Ivy']}\nevery student has a mentor: True\none mentor for everybody: False\ncounterexample after removal: ['Bo']\n",
+          "walkthrough": [
+            "Build a witness list for each student. The inner existential search may choose a different mentor for each outer student.",
+            "For a shared mentor, reverse the search: choose one mentor first, then require that mentor to cover every student.",
+            "Find uncovered students by checking that every possible mentor fails. This constructs the negation rather than merely printing False.",
+            "Check the empty domains. all over no students is true; a nonempty student set with no mentors fails the original claim."
+          ],
+          "explanation": "Let S be the student set, M the mentor set, and R(x,y) mean that y mentors x. The first statement is for every x in S there exists y in M such that R(x,y). The second is there exists y in M such that for every x in S, R(x,y). A shared witness proves the second and therefore the first, but separate witnesses prove only the first.\n\nNegating the first statement gives: there exists x in S such that for every y in M, not R(x,y). Removing the Bo–Noah pair produces Bo as that counterexample. With |S| students and |M| mentors, these direct checks take O(|S||M|) relation lookups. Set lookup is assumed average O(1).\n\nThis checks a specified finite interpretation. A result on one table does not prove that a formula is valid in all interpretations, and it does not solve arbitrary first-order validity. Domain assumptions belong in the problem statement; empty-set behavior should not be patched after seeing an inconvenient result."
         }
       ]
     }
@@ -2026,6 +2125,10 @@
     {
       "title": "Cornell — Regular expressions and finite automata",
       "url": "https://www.cs.cornell.edu/courses/cs312/2007fa/recitations/rec26.html"
+    },
+    {
+      "title": "Cornell CS 4120: Grammars and ambiguity",
+      "url": "https://courses.cs.cornell.edu/courses/cs4120/2026sp/notes.html?id=grammars"
     }
   ]
 }

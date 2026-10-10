@@ -6,6 +6,16 @@
 
 ![Leon — Learning roadmap](../assets/maps/cv.en.svg)
 
+<a id="extensions"></a>
+
+## Guided extensions
+
+Read the linked lesson first. Then follow the story, predict the output, run the complete program and check the explanation. Each case adds one practical challenge.
+
+1. [Return a detection box to the original image](#lab-inference-pipelines-letterbox-coordinate-roundtrip) — Carry coordinate metadata through the entire image pipeline.
+
+2. [Compute segmentation IoU without counting ignored pixels](#lab-segmentation-regions-confusion-matrix-miou) — Derive IoU from counts and state the averaging convention.
+
 Sixteen connected lessons start with pixels and simple Python lists, then build toward recognition, detection, tracking, OCR and reliable image systems. Every lesson includes a story, explained arithmetic, runnable code, answered questions and two practice cases.
 
 ### Run the Python examples
@@ -124,6 +134,8 @@ The three channels can have the wrong meaning. Interpreting BGR as RGB swaps red
 
 Only if 0.6 is on the byte scale. If it is already scaled to 0–1, dividing again corrupts the agreed input range.
 
+<a id="lab-pixels-contracts-pixel-scale"></a>
+
 ### Follow one channel
 
 A list represents one known blue pixel. No image file or trained model is needed.
@@ -235,6 +247,8 @@ max(40,30)=40, then 200−40=160.
 **Does changing the threshold to 30 recover shade?**
 
 Yes, margin 40 passes, but more non-target colours may pass too.
+
+<a id="lab-colour-channels-red-channel-rule"></a>
 
 ### Test three known colours
 
@@ -348,6 +362,8 @@ Multiply 2 by −1, 5 by 0, and 8 by 1. Add −2 + 0 + 8.
 
 [8, 5, 2] produces −6. The sign tells which direction gets brighter.
 
+<a id="lab-filters-neighborhoods-local-filter"></a>
+
 ### Average a small patch
 
 Inspect a bright speck and a signed edge response. This is a hand-written filter, not a learned model.
@@ -458,6 +474,8 @@ Only its middle position, because [1,1,1] has minimum 1.
 **Would a true one-pixel line survive?**
 
 Not under this rule. The operation cannot know that the thin mark matters.
+
+<a id="lab-edges-morphology-binary-opening"></a>
 
 ### Remove an isolated speck
 
@@ -574,6 +592,8 @@ Double 20 to 40, then subtract 3 to get 37. Reversing the order gives a differen
 
 No. Both corners receive the same shift, so their differences stay unchanged.
 
+<a id="lab-geometry-augmentation-move-box"></a>
+
 ### Move both box corners
 
 Scale first, then shift, using ordinary numbers.
@@ -685,6 +705,8 @@ The differences are 3 and 4. Their squared sum is 9+16=25; √25=5.
 **Does ratio 0.2 prove an object match?**
 
 No. It only compares these descriptors. Several consistent locations and direct inspection are stronger checks.
+
+<a id="lab-classical-features-descriptor-distance"></a>
 
 ### Compare two patch descriptions
 
@@ -802,6 +824,8 @@ Its row is [0, 1], so 0×1 + 1×2 = 2.
 **Can 0.6652 prove the object is in the second class?**
 
 No. It is the model’s relative preference among these labels, and the model can be wrong.
+
+<a id="lab-recognition-transfer-classification-head"></a>
 
 ### Turn features into three scores
 
@@ -921,6 +945,8 @@ Both boxes have area 16; their intersection is 9. Thus 16+16−9 = 23.
 
 In this two-box example, yes: IoU 0.3913 exceeds 0.3 but not 0.5. The threshold is not a correctness probability.
 
+<a id="lab-detection-overlap-box-overlap"></a>
+
 ### Measure two proposed boxes
 
 Compute one suppression decision for two boxes of the same class.
@@ -1036,6 +1062,8 @@ It is false, so recall does not increase. Its false alert still lowers later pre
 **What if there are three reference birds?**
 
 The two found birds reach recall 2/3, and toy AP becomes (1+2/3)/3 ≈ 0.5556.
+
+<a id="lab-detection-average-precision-ranked-ap"></a>
 
 ### Read three ranked detections
 
@@ -1159,6 +1187,12 @@ Positions 0, 1, 2 and 3 appear in at least one mask. Positions 4 and 5 appear in
 
 Yes, the raw formula is undefined. An evaluation must specify how that case is handled.
 
+**Does an ignored pixel still count as a false positive?**
+
+Not under this protocol. We exclude that location entirely before counting. Document this rule so every model is evaluated on the same pixels.
+
+<a id="lab-segmentation-regions-mask-counts"></a>
+
 ### Count foreground overlap
 
 Tiny binary lists stand in for flattened masks.
@@ -1191,6 +1225,89 @@ IoU=0.5000; Dice=0.6667
 
 zip visits matching positions. and counts a position only when both masks select it; or counts it when either selects it. Python adds True as 1 and False as 0. There are two shared pixels and four union pixels. Each list selects three pixels, so Dice is 4/6. This evaluates given masks; it does not learn or predict them.
 
+<a id="lab-segmentation-regions-confusion-matrix-miou"></a>
+
+### Compute segmentation IoU without counting ignored pixels
+
+A road camera labels background, road and small objects. Some pixels have no reliable annotation. Mina first counts every pixel and gets a misleading score. She removes ignored pixels, builds one confusion matrix, and reads each class from its row and column. The small object now has its own score instead of disappearing inside the background total.
+
+```python
+from math import isclose
+
+def segmentation_report(truth, prediction, classes, ignore=255):
+    if len(truth) != len(prediction) or classes <= 0:
+        raise ValueError("aligned arrays and positive class count required")
+    matrix = [[0] * classes for _ in range(classes)]
+    for actual, predicted in zip(truth, prediction):
+        if actual == ignore:
+            continue
+        if not (0 <= actual < classes and 0 <= predicted < classes):
+            raise ValueError("unknown class")
+        matrix[actual][predicted] += 1
+    ious = []
+    for c in range(classes):
+        tp = matrix[c][c]
+        actual_total = sum(matrix[c])
+        predicted_total = sum(row[c] for row in matrix)
+        union = actual_total + predicted_total - tp
+        ious.append(tp / union if union else None)
+    defined = [value for value in ious if value is not None]
+    mean = sum(defined) / len(defined) if defined else None
+    total = sum(map(sum, matrix))
+    accuracy = sum(matrix[c][c] for c in range(classes)) / total if total else None
+    return matrix, ious, mean, accuracy
+
+truth = [0, 0, 0, 1, 1, 2, 2, 255]
+prediction = [0, 0, 1, 1, 2, 2, 0, 1]
+matrix, ious, mean, accuracy = segmentation_report(truth, prediction, 3)
+assert matrix == [[2, 1, 0], [0, 1, 1], [1, 0, 1]]
+assert isclose(mean, 7 / 18) and isclose(accuracy, 4 / 7)
+assert segmentation_report([255], [1], 3)[2] is None
+assert segmentation_report([0], [0], 3)[1] == [1.0, None, None]
+print("rows = truth; columns = prediction:")
+for row in matrix:
+    print(row)
+print("class IoU:", [round(value, 6) for value in ious])
+print(f"mean IoU: {mean:.6f}")
+print(f"pixel accuracy: {accuracy:.6f}")
+```
+
+**Run it locally**
+
+```sh
+python segmentation-regions-confusion-matrix-miou.py
+```
+
+**Expected output**
+
+```text
+rows = truth; columns = prediction:
+[2, 1, 0]
+[0, 1, 1]
+[1, 0, 1]
+class IoU: [0.5, 0.333333, 0.333333]
+mean IoU: 0.388889
+pixel accuracy: 0.571429
+```
+
+**Follow the execution**
+
+1. Skip an ignored ground-truth pixel before updating any row or column. Its prediction contributes nothing.
+
+2. Read TP from the diagonal. The row total counts actual pixels; the column total counts predicted pixels.
+
+3. Union equals actual total plus predicted total minus TP. The subtraction avoids counting the intersection twice.
+
+4. Average defined class IoUs equally. Return None for a class absent from both truth and prediction.
+
+**Read the code step by step**
+
+IoU_c=TP_c/(TP_c+FP_c+FN_c). For background, TP=2, FP=1 and FN=1, so IoU=2/4=0.5. Road and object each have IoU=1/3. Mean IoU is (1/2+1/3+1/3)/3=7/18, about 0.388889. Pixel accuracy is instead 4/7. These metrics answer different questions.
+
+The confusion matrix pools the evaluated pixels. Pooling all images before computing IoU can differ from averaging per-image IoUs. State which method you use. This implementation excludes a class only when its union is zero; a class missing from truth but predicted somewhere has nonzero union and IoU zero. Other benchmarks choose different absent-class conventions.
+
+An all-ignored image gives no defined score. It is not a perfect prediction. For P pixels and C classes, this straightforward implementation takes O(P+C squared) time and O(C squared) storage. Keep the ignore mask, class mapping, pooling rule and resize method identical across models. Never resize discrete label masks with a method that creates fractional class IDs.
+
 ### Where you can use this
 
 **Perfect region**
@@ -1212,6 +1329,8 @@ Draw two leaves touching. A semantic leaf mask may join them; instance labels mu
 - [PyTorch: TorchVision Object Detection Finetuning Tutorial](https://docs.pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 
 - [scikit-learn: Metrics and scoring: quantifying prediction quality](https://scikit-learn.org/stable/modules/model_evaluation.html)
+
+- [Cityscapes: Benchmark suite: pixel-level IoU and ignored labels](https://www.cityscapes-dataset.com/benchmarks/)
 
 <a id="tracking-identity"></a>
 
@@ -1272,6 +1391,8 @@ The last change is 5−2=3; adding the same change to 5 gives 8.
 **What if no detection passes the gate?**
 
 Record a missing observation. A full tracker may keep a prediction briefly, but should not invent a confirmed sighting.
+
+<a id="lab-tracking-identity-track-gate"></a>
 
 ### Predict and gate one track
 
@@ -1381,6 +1502,8 @@ Only the seventh position differs; the other six agree.
 **Can a dictionary always correct O versus 0?**
 
 No. A shelf code may legitimately contain either, so language plausibility is not enough.
+
+<a id="lab-ocr-reading-ocr-template"></a>
 
 ### Count symbol mismatches
 
@@ -1498,6 +1621,8 @@ The same patches in another arrangement can describe a different scene. Order ca
 
 No. Pair count squares the token count. Here the added class token gives 4225/289 ≈ 14.62 times.
 
+<a id="lab-visual-tokens-patch-budget"></a>
+
 ### Count patches and comparisons
 
 Compare two patch sizes before considering a full model.
@@ -1609,6 +1734,8 @@ Its difference is |25−10|=15, the only difference above 5.
 **Would a brighter lamp cause alerts?**
 
 Yes. A global brightness change affects raw pixel differences even without damage.
+
+<a id="lab-defect-inspection-difference-inspection"></a>
 
 ### Locate the largest change
 
@@ -1726,6 +1853,8 @@ There are 15 found animals and 5 missed animals, so 20 actual positive images.
 
 With true positives and misses fixed, recall stays 0.75. Precision drops to 15/35 ≈ 0.4286.
 
+<a id="lab-evaluation-shift-evaluate-alerts"></a>
+
 ### Count alerts and misses
 
 Calculate metrics from explicit counts for one held-out group.
@@ -1842,6 +1971,12 @@ Divide by 0.1 to get 2.6, round to 3, then multiply by 0.1.
 
 No. A score near a decision threshold can cross it after a small change.
 
+**Why must padding be removed before division?**
+
+The forward operation scales first and adds padding second. Inverting a sequence reverses its order. Dividing the padding by the wrong scale shifts the box.
+
+<a id="lab-inference-pipelines-pipeline-budget"></a>
+
 ### Inspect rounding and total delay
 
 Use stated hypothetical times, not measurements.
@@ -1877,6 +2012,85 @@ serial latency ms: 13
 
 The first comprehension divides and rounds each value. The second reconstructs approximate values by multiplication. zip pairs originals with reconstructions so abs can measure error. Rounding the displayed values to two decimals only affects presentation. sum adds the three assumed stage times. This toy quantizer does not convert or run a trained model.
 
+<a id="lab-inference-pipelines-letterbox-coordinate-roundtrip"></a>
+
+### Return a detection box to the original image
+
+Mina fits a wide camera image into a square model input. She scales the image and adds padding. The model finds the object, but drawing its coordinates directly on the camera image moves the box. She writes down the actual resized dimensions and padding, reverses those operations, and tests the round trip before trusting the display.
+
+```python
+from math import isclose
+
+def metadata(width, height, side):
+    if min(width, height, side) <= 0:
+        raise ValueError("positive dimensions required")
+    nominal = min(side / width, side / height)
+    rw, rh = max(1, round(width * nominal)), max(1, round(height * nominal))
+    return rw / width, rh / height, (side - rw) // 2, (side - rh) // 2
+
+def forward(box, meta):
+    sx, sy, px, py = meta
+    x1, y1, x2, y2 = box
+    return [sx * x1 + px, sy * y1 + py, sx * x2 + px, sy * y2 + py]
+
+def restore(box, meta, width, height):
+    sx, sy, px, py = meta
+    x1, y1, x2, y2 = box
+    restored = [(x1 - px) / sx, (y1 - py) / sy,
+                (x2 - px) / sx, (y2 - py) / sy]
+    clipped = [min(max(v, 0.0), limit)
+               for v, limit in zip(restored, [width, height, width, height])]
+    return clipped if clipped[0] < clipped[2] and clipped[1] < clipped[3] else None
+
+original = [100.0, 50.0, 500.0, 300.0]
+meta = metadata(800, 400, 640)
+model_box = forward(original, meta)
+restored = restore(model_box, meta, 800, 400)
+assert all(isclose(a, b) for a, b in zip(original, restored))
+odd_meta = metadata(853, 480, 640)
+odd_back = restore(forward(original, odd_meta), odd_meta, 853, 480)
+assert all(isclose(a, b) for a, b in zip(original, odd_back))
+assert odd_meta[0] != odd_meta[1]  # Rounded height changes the actual y scale.
+assert restore([0, 0, 20, 20], meta, 800, 400) is None
+print("scale and padding:", meta)
+print("model box:", model_box)
+print("original box:", restored)
+print("rounded-size round trip:", all(isclose(a, b) for a, b in zip(original, odd_back)))
+```
+
+**Run it locally**
+
+```sh
+python inference-pipelines-letterbox-coordinate-roundtrip.py
+```
+
+**Expected output**
+
+```text
+scale and padding: (0.8, 0.8, 0, 160)
+model box: [80.0, 200.0, 400.0, 400.0]
+original box: [100.0, 50.0, 500.0, 300.0]
+rounded-size round trip: True
+```
+
+**Follow the execution**
+
+1. An 800 by 400 image becomes 640 by 320. Add 160 pixels above it and 160 below it.
+
+2. Map both corners. The box [100,50,500,300] becomes [80,200,400,400].
+
+3. Subtract padding first, then divide by scale. Clip to the original continuous image boundaries.
+
+4. Repeat with 853 by 480. Rounded resized dimensions can give slightly different x and y scales. Reject boxes that collapse inside padding.
+
+**Read the code step by step**
+
+For continuous box edges, x_prime=s_x*x+p_x and y_prime=s_y*y+p_y. Here s_x and s_y are actual resized width/original width and resized height/original height. Padding p_x and p_y records the left and top offsets. Reverse the transform with x=(x_prime-p_x)/s_x and y=(y_prime-p_y)/s_y.
+
+In the first image both scales are 0.8. A model y-coordinate of 200 becomes (200-160)/0.8=50. For 853 by 480, rounding produces 640 by 360. Then s_x=640/853 while s_y=360/480. Using the nominal scale for both axes would introduce a small error. Store the actual transform used by preprocessing.
+
+This example uses continuous box edges in [0,width] and [0,height], not integer pixel indices whose last valid values are width-1 and height-1. Real resize libraries can use different pixel-center and interpolation conventions. Cropping, rotation or other padding rules require their own recorded transforms. A round-trip test checks coordinate bookkeeping; it does not prove the detector is accurate.
+
 ### Where you can use this
 
 **Finer spacing**
@@ -1896,6 +2110,8 @@ Change assumed stage times to [20,4,2]. Speeding the model alone cannot remove t
 - [ONNX Runtime: Quantize ONNX models](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 
 - [TorchVision: Transforming images, videos, boxes and more](https://docs.pytorch.org/vision/stable/transforms.html)
+
+- [OpenCV: Geometric Transformations of Images](https://docs.opencv.org/4.x/da/d6e/tutorial_py_geometric_transformations.html)
 
 ## The reference desk
 
@@ -2014,3 +2230,5 @@ Original stories, explanations and examples by Leon. The linked tutorials and re
 - [MVTec AD anomaly detection dataset](https://www.mvtec.com/research-teaching/datasets/mvtec-ad) — MVTec
 
 - [Quantize ONNX models](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html) — ONNX Runtime
+
+- [Benchmark suite: pixel-level IoU and ignored labels](https://www.cityscapes-dataset.com/benchmarks/) — Cityscapes

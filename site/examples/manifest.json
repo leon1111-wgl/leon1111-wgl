@@ -108,6 +108,15 @@
     "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
   },
   {
+    "path": "examples/INFO1113/classes-invariants-defensive-snapshot/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "classes-invariants",
+    "title": "Protect a score snapshot from outside changes",
+    "output": "snapshot: [70, 80, 90]\ntotal: 240\ninvalid score rejected\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
     "path": "examples/INFO1113/text-io-java-scanner-line-boundary/Main.java",
     "language": "java",
     "group": "INFO1113",
@@ -177,6 +186,15 @@
     "topic": "equality-hashing",
     "title": "Keep unequal colliding keys distinct",
     "output": "keys=2\nkey 1=updated\nkey 2=south\nsame hash=true\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/equality-hashing-immutable-grid-key/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "equality-hashing",
+    "title": "Use a value object as a map key",
+    "output": "same object: false\nsame value: true\nlookup: charging\ncollision keeps both: 2\n",
     "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
   },
   {
@@ -414,6 +432,15 @@
     "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
   },
   {
+    "path": "examples/INFO1113/application-design-undoable-notebook/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "application-design",
+    "title": "Build a small editor with undo",
+    "output": "Hello Python\nrejected without history\nundo: Hello\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
     "path": "examples/COMP2017/representation-control-c-defined-integer-arithmetic.c",
     "language": "c",
     "group": "COMP2017",
@@ -531,6 +558,15 @@
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread file-streams-c-partial-record-units.c -lm -o demo\n./demo"
   },
   {
+    "path": "examples/COMP2017/file-streams-portable-record-format.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "file-streams",
+    "title": "Define a file format instead of dumping a struct",
+    "output": "wire: 76 1 2 1\ndecoded: 513\nbad version and short record rejected; output unchanged\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread file-streams-portable-record-format.c -lm -o demo\n./demo"
+  },
+  {
     "path": "examples/COMP2017/allocation-ownership-c-warmup-owner-release.c",
     "language": "c",
     "group": "COMP2017",
@@ -556,6 +592,15 @@
     "title": "Commit a resize only after success",
     "output": "1 2 3 4 5\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread allocation-ownership-c-realloc-commit.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/allocation-ownership-growing-owned-vector.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "allocation-ownership",
+    "title": "Grow an owned array without losing it",
+    "output": "length=1 capacity=2\nlength=2 capacity=2\nlength=3 capacity=4\nlength=4 capacity=4\nlength=5 capacity=8\noversized request rejected: 1\nlast value: 50\nowner reset after free\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread allocation-ownership-growing-owned-vector.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/linked-structures-c-list-remove-link.c",
@@ -709,6 +754,15 @@
     "title": "Reconstruct two length-prefixed frames",
     "output": "frame=cat\nframe=bird\nframes=2\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pipes-fifos-c-pipe-length-framing.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/pipes-fifos-framed-short-reads.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "pipes-fifos",
+    "title": "Read a complete frame from a byte stream",
+    "output": "frame: ping\nsecond frame: truncated payload\nnext header: clean EOF\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread pipes-fifos-framed-short-reads.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/queues-sockets-c-system-v-message-boundary.c",
@@ -1134,6 +1188,15 @@
     "run": "python bfs-distance-multi-source-bfs.py"
   },
   {
+    "path": "examples/COMP2123/bfs-distance-nearest-exit-wavefront.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "bfs-distance",
+    "title": "Start BFS from every exit at once",
+    "output": "0 1 # 2\n1 2 2 1\n2 # 1 0\n",
+    "run": "python bfs-distance-nearest-exit-wavefront.py"
+  },
+  {
     "path": "examples/COMP2123/dijkstra-relaxation-dijkstra-lazy-heap.py",
     "language": "python",
     "group": "COMP2123",
@@ -1150,6 +1213,15 @@
     "title": "Choose a minimum without a heap",
     "output": "settled: S 0\nsettled: A 0\nsettled: B 2\nX: inf\n",
     "run": "python dijkstra-relaxation-dijkstra-array-choice.py"
+  },
+  {
+    "path": "examples/COMP2123/dijkstra-relaxation-negative-edge-relaxation.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "dijkstra-relaxation",
+    "title": "Handle a negative edge with Bellman–Ford",
+    "output": "at most 0 edges: [0, inf, inf, inf]\nat most 1 edges: [0, 4, 5, inf]\nat most 2 edges: [0, 4, 2, 8]\nat most 3 edges: [0, 4, 2, 5]\nZ is unreachable: True\nreachable negative cycle\n",
+    "run": "python dijkstra-relaxation-negative-edge-relaxation.py"
   },
   {
     "path": "examples/COMP2123/minimum-spanning-trees-kruskal-union-find.py",
@@ -1186,6 +1258,15 @@
     "title": "Check where a greedy proof stops working",
     "output": "density choice: ['A']\nbest whole items: ['B', 'C']\nbest value: 6\n",
     "run": "python greedy-fractional-indivisible-knapsack-counterexample.py"
+  },
+  {
+    "path": "examples/COMP2123/greedy-fractional-indivisible-kit-dp.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "greedy-fractional",
+    "title": "When greedy fails: pack whole science kits",
+    "output": "first 0 kits: [0, 0, 0, 0, 0]\nfirst 1 kits: [0, 0, 0, 5, 5]\nfirst 2 kits: [0, 0, 3, 5, 5]\nfirst 3 kits: [0, 0, 3, 5, 6]\nselected: ['B', 'C'] value: 6\n",
+    "run": "python greedy-fractional-indivisible-kit-dp.py"
   },
   {
     "path": "examples/COMP2123/interval-partitioning-interval-room-heap.py",
@@ -1368,6 +1449,24 @@
     "run": "python cryptography-complexity-trial-division-bit-length.py"
   },
   {
+    "path": "examples/COMP2022/regular-decision-problems-shortest-dfa-counterexample.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "regular-decision-problems",
+    "title": "Find a shortest word that separates two DFAs",
+    "output": "shortest witness: 'aba'\ncontains ab: True\nends in ab: False\n",
+    "run": "python regular-decision-problems-shortest-dfa-counterexample.py"
+  },
+  {
+    "path": "examples/COMP2022/parse-trees-ambiguity-count-expression-trees.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "parse-trees-ambiguity",
+    "title": "Count parse trees instead of assuming one",
+    "output": "four operands: 5 parse trees\n(n+(n+(n+n)))\n(n+((n+n)+n))\n((n+n)+(n+n))\n((n+(n+n))+n)\n(((n+n)+n)+n)\n",
+    "run": "python parse-trees-ambiguity-count-expression-trees.py"
+  },
+  {
     "path": "examples/COMP2022/logical-consequence-entailment-countermodels.py",
     "language": "python",
     "group": "COMP2022",
@@ -1377,6 +1476,24 @@
     "run": "python logical-consequence-entailment-countermodels.py"
   },
   {
+    "path": "examples/COMP2022/predicate-logic-finite-witness-search.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "predicate-logic",
+    "title": "Search for witnesses and counterexamples in a finite model",
+    "output": "witnesses: {'Ana': ['Ivy'], 'Bo': ['Noah'], 'Cy': ['Ivy']}\nevery student has a mentor: True\none mentor for everybody: False\ncounterexample after removal: ['Bo']\n",
+    "run": "python predicate-logic-finite-witness-search.py"
+  },
+  {
+    "path": "examples/COMP3308/astar-heuristics-astar-reopen-states.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "astar-heuristics",
+    "title": "Reopen a state when A* finds a better route",
+    "output": "expanded: ['S', 'A', 'B', 'A', 'G']\npath: ['S', 'B', 'A', 'G']\ncost: 3.5\n",
+    "run": "python astar-heuristics-astar-reopen-states.py"
+  },
+  {
     "path": "examples/COMP3308/learning-neighbors-nearest-two-trace.py",
     "language": "python",
     "group": "COMP3308",
@@ -1384,6 +1501,24 @@
     "title": "Find and average two neighbors",
     "output": "Neighbors: [(1, 4, 10), (2, 7, 16)]\nPrediction: 13.0",
     "run": "python learning-neighbors-nearest-two-trace.py"
+  },
+  {
+    "path": "examples/COMP3308/naive-bayes-log-space-word-counts.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "naive-bayes",
+    "title": "Keep long-text likelihoods in log space",
+    "output": "short P(A|text): 0.941176\nraw scores underflow: [True, True]\nlog-space winner: A\n",
+    "run": "python naive-bayes-log-space-word-counts.py"
+  },
+  {
+    "path": "examples/COMP3308/classification-metrics-macro-micro-report.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "classification-metrics",
+    "title": "See which class disappears inside an average",
+    "output": "leaf: TP=8 FP=1 FN=0 F1=0.9412\nflower: TP=0 FP=0 FN=1 F1=0.0000\nseed: TP=1 FP=0 FN=0 F1=1.0000\nmacro F1=0.6471; micro F1=0.9000; accuracy=0.9000\n",
+    "run": "python classification-metrics-macro-micro-report.py"
   },
   {
     "path": "examples/COMP3308/backpropagation-sigmoid-one-update.py",
@@ -1420,6 +1555,15 @@
     "title": "Keep complete devices together",
     "output": "rows: 80 20 20\nshared devices: []\ntest error: 0.1\n",
     "run": "python framing-splits-leakage-ml-group-split.py"
+  },
+  {
+    "path": "examples/AI-ML/framing-splits-leakage-memorizer-leakage-audit.py",
+    "language": "python",
+    "group": "AI-ML",
+    "topic": "framing-splits-leakage",
+    "title": "Expose leakage with a deliberately simple memorizer",
+    "output": "row split: accuracy=1.00; shared devices=['A', 'B', 'C', 'D']\ngroup split: accuracy=0.50; shared devices=[]\n",
+    "run": "python framing-splits-leakage-memorizer-leakage-audit.py"
   },
   {
     "path": "examples/AI-ML/missing-data-eda-ml-median-imputation.py",
@@ -1465,6 +1609,15 @@
     "title": "One probability, two decisions",
     "output": "score: 0.4000; probability: 0.5987\nthreshold 0.50: class 1\nthreshold 0.65: class 0\n",
     "run": "python logistic-thresholds-ml-sigmoid-cutoffs.py"
+  },
+  {
+    "path": "examples/AI-ML/logistic-thresholds-validation-cost-threshold.py",
+    "language": "python",
+    "group": "AI-ML",
+    "topic": "logistic-thresholds",
+    "title": "Choose a decision threshold with an explicit error cost",
+    "output": "threshold=0.30 FP=1 FN=0 cost=1\nthreshold=0.50 FP=0 FN=1 cost=4\nthreshold=0.70 FP=0 FN=2 cost=8\nthreshold=1.10 FP=0 FN=3 cost=12\nselected on validation: 0.30\n",
+    "run": "python logistic-thresholds-validation-cost-threshold.py"
   },
   {
     "path": "examples/AI-ML/metrics-imbalance-ml-confusion-counts.py",
@@ -1584,6 +1737,15 @@
     "run": "python dl-softmax-loss-dl-stable-softmax-loss.py"
   },
   {
+    "path": "examples/AI-DL/dl-softmax-loss-stable-loss-gradient-check.py",
+    "language": "python",
+    "group": "AI-DL",
+    "topic": "dl-softmax-loss",
+    "title": "Compute a finite loss even when a probability underflows",
+    "output": "target probability: 0.0\nfinite loss: 2000.0\nanalytic gradient: [1.0, 0.0, -1.0]\nnumeric gradient: [1.0, 0.0, -1.0]\n",
+    "run": "python dl-softmax-loss-stable-loss-gradient-check.py"
+  },
+  {
     "path": "examples/AI-DL/dl-shape-tracing-dl-shape-path.py",
     "language": "python",
     "group": "AI-DL",
@@ -1618,6 +1780,15 @@
     "title": "Run five transparent training steps",
     "output": "epoch 1: w=0.8000, train=0.9600, valid=3.2400\nepoch 2: w=1.2800, train=0.3456, valid=1.1664\nepoch 3: w=1.5680, train=0.1244, valid=0.4199\nepoch 4: w=1.7408, train=0.0448, valid=0.1512\nepoch 5: w=1.8445, train=0.0161, valid=0.0544\nbest weight: 1.84448\n",
     "run": "python dl-training-loop-dl-one-weight-training-loop.py"
+  },
+  {
+    "path": "examples/AI-DL/dl-training-loop-unequal-batch-accumulation.py",
+    "language": "python",
+    "group": "AI-DL",
+    "topic": "dl-training-loop",
+    "title": "Accumulate gradients when microbatches have different sizes",
+    "output": "batch gradients: [-18.666667, -64.0]\nunweighted mean: -41.333333\nsample-weighted gradient: -30.000000\none optimizer step: 0.300000\n",
+    "run": "python dl-training-loop-unequal-batch-accumulation.py"
   },
   {
     "path": "examples/AI-DL/dl-regularization-dl-dropout-expectation.py",
@@ -1782,6 +1953,15 @@
     "run": "python segmentation-regions-mask-counts.py"
   },
   {
+    "path": "examples/AI-CV/segmentation-regions-confusion-matrix-miou.py",
+    "language": "python",
+    "group": "AI-CV",
+    "topic": "segmentation-regions",
+    "title": "Compute segmentation IoU without counting ignored pixels",
+    "output": "rows = truth; columns = prediction:\n[2, 1, 0]\n[0, 1, 1]\n[1, 0, 1]\nclass IoU: [0.5, 0.333333, 0.333333]\nmean IoU: 0.388889\npixel accuracy: 0.571429\n",
+    "run": "python segmentation-regions-confusion-matrix-miou.py"
+  },
+  {
     "path": "examples/AI-CV/tracking-identity-track-gate.py",
     "language": "python",
     "group": "AI-CV",
@@ -1834,6 +2014,15 @@
     "title": "Inspect rounding and total delay",
     "output": "encoded: [1, 3, 9]\nrestored: [0.1, 0.3, 0.9]\nlargest error=0.04\nserial latency ms: 13\n",
     "run": "python inference-pipelines-pipeline-budget.py"
+  },
+  {
+    "path": "examples/AI-CV/inference-pipelines-letterbox-coordinate-roundtrip.py",
+    "language": "python",
+    "group": "AI-CV",
+    "topic": "inference-pipelines",
+    "title": "Return a detection box to the original image",
+    "output": "scale and padding: (0.8, 0.8, 0, 160)\nmodel box: [80.0, 200.0, 400.0, 400.0]\noriginal box: [100.0, 50.0, 500.0, 300.0]\nrounded-size round trip: True\n",
+    "run": "python inference-pipelines-letterbox-coordinate-roundtrip.py"
   },
   {
     "path": "examples/AI-MM/tokens-embeddings-toy-token-table.py",
@@ -1899,6 +2088,15 @@
     "run": "python image-text-search-search-ranking.py"
   },
   {
+    "path": "examples/AI-MM/image-text-search-multi-query-retrieval-report.py",
+    "language": "python",
+    "group": "AI-MM",
+    "topic": "image-text-search",
+    "title": "Evaluate retrieval with several relevant results per query",
+    "output": "scored: 2; unscored: 1\nmacro_recall: 0.750000\nmicro_recall: 0.666667\nhit_rate: 1.000000\nmrr: 0.750000\n",
+    "run": "python image-text-search-multi-query-retrieval-report.py"
+  },
+  {
     "path": "examples/AI-MM/conditional-generation-response-probability.py",
     "language": "python",
     "group": "AI-MM",
@@ -1933,6 +2131,15 @@
     "title": "Find a delayed clap",
     "output": "shift scores: {-1: 0, 0: 0, 1: 1}\naudio delay seconds=0.1\n",
     "run": "python audio-video-sync-sync-offset.py"
+  },
+  {
+    "path": "examples/AI-MM/audio-video-sync-timestamp-nearest-alignment.py",
+    "language": "python",
+    "group": "AI-MM",
+    "topic": "audio-video-sync",
+    "title": "Align events with timestamps, offsets and a tolerance",
+    "output": "audio 0.061: frame 1, error 0.000 s\naudio 0.104: frame 2, error 0.001 s\naudio 0.300: unmatched\n",
+    "run": "python audio-video-sync-timestamp-nearest-alignment.py"
   },
   {
     "path": "examples/AI-MM/video-temporal-grounding-temporal-overlap.py",

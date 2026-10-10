@@ -652,6 +652,10 @@
         {
           "question": "完整 DFA 能交换终态求补吗？",
           "answer": "能。每输入恰有一个完整运行，反转末状态接受性就反转答案。"
+        },
+        {
+          "question": "为什么测试很多字符串仍弱于搜索乘积图？",
+          "answer": "有限样例可能漏掉更长的反例。乘积图虽然节点有限，却覆盖任意字符串可能到达的状态对。"
         }
       ],
       "instructor_notes": [
@@ -688,6 +692,35 @@
           ],
           "answer": "ε 是最短反例，两语言在起点就不同。",
           "sanity_check": "0 被两者接受，说明只看非空例子可能漏掉最简单证据。"
+        },
+        {
+          "title": "跟踪 aba 在两个自动机中的状态",
+          "question": "比较“包含 ab”和“以 ab 结尾”。两机都从 0 开始，只接受状态 2。使用程序中的转移表。",
+          "strategy": "每读一个字母记录状态对，读完整个单词后比较接受性。",
+          "steps": [
+            "从 (0,0) 出发。读 a 后都到 1，得到 (1,1)。",
+            "再读 b 得到 (2,2)，前缀 ab 被两者接受。",
+            "最后读 a，得到 (2,1)，只有“包含 ab”接受。"
+          ],
+          "answer": "aba 属于对称差，因此两个语言不等价。",
+          "sanity_check": "长度小于 3 且含 ab 的字符串只有 ab 本身，它也以 ab 结尾，因此不存在更短反例。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "shortest-dfa-counterexample",
+          "title": "找到区分两个 DFA 的最短单词",
+          "intro": "两位同学制作文本过滤器：一个接受任意位置含 ab 的单词，另一个只接受以 ab 结尾的单词。ab 和 aab 的测试都通过，于是他们以为两个过滤器等价。米娜不再猜测试字符串，而是同时运行两个自动机，搜索恰好只有一个接受的状态对。最终找到 aba，直接说明二者为何不同。",
+          "language": "python",
+          "code": "from collections import deque\nfrom itertools import product\n\ndef witness(a, accepting_a, b, accepting_b):\n    alphabet = (\"a\", \"b\")\n    start = (0, 0)\n    parents = {start: None}\n    queue = deque([start])\n    while queue:\n        pair = queue.popleft()\n        x, y = pair\n        if (x in accepting_a) != (y in accepting_b):\n            letters = []\n            while parents[pair] is not None:\n                previous, letter = parents[pair]\n                letters.append(letter)\n                pair = previous\n            return \"\".join(reversed(letters))\n        for letter in alphabet:\n            nxt = (a[x][letter], b[y][letter])\n            if nxt not in parents:\n                parents[nxt] = (pair, letter)\n                queue.append(nxt)\n    return None\n\ndef accepts(table, word):\n    state = 0\n    for letter in word:\n        state = table[state][letter]\n    return state == 2\n\ncontains = [{\"a\": 1, \"b\": 0}, {\"a\": 1, \"b\": 2}, {\"a\": 2, \"b\": 2}]\nends = [{\"a\": 1, \"b\": 0}, {\"a\": 1, \"b\": 2}, {\"a\": 1, \"b\": 0}]\nword = witness(contains, {2}, ends, {2})\nassert word == \"aba\" and witness(contains, {2}, contains, {2}) is None\nfor size in range(len(word)):\n    for letters in product(\"ab\", repeat=size):\n        test = \"\".join(letters)\n        assert accepts(contains, test) == accepts(ends, test)\nprint(\"shortest witness:\", repr(word))\nprint(\"contains ab:\", accepts(contains, word))\nprint(\"ends in ab:\", accepts(ends, word))\n",
+          "output": "shortest witness: 'aba'\ncontains ab: True\nends in ab: False\n",
+          "walkthrough": [
+            "乘积状态 (x,y) 记录两个自动机读完同一前缀后的状态。",
+            "状态对入队时标记；图中最多有 |Q_A|×|Q_B| 个状态对。",
+            "恰好一个分量接受时，将乘积状态视为目标。这是对称差，而非交集。",
+            "用父指针恢复字符串。BFS 保证首次找到的反例按符号数最短。"
+          ],
+          "explanation": "两个语言不同，当且仅当对称差非空：L(A)≠L(B) 等价于存在 w，使 accept_A(w) 与 accept_B(w) 恰好一真一假。完整乘积搜索可以判定给定有限自动机的这一条件。若找不到可达的分歧状态对，任何单词都会到达判断一致的状态对。\n\n状态数分别为 q_A、q_B，字母表大小为 s 时，时间为 O(s×q_A×q_B)，存储状态需要 O(q_A×q_B) 空间。自动机必须完整：每个状态对每个字母都有转移。缺失转移应先补到明确的拒绝汇点。\n\n若初始状态就有分歧，返回空字符串也是合法反例。None 才表示不存在反例。这里的小规模穷举检查核实样例中没有更短反例；乘积状态的访问论证解释一般搜索为何终止。本方法比较 DFA，不能用于判定任意程序等价。"
         }
       ]
     },
@@ -886,6 +919,10 @@
         {
           "question": "加乘优先级能决定减法结合性吗？",
           "answer": "不能。重复减法还需独立分组规则。"
+        },
+        {
+          "question": "为什么一次切分内部相乘，不同切分之间相加？",
+          "answer": "一次切分中，每棵左树可与每棵右树配对；不同切分下，一棵树的根划分唯一，因此集合互不重叠。"
         }
       ],
       "instructor_notes": [
@@ -922,6 +959,35 @@
           ],
           "answer": "两种调度描述同一解析树，不构成歧义；该文法无歧义。",
           "sanity_check": "只有第一种始终最左展开，从而排除无关次序差异。"
+        },
+        {
+          "title": "用小规模结果算出五棵树",
+          "question": "对 E→E+E | n，计算 T(4)，不要枚举所有推导顺序。",
+          "strategy": "按根切分数树结构。不同节点展开顺序可能得到同一棵树，不能重复计数。",
+          "steps": [
+            "T(1)=1，T(2)=T(1)T(1)=1。",
+            "T(3)=T(1)T(2)+T(2)T(1)=2。",
+            "T(4)=T(1)T(3)+T(2)T(2)+T(3)T(1)=2+1+2。"
+          ],
+          "answer": "共有五棵语法树。程序打印五种不同的完全括号化形式。",
+          "sanity_check": "三个操作数的两棵树是 ((n+n)+n) 和 (n+(n+n))，可核对第一个非平凡情形。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "count-expression-trees",
+          "title": "数清语法树，不要默认只有一种解析",
+          "intro": "计算器接受 n+n+n+n。米娜先合并第一对操作数，朋友却先合并最后一对。两种做法都符合 E→E+E | n。字符串合法，但结构并不唯一。米娜枚举根节点的所有切分，再组合左右子树，最终找到五棵树，也理解了解析器为什么需要结合性规则。",
+          "language": "python",
+          "code": "from functools import lru_cache\n\ndef count_trees(operands):\n    if operands < 1:\n        raise ValueError(\"at least one operand required\")\n    ways = [0] * (operands + 1)\n    ways[1] = 1\n    for size in range(2, operands + 1):\n        ways[size] = sum(ways[left] * ways[size - left]\n                         for left in range(1, size))\n    return ways[operands]\n\n@lru_cache(None)\ndef trees(operands):\n    if operands == 1:\n        return (\"n\",)\n    return tuple(f\"({left}+{right})\"\n                 for cut in range(1, operands)\n                 for left in trees(cut)\n                 for right in trees(operands - cut))\n\nassert [count_trees(n) for n in range(1, 6)] == [1, 1, 2, 5, 14]\nassert len(set(trees(4))) == count_trees(4)\nprint(\"four operands:\", count_trees(4), \"parse trees\")\nfor tree in trees(4):\n    print(tree)\n",
+          "output": "four operands: 5 parse trees\n(n+(n+(n+n)))\n(n+((n+n)+n))\n((n+n)+(n+n))\n((n+(n+n))+n)\n(((n+n)+n)+n)\n",
+          "walkthrough": [
+            "一个操作数对应一棵叶子树，基础值是一，不是零。",
+            "根在 left 个操作数之后切分时，左右树数量相乘，每对左右树构成一棵树。",
+            "对不同根切分求和；根的划分不同，不会得到同一棵有序树。",
+            "只枚举四个操作数用于展示。计数与实际生成全部树，输出成本差别很大。"
+          ],
+          "explanation": "设 T(m) 表示 m 个相同操作数词元用加号连接时的语法树数量。T(1)=1，T(m)=对 k=1 到 m-1 求和 T(k)×T(m-k)。k 表示左子树的叶子数量。m=4 时，三种根切分分别贡献 1×2、1×1、2×1，总数为 5。\n\n计数器需要 O(m²) 次算术操作，并保存 O(m) 个整数。大计数需要大整数，因此这里没有声称任意大 m 下算术仍是常数成本。枚举所有树至少要花费与输出字符数相关的时间，增长快得多。\n\n算出的数值相同，不表示文法无歧义。歧义指同一词元字符串具有多棵语法树。对这个简单语言，E→E+n | n 可以规定左结合。本例假定已经分词且只有加号，并未实现词法分析、其他运算符优先级或通用文法解析器。"
         }
       ]
     },
@@ -1916,6 +1982,10 @@
         {
           "question": "所有 A 都是 B 为何用蕴含？",
           "answer": "只要求 A 对象通过 B 检查，非 A 对象不受此要求。"
+        },
+        {
+          "question": "能交换这两个量词而不改变命题吗？",
+          "answer": "一般不能。给定关系让“全称—存在”为真、“存在—全称”为假，是二者等价这一主张的反模型。"
         }
       ],
       "instructor_notes": [
@@ -1952,6 +2022,35 @@
           ],
           "answer": "陈述为真，表示至少一人失败，不表示所有人都失败。",
           "sanity_check": "A、C 通过，故更强的 ∀x¬Pass(x) 为假。"
+        },
+        {
+          "title": "否定并检验量词命题",
+          "question": "使用代码中的三名学生、两名导师。否定“每个学生都有导师”，再判断删除 (Bo,Noah) 后否定命题是否成立。",
+          "strategy": "把否定依次推进各量词，再寻找具体见证。",
+          "steps": [
+            "¬∀x∃yR(x,y) 变成 ∃x¬∃yR(x,y)。",
+            "¬∃y 变成 ∀y¬，得到 ∃x∀y¬R(x,y)。",
+            "删除后，R(Bo,Ivy)、R(Bo,Noah) 都为假，选择 x=Bo。"
+          ],
+          "answer": "删除后否定命题为真，Bo 是见证。",
+          "sanity_check": "删除前每个学生的见证列表非空，因此否定命题为假。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "finite-witness-search",
+          "title": "在有限模型中寻找见证与反例",
+          "intro": "社团的每个学生都有导师。米娜听完，以为存在一位导师指导所有学生。一个小表就推翻了这个想法：Ana、Cy 跟 Ivy，Bo 跟 Noah。每个学生都有人指导，却没有一个导师覆盖三人。米娜用嵌套循环把两个量词的顺序具体展示出来。",
+          "language": "python",
+          "code": "students = [\"Ana\", \"Bo\", \"Cy\"]\nmentors = [\"Ivy\", \"Noah\"]\nrelation = {(\"Ana\", \"Ivy\"), (\"Bo\", \"Noah\"), (\"Cy\", \"Ivy\")}\n\ndef inspect(students, mentors, relation):\n    witnesses = {x: [y for y in mentors if (x, y) in relation] for x in students}\n    every_has_someone = all(witnesses[x] for x in students)\n    shared = [y for y in mentors if all((x, y) in relation for x in students)]\n    uncovered = [x for x in students if all((x, y) not in relation for y in mentors)]\n    assert bool(uncovered) == (not every_has_someone)\n    return witnesses, every_has_someone, shared, uncovered\n\nwitnesses, every, shared, uncovered = inspect(students, mentors, relation)\nprint(\"witnesses:\", witnesses)\nprint(\"every student has a mentor:\", every)\nprint(\"one mentor for everybody:\", bool(shared))\nassert every and not shared\nbroken = relation - {(\"Bo\", \"Noah\")}\nprint(\"counterexample after removal:\", inspect(students, mentors, broken)[3])\nassert inspect([], mentors, relation)[1] is True\nassert inspect(students, [], relation)[1] is False\n",
+          "output": "witnesses: {'Ana': ['Ivy'], 'Bo': ['Noah'], 'Cy': ['Ivy']}\nevery student has a mentor: True\none mentor for everybody: False\ncounterexample after removal: ['Bo']\n",
+          "walkthrough": [
+            "为每位学生建立见证列表；内层存在量词可以为不同外层学生选择不同导师。",
+            "寻找共同导师时反过来：先选一个导师，再要求他覆盖每位学生。",
+            "若某学生对所有候选导师都不满足关系，他就是未被覆盖者；这会构造否定命题的见证，而不只是打印 False。",
+            "检查空集合情形。没有学生时全称命题为真；有学生却没有导师时，原命题为假。"
+          ],
+          "explanation": "设 S 为学生集合、M 为导师集合，R(x,y) 表示 y 指导 x。第一个命题是“对每个 x∈S，存在 y∈M，使 R(x,y)”；第二个是“存在 y∈M，对每个 x∈S 都有 R(x,y)”。共同见证能证明第二个，进而证明第一个；各自的见证只能证明第一个。\n\n否定第一个命题得到：“存在 x∈S，使每个 y∈M 都不满足 R(x,y)”。删掉 Bo–Noah 后，Bo 就成为这个反例。|S| 名学生、|M| 名导师的直接检查需要 O(|S||M|) 次关系查询，这里假定集合查询平均 O(1)。\n\n程序检查的是一个指定的有限解释。在一张表上成立，并不证明公式在所有解释中都有效，也不能解决任意一阶逻辑有效性。论域假设应写在题目中，不能遇到不想要的结果后再临时改变空集规则。"
         }
       ]
     }
@@ -2026,6 +2125,10 @@
     {
       "title": "Cornell — Regular expressions and finite automata",
       "url": "https://www.cs.cornell.edu/courses/cs312/2007fa/recitations/rec26.html"
+    },
+    {
+      "title": "Cornell CS 4120: Grammars and ambiguity",
+      "url": "https://courses.cs.cornell.edu/courses/cs4120/2026sp/notes.html?id=grammars"
     }
   ]
 }

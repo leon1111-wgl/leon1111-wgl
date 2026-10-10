@@ -83,6 +83,9 @@ project_errors,project_counts=validate_projects()
 errors.extend(project_errors)
 from validate_python_course import validate_python_course
 errors.extend(validate_python_course())
+from validate_extensions import validate_extensions
+extension_errors,extension_count=validate_extensions()
+errors.extend(extension_errors)
 for folder in ('courses','ai','projects'):
  for f in (SITE/folder).glob('*.html'):
   page=f.read_text()

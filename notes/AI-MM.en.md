@@ -6,6 +6,16 @@
 
 ![Leon — Learning roadmap](../site/assets/maps/mm.en.svg)
 
+<a id="extensions"></a>
+
+## Guided extensions
+
+Read the linked lesson first. Then follow the story, predict the output, run the complete program and check the explanation. Each case adds one practical challenge.
+
+1. [Align events with timestamps, offsets and a tolerance](#lab-audio-video-sync-timestamp-nearest-alignment) — Check clocks and missing matches before combining modalities.
+
+2. [Evaluate retrieval with several relevant results per query](#lab-image-text-search-multi-query-retrieval-report) — Separate ranking quality, multiple positives and annotation coverage.
+
 Sixteen lessons explain how text, images, sound and video become useful evidence together. Begin with token IDs and small number lists, then build toward search, document QA, speech, video timing and evidence-aware generation. Every lesson includes runnable Python and answered teaching questions.
 
 ### Run the Python examples
@@ -122,6 +132,8 @@ The second entries are zero and two; (0+2)/2=1.
 **Would reversing the tokens change this average?**
 
 No. Addition ignores order, which is a limitation of this simple encoder.
+
+<a id="lab-tokens-embeddings-toy-token-table"></a>
 
 ### Look up and pool two tokens
 
@@ -242,6 +254,8 @@ Its length is √(9+16)=5. Dividing both entries by 5 gives those values.
 
 No. Its length doubles too, so unit(A) and similarity stay unchanged.
 
+<a id="lab-modalities-alignment-cosine-alignment"></a>
+
 ### Compare two descriptions
 
 The feature lists are hand-set to isolate cosine similarity, not produced by a trained encoder.
@@ -358,6 +372,8 @@ The image contributes 0.75×0.8=0.6 and audio contributes 0.25×0.4=0.1.
 
 A single score per stream loses that detail. Temporal features or earlier interaction are needed.
 
+<a id="lab-early-late-fusion-weighted-fusion"></a>
+
 ### Combine only available evidence
 
 Use two supplied scores and handle one missing modality.
@@ -472,6 +488,8 @@ kHz means thousands per second, so 16000×4=64000 samples in one channel.
 **Does similarity 0.96 locate the bell?**
 
 No. A whole-clip score has no event boundaries by itself.
+
+<a id="lab-audio-text-alignment-audio-duration"></a>
 
 ### Check the time before matching
 
@@ -594,6 +612,8 @@ The temperature is 0.2, so 0.8/0.2=4.
 **Does a large softmax share mean universal certainty?**
 
 No. It depends on candidate descriptions and temperature; changing the list changes the share.
+
+<a id="lab-clip-contrastive-contrastive-table"></a>
 
 ### Score the correct partners both ways
 
@@ -720,6 +740,8 @@ Multiply matching coordinates and add: 1×2+0×0=2; 1×0+0×2=0.
 
 The scores and weights reverse. The output becomes about [1.9557,3.2177].
 
+<a id="lab-cross-attention-fusion-attention-mix"></a>
+
 ### Let a query mix two values
 
 All query, key and value lists are invented; this is one attention calculation.
@@ -835,6 +857,12 @@ Its supplied vector equals the query, so 1×1+0×0=1, even though relevance was 
 
 Both relevant items appear, so Recall@3 becomes one for this query. More results also demand more inspection.
 
+**Can two systems have the same Hit@2 but different recall?**
+
+Yes. For a query with two relevant images, finding one or both gives a hit. Their fractional recalls are one half and one. The metric determines which difference you can see.
+
+<a id="lab-image-text-search-search-ranking"></a>
+
 ### Find and check the top two
 
 Use three supplied unit embeddings and independently checked relevance.
@@ -868,6 +896,91 @@ Recall@2=0.50
 
 The dictionary comprehension computes a dot product for each image. sorted uses each name’s score and reverse=True puts the largest first. [:2] takes the first two entries. set removes repeated names, & finds relevant returned items, and len counts them. Recall is 0.50 despite a high-scoring first result. This is ranking arithmetic, not a trained image-search service.
 
+<a id="lab-image-text-search-multi-query-retrieval-report"></a>
+
+### Evaluate retrieval with several relevant results per query
+
+Mina searches an image collection with short text descriptions. One query has two valid pictures, another has one, and a third has no labeled match in the collection. A repeated image ID also appears in the ranked output. She removes duplicates, writes down which metric she means by recall, and reports unscored queries separately instead of hiding them.
+
+```python
+from math import isclose
+
+def retrieval_report(queries, k):
+    if k <= 0:
+        raise ValueError("positive k required")
+    recalls, hits, reciprocal = [], [], []
+    found_total = relevant_total = unscored = 0
+    for ranked, relevant in queries:
+        ranked = list(dict.fromkeys(ranked))  # Preserve the first occurrence.
+        relevant = set(relevant)
+        if not relevant:
+            unscored += 1
+            continue
+        found = len(set(ranked[:k]) & relevant)
+        recalls.append(found / len(relevant))
+        hits.append(int(found > 0))
+        first = next((i for i, item in enumerate(ranked, 1) if item in relevant), None)
+        reciprocal.append(1 / first if first is not None else 0.0)
+        found_total += found
+        relevant_total += len(relevant)
+    count = len(recalls)
+    if not count:
+        return {"scored": 0, "unscored": unscored, "macro_recall": None,
+                "micro_recall": None, "hit_rate": None, "mrr": None}
+    return {"scored": count, "unscored": unscored,
+            "macro_recall": sum(recalls) / count,
+            "micro_recall": found_total / relevant_total,
+            "hit_rate": sum(hits) / count,
+            "mrr": sum(reciprocal) / count}
+
+queries = [(["a", "a", "x", "b"], {"a", "b"}),
+           (["z", "c", "d"], {"c"}),
+           (["x", "z"], set())]
+report = retrieval_report(queries, 2)
+assert isclose(report["macro_recall"], 0.75)
+assert isclose(report["micro_recall"], 2 / 3)
+assert report["hit_rate"] == 1.0 and report["mrr"] == 0.75
+assert retrieval_report([([], {"a"})], 2)["mrr"] == 0.0
+assert retrieval_report([([], set())], 2)["macro_recall"] is None
+print(f"scored: {report['scored']}; unscored: {report['unscored']}")
+for metric in ["macro_recall", "micro_recall", "hit_rate", "mrr"]:
+    print(f"{metric}: {report[metric]:.6f}")
+```
+
+**Run it locally**
+
+```sh
+python image-text-search-multi-query-retrieval-report.py
+```
+
+**Expected output**
+
+```text
+scored: 2; unscored: 1
+macro_recall: 0.750000
+micro_recall: 0.666667
+hit_rate: 1.000000
+mrr: 0.750000
+```
+
+**Follow the execution**
+
+1. Remove duplicate IDs before cutting off the top k. A repeated image must not occupy two result slots in this protocol.
+
+2. For the first query, top two unique results are a and x. Only one of its two relevant images is found.
+
+3. The second query finds its only relevant image at rank two. Its recall is one, but reciprocal rank is one half.
+
+4. The query with no labeled relevant image is counted as unscored. It contributes to the coverage report, not to a division by zero.
+
+**Read the code step by step**
+
+For query q, let R_q be its relevant set and T_q the top k unique results. Fractional recall is |T_q intersect R_q|/|R_q|. Macro recall averages these fractions equally across Q scored queries. Micro recall divides total retrieved relevant items by total relevant items. Here macro=(1/2+1)/2=0.75, while micro=(1+1)/(2+1)=2/3.
+
+Hit@k averages the indicator that at least one relevant result is retrieved. Here it is 1. MRR averages 1/r_q, where r_q is the first relevant rank in the full supplied, deduplicated list; a missing match contributes zero. Here MRR=(1+1/2)/2=0.75. Some image-text benchmarks call a hit-within-k measure Recall@k. With one positive per query it equals fractional recall; with multiple positives it need not. Always publish the definition.
+
+Two of three queries are scored. The third may expose missing annotations or an answer absent from the collection. Excluding it does not measure whether a system can correctly abstain; that needs a separate protocol with known unanswerable queries. Similarity scores rank candidates, but do not prove relevance. Compare systems using the same corpus, deduplication, annotations and cutoff. Cost is linear in the supplied ranked lists plus relevance sets with average constant-time hash operations.
+
 ### Where you can use this
 
 **Changed encoder**
@@ -887,6 +1000,8 @@ Add a duplicate of kite under a new name. Decide whether evaluation counts image
 - [OpenAI: OpenAI CLIP: official repository and usage examples](https://github.com/openai/CLIP)
 
 - [Hugging Face: Hugging Face Transformers: CLIP model documentation](https://huggingface.co/docs/transformers/model_doc/clip)
+
+- [OpenAI / arXiv: Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020)
 
 <a id="conditional-generation"></a>
 
@@ -950,6 +1065,8 @@ The next word depends on what has already been said; “one” and “two” can
 **Does choosing the more probable response ensure accuracy?**
 
 No. Here the wrong answer has higher probability; the visible object must decide correctness.
+
+<a id="lab-conditional-generation-response-probability"></a>
 
 ### Compare two possible responses
 
@@ -1065,6 +1182,8 @@ Its centre is 90, so its distance from the target row at 50 is 40, above toleran
 **Would increasing tolerance to 50 help?**
 
 It would include both rooms and create ambiguity. A permissive grouping rule can mix unrelated evidence.
+
+<a id="lab-document-ocr-qa-document-row"></a>
 
 ### Keep a word beside its row
 
@@ -1182,6 +1301,8 @@ The reference contains four words; its length is the denominator, not the predic
 
 Yes. Many inserted words can make the edit count larger than the reference length.
 
+<a id="lab-speech-tasks-word-error-rate"></a>
+
 ### Count a changed word
 
 Start with a manually checked one-substitution example.
@@ -1295,6 +1416,12 @@ At shift 1, visual position 1 and audio position 2 both contain one.
 
 No. Check events over time; a changing delay requires more than a single constant correction.
 
+**Why not force a match for every event?**
+
+The nearest frame can still be too far away. An explicit unmatched result preserves this uncertainty instead of hiding it inside a false association.
+
+<a id="lab-audio-video-sync-sync-offset"></a>
+
 ### Find a delayed clap
 
 Binary event positions replace real audio and video features.
@@ -1331,6 +1458,75 @@ audio delay seconds=0.1
 **Read the code step by step**
 
 The outer loop tests three shifts; the inner loop visits video positions. j is the audio position to compare. The chained comparison checks its bounds before indexing. Multiplication counts a coincident pair of ones, and += accumulates it. max selects the shift with the highest score, giving +1 or 0.1 seconds of delay. This does not run SyncNet or alter media files.
+
+<a id="lab-audio-video-sync-timestamp-nearest-alignment"></a>
+
+### Align events with timestamps, offsets and a tolerance
+
+Mina reviews a video with an audio event log. The video has uneven frame intervals. The audio clock reads 20 milliseconds ahead of the video clock. Multiplying time by a guessed frame rate gives wrong matches. She converts the audio timestamps to the video clock, finds the nearest observed frame, and leaves distant events unmatched.
+
+```python
+from bisect import bisect_left
+from math import isclose
+
+def nearest_frame(timestamps, event_time, offset, tolerance):
+    if tolerance < 0 or not timestamps:
+        raise ValueError("nonempty timestamps and nonnegative tolerance required")
+    if any(a >= b for a, b in zip(timestamps, timestamps[1:])):
+        raise ValueError("frame timestamps must be strictly increasing")
+    target = event_time - offset  # audio_time = video_time + offset
+    insertion = bisect_left(timestamps, target)
+    candidates = [i for i in (insertion - 1, insertion) if 0 <= i < len(timestamps)]
+    best = min(candidates, key=lambda i: (abs(timestamps[i] - target), i))
+    error = abs(timestamps[best] - target)
+    return (best, error) if error <= tolerance else None
+
+video = [0.0, 0.041, 0.083, 0.126, 0.168]
+events = [0.061, 0.104, 0.300]
+matches = [nearest_frame(video, event, 0.020, 0.010) for event in events]
+assert matches[0][0] == 1 and isclose(matches[0][1], 0.0, abs_tol=1e-12)
+assert matches[1][0] == 2 and isclose(matches[1][1], 0.001)
+assert matches[2] is None
+assert nearest_frame([0.0, 2.0], 1.0, 0.0, 1.0)[0] == 0
+for event, match in zip(events, matches):
+    if match is None:
+        print(f"audio {event:.3f}: unmatched")
+    else:
+        index, error = match
+        print(f"audio {event:.3f}: frame {index}, error {error:.3f} s")
+```
+
+**Run it locally**
+
+```sh
+python audio-video-sync-timestamp-nearest-alignment.py
+```
+
+**Expected output**
+
+```text
+audio 0.061: frame 1, error 0.000 s
+audio 0.104: frame 2, error 0.001 s
+audio 0.300: unmatched
+```
+
+**Follow the execution**
+
+1. State the clock relation: audio time equals video time plus 0.020 seconds. Therefore subtract the offset.
+
+2. Binary search finds the insertion point. Only the frames immediately before and after it can be nearest.
+
+3. Choose the smaller distance, breaking exact ties toward the earlier frame.
+
+4. Reject the last event: 0.300-0.020=0.280, which is 0.112 seconds from the final frame.
+
+**Read the code step by step**
+
+Let a be an audio timestamp, delta a known clock offset and v_i an observed video timestamp. Search for i_star=argmin_i |v_i-(a-delta)|. Accept only if that minimum is at most tolerance tau. Here tau=0.010 seconds. The first two adjusted events are 0.041 and 0.084; their frame errors are 0 and 0.001 seconds.
+
+The sign of delta comes from the declared clock equation, not a guess. Use one time unit everywhere. Frame index alone does not encode presentation time when frame intervals vary. This program assumes finite numeric timestamps and a known constant offset. Clock drift may require a calibrated scale as well, such as audio_time=scale*video_time+offset.
+
+Each call validates ordering in O(F), then searches in O(log F), so the full function is O(F). A production index can validate once and reuse the sorted timestamps for O(log F) queries. This is nearest-point matching, not interpolation, one-to-one assignment, or learned audio-visual synchronization. Some applications should match time intervals instead. A nearby frame is not proof that the sound and visible event have the same cause.
 
 ### Where you can use this
 
@@ -1414,6 +1610,8 @@ Each interval is four seconds; their shared part is three, so 4+4−3=5.
 **Would IoU one prove the action name correct?**
 
 No. Identical time boundaries can still be paired with an incorrect action description.
+
+<a id="lab-video-temporal-grounding-temporal-overlap"></a>
 
 ### Sample a video and compare intervals
 
@@ -1536,6 +1734,8 @@ The connector can change how it uses the same fixed feature.
 
 No. It only fits one invented scalar target. Language, perception and unseen tasks still need evaluation.
 
+<a id="lab-visual-instruction-tuning-frozen-feature"></a>
+
 ### Adjust a connector, keep the feature
 
 Try two weights without any calculus or model library.
@@ -1652,6 +1852,8 @@ Its terms share model, opening and upward with the query, three distinct words.
 **Does a top-ranked chunk guarantee an answer?**
 
 No. It may mention the topic without containing the required fact, so the system needs an insufficient-evidence route.
+
+<a id="lab-multimodal-rag-retrieve-cite"></a>
 
 ### Return an answer with its evidence ID
 
@@ -1778,6 +1980,8 @@ The first counts six bad mentions among forty mentions. The second counts four a
 
 No. A reference can omit a visible object. Inspect the image under a defined annotation protocol.
 
+<a id="lab-evaluation-hallucination-claim-audit"></a>
+
 ### Count unsupported mentions and coverage
 
 Use an invented, already checked audit.
@@ -1894,6 +2098,8 @@ The cheap pass costs 100×1=100 and five detailed checks cost 5×10=50.
 **Does fitting a token budget prove sufficient evidence?**
 
 No. A small omitted diagram can contain the only answer. Budget and relevance are separate checks.
+
+<a id="lab-efficient-evidence-systems-cascade-budget"></a>
 
 ### Compare a full pass and a shortlist
 

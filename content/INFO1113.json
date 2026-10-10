@@ -707,6 +707,10 @@
         {
           "question": "Does final int[] mean immutable elements?",
           "answer": "No. It fixes the stored reference. The array elements remain writable unless access is controlled."
+        },
+        {
+          "question": "Why is a private final array still not enough?",
+          "answer": "private hides the field name, and final prevents reassignment. A reference returned by a getter can still modify the array. Return a copy or design a read-only operation instead."
         }
       ],
       "instructor_notes": [
@@ -784,6 +788,35 @@
             "Copy the array at construction rather than retaining the caller’s alias.",
             "Return a copy when exposing the values.",
             "Print a fresh getter result after both outside edits."
+          ]
+        },
+        {
+          "id": "defensive-snapshot",
+          "title": "Protect a score snapshot from outside changes",
+          "intro": "Mina records three quiz scores. She gives the array to a report object, then corrects her own working array. The printed report unexpectedly changes. Making the field private did not stop this: both variables still pointed to the same array. She changes the constructor to copy the input. Then she notices that a getter can leak the same array again. A second copy at the output boundary makes the report a stable snapshot.",
+          "language": "java",
+          "code": "import java.util.Arrays;\npublic class Main {\n    static final class ScoreSnapshot {\n        private final int[] scores;\n        ScoreSnapshot(int[] source) {\n            if (source == null) throw new IllegalArgumentException(\"missing scores\");\n            int[] copy = source.clone();\n            for (int score : copy) {\n                if (score < 0 || score > 100)\n                    throw new IllegalArgumentException(\"score out of range\");\n            }\n            scores = copy;\n        }\n        int[] values() { return scores.clone(); }\n        int total() {\n            int sum = 0;\n            for (int score : scores) sum = Math.addExact(sum, score);\n            return sum;\n        }\n    }\n    public static void main(String[] args) {\n        int[] input = {70, 80, 90};\n        ScoreSnapshot report = new ScoreSnapshot(input);\n        input[0] = 0;\n        int[] exported = report.values();\n        exported[1] = 0;\n        assert report.total() == 240;\n        System.out.println(\"snapshot: \" + Arrays.toString(report.values()));\n        System.out.println(\"total: \" + report.total());\n        try { new ScoreSnapshot(new int[]{101}); }\n        catch (IllegalArgumentException error) { System.out.println(\"invalid score rejected\"); }\n        assert new ScoreSnapshot(new int[0]).total() == 0;\n    }\n}\n",
+          "output": "snapshot: [70, 80, 90]\ntotal: 240\ninvalid score rejected\n",
+          "walkthrough": [
+            "Copy before storing. Validation examines the actual copy that the object will own.",
+            "The getter returns another array. Changing that return value cannot change the owned array.",
+            "Mutate both outside arrays, then check the report. This tests the boundary, not just the initial total.",
+            "Reject 101. Accept an empty array with total zero. addExact turns an integer overflow into an explicit error."
+          ],
+          "explanation": "The invariant is 0 <= scores[i] <= 100 for every stored element. Because callers cannot reach the owned array, ordinary external writes cannot break it. final stops reassignment of the field; it does not freeze an array. The two copies perform the protection.\n\nFor n scores, construction and each values() call cost O(n) time and O(n) new storage. total() costs O(n) time and O(1) auxiliary space. This is a deliberate cost for a stable interface. A primitive int[] needs only one-level copying. An array of mutable objects would require a separate decision about copying those objects.\n\nEngineering route: first write the invariant, then choose an owner, then test every boundary that accepts or returns mutable data. This example is single-threaded; copying is not a substitute for synchronization when the source is being modified concurrently.",
+          "syntax_notes": [
+            {
+              "syntax": "source.clone()",
+              "meaning": "Create a separate primitive array with the same values."
+            },
+            {
+              "syntax": "private final int[]",
+              "meaning": "Hide the field and prevent assigning it a different reference."
+            },
+            {
+              "syntax": "Math.addExact",
+              "meaning": "Add integers and throw if the result overflows."
+            }
           ]
         }
       ]
@@ -1199,6 +1232,10 @@
         {
           "question": "Why keep key fields final?",
           "answer": "Stable equality fields make the lookup contract easier to preserve while a key is stored. final does not recursively freeze referenced mutable objects."
+        },
+        {
+          "question": "Does a collision mean one note must be lost?",
+          "answer": "No. Distinct keys can share a hash. HashMap also checks equality, so this example retains two entries."
         }
       ],
       "instructor_notes": [
@@ -1272,6 +1309,35 @@
             "Use an immutable integer ID for equality.",
             "Force collisions with a constant hash code.",
             "Look up each ID through a newly constructed equal key."
+          ]
+        },
+        {
+          "id": "immutable-grid-key",
+          "title": "Use a value object as a map key",
+          "intro": "A robot club labels floor tiles by row and column. Mina stores a note under one tile object. Later she creates another object for the same coordinates and expects to find the note. Reference identity cannot answer this question. She defines coordinate equality, matches it with a hash function, and keeps the coordinates fixed while the object is used as a key.",
+          "language": "java",
+          "code": "import java.util.HashMap;\nimport java.util.Map;\npublic class Main {\n    static final class Cell {\n        private final int row;\n        private final int column;\n        Cell(int row, int column) { this.row = row; this.column = column; }\n        @Override public boolean equals(Object other) {\n            if (this == other) return true;\n            if (!(other instanceof Cell)) return false;\n            Cell cell = (Cell) other;\n            return row == cell.row && column == cell.column;\n        }\n        @Override public int hashCode() { return 31 * row + column; }\n    }\n    public static void main(String[] args) {\n        Cell a = new Cell(2, 3);\n        Cell b = new Cell(2, 3);\n        Cell collision = new Cell(1, 34);\n        Map<Cell, String> notes = new HashMap<>();\n        notes.put(a, \"charging\");\n        notes.put(collision, \"door\");\n        assert a != b && a.equals(b) && b.equals(a);\n        assert a.hashCode() == collision.hashCode();\n        assert !a.equals(collision) && !a.equals(null);\n        assert \"charging\".equals(notes.get(b));\n        System.out.println(\"same object: \" + (a == b));\n        System.out.println(\"same value: \" + a.equals(b));\n        System.out.println(\"lookup: \" + notes.get(b));\n        System.out.println(\"collision keeps both: \" + notes.size());\n    }\n}\n",
+          "output": "same object: false\nsame value: true\nlookup: charging\ncollision keeps both: 2\n",
+          "walkthrough": [
+            "Compare both coordinates, rather than memory identity. final prevents subclasses from adding incompatible equality rules.",
+            "Compute the hash from the same fields used by equals. Equal coordinate pairs therefore have equal hashes.",
+            "Use (1,34) to deliberately collide with (2,3): both hashes are 65. They are still unequal keys.",
+            "Query with b, which was never inserted. The successful lookup tests value-based lookup."
+          ],
+          "explanation": "A hash narrows the search; equals decides whether a candidate is the requested key. The implication is a.equals(b) => a.hashCode() == b.hashCode(). The reverse implication is false, as the collision demonstrates.\n\nThe formula h = 31r + c uses row r and column c. It is a small teaching hash, not a cryptographic function. Java int arithmetic can wrap here; the equality contract still requires only equal values to produce equal hashes. A better distribution can reduce collisions but cannot eliminate all collisions for an unbounded key space.\n\nDo not change equality-related fields while a key is stored. The map may look in the bucket corresponding to a new hash, while the entry remains where it was inserted. Immutable keys avoid that failure. Ordinary HashMap access is not made thread-safe by immutable keys.",
+          "syntax_notes": [
+            {
+              "syntax": "instanceof Cell",
+              "meaning": "Check the type before the cast."
+            },
+            {
+              "syntax": "@Override",
+              "meaning": "Ask the compiler to check that this method overrides a parent method."
+            },
+            {
+              "syntax": "Map<Cell, String>",
+              "meaning": "Store Cell keys and String values with compile-time type checks."
+            }
           ]
         }
       ]
@@ -2739,6 +2805,10 @@
         {
           "question": "Does separating layers require many classes?",
           "answer": "No. Begin with distinct responsibilities and clear method contracts. Add classes when ownership or interchangeable behavior makes that useful."
+        },
+        {
+          "question": "Why compute the result before pushing history?",
+          "answer": "The operation can reject the input. If history changes first, Undo may restore an identical snapshot and appear to do nothing. Validate before committing the state change."
         }
       ],
       "instructor_notes": [
@@ -2816,6 +2886,35 @@
             "Express each target rule as an IntUnaryOperator.",
             "Pass the chosen policy into one shared application function.",
             "Reject a policy result that would violate the model boundary."
+          ]
+        },
+        {
+          "id": "undoable-notebook",
+          "title": "Build a small editor with undo",
+          "intro": "Mina writes labels for a school exhibition. She adds a word, notices a mistake, and wants Undo. Saving only the newest text loses the previous state. She separates the document from the editing action and lets the editor keep a stack of snapshots. She also decides that a rejected action must not enter the history. Now she can test the editor without building any buttons.",
+          "language": "java",
+          "code": "import java.util.ArrayDeque;\nimport java.util.Deque;\npublic class Main {\n    interface Edit { String apply(String text); }\n    static final class Append implements Edit {\n        private final String suffix;\n        Append(String suffix) { this.suffix = suffix; }\n        @Override public String apply(String text) {\n            if (suffix == null || suffix.isEmpty())\n                throw new IllegalArgumentException(\"empty edit\");\n            return text + suffix;\n        }\n    }\n    static final class Editor {\n        private String text = \"\";\n        private final Deque<String> history = new ArrayDeque<>();\n        void execute(Edit edit) {\n            String next = edit.apply(text);\n            if (next == null) throw new IllegalArgumentException(\"null result\");\n            history.push(text);\n            text = next;\n        }\n        boolean undo() {\n            if (history.isEmpty()) return false;\n            text = history.pop();\n            return true;\n        }\n        String text() { return text; }\n    }\n    public static void main(String[] args) {\n        Editor editor = new Editor();\n        assert !editor.undo();\n        editor.execute(new Append(\"Hello\"));\n        editor.execute(new Append(\" Python\"));\n        System.out.println(editor.text());\n        try { editor.execute(new Append(\"\")); }\n        catch (IllegalArgumentException error) { System.out.println(\"rejected without history\"); }\n        if (!editor.undo()) throw new AssertionError(\"missing history\");\n        assert editor.text().equals(\"Hello\");\n        System.out.println(\"undo: \" + editor.text());\n    }\n}\n",
+          "output": "Hello Python\nrejected without history\nundo: Hello\n",
+          "walkthrough": [
+            "Edit describes an operation. Append implements one operation; Editor does not need to know how the new text is produced.",
+            "Compute and validate next before changing history or text. An ordinary rejected edit leaves both unchanged.",
+            "push records the old text. pop restores the most recent snapshot, which is last-in, first-out behavior.",
+            "Test an empty undo, two successful edits, one failed edit, and a final undo. A failed edit must not consume an undo step."
+          ],
+          "explanation": "A state transition is text_next = edit(text_current). The history stores earlier text_current values. String objects are immutable, so keeping their references preserves snapshots without cloning their characters at every push. Creating each concatenated result still costs time and memory proportional to its length. Keeping many long snapshots can therefore use substantial memory.\n\nBuild in four stages: define a valid document, add one operation, add history, then connect a user interface. A button should call execute; it should not maintain a second copy of the document. This keeps tests independent of screen events.\n\nThe Edit contract here assumes the operation only computes text and does not perform external side effects. Undoing a string cannot undo an email or a file write. This simple editor has no redo, persistence or concurrent edits. For large documents, consider storing inverse edits or using a persistent text structure after measuring the need.",
+          "syntax_notes": [
+            {
+              "syntax": "interface Edit",
+              "meaning": "Name the behavior the editor needs."
+            },
+            {
+              "syntax": "Deque<String>",
+              "meaning": "A double-ended queue used here as a stack of snapshots."
+            },
+            {
+              "syntax": "throw new IllegalArgumentException",
+              "meaning": "Reject an invalid operation before committing a new state."
+            }
           ]
         }
       ]

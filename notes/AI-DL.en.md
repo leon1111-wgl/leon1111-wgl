@@ -6,6 +6,16 @@
 
 ![Leon — Learning roadmap](../site/assets/maps/dl.en.svg)
 
+<a id="extensions"></a>
+
+## Guided extensions
+
+Read the linked lesson first. Then follow the story, predict the output, run the complete program and check the explanation. Each case adds one practical challenge.
+
+1. [Compute a finite loss even when a probability underflows](#lab-dl-softmax-loss-stable-loss-gradient-check) — Connect log-sum-exp, cross-entropy and gradient checks.
+
+2. [Accumulate gradients when microbatches have different sizes](#lab-dl-training-loop-unequal-batch-accumulation) — Trace sample weights through the loss and optimizer step.
+
 Build deep-learning understanding in sixteen patient chapters. Begin with arrays and functions. Trace shapes, losses, gradients, and a complete small training loop. Then assemble convolution, embeddings, attention, a toy Transformer block, and adaptation. Every chapter includes explained Python, answered questions, and two practice cases.
 
 ### Run the Python examples
@@ -121,6 +131,8 @@ The output happens to be 2×2. Averaging rows gives one mean per feature; averag
 
 No. The dimensions may still match. Keep a fixed feature order and test known rows with hand calculations.
 
+<a id="lab-dl-tensors-dl-dense-axis-check"></a>
+
 ### Name the axes of a dense layer
 
 Rows are recordings and columns are features.
@@ -234,6 +246,8 @@ Its value is 0.5. Substitute into σ(1−σ): 0.5×(1−0.5)=0.25.
 
 It is not differentiable there: left and right slopes differ. Libraries commonly choose a useful convention such as zero for backpropagation.
 
+<a id="lab-dl-activations-dl-activation-values"></a>
+
 ### Print values and slopes
 
 Small chosen inputs make the arithmetic safe and easy to inspect.
@@ -344,6 +358,8 @@ The first unit computes 3−1−1=1. The second computes −3+1−1=−3. ReLU k
 **Does the parameter count change for a new input?**
 
 No. With two inputs, two hidden units, and one output, there are 4+2+2+1=9 parameters regardless of the input values.
+
+<a id="lab-dl-representations-dl-mlp-gauges"></a>
 
 ### Trace two hidden units
 
@@ -458,6 +474,12 @@ Class zero wins with probability about 0.665, not one. Its negative log is posit
 
 Every exponential is equal, so three classes receive probability 1/3 each. The correct-class loss is log(3), about 1.098612.
 
+**Why can the displayed target probability be zero while the loss is finite?**
+
+Zero here is floating-point underflow. The logit-based formula represents the log probability without first rounding its exponential to zero.
+
+<a id="lab-dl-softmax-loss-dl-stable-softmax-loss"></a>
+
 ### Compute stable probabilities and cross-entropy
 
 Class IDs begin at zero in this Python example.
@@ -493,6 +515,75 @@ shift unchanged: True
 **Read the code step by step**
 
 max finds the shift. exp transforms relative scores to positive weights. Division by their sum normalizes them. Indexing with target selects the correct-class probability; log turns it into loss. allclose checks the shift property within floating-point tolerance. The simple loss line is safe for these logits; extreme cases should use stable log-sum-exp loss implementations.
+
+<a id="lab-dl-softmax-loss-stable-loss-gradient-check"></a>
+
+### Compute a finite loss even when a probability underflows
+
+Mina sees a network assign a huge score to the wrong class. Its target probability rounds to zero, so computing -log(probability) fails. She goes back to the logits and computes cross-entropy with log-sum-exp. The loss is still finite. Then she nudges one logit at a time and compares the numerical slope with the analytic gradient.
+
+```python
+from math import exp, log, isclose
+
+def probabilities(logits):
+    peak = max(logits)
+    weights = [exp(z - peak) for z in logits]
+    return [w / sum(weights) for w in weights]
+
+def cross_entropy(logits, target):
+    peak = max(logits)
+    return (peak - logits[target]) + log(sum(exp(z - peak) for z in logits))
+
+logits = [1000.0, 0.0, -1000.0]
+target = 2
+p = probabilities(logits)
+loss = cross_entropy(logits, target)
+gradient = [value - int(j == target) for j, value in enumerate(p)]
+epsilon = 1e-4
+numeric = []
+for j in range(len(logits)):
+    plus, minus = logits.copy(), logits.copy()
+    plus[j] += epsilon
+    minus[j] -= epsilon
+    numeric.append((cross_entropy(plus, target) - cross_entropy(minus, target)) / (2 * epsilon))
+assert p[target] == 0.0 and loss == 2000.0
+assert all(isclose(a, b, abs_tol=1e-6) for a, b in zip(gradient, numeric))
+print("target probability:", p[target])
+print(f"finite loss: {loss:.1f}")
+print("analytic gradient:", gradient)
+print("numeric gradient:", [round(value, 6) for value in numeric])
+```
+
+**Run it locally**
+
+```sh
+python dl-softmax-loss-stable-loss-gradient-check.py
+```
+
+**Expected output**
+
+```text
+target probability: 0.0
+finite loss: 2000.0
+analytic gradient: [1.0, 0.0, -1.0]
+numeric gradient: [1.0, 0.0, -1.0]
+```
+
+**Follow the execution**
+
+1. Subtract the largest logit before exponentiation. No positive exponent is needed.
+
+2. Compute log-sum-exp minus the target logit directly, rather than taking log of an already rounded probability.
+
+3. Compare p_j - 1[j=target] with a central finite difference. Change only one coordinate at a time.
+
+**Read the code step by step**
+
+For finite logits z and target t, L=(m-z_t)+log(sum_j exp(z_j-m)), where m=max_j z_j. This equals -log softmax(z)_t algebraically, but avoids first materializing an extremely small target probability. In the example, m-z_t=2000 and the remaining log term is approximately zero.
+
+The gradient is dL/dz_j=p_j-1[j=t]. The indicator is one only for the target class. The example gives [1,0,-1]: reducing the wrong largest logit or increasing the target logit lowers the loss. A central difference uses (L(z+epsilon*e_j)-L(z-epsilon*e_j))/(2*epsilon), where e_j changes only coordinate j.
+
+Finite differences are a diagnostic, not a replacement for backpropagation. Too large an epsilon introduces approximation error; too small an epsilon loses precision through subtraction. Stable formulas also cannot fix NaN inputs or arbitrary floating-point range limits. Framework cross-entropy interfaces normally expect logits; do not apply softmax twice.
 
 ### Where you can use this
 
@@ -572,6 +663,8 @@ The first layer has 12 weights and 3 biases. The second has 6 weights and 2 bias
 **Does reshape(4,2) also work on eight entries?**
 
 Yes mathematically, but it invents four rows from two images. Valid array arithmetic can still violate the intended example boundary.
+
+<a id="lab-dl-shape-tracing-dl-shape-path"></a>
 
 ### Print the shape at every layer
 
@@ -696,6 +789,8 @@ Those gradients describe the same old network. Updating one weight before comput
 
 It is useful for checking a small smooth case, but it needs repeated loss evaluations. It becomes expensive for many weights and is awkward at nondifferentiable points.
 
+<a id="lab-dl-autograd-dl-chain-rule-check"></a>
+
 ### Check a gradient and update the network
 
 Use manual derivatives and a numerical check, with no autodiff library.
@@ -815,6 +910,8 @@ After bias correction, its first gradient moment is −3 and squared-gradient mo
 
 Only if each epoch has exactly one step. With 100 examples and batches of 10, one epoch has ten steps under ordinary batching.
 
+<a id="lab-dl-optimization-dl-sgd-adam-first-step"></a>
+
 ### Compare the first SGD and Adam steps
 
 Restart both methods from the same scalar parameter.
@@ -931,6 +1028,12 @@ Validation inputs have larger magnitude. The same slope error creates larger pre
 
 No. Validation helped choose it. A final test must be separate from that selection process.
 
+**When would averaging batch means equally be correct?**
+
+When the batches have equal sample counts, the loss uses the same per-sample reduction, and the gradients are computed at the same parameters. Unequal final batches violate the first condition.
+
+<a id="lab-dl-training-loop-dl-one-weight-training-loop"></a>
+
 ### Run five transparent training steps
 
 This is a learned one-parameter regression model used to teach loop structure.
@@ -973,6 +1076,66 @@ best weight: 1.84448
 
 The first two lines create distinct training and validation inputs. error and gradient use training arrays only. The subtraction updates the scalar weight. Both losses are recomputed after the update for a consistent comparison. The if block saves the best validation state; scalar assignment copies its value. Five epochs here mean five full-batch updates. The synthetic line is learned, but no real neural application is evaluated.
 
+<a id="lab-dl-training-loop-unequal-batch-accumulation"></a>
+
+### Accumulate gradients when microbatches have different sizes
+
+Mina cannot fit four examples into one training batch. She splits them into three examples and one example. Averaging the two batch gradients gives the final example half of the total weight. She instead weights each batch mean by its sample count, keeps the parameters fixed while accumulating, and performs one optimizer step at the end.
+
+```python
+from math import isclose
+x = [1.0, 2.0, 3.0, 4.0]
+y = [2.0 * value for value in x]
+weight = 0.0
+
+def mean_gradient(indices, weight):
+    return sum(2 * (weight * x[i] - y[i]) * x[i] for i in indices) / len(indices)
+
+batches = [[0, 1, 2], [3]]
+batch_gradients = [mean_gradient(batch, weight) for batch in batches]
+wrong = sum(batch_gradients) / len(batches)
+accumulated = sum(len(batch) * gradient for batch, gradient in zip(batches, batch_gradients)) / len(x)
+full = mean_gradient(list(range(len(x))), weight)
+updated = weight - 0.01 * accumulated
+assert isclose(full, -30.0) and isclose(accumulated, full)
+assert not isclose(wrong, full) and isclose(updated, 0.3)
+print("batch gradients:", [round(g, 6) for g in batch_gradients])
+print(f"unweighted mean: {wrong:.6f}")
+print(f"sample-weighted gradient: {accumulated:.6f}")
+print(f"one optimizer step: {updated:.6f}")
+```
+
+**Run it locally**
+
+```sh
+python dl-training-loop-unequal-batch-accumulation.py
+```
+
+**Expected output**
+
+```text
+batch gradients: [-18.666667, -64.0]
+unweighted mean: -41.333333
+sample-weighted gradient: -30.000000
+one optimizer step: 0.300000
+```
+
+**Follow the execution**
+
+1. Use the same weight for both microbatches. Updating after the first one would evaluate the second gradient at a different point.
+
+2. The first batch contains three samples and the second contains one. Their means must not receive equal weights.
+
+3. Multiply each mean gradient by its batch size, sum, then divide by total samples. Perform one update.
+
+**Read the code step by step**
+
+For N samples, L=(1/N) sum_i l_i. If microbatch b contains n_b samples and its mean gradient is g_b, the full mean gradient is g=sum_b (n_b/N)*g_b. Here squared error l_i=(w*x_i-y_i)^2 has derivative 2(w*x_i-y_i)x_i.
+
+At w=0 the per-sample gradients are -4,-16,-36,-64. The first mean is -56/3 and the second is -64. Their equally weighted mean is -124/3, about -41.3333. The correct mean is (-4-16-36-64)/4=-30. With learning rate 0.01, w becomes 0.3.
+
+In an autograd training loop, clear gradients once before accumulation, scale each mean loss by n_b/N, backpropagate each microbatch, then step once. Exact equivalence assumes additive per-sample losses at fixed parameters. Batch-dependent operations such as BatchNorm, stochastic layers, clipping at each microbatch, and finite-precision summation can change the result. Gradient accumulation is not automatically identical to every large-batch training setup.
+
 ### Where you can use this
 
 **No learning**
@@ -990,6 +1153,8 @@ After the loop, use best_weight for prediction rather than assuming the last wei
 ### Sources for this topic
 
 - [PyTorch: Optimizing Model Parameters — Learn the Basics](https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html)
+
+- [PyTorch: Zeroing out gradients in PyTorch](https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html)
 
 <a id="dl-regularization"></a>
 
@@ -1052,6 +1217,8 @@ Expectation averages possible outcomes. A dropped activation is zero in that run
 **Does equal mean preserve the whole network prediction?**
 
 Not necessarily. Later nonlinear operations can change averages. The exact statement here concerns the dropout layer’s activation expectation.
+
+<a id="lab-dl-regularization-dl-dropout-expectation"></a>
 
 ### Calculate dropout outcomes exactly
 
@@ -1169,6 +1336,8 @@ Its centered values and variance are zero. Epsilon makes the denominator positiv
 
 Under this row-wise rule, no. Each row supplies its own statistics. This differs from a batch-based rule.
 
+<a id="lab-dl-normalization-dl-row-layernorm"></a>
+
 ### Normalize features within each row
 
 Use the population variance convention and an explicit epsilon.
@@ -1284,6 +1453,8 @@ That window is [[2,1],[0,3]]. The nonzero filter weights select 2 and subtract 3
 
 No. Axis shapes and feature alignment must match. A reshape that merely makes sizes fit can silently mix different meanings.
 
+<a id="lab-dl-convolution-dl-filter-residual"></a>
+
 ### Slide a filter and add a shortcut
 
 Two separate calculations illustrate two different mechanisms.
@@ -1398,6 +1569,8 @@ Only two positions are real tokens. The mask excludes the placeholder from both 
 **Can the pooled vector distinguish robot moves from moves robot?**
 
 Not with this mean. Addition ignores order. A position-aware architecture must retain or add information beyond the unordered average.
+
+<a id="lab-dl-token-embeddings-dl-embedding-mask-mean"></a>
 
 ### Look up tokens and ignore padding
 
@@ -1517,6 +1690,8 @@ The first value contributes zero there. The second contributes 0.268941×4, abou
 
 The row has no allowed source. A softmax over all negative infinities is undefined. Design masks so each required query has a valid source or use an explicit special rule.
 
+<a id="lab-dl-attention-dl-attention-mask"></a>
+
 ### Compare allowed and masked context
 
 This is one numerical head before learned output projections.
@@ -1632,6 +1807,8 @@ Its two allowed key vectors are identical. Their scores and exponentials match, 
 **Is this the exact block from the original paper?**
 
 No. We explicitly use pre-normalization and one head with identity projections. The original paper uses a different normalization placement and richer parameterization.
+
+<a id="lab-dl-transformer-block-dl-tiny-transformer-block"></a>
 
 ### Run a complete toy pre-norm block
 
@@ -1757,6 +1934,8 @@ Multiply matching entries: 0.1×2+0.2×(−1)+0=0. Sigmoid of zero gives probabi
 
 No. It shows only that one head update helped one training case. Compare freezing and fine tuning with a valid validation protocol.
 
+<a id="lab-dl-transfer-dl-frozen-feature-head"></a>
+
 ### Train a head on fixed features
 
 A supplied vector stands in for an encoder output; no pretrained model is loaded.
@@ -1876,6 +2055,8 @@ Matrix multiplication distributes over addition: (W₀+sBA)x equals W₀x+sB(Ax)
 **Does seven trainable entries prove better quality than twelve?**
 
 No. It describes the optimization parameter count. Quality needs validation; speed and memory need measurement under the real execution setup.
+
+<a id="lab-dl-efficient-adaptation-dl-low-rank-merge"></a>
 
 ### Compare separate and merged adapter paths
 
@@ -2041,3 +2222,5 @@ Original stories, explanations and examples by Leon. The linked tutorials and re
 - [Word Embeddings: Encoding Lexical Semantics](https://docs.pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html) — PyTorch
 
 - [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685) — Hu et al. / arXiv
+
+- [Zeroing out gradients in PyTorch](https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html) — PyTorch

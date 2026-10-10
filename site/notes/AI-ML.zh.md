@@ -6,6 +6,16 @@
 
 ![Leon — 学习路线图](../assets/maps/ml.zh.svg)
 
+<a id="extensions"></a>
+
+## 继续深入：完整案例
+
+先读对应章节，再跟着故事预测输出、运行完整程序、核对解释。每个案例都在原有概念上增加一个实际问题。
+
+1. [用刻意简单的记忆器暴露泄漏](#lab-framing-splits-leakage-memorizer-leakage-audit) — 让评估边界匹配部署问题。
+
+2. [用明确错误代价选择决策阈值](#lab-logistic-thresholds-validation-cost-threshold) — 计算错误、代价与概率决策规则。
+
 通过十六个循序渐进的章节学习机器学习。从行与标签开始，构建小模型、检查误差，再走向文本过滤、推荐与可靠性检查。每章都有原创故事、带答案的引导问题、两个练习案例与可运行 Python。
 
 ### 运行 Python 示例
@@ -121,6 +131,8 @@ X 是实数输入表，有 n 行、d 个特征列。ℝ 表示实数，× 分开
 
 选择并记录确定性的平局规则。本例选择较小类别编号。不要查看测试标签来打破平局。
 
+<a id="lab-features-labels-baselines-ml-majority-baseline"></a>
+
 ### 构建多数标签基线
 
 用训练标签选规则，再用独立测试标签评分。
@@ -233,6 +245,12 @@ D 表示完整数据集；D_train、D_val 和 D_test 分别表示训练、验证
 
 可以开始新的开发周期，但这个集合不再是未使用的最终测试集。修改后的模型需要新的独立测试证据。
 
+**重复测量数据上的高分一定是假的吗？**
+
+不一定。它可能回答了合理的熟悉组任务。问题是把未留出完整组的评估，解释成对新组的泛化能力。
+
+<a id="lab-framing-splits-leakage-ml-group-split"></a>
+
 ### 把完整设备放在一起
 
 不用随机库调用，构建这个 120 行的划分。
@@ -267,6 +285,63 @@ test error: 0.1
 
 第一行把每个设备编号重复十次。enumerate 提供行号。三个条件分配完整分组。集合去掉重复编号，& 查找共有编号。空列表表示训练和测试没有共享设备。最后一行假定出现两次错误；它没有训练或评估真实传感器模型。
 
+<a id="lab-framing-splits-leakage-memorizer-leakage-audit"></a>
+
+### 用刻意简单的记忆器暴露泄漏
+
+米娜为四台设备各记录两次读数。她每台拿一条训练、另一条测试，只记住设备编号的模型就得到满分。改用完全没见过的设备测试，分数降到一半。模型并不是突然变差了：第一次划分检验的是熟悉设备，第二次问的才是新设备。
+
+```python
+rows = [(device, label) for device, label in
+        [("A", 0), ("B", 1), ("C", 0), ("D", 1)] for _ in range(2)]
+
+def evaluate(train, test):
+    memory = {device: label for device, label in train}
+    fallback = int(sum(label for _, label in train) > len(train) / 2)
+    predictions = [memory.get(device, fallback) for device, _ in test]
+    accuracy = sum(p == label for p, (_, label) in zip(predictions, test)) / len(test)
+    overlap = {d for d, _ in train} & {d for d, _ in test}
+    return accuracy, sorted(overlap)
+
+row_train, row_test = rows[::2], rows[1::2]
+group_train = [row for row in rows if row[0] in {"A", "B"}]
+group_test = [row for row in rows if row[0] in {"C", "D"}]
+row_score, overlap = evaluate(row_train, row_test)
+group_score, clean_overlap = evaluate(group_train, group_test)
+assert row_score == 1.0 and group_score == 0.5 and not clean_overlap
+print(f"row split: accuracy={row_score:.2f}; shared devices={overlap}")
+print(f"group split: accuracy={group_score:.2f}; shared devices={clean_overlap}")
+```
+
+**在本地运行**
+
+```sh
+python framing-splits-leakage-memorizer-leakage-audit.py
+```
+
+**预期输出**
+
+```text
+row split: accuracy=1.00; shared devices=['A', 'B', 'C', 'D']
+group split: accuracy=0.50; shared devices=[]
+```
+
+**按执行顺序理解**
+
+1. 构造同设备标签固定的重复测量，用人工数据把捷径暴露出来。
+
+2. 只在训练行拟合记忆表和多数类后备规则；平票时选零。
+
+3. 比较按行划分与设备互斥划分，同时报告共享编号和准确率。
+
+**逐步读懂代码**
+
+准确率=测试预测正确数/测试行数。按行测试时四条全对；按设备测试时四条中两条正确，因为未见设备都得到只由训练集确定的后备标签零，而只有 C 的标签是零。
+
+分离单位取决于部署目标。要面对新患者、新设备或新视频，就应把整个组留出；若预测已知设备的未来事件，则应采用合适的时间划分。只做组间隔离还不能阻止预处理中的未来信息泄漏。每一折的缺失值填补、缩放和特征选择都只能用训练部分拟合。
+
+这只是诊断玩具，不是某个真实模型准确率为 50% 的证据。刻意简单的基线有时比复杂模型更容易暴露捷径。scikit-learn 官方交叉验证指南提供按组划分工具，但分组变量要从真正想回答的问题出发选择。
+
 ### 这些知识可以用在哪里
 
 **新录音设备**
@@ -286,6 +361,8 @@ test error: 0.1
 - [Google: 数据集：划分原始数据集](https://developers.google.com/machine-learning/crash-course/overfitting/dividing-datasets)
 
 - [scikit-learn: 常见陷阱与推荐实践](https://scikit-learn.org/stable/common_pitfalls.html)
+
+- [scikit-learn: 交叉验证：评估估计器性能](https://scikit-learn.org/stable/modules/cross_validation.html)
 
 <a id="missing-data-eda"></a>
 
@@ -346,6 +423,8 @@ m 是替代用的中位数。xᵢ 是第 i 行原值，x̃ᵢ 是填补后的值
 **能用测试行学习中位数吗？**
 
 不能。这会让留出数据影响准备过程。应在训练行拟合，再将保存的规则用于其他数据。
+
+<a id="lab-missing-data-eda-ml-median-imputation"></a>
 
 ### 拟合中位数，再重复使用
 
@@ -463,6 +542,8 @@ c 是观测类别，vocabularyⱼ 是第 j 列对应的已知类别。I 在条�
 
 不是。它只是标明情况。有效应对仍需证据、后备规则或后续带标签样本。
 
+<a id="lab-categorical-preprocessing-ml-category-columns"></a>
+
 ### 编码已知与未见类别
 
 明确使用最后一列记录未知类别。
@@ -575,6 +656,8 @@ RMSE = √MSE
 **训练 MSE 更低是否证明未来预测更好？**
 
 不证明。训练行参与了规则选择。要在相同留出行上比较，才能检查改进能否迁移。
+
+<a id="lab-linear-regression-mse-ml-line-loss"></a>
 
 ### 比较直线与常数
 
@@ -690,6 +773,8 @@ xᵢ 是第 i 个原始输入；μ_train 和 s_train 是训练均值与总体标
 **学习率很大时会怎样？**
 
 大步可能越过低点，使损失上升。要比较更新前后的损失，不能假定每一步都成功。
+
+<a id="lab-gradient-descent-scaling-ml-gradient-step"></a>
 
 ### 标准化后更新一步
 
@@ -811,6 +896,12 @@ exp(0) 等于 1。分母为 1+1=2，所以结果为 1/2。
 
 不会。正类预测会减少，部分误报可能消失，也可能漏掉部分真正例。要在验证数据上同时统计两种变化。
 
+**为什么不在最终测试集上选阈值？**
+
+这样报告的测试分数也包含了针对同一批结果优化的选择。应先固定阈值，再做未参与选择的最终评估。
+
+<a id="lab-logistic-thresholds-ml-sigmoid-cutoffs"></a>
+
 ### 同一个概率，两种决策
 
 使用示意性的固定权重，不是真实训练的夜空分类器。
@@ -844,6 +935,63 @@ threshold 0.65: class 0
 
 第一项计算生成线性分数。exp 实现 sigmoid 中的指数。循环重复使用同一个概率。>= 与各阈值比较，int 将真假变成一或零。输出类别改变，但分数不变。没有使用数据拟合这些权重，也没有数据证明哪种阈值更合适。
 
+<a id="lab-logistic-thresholds-validation-cost-threshold"></a>
+
+### 用明确错误代价选择决策阈值
+
+学校机器把损坏的练习零件送去检查。漏掉坏件的代价记为四个工作单位，误查好件记为一个。米娜先用常见的 0.5 阈值，再在小验证集上列出两种错误。降低阈值能补获一个坏件，只多一次误查。她在查看最终测试集之前固定阈值。
+
+```python
+scores = [0.10, 0.35, 0.45, 0.60, 0.80]
+truth = [0, 1, 0, 1, 1]
+
+def cost_at(threshold):
+    predicted = [int(score >= threshold) for score in scores]
+    fp = sum(p == 1 and y == 0 for p, y in zip(predicted, truth))
+    fn = sum(p == 0 and y == 1 for p, y in zip(predicted, truth))
+    return fp + 4 * fn, fp, fn
+
+candidates = [0.30, 0.50, 0.70, 1.10]
+for threshold in candidates:
+    cost, fp, fn = cost_at(threshold)
+    print(f"threshold={threshold:.2f} FP={fp} FN={fn} cost={cost}")
+best = min(candidates, key=lambda t: (cost_at(t)[0], t))
+assert best == 0.30 and cost_at(best) == (1, 1, 0)
+print(f"selected on validation: {best:.2f}")
+```
+
+**在本地运行**
+
+```sh
+python logistic-thresholds-validation-cost-threshold.py
+```
+
+**预期输出**
+
+```text
+threshold=0.30 FP=1 FN=0 cost=1
+threshold=0.50 FP=0 FN=1 cost=4
+threshold=0.70 FP=0 FN=2 cost=8
+threshold=1.10 FP=0 FN=3 cost=12
+selected on validation: 0.30
+```
+
+**按执行顺序理解**
+
+1. 比较阈值前先规定代价；本例优化 FP+4×FN，而不是准确率。
+
+2. 每个候选阈值都用 score>=threshold 产生预测，再统计两种错误。
+
+3. 最小化验证代价并说明平局规则；最终测试集不参与选择。
+
+**逐步读懂代码**
+
+阈值 0.30 时预测为 [0,1,1,1,1]，一个假正例、零个假负例，总代价为 1。阈值 0.50 时没有假正例，却有一个假负例，代价为 4。全预测负类的候选 1.10 代价为 12。若比较不同规模验证集，可除以五，报告每个样本的平均代价。
+
+若 p 是校准后的概率，假正例代价为 C_FP、假负例代价为 C_FN，正确决策代价为零，则 C_FP×(1-p)≤C_FN×p 时预测正类。整理得 p≥C_FP/(C_FP+C_FN)，本例为 0.2。这是总体期望代价规则，与用五个已观测标签从有限网格选阈值不是同一件事。模型分数也未必是校准概率。
+
+部署后，代价、类别比例和校准情况都可能变化。调阈值不能修复很差的排序或无效的数据划分。这只是小例子，实际结论需要足够有代表性的验证数据及不确定性检查。
+
 ### 这些知识可以用在哪里
 
 **夜空图像复核**
@@ -863,6 +1011,8 @@ threshold 0.65: class 0
 - [Google: 逻辑回归：使用 sigmoid 函数计算概率](https://developers.google.com/machine-learning/crash-course/logistic-regression/sigmoid-function)
 
 - [Google: 阈值与混淆矩阵](https://developers.google.com/machine-learning/crash-course/classification/thresholding)
+
+- [scikit-learn: 调整分类决策阈值](https://scikit-learn.org/stable/modules/classification_threshold.html)
 
 <a id="metrics-imbalance"></a>
 
@@ -925,6 +1075,8 @@ TP 统计真阳性，即实际鸟鸣被标为鸟鸣。TN 统计真阴性，即�
 **如果没有片段被预测为正类呢？**
 
 精确率变成 0/0，数学上未定义。某些软件按约定报告零。要说明约定，并保留原始计数。
+
+<a id="lab-metrics-imbalance-ml-confusion-counts"></a>
 
 ### 从计数计算四个指标
 
@@ -1042,6 +1194,8 @@ q 是查询向量，x 是训练向量。j 遍历 d 个特征坐标。d² 表示�
 
 不是。一个错误标签或噪声点就能控制答案。较大的 k 平滑决策，却可能混合不同区域。应比较验证误差。
 
+<a id="lab-nearest-neighbours-ml-knn-vote"></a>
+
 ### 检查每一张近邻投票
 
 表格为合成数据，两个特征已经采用可比尺度。
@@ -1157,6 +1311,8 @@ V 个词的计数各加一，总计数也增加 V，这样概率之和仍为一�
 
 在此对称计数与相等先验下，两类分数相同。真实语境可能不同，但这个计数模型看不到。
 
+<a id="lab-text-naive-bayes-ml-naive-bayes-counts"></a>
+
 ### 计算双词分类器
 
 用预设训练词频总计展示各个概率。
@@ -1270,6 +1426,8 @@ p 是父节点中正类所占的比例，G 是其二元基尼不纯度。n 是�
 
 会。平均无法消除所有树都学到的误导模式。数据质量与独立验证仍然重要。
 
+<a id="lab-trees-ensembles-ml-gini-forest"></a>
+
 ### 计算分裂分数与树的平均
 
 计算局部分裂准则，不构建整棵树。
@@ -1382,6 +1540,8 @@ i 表示训练行，yᵢ 是目标。F₀ 是当前预测器，F₁ 是更新后
 **为什么不总取 η=1？**
 
 这个简单例子会一步拟合好。但噪声数据中，完整修正可能过快拟合偶然模式。应通过验证选择学习率和轮数。
+
+<a id="lab-boosting-residuals-ml-residual-stump"></a>
 
 ### 拟合一个残差树桩
 
@@ -1499,6 +1659,8 @@ n 是观测数量，i 指定其中一个观测。xᵢ 是含 d 个特征的向�
 
 少见但有用的差别，整体离散程度可能很小。PCA 没有标签来告诉它这个差别对后续任务重要。
 
+<a id="lab-clustering-pca-ml-cluster-pca-geometry"></a>
+
 ### 计算分组与 PCA 方差
 
 矩形数据让两种计算都容易看清。
@@ -1614,6 +1776,8 @@ u 是兴趣向量，v 是物品向量，j 表示对应特征位置。· 是点�
 
 除以零长度未定义。可以收集兴趣，或使用明确标注的通用后备规则，不要编造相似度。
 
+<a id="lab-content-recommendations-ml-cosine-recommendations"></a>
+
 ### 给三个标签视频排序
 
 标签为手工设定；示例不学习嵌入。
@@ -1723,6 +1887,8 @@ n 是训练样本数；i 是观测下标，j 是 d 个特征中的特征下标�
 **输入均值不变是否证明模型仍准确？**
 
 不证明。即使均值相近，输入与标签的关系也可能改变。需要新的带标签样本来测量误差。
+
+<a id="lab-validation-regularization-shift-ml-regularization-validation"></a>
 
 ### 区分拟合目标与验证
 
@@ -1841,6 +2007,8 @@ y=0 时差为 0.8−0=0.8，平方为 0.64。自信但错误的概率受到较�
 **没有标签的监测能证明准确率吗？**
 
 不能。它能发现格式或输入变化，但衡量正确性需要可靠结果或标签。
+
+<a id="lab-calibration-monitoring-ml-calibration-bin"></a>
 
 ### 检查一个概率分箱
 
@@ -2009,3 +2177,7 @@ Brier score: 0.34
 - [基于内容的过滤](https://developers.google.com/machine-learning/recommendation/content-based/basics) — Google
 
 - [监测流水线](https://developers.google.com/machine-learning/crash-course/production-ml-systems/monitoring) — Google
+
+- [交叉验证：评估估计器性能](https://scikit-learn.org/stable/modules/cross_validation.html) — scikit-learn
+
+- [调整分类决策阈值](https://scikit-learn.org/stable/modules/classification_threshold.html) — scikit-learn

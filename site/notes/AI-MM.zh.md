@@ -6,6 +6,16 @@
 
 ![Leon — 学习路线图](../assets/maps/mm.zh.svg)
 
+<a id="extensions"></a>
+
+## 继续深入：完整案例
+
+先读对应章节，再跟着故事预测输出、运行完整程序、核对解释。每个案例都在原有概念上增加一个实际问题。
+
+1. [用时间戳、偏移和容差对齐事件](#lab-audio-video-sync-timestamp-nearest-alignment) — 融合模态前先检查时钟与缺失匹配。
+
+2. [评估每条查询有多个正确结果的检索任务](#lab-image-text-search-multi-query-retrieval-report) — 区分排序质量、多正例与标注覆盖。
+
 十六课解释文字、图像、声音与视频如何共同提供有用证据。从词元编号和小型数值列表出发，逐步进入搜索、文档问答、语音、视频时序及依据证据生成。每课都有可运行 Python 与已解答教学问题。
 
 ### 运行 Python 示例
@@ -122,6 +132,8 @@ ID 只标识查表条目。重新编号会改 ID，却不改变词。
 **颠倒词元顺序会改变平均值吗？**
 
 不会。加法忽略顺序，这是简单编码器的局限。
+
+<a id="lab-tokens-embeddings-toy-token-table"></a>
 
 ### 查表并汇总两个词元
 
@@ -242,6 +254,8 @@ a、b 是图像与说明的非零双数嵌入。下标选择第一或第二项�
 
 不会。长度也加倍，因此 unit(A) 与相似度不变。
 
+<a id="lab-modalities-alignment-cosine-alignment"></a>
+
 ### 比较两条说明
 
 手设特征列表只用于说明余弦相似度，并非训练编码器输出。
@@ -358,6 +372,8 @@ combined_score = α × image_score + (1−α) × audio_score
 
 每流一个分数会丢失这种细节，需要时间特征或更早交互。
 
+<a id="lab-early-late-fusion-weighted-fusion"></a>
+
 ### 只组合可用证据
 
 使用两个给定分数，并处理一个缺失模态。
@@ -472,6 +488,8 @@ kHz 表示每秒千次，所以单通道有 16000×4=64000 点。
 **相似度 0.96 能定位铃声吗？**
 
 不能。整段分数本身没有事件边界。
+
+<a id="lab-audio-text-alignment-audio-duration"></a>
 
 ### 匹配前检查时间
 
@@ -594,6 +612,8 @@ exp(x) 是 e 的 x 次方，e≈2.718。ln 是其逆运算自然对数。p_corre
 **大的 softmax 份额意味着普遍确定吗？**
 
 不意味着。它依赖候选说明与温度，改变列表会改变份额。
+
+<a id="lab-clip-contrastive-contrastive-table"></a>
 
 ### 双向给正确伙伴评分
 
@@ -720,6 +740,8 @@ q 是双数查询，kⱼ 是候选 j 的键。下标选择元素或候选。√2
 
 分数与权重交换，输出约为 [1.9557,3.2177]。
 
+<a id="lab-cross-attention-fusion-attention-mix"></a>
+
 ### 让查询混合两个值
 
 查询、键、值均为手设列表，只计算一次注意力。
@@ -835,6 +857,12 @@ j 选择已归一化查询和图像向量的对应坐标。k 为正的结果数�
 
 两个相关项都出现，此查询 Recall@3=1，但更多结果需要更多检查。
 
+**两个系统的 Hit@2 相同，召回率还能不同吗？**
+
+可以。一条查询有两张正确图片时，找到一张或两张都算命中，但比例召回率分别是 1/2 和 1。指标决定你能看到哪种差异。
+
+<a id="lab-image-text-search-search-ranking"></a>
+
 ### 查找并检查前二项
 
 使用三个给定单位嵌入与独立核实的相关性。
@@ -868,6 +896,91 @@ Recall@2=0.50
 
 字典推导式为每图计算点积。sorted 按名称对应分数排列，reverse=True 将高分放前。[:2] 取前二。set 去除重复名称，& 找到返回项中相关者，len 计数。即使首位高分，召回率仍是 0.50。这是排序计算，不是训练图像搜索服务。
 
+<a id="lab-image-text-search-multi-query-retrieval-report"></a>
+
+### 评估每条查询有多个正确结果的检索任务
+
+米娜用短文本搜索图像库。一条查询有两张正确图片，另一条只有一张，第三条在库中没有标注匹配。排序结果还出现了重复图片编号。她先去重，明确 recall 的具体定义，并单独报告不能评分的查询，而不是悄悄把它们隐藏。
+
+```python
+from math import isclose
+
+def retrieval_report(queries, k):
+    if k <= 0:
+        raise ValueError("positive k required")
+    recalls, hits, reciprocal = [], [], []
+    found_total = relevant_total = unscored = 0
+    for ranked, relevant in queries:
+        ranked = list(dict.fromkeys(ranked))  # Preserve the first occurrence.
+        relevant = set(relevant)
+        if not relevant:
+            unscored += 1
+            continue
+        found = len(set(ranked[:k]) & relevant)
+        recalls.append(found / len(relevant))
+        hits.append(int(found > 0))
+        first = next((i for i, item in enumerate(ranked, 1) if item in relevant), None)
+        reciprocal.append(1 / first if first is not None else 0.0)
+        found_total += found
+        relevant_total += len(relevant)
+    count = len(recalls)
+    if not count:
+        return {"scored": 0, "unscored": unscored, "macro_recall": None,
+                "micro_recall": None, "hit_rate": None, "mrr": None}
+    return {"scored": count, "unscored": unscored,
+            "macro_recall": sum(recalls) / count,
+            "micro_recall": found_total / relevant_total,
+            "hit_rate": sum(hits) / count,
+            "mrr": sum(reciprocal) / count}
+
+queries = [(["a", "a", "x", "b"], {"a", "b"}),
+           (["z", "c", "d"], {"c"}),
+           (["x", "z"], set())]
+report = retrieval_report(queries, 2)
+assert isclose(report["macro_recall"], 0.75)
+assert isclose(report["micro_recall"], 2 / 3)
+assert report["hit_rate"] == 1.0 and report["mrr"] == 0.75
+assert retrieval_report([([], {"a"})], 2)["mrr"] == 0.0
+assert retrieval_report([([], set())], 2)["macro_recall"] is None
+print(f"scored: {report['scored']}; unscored: {report['unscored']}")
+for metric in ["macro_recall", "micro_recall", "hit_rate", "mrr"]:
+    print(f"{metric}: {report[metric]:.6f}")
+```
+
+**在本地运行**
+
+```sh
+python image-text-search-multi-query-retrieval-report.py
+```
+
+**预期输出**
+
+```text
+scored: 2; unscored: 1
+macro_recall: 0.750000
+micro_recall: 0.666667
+hit_rate: 1.000000
+mrr: 0.750000
+```
+
+**按执行顺序理解**
+
+1. 本规则先去重，再截取前 k 个；同一图片不能占两个结果位置。
+
+2. 第一条查询的前两个不同结果是 a、x，只找到两张正确图片中的一张。
+
+3. 第二条在第 2 名找到唯一正确图片；召回率为 1，倒数排名为 1/2。
+
+4. 没有标注正确结果的查询计为未评分；单独报告覆盖情况，避免除以零。
+
+**逐步读懂代码**
+
+对查询 q，R_q 是正确结果集合，T_q 是前 k 个不重复结果。比例召回率为 |T_q∩R_q|/|R_q|。宏平均召回率对 Q 条可评分查询的比例等权平均；微平均召回率用找到的正确结果总数除以正确结果总数。本例宏平均=(1/2+1)/2=0.75，微平均=(1+1)/(2+1)=2/3。
+
+Hit@k 统计“至少找到一个正确结果”的查询比例，本例为 1。MRR 对 1/r_q 求平均，其中 r_q 是完整输入排序去重后首个正确结果的名次；没有找到则记零。本例 MRR=(1+1/2)/2=0.75。一些图文检索基准把前 k 名命中率称为 Recall@k；每条只有一个正例时，它与比例召回率相同，多正例时未必相同，必须公开定义。
+
+三条查询中两条可评分。第三条可能暴露标注缺失，或库中确实没有答案。排除它并不表示测过正确拒答能力；拒答需要包含已知无答案查询的独立规则。相似度只负责排序，不能证明相关性。比较系统时应固定语料库、去重方式、标注和截断位置。在哈希操作平均常数时间的假设下，成本与输入排序列表及相关集合总大小线性相关。
+
 ### 这些知识可以用在哪里
 
 **改变编码器**
@@ -887,6 +1000,8 @@ Recall@2=0.50
 - [OpenAI: OpenAI CLIP：官方代码库与使用示例](https://github.com/openai/CLIP)
 
 - [Hugging Face: Hugging Face Transformers：CLIP 模型文档](https://huggingface.co/docs/transformers/model_doc/clip)
+
+- [OpenAI / arXiv: 通过自然语言监督学习可迁移视觉模型](https://arxiv.org/abs/2103.00020)
 
 <a id="conditional-generation"></a>
 
@@ -950,6 +1065,8 @@ T 为核实回答的词元数，这里包括结束词元。pₜ 是模型在图�
 **选择更高概率回答就能确保准确吗？**
 
 不能。本例错误回答概率更高，正确性要由可见物体决定。
+
+<a id="lab-conditional-generation-response-probability"></a>
 
 ### 比较两种可能回答
 
@@ -1065,6 +1182,8 @@ x、page_width 使用同样像素单位，选定归一化范围为 0–1000。to
 **容差增至 50 会改善吗？**
 
 会包含两个房间，制造歧义。过宽分组规则可能混合无关证据。
+
+<a id="lab-document-ocr-qa-document-row"></a>
 
 ### 让文字保留行关系
 
@@ -1182,6 +1301,8 @@ S 是最少编辑对齐中的替换词数，D 是被删参考词数，I 是预�
 
 可以。大量插入词可使编辑次数超过参考长度。
 
+<a id="lab-speech-tasks-word-error-rate"></a>
+
 ### 统计一个词的变化
 
 从人工核实的一次替换例子开始。
@@ -1295,6 +1416,12 @@ shift=1 时，视频位置 1 与音频位置 2 都为一。
 
 不能。要随时间检查事件；变化延迟需要超出单个常量的校正。
 
+**为什么不强制每个事件都匹配一帧？**
+
+最近帧也可能仍然太远。明确返回未匹配，能保留不确定性，避免制造错误关联。
+
+<a id="lab-audio-video-sync-sync-offset"></a>
+
 ### 寻找延迟拍手
 
 用二值事件位置代替真实音画特征。
@@ -1331,6 +1458,75 @@ audio delay seconds=0.1
 **逐步读懂代码**
 
 外循环测试三个偏移，内循环遍历视频位置。j 为要比较的音频位置。连续比较先检查范围，再索引。相乘统计同时为一的事件对，+= 累加。max 选择最高分偏移，得到 +1，即延迟 0.1 秒。代码没有运行 SyncNet 或修改媒体文件。
+
+<a id="lab-audio-video-sync-timestamp-nearest-alignment"></a>
+
+### 用时间戳、偏移和容差对齐事件
+
+米娜核对视频与音频事件日志。视频帧间隔不完全相等，音频时钟比视频时钟快 20 毫秒。用时间乘猜测的帧率，会匹配错帧。她先把音频时间转换到视频时钟，再查找最近的实际帧，距离太远的事件保留为未匹配。
+
+```python
+from bisect import bisect_left
+from math import isclose
+
+def nearest_frame(timestamps, event_time, offset, tolerance):
+    if tolerance < 0 or not timestamps:
+        raise ValueError("nonempty timestamps and nonnegative tolerance required")
+    if any(a >= b for a, b in zip(timestamps, timestamps[1:])):
+        raise ValueError("frame timestamps must be strictly increasing")
+    target = event_time - offset  # audio_time = video_time + offset
+    insertion = bisect_left(timestamps, target)
+    candidates = [i for i in (insertion - 1, insertion) if 0 <= i < len(timestamps)]
+    best = min(candidates, key=lambda i: (abs(timestamps[i] - target), i))
+    error = abs(timestamps[best] - target)
+    return (best, error) if error <= tolerance else None
+
+video = [0.0, 0.041, 0.083, 0.126, 0.168]
+events = [0.061, 0.104, 0.300]
+matches = [nearest_frame(video, event, 0.020, 0.010) for event in events]
+assert matches[0][0] == 1 and isclose(matches[0][1], 0.0, abs_tol=1e-12)
+assert matches[1][0] == 2 and isclose(matches[1][1], 0.001)
+assert matches[2] is None
+assert nearest_frame([0.0, 2.0], 1.0, 0.0, 1.0)[0] == 0
+for event, match in zip(events, matches):
+    if match is None:
+        print(f"audio {event:.3f}: unmatched")
+    else:
+        index, error = match
+        print(f"audio {event:.3f}: frame {index}, error {error:.3f} s")
+```
+
+**在本地运行**
+
+```sh
+python audio-video-sync-timestamp-nearest-alignment.py
+```
+
+**预期输出**
+
+```text
+audio 0.061: frame 1, error 0.000 s
+audio 0.104: frame 2, error 0.001 s
+audio 0.300: unmatched
+```
+
+**按执行顺序理解**
+
+1. 先明确时钟关系：音频时间=视频时间+0.020 秒，因此换算时要减去偏移。
+
+2. 二分查找定位插入点，只有紧邻它的前后两帧可能最近。
+
+3. 选择距离较小者；距离完全相同时选较早帧。
+
+4. 拒绝最后事件：0.300-0.020=0.280，与最后一帧相差 0.112 秒。
+
+**逐步读懂代码**
+
+设音频时间为 a，已知时钟偏移为 delta，实际视频帧时间为 v_i。寻找 i_star=argmin_i |v_i-(a-delta)|，只有最小距离不超过容差 tau 才接受。这里 tau=0.010 秒，前两个校正后事件为 0.041、0.084，与帧相差 0、0.001 秒。
+
+delta 的正负取决于先声明的时钟方程，不能靠猜。所有量必须使用相同单位。帧间隔不同时，帧编号本身并不等于呈现时间。本程序假设有限数值时间戳与已知恒定偏移；若时钟有漂移，还可能需要标定比例，例如 audio_time=scale×video_time+offset。
+
+每次调用先用 O(F) 检查排序，再做 O(log F) 搜索，所以完整函数为 O(F)。实际索引可以只检查一次，后续每次查询 O(log F)。这是最近点匹配，不是插值、一对一分配，也不是学习式音画同步。有些任务应匹配时间区间；时间相近也不能证明声音与画面事件具有相同成因。
 
 ### 这些知识可以用在哪里
 
@@ -1414,6 +1610,8 @@ D 是以秒表示的视频时长，Δ 是正的采样间隔。整数 k 从零开
 **IoU 为一就证明动作名称正确吗？**
 
 不能。相同时间边界仍可能搭配错误动作说明。
+
+<a id="lab-video-temporal-grounding-temporal-overlap"></a>
 
 ### 采样视频并比较区间
 
@@ -1536,6 +1734,8 @@ fixed_feature 是不变视觉编码器提供的数。weight 是可调整连接�
 
 不能。它只拟合了一个虚构标量目标。语言、感知与新任务仍需评估。
 
+<a id="lab-visual-instruction-tuning-frozen-feature"></a>
+
 ### 调整连接器，保留特征
 
 不使用微积分或模型库，尝试两个权重。
@@ -1650,6 +1850,8 @@ citation = source_ID + page_or_region
 **首位内容块保证有答案吗？**
 
 不保证。它可能提到主题却不含所需事实，因此系统需要证据不足时的处理路线。
+
+<a id="lab-multimodal-rag-retrieve-cite"></a>
 
 ### 返回答案及证据 ID
 
@@ -1776,6 +1978,8 @@ H 是在同一固定匹配规范下被判为幻觉的物体提及数量，M 是�
 
 不能。参考可能漏掉可见物体。应按明确标注规范检查图像。
 
+<a id="lab-evaluation-hallucination-claim-audit"></a>
+
 ### 统计无依据提及与覆盖
 
 使用虚构且已核实的审查计数。
@@ -1892,6 +2096,8 @@ N=100、expensive_cost=10、cheap_cost=1 时，全部精查花费 1000 单位。
 **符合词元预算就证明证据足够吗？**
 
 不能。被删小图可能包含唯一答案，预算和相关性需要分别检查。
+
+<a id="lab-efficient-evidence-systems-cascade-budget"></a>
 
 ### 比较全量处理与候选列表
 

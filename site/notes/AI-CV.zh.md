@@ -6,6 +6,16 @@
 
 ![Leon — 学习路线图](../assets/maps/cv.zh.svg)
 
+<a id="extensions"></a>
+
+## 继续深入：完整案例
+
+先读对应章节，再跟着故事预测输出、运行完整程序、核对解释。每个案例都在原有概念上增加一个实际问题。
+
+1. [把检测框还原到原始图像](#lab-inference-pipelines-letterbox-coordinate-roundtrip) — 在整个图像流程中传递坐标变换信息。
+
+2. [排除忽略像素，计算分割 IoU](#lab-segmentation-regions-confusion-matrix-miou) — 从计数推导 IoU，并说明平均规则。
+
 十六课从像素与简单 Python 列表出发，逐步进入识别、检测、跟踪、OCR 和可靠图像系统。每课都有故事、逐步计算、可运行代码、已解答问题及两个练习情境。
 
 ### 运行 Python 示例
@@ -124,6 +134,8 @@ v 是取值为 0 到 255 的八位通道数值。除以 255 后，它被映射�
 
 只有它仍属于字节尺度才可以。如果已经缩放到 0–1，再除会破坏约定范围。
 
+<a id="lab-pixels-contracts-pixel-scale"></a>
+
 ### 追踪一个通道
 
 用列表表示一个已知蓝色像素，不需要图像文件或训练模型。
@@ -238,6 +250,8 @@ max(40,30)=40，再算 200−40=160。
 
 可以，差距 40 会通过，但也可能放进更多非目标颜色。
 
+<a id="lab-colour-channels-red-channel-rule"></a>
+
 ### 测试三种已知颜色
 
 用普通 RGB 元组和透明规则。
@@ -350,6 +364,8 @@ filtered_value = pixel₁×weight₁ + pixel₂×weight₂ + …
 
 [8, 5, 2] 得到 −6。符号说明向哪个方向变亮。
 
+<a id="lab-filters-neighborhoods-local-filter"></a>
+
 ### 求小块均值
 
 观察亮点与有正负号的边缘响应。这是手写滤波器，不是学习模型。
@@ -460,6 +476,8 @@ i 是一维行中的位置。掩码值为 0 或 1。三个值全为 1 时 min �
 **真实的一像素细线会保留吗？**
 
 不会。该操作不知道这条细线有用。
+
+<a id="lab-edges-morphology-binary-opening"></a>
 
 ### 移除孤立噪点
 
@@ -576,6 +594,8 @@ x、y 是变换前的水平与垂直坐标。撇号（′）表示变换后。s�
 
 不会。两个角点加同样偏移，因此坐标差保持不变。
 
+<a id="lab-geometry-augmentation-move-box"></a>
+
 ### 移动框的两个角
 
 只用普通数字，先缩放再平移。
@@ -687,6 +707,8 @@ a、b 是描述子列表，这里不是像素坐标。下标 1、2 选择元素�
 **比值 0.2 能证明物体匹配吗？**
 
 不能。它只比较这些描述子。多个一致位置与直接检查才是更强的核查。
+
+<a id="lab-classical-features-descriptor-distance"></a>
 
 ### 比较两个图块描述
 
@@ -804,6 +826,8 @@ h₁、h₂ 是概括图像的两个特征数。k 选择类别。wₖ₁、wₖ�
 **0.6652 能证明物体属于第二类吗？**
 
 不能。这是模型在这些标签间的相对偏好，模型仍可能出错。
+
+<a id="lab-recognition-transfer-classification-head"></a>
 
 ### 把特征变成三个分数
 
@@ -925,6 +949,8 @@ A、B 是两个矩形。每个写作 (x₁, y₁, x₂, y₂)，且 x₂>x₁、
 
 在这个双框例子中是的：0.3913 超过 0.3，但未超过 0.5。阈值不是正确概率。
 
+<a id="lab-detection-overlap-box-overlap"></a>
+
 ### 测量两个候选框
 
 为两个同类框计算一次抑制判断。
@@ -1042,6 +1068,8 @@ k 是从 1 开始的排名。Pₖ、Rₖ 是读完 k 条预测后的精确率、
 **若参考有三只鸟呢？**
 
 找到两只时召回率为 2/3，教学 AP 为 (1+2/3)/3≈0.5556。
+
+<a id="lab-detection-average-precision-ranked-ap"></a>
 
 ### 读取三条排序检测
 
@@ -1165,6 +1193,12 @@ Dice = 60 / 90，约为 0.6667，也等于 2 × 0.5 / 1.5。该预测有 20 个�
 
 是的，原始公式没有定义，评估必须明确处理方式。
 
+**忽略像素还算假阳性吗？**
+
+本规则下不算。我们在计数前完整排除该位置。应写明规则，保证所有模型在相同像素上评估。
+
+<a id="lab-segmentation-regions-mask-counts"></a>
+
 ### 统计前景重叠
 
 用小型二值列表代替展平后的掩码。
@@ -1197,6 +1231,89 @@ IoU=0.5000; Dice=0.6667
 
 zip 遍历对应位置。and 只在两个掩码都选中时计数；or 在任一掩码选中时计数。Python 累加时把 True 当 1、False 当 0。共享像素为二，并集为四。每个列表选中三个像素，因此 Dice 为 4/6。本例评估已有掩码，没有学习或预测掩码。
 
+<a id="lab-segmentation-regions-confusion-matrix-miou"></a>
+
+### 排除忽略像素，计算分割 IoU
+
+道路相机区分背景、道路和小物体。有些像素没有可靠标注。米娜起初把所有像素都计入，分数因此失真。她排除忽略像素，建立混淆矩阵，再从行列读取每个类别。这样，小物体有了自己的分数，不会淹没在大量背景像素中。
+
+```python
+from math import isclose
+
+def segmentation_report(truth, prediction, classes, ignore=255):
+    if len(truth) != len(prediction) or classes <= 0:
+        raise ValueError("aligned arrays and positive class count required")
+    matrix = [[0] * classes for _ in range(classes)]
+    for actual, predicted in zip(truth, prediction):
+        if actual == ignore:
+            continue
+        if not (0 <= actual < classes and 0 <= predicted < classes):
+            raise ValueError("unknown class")
+        matrix[actual][predicted] += 1
+    ious = []
+    for c in range(classes):
+        tp = matrix[c][c]
+        actual_total = sum(matrix[c])
+        predicted_total = sum(row[c] for row in matrix)
+        union = actual_total + predicted_total - tp
+        ious.append(tp / union if union else None)
+    defined = [value for value in ious if value is not None]
+    mean = sum(defined) / len(defined) if defined else None
+    total = sum(map(sum, matrix))
+    accuracy = sum(matrix[c][c] for c in range(classes)) / total if total else None
+    return matrix, ious, mean, accuracy
+
+truth = [0, 0, 0, 1, 1, 2, 2, 255]
+prediction = [0, 0, 1, 1, 2, 2, 0, 1]
+matrix, ious, mean, accuracy = segmentation_report(truth, prediction, 3)
+assert matrix == [[2, 1, 0], [0, 1, 1], [1, 0, 1]]
+assert isclose(mean, 7 / 18) and isclose(accuracy, 4 / 7)
+assert segmentation_report([255], [1], 3)[2] is None
+assert segmentation_report([0], [0], 3)[1] == [1.0, None, None]
+print("rows = truth; columns = prediction:")
+for row in matrix:
+    print(row)
+print("class IoU:", [round(value, 6) for value in ious])
+print(f"mean IoU: {mean:.6f}")
+print(f"pixel accuracy: {accuracy:.6f}")
+```
+
+**在本地运行**
+
+```sh
+python segmentation-regions-confusion-matrix-miou.py
+```
+
+**预期输出**
+
+```text
+rows = truth; columns = prediction:
+[2, 1, 0]
+[0, 1, 1]
+[1, 0, 1]
+class IoU: [0.5, 0.333333, 0.333333]
+mean IoU: 0.388889
+pixel accuracy: 0.571429
+```
+
+**按执行顺序理解**
+
+1. 看到真值为忽略标签时，直接跳过；该位置的预测也不进入任何行列。
+
+2. 对角线是 TP；行总数是真实像素数，列总数是预测像素数。
+
+3. 并集=真实总数+预测总数-TP，减法避免交集重复计数。
+
+4. 对有定义的类别 IoU 等权平均；若真值和预测都没有该类，则返回 None。
+
+**逐步读懂代码**
+
+IoU_c=TP_c/(TP_c+FP_c+FN_c)。背景类 TP=2、FP=1、FN=1，因此 IoU=2/4=0.5；道路和物体均为 1/3。平均 IoU=(1/2+1/3+1/3)/3=7/18，约 0.388889；像素准确率则是 4/7，它们回答的问题不同。
+
+本混淆矩阵汇总所有参与评估的像素。先汇总全部图像再算 IoU，与先逐图算 IoU 再平均，结果可能不同，必须说明采用哪种方式。本实现只在并集为零时排除类别；真值没有某类，但模型预测过它，该类并集非零，IoU 应为零。不同基准可能采用不同缺失类别规则。
+
+全是忽略像素的图像没有有效分数，并不表示完美预测。P 个像素、C 个类别时，本直观实现花费 O(P+C²) 时间、O(C²) 空间。比较模型时，应固定忽略掩码、类别映射、汇总方式与缩放方法。离散标签掩码不能用会产生小数类别编号的方式缩放。
+
 ### 这些知识可以用在哪里
 
 **完全匹配区域**
@@ -1218,6 +1335,8 @@ zip 遍历对应位置。and 只在两个掩码都选中时计数；or 在任一
 - [PyTorch: TorchVision 目标检测微调教程](https://docs.pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 
 - [scikit-learn: 指标与评分：量化预测质量](https://scikit-learn.org/stable/modules/model_evaluation.html)
+
+- [Cityscapes: 基准评估：像素级 IoU 与忽略标签](https://www.cityscapes-dataset.com/benchmarks/)
 
 <a id="tracking-identity"></a>
 
@@ -1280,6 +1399,8 @@ x 是以像素计的水平中心位置。v 是每帧移动像素数，假设帧�
 **没有检测通过门限怎么办？**
 
 记录观察缺失。完整跟踪器可短暂保留预测，但不应把它当作已确认观察。
+
+<a id="lab-tracking-identity-track-gate"></a>
 
 ### 预测一条轨迹并设门限
 
@@ -1389,6 +1510,8 @@ pattern 是从小图逐行读取的固定长度零一列表。template 是相同
 **词典总能纠正 O 与 0 吗？**
 
 不能。书架编号可能合法地包含其中任一种，语言合理性并不足够。
+
+<a id="lab-ocr-reading-ocr-template"></a>
 
 ### 统计符号差异
 
@@ -1506,6 +1629,8 @@ H、W 是像素高度与宽度。P 是正方形图像块的边长，这里假设
 
 不是。比较对数对词元数平方。这里因额外类别词元，倍率为 4225/289≈14.62。
 
+<a id="lab-visual-tokens-patch-budget"></a>
+
 ### 统计图像块与比较次数
 
 先比较两种块大小，再考虑完整模型。
@@ -1617,6 +1742,8 @@ i 选择一个对应像素或特征。dᵢ 是其非负绝对差。n 为比较�
 **更亮的灯会触发警报吗？**
 
 会。即使没有损伤，全局亮度变化也影响原始像素差。
+
+<a id="lab-defect-inspection-difference-inspection"></a>
 
 ### 找到最大变化
 
@@ -1734,6 +1861,8 @@ TP 是真正例：有野生动物且正确警报的图。FP 是假正例：空�
 
 若真正例和漏检数不变，召回率仍是 0.75。精确率降为 15/35≈0.4286。
 
+<a id="lab-evaluation-shift-evaluate-alerts"></a>
+
 ### 统计警报与漏检
 
 从一个留出组的明确计数计算指标。
@@ -1850,6 +1979,12 @@ value=0.26、step=0.1 时，0.26/0.1=2.6，舍入为 3，恢复为 0.3，误差 
 
 不能。靠近决策阈值的分数可能因小变化而跨过阈值。
 
+**为什么先减补边，再除缩放比例？**
+
+正向先缩放，再加补边。逆运算需要倒转顺序；顺序错误会造成框的偏移。
+
+<a id="lab-inference-pipelines-pipeline-budget"></a>
+
 ### 检查舍入与总延迟
 
 使用明确的假设时间，并非实测。
@@ -1885,6 +2020,85 @@ serial latency ms: 13
 
 第一个推导式把每个数除以间隔再舍入。第二个通过乘法重建近似数。zip 将原值和重建值配对，abs 测误差。显示时保留两位小数只影响展示。sum 累加三个假设阶段时间。这个教学量化器没有转换或运行训练模型。
 
+<a id="lab-inference-pipelines-letterbox-coordinate-roundtrip"></a>
+
+### 把检测框还原到原始图像
+
+米娜把宽幅相机图像放入正方形模型输入：先缩放，再补边。模型找到了物体，可直接把模型坐标画回原图时，框却错位了。她记录实际缩放尺寸和补边量，按相反顺序还原坐标，并先做往返测试，再相信显示结果。
+
+```python
+from math import isclose
+
+def metadata(width, height, side):
+    if min(width, height, side) <= 0:
+        raise ValueError("positive dimensions required")
+    nominal = min(side / width, side / height)
+    rw, rh = max(1, round(width * nominal)), max(1, round(height * nominal))
+    return rw / width, rh / height, (side - rw) // 2, (side - rh) // 2
+
+def forward(box, meta):
+    sx, sy, px, py = meta
+    x1, y1, x2, y2 = box
+    return [sx * x1 + px, sy * y1 + py, sx * x2 + px, sy * y2 + py]
+
+def restore(box, meta, width, height):
+    sx, sy, px, py = meta
+    x1, y1, x2, y2 = box
+    restored = [(x1 - px) / sx, (y1 - py) / sy,
+                (x2 - px) / sx, (y2 - py) / sy]
+    clipped = [min(max(v, 0.0), limit)
+               for v, limit in zip(restored, [width, height, width, height])]
+    return clipped if clipped[0] < clipped[2] and clipped[1] < clipped[3] else None
+
+original = [100.0, 50.0, 500.0, 300.0]
+meta = metadata(800, 400, 640)
+model_box = forward(original, meta)
+restored = restore(model_box, meta, 800, 400)
+assert all(isclose(a, b) for a, b in zip(original, restored))
+odd_meta = metadata(853, 480, 640)
+odd_back = restore(forward(original, odd_meta), odd_meta, 853, 480)
+assert all(isclose(a, b) for a, b in zip(original, odd_back))
+assert odd_meta[0] != odd_meta[1]  # Rounded height changes the actual y scale.
+assert restore([0, 0, 20, 20], meta, 800, 400) is None
+print("scale and padding:", meta)
+print("model box:", model_box)
+print("original box:", restored)
+print("rounded-size round trip:", all(isclose(a, b) for a, b in zip(original, odd_back)))
+```
+
+**在本地运行**
+
+```sh
+python inference-pipelines-letterbox-coordinate-roundtrip.py
+```
+
+**预期输出**
+
+```text
+scale and padding: (0.8, 0.8, 0, 160)
+model box: [80.0, 200.0, 400.0, 400.0]
+original box: [100.0, 50.0, 500.0, 300.0]
+rounded-size round trip: True
+```
+
+**按执行顺序理解**
+
+1. 800×400 的图像变成 640×320，上下各补 160 像素。
+
+2. 映射两个角点：[100,50,500,300] 变为 [80,200,400,400]。
+
+3. 先减补边，再除缩放比例，最后裁剪到原图的连续边界。
+
+4. 用 853×480 再测一次。取整后的实际尺寸可能导致横纵缩放比例略有不同。完全落在补边中、裁剪后面积为零的框应丢弃。
+
+**逐步读懂代码**
+
+连续框边界满足 x_prime=s_x×x+p_x、y_prime=s_y×y+p_y。s_x 和 s_y 分别是实际缩放后宽度/原宽度、实际缩放后高度/原高度。p_x、p_y 是左侧和顶部补边量。逆变换为 x=(x_prime-p_x)/s_x、y=(y_prime-p_y)/s_y。
+
+第一张图的两个比例都是 0.8。模型中的 y=200 对应原图 (200-160)/0.8=50。853×480 取整后变成 640×360，此时 s_x=640/853，s_y=360/480。两个方向都用名义比例，会引入小误差。应保存预处理实际使用的变换。
+
+本例使用 [0,width]、[0,height] 内的连续框边界，不是最大索引为 width-1、height-1 的整数像素坐标。实际库的像素中心和插值约定可能不同；裁剪、旋转或其他补边规则也需要记录对应变换。往返测试检验坐标记录是否自洽，不能证明检测模型准确。
+
 ### 这些知识可以用在哪里
 
 **更细间隔**
@@ -1904,6 +2118,8 @@ serial latency ms: 13
 - [ONNX Runtime: 量化 ONNX 模型](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
 
 - [TorchVision: 变换图像、视频、框等数据](https://docs.pytorch.org/vision/stable/transforms.html)
+
+- [OpenCV: 图像几何变换](https://docs.opencv.org/4.x/da/d6e/tutorial_py_geometric_transformations.html)
 
 ## 知识速查
 
@@ -2022,3 +2238,5 @@ OCR 可用于扫描件搜索、标签识别与文档阅读。应保留原图区�
 - [MVTec AD 异常检测数据集](https://www.mvtec.com/research-teaching/datasets/mvtec-ad) — MVTec
 
 - [量化 ONNX 模型](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html) — ONNX Runtime
+
+- [基准评估：像素级 IoU 与忽略标签](https://www.cityscapes-dataset.com/benchmarks/) — Cityscapes

@@ -1,5 +1,17 @@
 # Delivery verification
 
+## Guided teaching extensions — 11 October 2026
+
+This release adds 23 original guided cases in English and Chinese: three each for INFO1113, COMP2017, COMP2123, COMP2022 and COMP3308, plus two each for machine learning, deep learning, computer vision and multimodal learning. Each case includes a story, complete executable source, expected output, execution guidance, explained assumptions and an answered question. Nine new worked problems add explicit calculations and checks. Clickable case routes appear after the opening learning map, with separate prerequisite links; the homepage and GitHub profile expose the new index. Downloaded Markdown includes the same case anchors.
+
+The existing 121 foundational topics and 72 bilingual AI/primer topics retain their original explanations and examples. The foundation totals are now 171 programs, 131 worked problems and 242 instructor insights. All 251 exported standalone programs passed fresh isolated compilation or execution and exact-output checks: 145 Python, 49 Java and 57 C. All 502 rendered code blocks and both example ZIP archives preserve source content. Navigation, bilingual case targets, opening roadmaps and publication-scope checks pass for all 38 HTML pages. Execution used Python 3.12.14, JDK 8 and Apple Clang on macOS.
+
+Independent author checks compare 210 knapsack cases with exhaustive subsets, 120 Bellman–Ford graphs with Floyd–Warshall, 50 obstacle grids with distance relaxation, and 50 DFA pairs with word enumeration. Further checks cover 13 Catalan values, explicit parse trees, all 64 small finite relations, 100 A* cases against all-pairs distances, classification counts, log-space Bayes, validation costs, cross-entropy shift invariance and gradient finite differences. Vision checks include 100 coordinate round trips and 50 segmentation masks compared with set operations. Multimodal checks include 100 timestamp matches against linear search and retrieval edge cases. The three new C examples also passed ASan/UBSan with the shown inputs. These are finite checks, not proofs over arbitrary inputs; no Linux run or leak-detection coverage is claimed.
+
+Source-preservation checks confirm that previous topic IDs, core explanations, program source/output, worked problems and references remain intact. The COMP2017 coverage summary updates its program count from 54 to 57. The biography, beginner primer, original C project sources, supplied Python handbook, handbook ZIP and all compact PDFs are unchanged. Primary references were added for the relevant concepts; the stories, synthetic fixtures and teaching implementations are independently written.
+
+Desktop and actual 390-pixel browser checks cover the new course route, Chinese case text, 18px body text and 16px code, without page-level horizontal overflow in the checked views. Same-case language switching was checked after the anchor navigation settled. Nested reading anchors prefer the visible example when it and its parent chapter cover equal viewport areas. Earlier-release evidence below is historical and retains its original counts and dates.
+
 Python handbook and display-name update checked on 7 October 2026. Earlier course execution and editorial evidence below was recorded on 3 October 2026 unless stated otherwise.
 
 ## Python handbook and display name

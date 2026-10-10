@@ -1497,7 +1497,8 @@
       "sources": [
         "torchvision-fcn",
         "torchvision-detection",
-        "sklearn-evaluation"
+        "sklearn-evaluation",
+        "cityscapes-metrics"
       ],
       "level": "applied",
       "code_examples": [
@@ -1516,6 +1517,42 @@
           "explanation": {
             "en": "zip visits matching positions. and counts a position only when both masks select it; or counts it when either selects it. Python adds True as 1 and False as 0. There are two shared pixels and four union pixels. Each list selects three pixels, so Dice is 4/6. This evaluates given masks; it does not learn or predict them.",
             "zh": "zip 遍历对应位置。and 只在两个掩码都选中时计数；or 在任一掩码选中时计数。Python 累加时把 True 当 1、False 当 0。共享像素为二，并集为四。每个列表选中三个像素，因此 Dice 为 4/6。本例评估已有掩码，没有学习或预测掩码。"
+          }
+        },
+        {
+          "id": "confusion-matrix-miou",
+          "title": {
+            "en": "Compute segmentation IoU without counting ignored pixels",
+            "zh": "排除忽略像素，计算分割 IoU"
+          },
+          "intro": {
+            "en": "A road camera labels background, road and small objects. Some pixels have no reliable annotation. Mina first counts every pixel and gets a misleading score. She removes ignored pixels, builds one confusion matrix, and reads each class from its row and column. The small object now has its own score instead of disappearing inside the background total.",
+            "zh": "道路相机区分背景、道路和小物体。有些像素没有可靠标注。米娜起初把所有像素都计入，分数因此失真。她排除忽略像素，建立混淆矩阵，再从行列读取每个类别。这样，小物体有了自己的分数，不会淹没在大量背景像素中。"
+          },
+          "language": "python",
+          "code": "from math import isclose\n\ndef segmentation_report(truth, prediction, classes, ignore=255):\n    if len(truth) != len(prediction) or classes <= 0:\n        raise ValueError(\"aligned arrays and positive class count required\")\n    matrix = [[0] * classes for _ in range(classes)]\n    for actual, predicted in zip(truth, prediction):\n        if actual == ignore:\n            continue\n        if not (0 <= actual < classes and 0 <= predicted < classes):\n            raise ValueError(\"unknown class\")\n        matrix[actual][predicted] += 1\n    ious = []\n    for c in range(classes):\n        tp = matrix[c][c]\n        actual_total = sum(matrix[c])\n        predicted_total = sum(row[c] for row in matrix)\n        union = actual_total + predicted_total - tp\n        ious.append(tp / union if union else None)\n    defined = [value for value in ious if value is not None]\n    mean = sum(defined) / len(defined) if defined else None\n    total = sum(map(sum, matrix))\n    accuracy = sum(matrix[c][c] for c in range(classes)) / total if total else None\n    return matrix, ious, mean, accuracy\n\ntruth = [0, 0, 0, 1, 1, 2, 2, 255]\nprediction = [0, 0, 1, 1, 2, 2, 0, 1]\nmatrix, ious, mean, accuracy = segmentation_report(truth, prediction, 3)\nassert matrix == [[2, 1, 0], [0, 1, 1], [1, 0, 1]]\nassert isclose(mean, 7 / 18) and isclose(accuracy, 4 / 7)\nassert segmentation_report([255], [1], 3)[2] is None\nassert segmentation_report([0], [0], 3)[1] == [1.0, None, None]\nprint(\"rows = truth; columns = prediction:\")\nfor row in matrix:\n    print(row)\nprint(\"class IoU:\", [round(value, 6) for value in ious])\nprint(f\"mean IoU: {mean:.6f}\")\nprint(f\"pixel accuracy: {accuracy:.6f}\")\n",
+          "output": "rows = truth; columns = prediction:\n[2, 1, 0]\n[0, 1, 1]\n[1, 0, 1]\nclass IoU: [0.5, 0.333333, 0.333333]\nmean IoU: 0.388889\npixel accuracy: 0.571429\n",
+          "walkthrough": [
+            {
+              "en": "Skip an ignored ground-truth pixel before updating any row or column. Its prediction contributes nothing.",
+              "zh": "看到真值为忽略标签时，直接跳过；该位置的预测也不进入任何行列。"
+            },
+            {
+              "en": "Read TP from the diagonal. The row total counts actual pixels; the column total counts predicted pixels.",
+              "zh": "对角线是 TP；行总数是真实像素数，列总数是预测像素数。"
+            },
+            {
+              "en": "Union equals actual total plus predicted total minus TP. The subtraction avoids counting the intersection twice.",
+              "zh": "并集=真实总数+预测总数-TP，减法避免交集重复计数。"
+            },
+            {
+              "en": "Average defined class IoUs equally. Return None for a class absent from both truth and prediction.",
+              "zh": "对有定义的类别 IoU 等权平均；若真值和预测都没有该类，则返回 None。"
+            }
+          ],
+          "explanation": {
+            "en": "IoU_c=TP_c/(TP_c+FP_c+FN_c). For background, TP=2, FP=1 and FN=1, so IoU=2/4=0.5. Road and object each have IoU=1/3. Mean IoU is (1/2+1/3+1/3)/3=7/18, about 0.388889. Pixel accuracy is instead 4/7. These metrics answer different questions.\n\nThe confusion matrix pools the evaluated pixels. Pooling all images before computing IoU can differ from averaging per-image IoUs. State which method you use. This implementation excludes a class only when its union is zero; a class missing from truth but predicted somewhere has nonzero union and IoU zero. Other benchmarks choose different absent-class conventions.\n\nAn all-ignored image gives no defined score. It is not a perfect prediction. For P pixels and C classes, this straightforward implementation takes O(P+C squared) time and O(C squared) storage. Keep the ignore mask, class mapping, pooling rule and resize method identical across models. Never resize discrete label masks with a method that creates fractional class IDs.",
+            "zh": "IoU_c=TP_c/(TP_c+FP_c+FN_c)。背景类 TP=2、FP=1、FN=1，因此 IoU=2/4=0.5；道路和物体均为 1/3。平均 IoU=(1/2+1/3+1/3)/3=7/18，约 0.388889；像素准确率则是 4/7，它们回答的问题不同。\n\n本混淆矩阵汇总所有参与评估的像素。先汇总全部图像再算 IoU，与先逐图算 IoU 再平均，结果可能不同，必须说明采用哪种方式。本实现只在并集为零时排除类别；真值没有某类，但模型预测过它，该类并集非零，IoU 应为零。不同基准可能采用不同缺失类别规则。\n\n全是忽略像素的图像没有有效分数，并不表示完美预测。P 个像素、C 个类别时，本直观实现花费 O(P+C²) 时间、O(C²) 空间。比较模型时，应固定忽略掩码、类别映射、汇总方式与缩放方法。离散标签掩码不能用会产生小数类别编号的方式缩放。"
           }
         }
       ],
@@ -1580,6 +1617,16 @@
           "answer": {
             "en": "Yes, the raw formula is undefined. An evaluation must specify how that case is handled.",
             "zh": "是的，原始公式没有定义，评估必须明确处理方式。"
+          }
+        },
+        {
+          "question": {
+            "en": "Does an ignored pixel still count as a false positive?",
+            "zh": "忽略像素还算假阳性吗？"
+          },
+          "answer": {
+            "en": "Not under this protocol. We exclude that location entirely before counting. Document this rule so every model is evaluated on the same pixels.",
+            "zh": "本规则下不算。我们在计数前完整排除该位置。应写明规则，保证所有模型在相同像素上评估。"
           }
         }
       ],
@@ -2409,7 +2456,8 @@
       },
       "sources": [
         "onnx-quantization",
-        "torchvision-transforms"
+        "torchvision-transforms",
+        "opencv-geometry"
       ],
       "takeaway": {
         "en": "Build reproducible preprocessing and postprocessing around a model. Compare output quality, latency and memory using the actual intended inputs.",
@@ -2435,6 +2483,42 @@
           "explanation": {
             "en": "The first comprehension divides and rounds each value. The second reconstructs approximate values by multiplication. zip pairs originals with reconstructions so abs can measure error. Rounding the displayed values to two decimals only affects presentation. sum adds the three assumed stage times. This toy quantizer does not convert or run a trained model.",
             "zh": "第一个推导式把每个数除以间隔再舍入。第二个通过乘法重建近似数。zip 将原值和重建值配对，abs 测误差。显示时保留两位小数只影响展示。sum 累加三个假设阶段时间。这个教学量化器没有转换或运行训练模型。"
+          }
+        },
+        {
+          "id": "letterbox-coordinate-roundtrip",
+          "title": {
+            "en": "Return a detection box to the original image",
+            "zh": "把检测框还原到原始图像"
+          },
+          "intro": {
+            "en": "Mina fits a wide camera image into a square model input. She scales the image and adds padding. The model finds the object, but drawing its coordinates directly on the camera image moves the box. She writes down the actual resized dimensions and padding, reverses those operations, and tests the round trip before trusting the display.",
+            "zh": "米娜把宽幅相机图像放入正方形模型输入：先缩放，再补边。模型找到了物体，可直接把模型坐标画回原图时，框却错位了。她记录实际缩放尺寸和补边量，按相反顺序还原坐标，并先做往返测试，再相信显示结果。"
+          },
+          "language": "python",
+          "code": "from math import isclose\n\ndef metadata(width, height, side):\n    if min(width, height, side) <= 0:\n        raise ValueError(\"positive dimensions required\")\n    nominal = min(side / width, side / height)\n    rw, rh = max(1, round(width * nominal)), max(1, round(height * nominal))\n    return rw / width, rh / height, (side - rw) // 2, (side - rh) // 2\n\ndef forward(box, meta):\n    sx, sy, px, py = meta\n    x1, y1, x2, y2 = box\n    return [sx * x1 + px, sy * y1 + py, sx * x2 + px, sy * y2 + py]\n\ndef restore(box, meta, width, height):\n    sx, sy, px, py = meta\n    x1, y1, x2, y2 = box\n    restored = [(x1 - px) / sx, (y1 - py) / sy,\n                (x2 - px) / sx, (y2 - py) / sy]\n    clipped = [min(max(v, 0.0), limit)\n               for v, limit in zip(restored, [width, height, width, height])]\n    return clipped if clipped[0] < clipped[2] and clipped[1] < clipped[3] else None\n\noriginal = [100.0, 50.0, 500.0, 300.0]\nmeta = metadata(800, 400, 640)\nmodel_box = forward(original, meta)\nrestored = restore(model_box, meta, 800, 400)\nassert all(isclose(a, b) for a, b in zip(original, restored))\nodd_meta = metadata(853, 480, 640)\nodd_back = restore(forward(original, odd_meta), odd_meta, 853, 480)\nassert all(isclose(a, b) for a, b in zip(original, odd_back))\nassert odd_meta[0] != odd_meta[1]  # Rounded height changes the actual y scale.\nassert restore([0, 0, 20, 20], meta, 800, 400) is None\nprint(\"scale and padding:\", meta)\nprint(\"model box:\", model_box)\nprint(\"original box:\", restored)\nprint(\"rounded-size round trip:\", all(isclose(a, b) for a, b in zip(original, odd_back)))\n",
+          "output": "scale and padding: (0.8, 0.8, 0, 160)\nmodel box: [80.0, 200.0, 400.0, 400.0]\noriginal box: [100.0, 50.0, 500.0, 300.0]\nrounded-size round trip: True\n",
+          "walkthrough": [
+            {
+              "en": "An 800 by 400 image becomes 640 by 320. Add 160 pixels above it and 160 below it.",
+              "zh": "800×400 的图像变成 640×320，上下各补 160 像素。"
+            },
+            {
+              "en": "Map both corners. The box [100,50,500,300] becomes [80,200,400,400].",
+              "zh": "映射两个角点：[100,50,500,300] 变为 [80,200,400,400]。"
+            },
+            {
+              "en": "Subtract padding first, then divide by scale. Clip to the original continuous image boundaries.",
+              "zh": "先减补边，再除缩放比例，最后裁剪到原图的连续边界。"
+            },
+            {
+              "en": "Repeat with 853 by 480. Rounded resized dimensions can give slightly different x and y scales. Reject boxes that collapse inside padding.",
+              "zh": "用 853×480 再测一次。取整后的实际尺寸可能导致横纵缩放比例略有不同。完全落在补边中、裁剪后面积为零的框应丢弃。"
+            }
+          ],
+          "explanation": {
+            "en": "For continuous box edges, x_prime=s_x*x+p_x and y_prime=s_y*y+p_y. Here s_x and s_y are actual resized width/original width and resized height/original height. Padding p_x and p_y records the left and top offsets. Reverse the transform with x=(x_prime-p_x)/s_x and y=(y_prime-p_y)/s_y.\n\nIn the first image both scales are 0.8. A model y-coordinate of 200 becomes (200-160)/0.8=50. For 853 by 480, rounding produces 640 by 360. Then s_x=640/853 while s_y=360/480. Using the nominal scale for both axes would introduce a small error. Store the actual transform used by preprocessing.\n\nThis example uses continuous box edges in [0,width] and [0,height], not integer pixel indices whose last valid values are width-1 and height-1. Real resize libraries can use different pixel-center and interpolation conventions. Cropping, rotation or other padding rules require their own recorded transforms. A round-trip test checks coordinate bookkeeping; it does not prove the detector is accurate.",
+            "zh": "连续框边界满足 x_prime=s_x×x+p_x、y_prime=s_y×y+p_y。s_x 和 s_y 分别是实际缩放后宽度/原宽度、实际缩放后高度/原高度。p_x、p_y 是左侧和顶部补边量。逆变换为 x=(x_prime-p_x)/s_x、y=(y_prime-p_y)/s_y。\n\n第一张图的两个比例都是 0.8。模型中的 y=200 对应原图 (200-160)/0.8=50。853×480 取整后变成 640×360，此时 s_x=640/853，s_y=360/480。两个方向都用名义比例，会引入小误差。应保存预处理实际使用的变换。\n\n本例使用 [0,width]、[0,height] 内的连续框边界，不是最大索引为 width-1、height-1 的整数像素坐标。实际库的像素中心和插值约定可能不同；裁剪、旋转或其他补边规则也需要记录对应变换。往返测试检验坐标记录是否自洽，不能证明检测模型准确。"
           }
         }
       ],
@@ -2509,6 +2593,16 @@
           "answer": {
             "en": "No. A score near a decision threshold can cross it after a small change.",
             "zh": "不能。靠近决策阈值的分数可能因小变化而跨过阈值。"
+          }
+        },
+        {
+          "question": {
+            "en": "Why must padding be removed before division?",
+            "zh": "为什么先减补边，再除缩放比例？"
+          },
+          "answer": {
+            "en": "The forward operation scales first and adds padding second. Inverting a sequence reverses its order. Dividing the padding by the wrong scale shifts the box.",
+            "zh": "正向先缩放，再加补边。逆运算需要倒转顺序；顺序错误会造成框的偏移。"
           }
         }
       ],
@@ -2776,6 +2870,16 @@
       "url": "https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html",
       "publisher": "ONNX Runtime",
       "kind": "Official guide"
+    },
+    {
+      "id": "cityscapes-metrics",
+      "title": {
+        "en": "Benchmark suite: pixel-level IoU and ignored labels",
+        "zh": "基准评估：像素级 IoU 与忽略标签"
+      },
+      "url": "https://www.cityscapes-dataset.com/benchmarks/",
+      "publisher": "Cityscapes",
+      "kind": "Official reference"
     }
   ],
   "review": [

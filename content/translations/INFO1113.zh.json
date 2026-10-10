@@ -707,6 +707,10 @@
         {
           "question": "final int[] 代表元素不可变吗？",
           "answer": "不代表。它固定存储的引用；除非限制访问，数组元素仍可写。"
+        },
+        {
+          "question": "为什么 private final 数组仍然不够？",
+          "answer": "private 隐藏字段名，final 禁止重新赋值。getter 返回的引用仍能修改数组。应返回副本，或设计只读操作。"
         }
       ],
       "instructor_notes": [
@@ -784,6 +788,35 @@
             "构造时复制数组，不保留调用者别名。",
             "暴露值时返回副本。",
             "两次外部编辑后，重新获取并打印内部值。"
+          ]
+        },
+        {
+          "id": "defensive-snapshot",
+          "title": "保护成绩快照，隔离外部修改",
+          "intro": "米娜保存了三次测验成绩。她把数组传入报告对象，随后修改自己的工作数组，却发现报告也变了。private 没能阻止这个问题：两处引用指向同一个数组。于是她让构造器复制输入。接着她又发现，getter 也可能把内部数组交出去。在输出边界再复制一次，报告才成为稳定的快照。",
+          "language": "java",
+          "code": "import java.util.Arrays;\npublic class Main {\n    static final class ScoreSnapshot {\n        private final int[] scores;\n        ScoreSnapshot(int[] source) {\n            if (source == null) throw new IllegalArgumentException(\"missing scores\");\n            int[] copy = source.clone();\n            for (int score : copy) {\n                if (score < 0 || score > 100)\n                    throw new IllegalArgumentException(\"score out of range\");\n            }\n            scores = copy;\n        }\n        int[] values() { return scores.clone(); }\n        int total() {\n            int sum = 0;\n            for (int score : scores) sum = Math.addExact(sum, score);\n            return sum;\n        }\n    }\n    public static void main(String[] args) {\n        int[] input = {70, 80, 90};\n        ScoreSnapshot report = new ScoreSnapshot(input);\n        input[0] = 0;\n        int[] exported = report.values();\n        exported[1] = 0;\n        assert report.total() == 240;\n        System.out.println(\"snapshot: \" + Arrays.toString(report.values()));\n        System.out.println(\"total: \" + report.total());\n        try { new ScoreSnapshot(new int[]{101}); }\n        catch (IllegalArgumentException error) { System.out.println(\"invalid score rejected\"); }\n        assert new ScoreSnapshot(new int[0]).total() == 0;\n    }\n}\n",
+          "output": "snapshot: [70, 80, 90]\ntotal: 240\ninvalid score rejected\n",
+          "walkthrough": [
+            "先复制，再保存。校验针对对象实际拥有的那份副本。",
+            "getter 再返回一份数组，修改返回值不会影响内部存储。",
+            "分别修改两份外部数组，再核对报告，测试的是边界保护而非初始求和。",
+            "拒绝 101；空数组的总分为零。addExact 会把整数溢出变成明确异常。"
+          ],
+          "explanation": "不变量是：每个内部元素都在 0 到 100 之间。调用者接触不到内部数组，普通外部写入就无法破坏它。final 只禁止字段重新指向别的数组，不会冻结数组内容；真正提供保护的是两次复制。\n\nn 个成绩的构造和每次 values() 都花费 O(n) 时间与 O(n) 新空间。total() 花费 O(n) 时间和 O(1) 辅助空间。这是为了稳定接口而付出的成本。int[] 的元素是基本类型，复制一层足够；若元素是可变对象，还要另行决定是否复制每个对象。\n\n工程顺序：先写不变量，再确定谁拥有数据，最后测试所有接收或返回可变数据的边界。本例是单线程程序；如果源数组正被其他线程修改，复制不能代替同步。",
+          "syntax_notes": [
+            {
+              "syntax": "source.clone()",
+              "meaning": "创建数值相同、存储独立的基本类型数组。"
+            },
+            {
+              "syntax": "private final int[]",
+              "meaning": "隐藏字段，并禁止把字段改为另一个引用。"
+            },
+            {
+              "syntax": "Math.addExact",
+              "meaning": "执行整数加法，溢出时抛出异常。"
+            }
           ]
         }
       ]
@@ -1199,6 +1232,10 @@
         {
           "question": "为什么把键字段设为 final？",
           "answer": "稳定的相等字段有助于在键存储期间保持查找契约。final 不会递归冻结引用的可变对象。"
+        },
+        {
+          "question": "发生哈希冲突，就一定会丢失一条说明吗？",
+          "answer": "不会。不同键可以共享哈希；HashMap 还会检查相等关系，所以本例保留两条记录。"
         }
       ],
       "instructor_notes": [
@@ -1272,6 +1309,35 @@
             "以不可变整数编号定义相等。",
             "用常数哈希强制冲突。",
             "通过新建相等键查找各编号。"
+          ]
+        },
+        {
+          "id": "immutable-grid-key",
+          "title": "用值对象作为 Map 的键",
+          "intro": "机器人社用行号和列号标记地砖。米娜以一个地砖对象为键保存说明，之后创建了相同坐标的新对象，希望仍能找到说明。引用身份无法回答这个问题。她定义坐标相等，配套实现哈希函数，并保证键的坐标不会改变。",
+          "language": "java",
+          "code": "import java.util.HashMap;\nimport java.util.Map;\npublic class Main {\n    static final class Cell {\n        private final int row;\n        private final int column;\n        Cell(int row, int column) { this.row = row; this.column = column; }\n        @Override public boolean equals(Object other) {\n            if (this == other) return true;\n            if (!(other instanceof Cell)) return false;\n            Cell cell = (Cell) other;\n            return row == cell.row && column == cell.column;\n        }\n        @Override public int hashCode() { return 31 * row + column; }\n    }\n    public static void main(String[] args) {\n        Cell a = new Cell(2, 3);\n        Cell b = new Cell(2, 3);\n        Cell collision = new Cell(1, 34);\n        Map<Cell, String> notes = new HashMap<>();\n        notes.put(a, \"charging\");\n        notes.put(collision, \"door\");\n        assert a != b && a.equals(b) && b.equals(a);\n        assert a.hashCode() == collision.hashCode();\n        assert !a.equals(collision) && !a.equals(null);\n        assert \"charging\".equals(notes.get(b));\n        System.out.println(\"same object: \" + (a == b));\n        System.out.println(\"same value: \" + a.equals(b));\n        System.out.println(\"lookup: \" + notes.get(b));\n        System.out.println(\"collision keeps both: \" + notes.size());\n    }\n}\n",
+          "output": "same object: false\nsame value: true\nlookup: charging\ncollision keeps both: 2\n",
+          "walkthrough": [
+            "比较两个坐标，而不是内存身份。final 类避免子类引入不兼容的相等规则。",
+            "哈希由 equals 使用的相同字段计算，因此相同坐标的哈希一致。",
+            "故意让 (1,34) 与 (2,3) 冲突：哈希都是 65，但它们仍是不同的键。",
+            "用从未插入的 b 查询。查询成功说明是按值查找。"
+          ],
+          "explanation": "哈希先缩小查找范围，equals 再判断候选对象是否就是要找的键。正确方向是 a.equals(b) 成立时，二者 hashCode 必须相同。反过来不成立，示例中的冲突已经说明这一点。\n\n公式 h = 31r + c 中，r 是行号，c 是列号。这只是教学用哈希，不是密码学哈希。Java int 运算可能回绕，但仍应保证相等值得到相同哈希。更好的分布能减少冲突，却无法让无限多种键在有限整数范围内完全无冲突。\n\n键存入 Map 后，不要修改参与相等比较的字段。否则查询可能按新哈希查找，而条目仍留在原来的位置。不可变键可以避免这种失败；但不可变键不会让普通 HashMap 自动变成线程安全的容器。",
+          "syntax_notes": [
+            {
+              "syntax": "instanceof Cell",
+              "meaning": "在类型转换之前检查类型。"
+            },
+            {
+              "syntax": "@Override",
+              "meaning": "让编译器检查该方法确实重写父类方法。"
+            },
+            {
+              "syntax": "Map<Cell, String>",
+              "meaning": "保存 Cell 键与 String 值，并获得编译期类型检查。"
+            }
           ]
         }
       ]
@@ -2739,6 +2805,10 @@
         {
           "question": "分离层次一定需要很多类吗？",
           "answer": "不一定。先区分职责与方法契约；当所有权或可替换行为需要时再增加类。"
+        },
+        {
+          "question": "为什么先计算结果，再压入历史？",
+          "answer": "操作可能拒绝输入。若先修改历史，撤销时可能取回完全相同的快照，看起来像没反应。应先校验，再提交状态变化。"
         }
       ],
       "instructor_notes": [
@@ -2816,6 +2886,35 @@
             "把每个目标规则表示为 IntUnaryOperator。",
             "把选中的策略传给同一个应用函数。",
             "拒绝会违反模型边界的策略结果。"
+          ]
+        },
+        {
+          "id": "undoable-notebook",
+          "title": "做一个可以撤销的小编辑器",
+          "intro": "米娜为校园展览编写标签。她追加一个词，发现不合适，想点击撤销。只保存最新文本就找不回上一步。她把文档、编辑动作分开，让编辑器用栈保存旧快照，同时规定被拒绝的动作不能进入历史。这样还没有制作按钮，就能测试编辑器。",
+          "language": "java",
+          "code": "import java.util.ArrayDeque;\nimport java.util.Deque;\npublic class Main {\n    interface Edit { String apply(String text); }\n    static final class Append implements Edit {\n        private final String suffix;\n        Append(String suffix) { this.suffix = suffix; }\n        @Override public String apply(String text) {\n            if (suffix == null || suffix.isEmpty())\n                throw new IllegalArgumentException(\"empty edit\");\n            return text + suffix;\n        }\n    }\n    static final class Editor {\n        private String text = \"\";\n        private final Deque<String> history = new ArrayDeque<>();\n        void execute(Edit edit) {\n            String next = edit.apply(text);\n            if (next == null) throw new IllegalArgumentException(\"null result\");\n            history.push(text);\n            text = next;\n        }\n        boolean undo() {\n            if (history.isEmpty()) return false;\n            text = history.pop();\n            return true;\n        }\n        String text() { return text; }\n    }\n    public static void main(String[] args) {\n        Editor editor = new Editor();\n        assert !editor.undo();\n        editor.execute(new Append(\"Hello\"));\n        editor.execute(new Append(\" Python\"));\n        System.out.println(editor.text());\n        try { editor.execute(new Append(\"\")); }\n        catch (IllegalArgumentException error) { System.out.println(\"rejected without history\"); }\n        if (!editor.undo()) throw new AssertionError(\"missing history\");\n        assert editor.text().equals(\"Hello\");\n        System.out.println(\"undo: \" + editor.text());\n    }\n}\n",
+          "output": "Hello Python\nrejected without history\nundo: Hello\n",
+          "walkthrough": [
+            "Edit 描述操作，Append 实现一种操作；Editor 无须知道新文本如何生成。",
+            "先计算并校验 next，再修改历史和正文。普通校验失败不会改变二者。",
+            "push 记录旧文本，pop 取回最近快照，体现后进先出。",
+            "测试空历史撤销、两次成功操作、一次失败操作，再撤销。失败操作不能占用撤销步骤。"
+          ],
+          "explanation": "状态转移是 text_next = edit(text_current)，历史保存之前的 text_current。String 不可变，因此保存引用就能保留旧快照，无须在每次入栈时复制字符。不过生成拼接后的新字符串仍需要与长度相关的时间和空间。大量长快照会占用较多内存。\n\n分四步构建：定义有效文档，加入一种操作，加入历史，最后连接界面。按钮应调用 execute，而不是再维护另一份正文。这样测试不依赖屏幕事件。\n\n这里约定 Edit 只计算文本，不产生外部副作用。撤销字符串无法撤回邮件或文件写入。这个小编辑器没有重做、持久化或并发编辑。文档很大时，可以先测量需求，再考虑保存逆操作或使用持久化文本结构。",
+          "syntax_notes": [
+            {
+              "syntax": "interface Edit",
+              "meaning": "声明编辑器需要的行为。"
+            },
+            {
+              "syntax": "Deque<String>",
+              "meaning": "双端队列；本例把它用作快照栈。"
+            },
+            {
+              "syntax": "throw new IllegalArgumentException",
+              "meaning": "在提交新状态之前拒绝无效操作。"
+            }
           ]
         }
       ]

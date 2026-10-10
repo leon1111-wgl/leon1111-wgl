@@ -6,6 +6,16 @@
 
 ![Leon — Learning roadmap](../assets/maps/ml.en.svg)
 
+<a id="extensions"></a>
+
+## Guided extensions
+
+Read the linked lesson first. Then follow the story, predict the output, run the complete program and check the explanation. Each case adds one practical challenge.
+
+1. [Expose leakage with a deliberately simple memorizer](#lab-framing-splits-leakage-memorizer-leakage-audit) — Make the evaluation boundary match deployment.
+
+2. [Choose a decision threshold with an explicit error cost](#lab-logistic-thresholds-validation-cost-threshold) — Calculate mistakes, costs and the probability decision rule.
+
 Learn machine learning in sixteen guided chapters. Start with rows and labels. Build small models, inspect their errors, and work toward text filtering, recommendation, and reliability checks. Each chapter includes an original story, answered questions, two practice cases, and runnable Python.
 
 ### Run the Python examples
@@ -121,6 +131,8 @@ The rule was chosen from training labels, but accuracy is counted on test labels
 
 Choose and document a deterministic tie rule. The example chooses the smaller class ID. Do not inspect test labels to break the tie.
 
+<a id="lab-features-labels-baselines-ml-majority-baseline"></a>
+
 ### Build a majority-label baseline
 
 Use training labels to choose a rule, then separate test labels to score it.
@@ -233,6 +245,12 @@ Each contributes ten sessions. Multiply 8 by 10. All ten rows from one device st
 
 We can start a new development cycle, but that set is no longer an untouched final test. Use new independent test evidence for the revised model.
 
+**Is a high score on repeated rows automatically fraudulent?**
+
+No. It may answer a legitimate familiar-group task. The issue is claiming new-group generalization from an evaluation that did not hold groups out.
+
+<a id="lab-framing-splits-leakage-ml-group-split"></a>
+
 ### Keep complete devices together
 
 Build the 120-row split without a random library call.
@@ -267,6 +285,63 @@ test error: 0.1
 
 The first list repeats each device ID ten times. enumerate supplies row positions. The three conditions assign complete groups. A set removes repeated IDs; & finds shared IDs. The empty list confirms no training/test device overlap. The final line uses an assumed two errors; it does not train or evaluate a real sensor model.
 
+<a id="lab-framing-splits-leakage-memorizer-leakage-audit"></a>
+
+### Expose leakage with a deliberately simple memorizer
+
+Mina records two readings from each of four devices. She trains on one reading per device and tests on the other. A model that only remembers device IDs scores perfectly. Then she tests on entirely new devices and the score falls to one half. The model did not suddenly get worse. The first split answered whether it could recognise familiar devices, while the second asked about new ones.
+
+```python
+rows = [(device, label) for device, label in
+        [("A", 0), ("B", 1), ("C", 0), ("D", 1)] for _ in range(2)]
+
+def evaluate(train, test):
+    memory = {device: label for device, label in train}
+    fallback = int(sum(label for _, label in train) > len(train) / 2)
+    predictions = [memory.get(device, fallback) for device, _ in test]
+    accuracy = sum(p == label for p, (_, label) in zip(predictions, test)) / len(test)
+    overlap = {d for d, _ in train} & {d for d, _ in test}
+    return accuracy, sorted(overlap)
+
+row_train, row_test = rows[::2], rows[1::2]
+group_train = [row for row in rows if row[0] in {"A", "B"}]
+group_test = [row for row in rows if row[0] in {"C", "D"}]
+row_score, overlap = evaluate(row_train, row_test)
+group_score, clean_overlap = evaluate(group_train, group_test)
+assert row_score == 1.0 and group_score == 0.5 and not clean_overlap
+print(f"row split: accuracy={row_score:.2f}; shared devices={overlap}")
+print(f"group split: accuracy={group_score:.2f}; shared devices={clean_overlap}")
+```
+
+**Run it locally**
+
+```sh
+python framing-splits-leakage-memorizer-leakage-audit.py
+```
+
+**Expected output**
+
+```text
+row split: accuracy=1.00; shared devices=['A', 'B', 'C', 'D']
+group split: accuracy=0.50; shared devices=[]
+```
+
+**Follow the execution**
+
+1. Construct repeated measurements with a constant label per device. These synthetic rows make the shortcut explicit.
+
+2. Fit the memory and majority fallback only on training rows. The tie rule chooses label zero.
+
+3. Compare a row split with a disjoint-device split. Count shared IDs as well as accuracy.
+
+**Read the code step by step**
+
+Accuracy=(number of correct test predictions)/(number of test rows). The row test has four correct predictions out of four. The grouped test has two correct out of four because both unseen devices receive the training-only fallback zero, and only device C has label zero.
+
+The useful unit of separation depends on deployment. For a new patient, device or video, keep that complete group out of training. For future events on known devices, use a suitable time split instead. Group separation alone does not stop future information leaking through preprocessing. Fit imputers, scalers and feature selection only on the training portion of each fold.
+
+This is a diagnostic toy, not evidence that a particular real model has 50% accuracy. A deliberately weak baseline can reveal a shortcut more clearly than a complex model. The official scikit-learn cross-validation guide provides group-aware splitters; choose the grouping variable from the question you want to answer.
+
 ### Where you can use this
 
 **New recording devices**
@@ -286,6 +361,8 @@ List measurements from days 1 to 10. Use days 1–6 for training, 7–8 for vali
 - [Google: Datasets: Dividing the original dataset](https://developers.google.com/machine-learning/crash-course/overfitting/dividing-datasets)
 
 - [scikit-learn: Common pitfalls and recommended practices](https://scikit-learn.org/stable/common_pitfalls.html)
+
+- [scikit-learn: Cross-validation: evaluating estimator performance](https://scikit-learn.org/stable/modules/cross_validation.html)
 
 <a id="missing-data-eda"></a>
 
@@ -346,6 +423,8 @@ It records that the second value was unknown before filling. The filled value 4 
 **Can we learn the median from test rows?**
 
 No. That lets held-out data influence preparation. Fit on training rows and apply the saved rule everywhere else.
+
+<a id="lab-missing-data-eda-ml-median-imputation"></a>
 
 ### Fit a median, then reuse it
 
@@ -463,6 +542,8 @@ A learned weight is tied to a column. Swapping paper and wood later changes what
 
 No. It identifies the situation. A useful response still needs evidence, a fallback rule, or later labeled examples.
 
+<a id="lab-categorical-preprocessing-ml-category-columns"></a>
+
 ### Encode known and unseen categories
 
 An explicit last column records unknown categories.
@@ -575,6 +656,8 @@ The squared errors are 0, 0, and 1. Their average is 1/3 square centimeters. Its
 **Does a lower training MSE prove a better future prediction?**
 
 No. Training rows helped choose the rule. Compare models on the same held-out rows to test whether the improvement transfers.
+
+<a id="lab-linear-regression-mse-ml-line-loss"></a>
 
 ### Compare a line and a constant
 
@@ -690,6 +773,8 @@ The update subtracts learning rate times gradient. Subtracting a negative number
 **What if the learning rate is much larger?**
 
 A large step may cross the low point and raise the loss. Compare the loss before and after a step; do not assume every descent update succeeds.
+
+<a id="lab-gradient-descent-scaling-ml-gradient-step"></a>
 
 ### Standardize and take one step
 
@@ -811,6 +896,12 @@ exp(0) equals 1. The denominator is 1+1=2, so the result is 1/2.
 
 No. It produces fewer positives. Some false alarms may disappear, but some true positives may be missed too. Count both types on validation data.
 
+**Why not choose the threshold on the final test set?**
+
+Then the reported test score would also reflect a choice optimized on those same outcomes. Keep an untouched final evaluation after the choice is fixed.
+
+<a id="lab-logistic-thresholds-ml-sigmoid-cutoffs"></a>
+
 ### One probability, two decisions
 
 Use illustrative fixed weights, not a trained sky classifier.
@@ -844,6 +935,63 @@ threshold 0.65: class 0
 
 The first calculation creates a linear score. exp implements the exponential in sigmoid. The loop reuses one probability. >= compares it with each cutoff; int turns True or False into one or zero. The output changes class while keeping the score fixed. No data were used to fit these weights or to justify either threshold.
 
+<a id="lab-logistic-thresholds-validation-cost-threshold"></a>
+
+### Choose a decision threshold with an explicit error cost
+
+A school machine flags damaged practice parts for inspection. Missing a damaged part costs four effort units; inspecting a good part costs one. Mina first uses the usual 0.5 threshold. She then writes out the two types of mistakes on a small validation set. Lowering the threshold catches a missed damaged part while adding only one unnecessary inspection. She freezes the choice before looking at the final test set.
+
+```python
+scores = [0.10, 0.35, 0.45, 0.60, 0.80]
+truth = [0, 1, 0, 1, 1]
+
+def cost_at(threshold):
+    predicted = [int(score >= threshold) for score in scores]
+    fp = sum(p == 1 and y == 0 for p, y in zip(predicted, truth))
+    fn = sum(p == 0 and y == 1 for p, y in zip(predicted, truth))
+    return fp + 4 * fn, fp, fn
+
+candidates = [0.30, 0.50, 0.70, 1.10]
+for threshold in candidates:
+    cost, fp, fn = cost_at(threshold)
+    print(f"threshold={threshold:.2f} FP={fp} FN={fn} cost={cost}")
+best = min(candidates, key=lambda t: (cost_at(t)[0], t))
+assert best == 0.30 and cost_at(best) == (1, 1, 0)
+print(f"selected on validation: {best:.2f}")
+```
+
+**Run it locally**
+
+```sh
+python logistic-thresholds-validation-cost-threshold.py
+```
+
+**Expected output**
+
+```text
+threshold=0.30 FP=1 FN=0 cost=1
+threshold=0.50 FP=0 FN=1 cost=4
+threshold=0.70 FP=0 FN=2 cost=8
+threshold=1.10 FP=0 FN=3 cost=12
+selected on validation: 0.30
+```
+
+**Follow the execution**
+
+1. State costs before comparing thresholds. Here the objective is FP+4*FN, not accuracy.
+
+2. For each candidate, form predictions with score >= threshold and count both error types.
+
+3. Minimize validation cost and state the tie rule. Keep the final test set separate from this choice.
+
+**Read the code step by step**
+
+At threshold 0.30, the prediction vector is [0,1,1,1,1]. There is one false positive and no false negative, so total cost is 1. At 0.50 there are no false positives but one false negative, so cost is 4. The all-negative candidate 1.10 costs 12. Report cost per case by dividing by five if different validation-set sizes must be compared.
+
+If p is a calibrated probability, false-positive cost is C_FP, false-negative cost is C_FN and correct decisions cost zero, predict positive when C_FP*(1-p) <= C_FN*p. Rearranging gives p >= C_FP/(C_FP+C_FN), which is 0.2 here. That population decision rule is not the same as selecting among a finite grid using five observed labels. Scores need not be calibrated probabilities.
+
+Costs, prevalence and calibration can change after deployment. A threshold does not repair a poor ranking or an invalid test split. This is a tiny illustration; use enough representative validation data and inspect uncertainty before drawing practical conclusions.
+
 ### Where you can use this
 
 **Sky image review**
@@ -863,6 +1011,8 @@ Use a threshold to choose messages for human review. A lower threshold makes the
 - [Google: Logistic regression: Calculating a probability with the sigmoid function](https://developers.google.com/machine-learning/crash-course/logistic-regression/sigmoid-function)
 
 - [Google: Thresholds and the confusion matrix](https://developers.google.com/machine-learning/crash-course/classification/thresholding)
+
+- [scikit-learn: Tuning the decision threshold for class prediction](https://scikit-learn.org/stable/modules/classification_threshold.html)
 
 <a id="metrics-imbalance"></a>
 
@@ -925,6 +1075,8 @@ Precision asks about the 20 flagged clips: 8/20. Recall asks about the 10 real c
 **What if no clip is predicted positive?**
 
 Precision becomes 0/0 and is mathematically undefined. Some software reports zero by convention. State that convention and keep the counts visible.
+
+<a id="lab-metrics-imbalance-ml-confusion-counts"></a>
 
 ### Compute four metrics from counts
 
@@ -1042,6 +1194,8 @@ The three labels are [1,0,0]. Two vote zero and one votes one. Their class-one f
 
 No. A single mislabeled or noisy point can control the answer. Larger k smooths decisions but may mix different regions. Compare validation errors.
 
+<a id="lab-nearest-neighbours-ml-knn-vote"></a>
+
 ### Inspect every nearest-neighbour vote
 
 The table is synthetic and already uses comparable feature scales.
@@ -1157,6 +1311,8 @@ It contains offer once and meeting zero times. The vector follows the saved voca
 
 With these symmetric counts and equal priors, both classes receive the same score. Real context may differ, but this count model cannot see it.
 
+<a id="lab-text-naive-bayes-ml-naive-bayes-counts"></a>
+
 ### Compute a two-word classifier
 
 Use supplied training count totals to show every probability.
@@ -1270,6 +1426,8 @@ The parent has impurity 0.48. The children have weighted impurity 0.5×0.32+0.5�
 
 Yes. Averaging does not remove a misleading pattern that all trees learned. Data quality and independent validation still matter.
 
+<a id="lab-trees-ensembles-ml-gini-forest"></a>
+
 ### Score a split and average trees
 
 Compute the local criterion without building a whole tree.
@@ -1382,6 +1540,8 @@ Each prediction remains 0.5 away from its target. Squaring gives 0.25 for every 
 **Why not always use η=1?**
 
 It fits this easy example in one step. On noisy data, full corrections can fit incidental patterns too quickly. Select the rate and round count with validation.
+
+<a id="lab-boosting-residuals-ml-residual-stump"></a>
 
 ### Fit one residual stump
 
@@ -1499,6 +1659,8 @@ Horizontal variance is 4 and vertical variance is 1. Keeping the horizontal dire
 
 A rare but useful difference can have little overall spread. PCA has no labels telling it that this difference matters for a later task.
 
+<a id="lab-clustering-pca-ml-cluster-pca-geometry"></a>
+
 ### Measure groups and PCA variance
 
 A rectangle makes both calculations visible.
@@ -1614,6 +1776,8 @@ No. It means the represented directions match. The chosen features may omit paci
 
 Division by its zero length is undefined. Ask for interests or use a clearly labeled general fallback instead of fabricating a similarity.
 
+<a id="lab-content-recommendations-ml-cosine-recommendations"></a>
+
 ### Rank three tagged videos
 
 The tags are hand chosen; this example learns no embeddings.
@@ -1723,6 +1887,8 @@ Use validation errors, here fold means 1.2 and 1.0. The training objective helps
 **Do unchanged input averages prove the model is still accurate?**
 
 No. The relationship between inputs and labels may change while averages stay similar. Obtain fresh labeled cases to measure errors.
+
+<a id="lab-validation-regularization-shift-ml-regularization-validation"></a>
 
 ### Separate fitting objective and validation
 
@@ -1841,6 +2007,8 @@ For y=0, the difference is 0.8−0=0.8. Squaring gives 0.64. Confident incorrect
 **Can monitoring without labels certify accuracy?**
 
 No. It can detect schema or input changes. Measuring correctness requires trustworthy outcomes or labels.
+
+<a id="lab-calibration-monitoring-ml-calibration-bin"></a>
 
 ### Inspect a probability bin
 
@@ -2009,3 +2177,7 @@ Original stories, explanations and examples by Leon. The linked tutorials and re
 - [Content-based filtering](https://developers.google.com/machine-learning/recommendation/content-based/basics) — Google
 
 - [Monitoring pipelines](https://developers.google.com/machine-learning/crash-course/production-ml-systems/monitoring) — Google
+
+- [Cross-validation: evaluating estimator performance](https://scikit-learn.org/stable/modules/cross_validation.html) — scikit-learn
+
+- [Tuning the decision threshold for class prediction](https://scikit-learn.org/stable/modules/classification_threshold.html) — scikit-learn

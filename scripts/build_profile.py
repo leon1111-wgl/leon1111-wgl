@@ -109,6 +109,8 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 **Build with C:** [COMP2017 guided path]({site}courses/comp2017.html#study-plan) · [Three complete engineering projects]({site}courses/comp2017.html#projects) · [Download project source]({site}downloads/COMP2017-projects.zip)
 
+**Keep learning:** [Explore the guided extensions]({site}#extensions-library). Follow complete bilingual cases on memory ownership, algorithm choices, logic, model evaluation, vision and multimodal retrieval. Predict the output, run the program and check each step.
+
 <table>
 <tr>
 <td width="50%" align="center"><a href="{site}#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="{site}#learning"><strong>Open the course library ↗</strong></a><p>{len(courses)} courses · {sum(len(c["topics"]) for c in courses)} topics</p></td>

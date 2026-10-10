@@ -285,7 +285,8 @@
       },
       "sources": [
         "google-splits",
-        "sklearn-pitfalls"
+        "sklearn-pitfalls",
+        "sklearn-cross-validation"
       ],
       "level": "foundation",
       "glossary": [
@@ -350,6 +351,16 @@
             "en": "We can start a new development cycle, but that set is no longer an untouched final test. Use new independent test evidence for the revised model.",
             "zh": "可以开始新的开发周期，但这个集合不再是未使用的最终测试集。修改后的模型需要新的独立测试证据。"
           }
+        },
+        {
+          "question": {
+            "en": "Is a high score on repeated rows automatically fraudulent?",
+            "zh": "重复测量数据上的高分一定是假的吗？"
+          },
+          "answer": {
+            "en": "No. It may answer a legitimate familiar-group task. The issue is claiming new-group generalization from an evaluation that did not hold groups out.",
+            "zh": "不一定。它可能回答了合理的熟悉组任务。问题是把未留出完整组的评估，解释成对新组的泛化能力。"
+          }
         }
       ],
       "practice_cases": [
@@ -390,6 +401,38 @@
           "explanation": {
             "en": "The first list repeats each device ID ten times. enumerate supplies row positions. The three conditions assign complete groups. A set removes repeated IDs; & finds shared IDs. The empty list confirms no training/test device overlap. The final line uses an assumed two errors; it does not train or evaluate a real sensor model.",
             "zh": "第一行把每个设备编号重复十次。enumerate 提供行号。三个条件分配完整分组。集合去掉重复编号，& 查找共有编号。空列表表示训练和测试没有共享设备。最后一行假定出现两次错误；它没有训练或评估真实传感器模型。"
+          }
+        },
+        {
+          "id": "memorizer-leakage-audit",
+          "title": {
+            "en": "Expose leakage with a deliberately simple memorizer",
+            "zh": "用刻意简单的记忆器暴露泄漏"
+          },
+          "intro": {
+            "en": "Mina records two readings from each of four devices. She trains on one reading per device and tests on the other. A model that only remembers device IDs scores perfectly. Then she tests on entirely new devices and the score falls to one half. The model did not suddenly get worse. The first split answered whether it could recognise familiar devices, while the second asked about new ones.",
+            "zh": "米娜为四台设备各记录两次读数。她每台拿一条训练、另一条测试，只记住设备编号的模型就得到满分。改用完全没见过的设备测试，分数降到一半。模型并不是突然变差了：第一次划分检验的是熟悉设备，第二次问的才是新设备。"
+          },
+          "language": "python",
+          "code": "rows = [(device, label) for device, label in\n        [(\"A\", 0), (\"B\", 1), (\"C\", 0), (\"D\", 1)] for _ in range(2)]\n\ndef evaluate(train, test):\n    memory = {device: label for device, label in train}\n    fallback = int(sum(label for _, label in train) > len(train) / 2)\n    predictions = [memory.get(device, fallback) for device, _ in test]\n    accuracy = sum(p == label for p, (_, label) in zip(predictions, test)) / len(test)\n    overlap = {d for d, _ in train} & {d for d, _ in test}\n    return accuracy, sorted(overlap)\n\nrow_train, row_test = rows[::2], rows[1::2]\ngroup_train = [row for row in rows if row[0] in {\"A\", \"B\"}]\ngroup_test = [row for row in rows if row[0] in {\"C\", \"D\"}]\nrow_score, overlap = evaluate(row_train, row_test)\ngroup_score, clean_overlap = evaluate(group_train, group_test)\nassert row_score == 1.0 and group_score == 0.5 and not clean_overlap\nprint(f\"row split: accuracy={row_score:.2f}; shared devices={overlap}\")\nprint(f\"group split: accuracy={group_score:.2f}; shared devices={clean_overlap}\")\n",
+          "output": "row split: accuracy=1.00; shared devices=['A', 'B', 'C', 'D']\ngroup split: accuracy=0.50; shared devices=[]\n",
+          "walkthrough": [
+            {
+              "en": "Construct repeated measurements with a constant label per device. These synthetic rows make the shortcut explicit.",
+              "zh": "构造同设备标签固定的重复测量，用人工数据把捷径暴露出来。"
+            },
+            {
+              "en": "Fit the memory and majority fallback only on training rows. The tie rule chooses label zero.",
+              "zh": "只在训练行拟合记忆表和多数类后备规则；平票时选零。"
+            },
+            {
+              "en": "Compare a row split with a disjoint-device split. Count shared IDs as well as accuracy.",
+              "zh": "比较按行划分与设备互斥划分，同时报告共享编号和准确率。"
+            }
+          ],
+          "explanation": {
+            "en": "Accuracy=(number of correct test predictions)/(number of test rows). The row test has four correct predictions out of four. The grouped test has two correct out of four because both unseen devices receive the training-only fallback zero, and only device C has label zero.\n\nThe useful unit of separation depends on deployment. For a new patient, device or video, keep that complete group out of training. For future events on known devices, use a suitable time split instead. Group separation alone does not stop future information leaking through preprocessing. Fit imputers, scalers and feature selection only on the training portion of each fold.\n\nThis is a diagnostic toy, not evidence that a particular real model has 50% accuracy. A deliberately weak baseline can reveal a shortcut more clearly than a complex model. The official scikit-learn cross-validation guide provides group-aware splitters; choose the grouping variable from the question you want to answer.",
+            "zh": "准确率=测试预测正确数/测试行数。按行测试时四条全对；按设备测试时四条中两条正确，因为未见设备都得到只由训练集确定的后备标签零，而只有 C 的标签是零。\n\n分离单位取决于部署目标。要面对新患者、新设备或新视频，就应把整个组留出；若预测已知设备的未来事件，则应采用合适的时间划分。只做组间隔离还不能阻止预处理中的未来信息泄漏。每一折的缺失值填补、缩放和特征选择都只能用训练部分拟合。\n\n这只是诊断玩具，不是某个真实模型准确率为 50% 的证据。刻意简单的基线有时比复杂模型更容易暴露捷径。scikit-learn 官方交叉验证指南提供按组划分工具，但分组变量要从真正想回答的问题出发选择。"
           }
         }
       ]
@@ -1035,7 +1078,8 @@
       },
       "sources": [
         "google-sigmoid",
-        "google-thresholds"
+        "google-thresholds",
+        "sklearn-threshold-tuning"
       ],
       "level": "core",
       "glossary": [
@@ -1100,6 +1144,16 @@
             "en": "No. It produces fewer positives. Some false alarms may disappear, but some true positives may be missed too. Count both types on validation data.",
             "zh": "不会。正类预测会减少，部分误报可能消失，也可能漏掉部分真正例。要在验证数据上同时统计两种变化。"
           }
+        },
+        {
+          "question": {
+            "en": "Why not choose the threshold on the final test set?",
+            "zh": "为什么不在最终测试集上选阈值？"
+          },
+          "answer": {
+            "en": "Then the reported test score would also reflect a choice optimized on those same outcomes. Keep an untouched final evaluation after the choice is fixed.",
+            "zh": "这样报告的测试分数也包含了针对同一批结果优化的选择。应先固定阈值，再做未参与选择的最终评估。"
+          }
         }
       ],
       "practice_cases": [
@@ -1140,6 +1194,38 @@
           "explanation": {
             "en": "The first calculation creates a linear score. exp implements the exponential in sigmoid. The loop reuses one probability. >= compares it with each cutoff; int turns True or False into one or zero. The output changes class while keeping the score fixed. No data were used to fit these weights or to justify either threshold.",
             "zh": "第一项计算生成线性分数。exp 实现 sigmoid 中的指数。循环重复使用同一个概率。>= 与各阈值比较，int 将真假变成一或零。输出类别改变，但分数不变。没有使用数据拟合这些权重，也没有数据证明哪种阈值更合适。"
+          }
+        },
+        {
+          "id": "validation-cost-threshold",
+          "title": {
+            "en": "Choose a decision threshold with an explicit error cost",
+            "zh": "用明确错误代价选择决策阈值"
+          },
+          "intro": {
+            "en": "A school machine flags damaged practice parts for inspection. Missing a damaged part costs four effort units; inspecting a good part costs one. Mina first uses the usual 0.5 threshold. She then writes out the two types of mistakes on a small validation set. Lowering the threshold catches a missed damaged part while adding only one unnecessary inspection. She freezes the choice before looking at the final test set.",
+            "zh": "学校机器把损坏的练习零件送去检查。漏掉坏件的代价记为四个工作单位，误查好件记为一个。米娜先用常见的 0.5 阈值，再在小验证集上列出两种错误。降低阈值能补获一个坏件，只多一次误查。她在查看最终测试集之前固定阈值。"
+          },
+          "language": "python",
+          "code": "scores = [0.10, 0.35, 0.45, 0.60, 0.80]\ntruth = [0, 1, 0, 1, 1]\n\ndef cost_at(threshold):\n    predicted = [int(score >= threshold) for score in scores]\n    fp = sum(p == 1 and y == 0 for p, y in zip(predicted, truth))\n    fn = sum(p == 0 and y == 1 for p, y in zip(predicted, truth))\n    return fp + 4 * fn, fp, fn\n\ncandidates = [0.30, 0.50, 0.70, 1.10]\nfor threshold in candidates:\n    cost, fp, fn = cost_at(threshold)\n    print(f\"threshold={threshold:.2f} FP={fp} FN={fn} cost={cost}\")\nbest = min(candidates, key=lambda t: (cost_at(t)[0], t))\nassert best == 0.30 and cost_at(best) == (1, 1, 0)\nprint(f\"selected on validation: {best:.2f}\")\n",
+          "output": "threshold=0.30 FP=1 FN=0 cost=1\nthreshold=0.50 FP=0 FN=1 cost=4\nthreshold=0.70 FP=0 FN=2 cost=8\nthreshold=1.10 FP=0 FN=3 cost=12\nselected on validation: 0.30\n",
+          "walkthrough": [
+            {
+              "en": "State costs before comparing thresholds. Here the objective is FP+4*FN, not accuracy.",
+              "zh": "比较阈值前先规定代价；本例优化 FP+4×FN，而不是准确率。"
+            },
+            {
+              "en": "For each candidate, form predictions with score >= threshold and count both error types.",
+              "zh": "每个候选阈值都用 score>=threshold 产生预测，再统计两种错误。"
+            },
+            {
+              "en": "Minimize validation cost and state the tie rule. Keep the final test set separate from this choice.",
+              "zh": "最小化验证代价并说明平局规则；最终测试集不参与选择。"
+            }
+          ],
+          "explanation": {
+            "en": "At threshold 0.30, the prediction vector is [0,1,1,1,1]. There is one false positive and no false negative, so total cost is 1. At 0.50 there are no false positives but one false negative, so cost is 4. The all-negative candidate 1.10 costs 12. Report cost per case by dividing by five if different validation-set sizes must be compared.\n\nIf p is a calibrated probability, false-positive cost is C_FP, false-negative cost is C_FN and correct decisions cost zero, predict positive when C_FP*(1-p) <= C_FN*p. Rearranging gives p >= C_FP/(C_FP+C_FN), which is 0.2 here. That population decision rule is not the same as selecting among a finite grid using five observed labels. Scores need not be calibrated probabilities.\n\nCosts, prevalence and calibration can change after deployment. A threshold does not repair a poor ranking or an invalid test split. This is a tiny illustration; use enough representative validation data and inspect uncertainty before drawing practical conclusions.",
+            "zh": "阈值 0.30 时预测为 [0,1,1,1,1]，一个假正例、零个假负例，总代价为 1。阈值 0.50 时没有假正例，却有一个假负例，代价为 4。全预测负类的候选 1.10 代价为 12。若比较不同规模验证集，可除以五，报告每个样本的平均代价。\n\n若 p 是校准后的概率，假正例代价为 C_FP、假负例代价为 C_FN，正确决策代价为零，则 C_FP×(1-p)≤C_FN×p 时预测正类。整理得 p≥C_FP/(C_FP+C_FN)，本例为 0.2。这是总体期望代价规则，与用五个已观测标签从有限网格选阈值不是同一件事。模型分数也未必是校准概率。\n\n部署后，代价、类别比例和校准情况都可能变化。调阈值不能修复很差的排序或无效的数据划分。这只是小例子，实际结论需要足够有代表性的验证数据及不确定性检查。"
           }
         }
       ]
@@ -2713,6 +2799,26 @@
       "url": "https://developers.google.com/machine-learning/crash-course/production-ml-systems/monitoring",
       "publisher": "Google",
       "kind": "Official tutorial"
+    },
+    {
+      "id": "sklearn-cross-validation",
+      "title": {
+        "en": "Cross-validation: evaluating estimator performance",
+        "zh": "交叉验证：评估估计器性能"
+      },
+      "url": "https://scikit-learn.org/stable/modules/cross_validation.html",
+      "publisher": "scikit-learn",
+      "kind": "Official reference"
+    },
+    {
+      "id": "sklearn-threshold-tuning",
+      "title": {
+        "en": "Tuning the decision threshold for class prediction",
+        "zh": "调整分类决策阈值"
+      },
+      "url": "https://scikit-learn.org/stable/modules/classification_threshold.html",
+      "publisher": "scikit-learn",
+      "kind": "Official reference"
     }
   ],
   "review": [

@@ -57,6 +57,8 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 **Build with C:** [COMP2017 guided path](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.html#study-plan) · [Three complete engineering projects](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.html#projects) · [Download project source](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2017-projects.zip)
 
+**Keep learning:** [Explore the guided extensions](https://leon1111-wgl.github.io/leon1111-wgl/#extensions-library). Follow complete bilingual cases on memory ownership, algorithm choices, logic, model evaluation, vision and multimodal retrieval. Predict the output, run the program and check each step.
+
 <table>
 <tr>
 <td width="50%" align="center"><a href="https://leon1111-wgl.github.io/leon1111-wgl/#learning"><img src="site/assets/profile-foundations.svg" width="100%" alt="Computer science — open five courses, knowledge maps and one-page cheatsheets" /></a><br /><a href="https://leon1111-wgl.github.io/leon1111-wgl/#learning"><strong>Open the course library ↗</strong></a><p>5 courses · 121 topics</p></td>

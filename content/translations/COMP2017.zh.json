@@ -3,7 +3,7 @@
   "title": "系统编程：C、进程与并发",
   "subtitle": "从一个 C 程序到并行系统，学会推理字节、资源归属和协作过程。",
   "description": "把 C 与系统编程拆成能够跟上的小步骤。从小程序开始，画清内存和资源所有权，再用文件、进程和线程完成实用工具。",
-  "coverage": "包含 24 章、54 份独立程序的 C11 与 POSIX 学习路径。六轮学习计划带你完成三个完整讲解的工程，逐步理解需求、接口、完整源码、调试与测试。深入分支可随时回看。",
+  "coverage": "包含 24 章、57 份独立程序的 C11 与 POSIX 学习路径。六轮学习计划带你完成三个完整讲解的工程，逐步理解需求、接口、完整源码、调试与测试。深入分支可随时回看。",
   "color": "#38bdf8",
   "prerequisites": [
     "掌握变量、循环和函数等基本编程知识。",
@@ -714,6 +714,10 @@
         {
           "question": "写成功后为什么仍检查关闭？",
           "answer": "缓冲输出可能直到关闭期间刷新才失败。"
+        },
+        {
+          "question": "直接 fwrite(&record, sizeof record, 1, file) 能定义同样可移植的格式吗？",
+          "answer": "不能。对象布局、填充和字节序都可能不同。应按文件约定显式编码字段。"
         }
       ],
       "instructor_notes": [
@@ -792,6 +796,35 @@
             "用受检查定位回到开头，再请求十二个单字节元素。",
             "所需记录字节未齐全时拒绝输入。"
           ]
+        },
+        {
+          "id": "portable-record-format",
+          "title": "定义文件格式，而不是直接写出结构体",
+          "intro": "米娜在一台电脑保存传感器读数，再在另一台读取。直接写出结构体会让文件依赖填充和字节序。她改为四个明确定义的字节：标记、版本、高位字节、低位字节。这样在编写文件操作前，就能准确写出读取器应该接受什么。",
+          "language": "c",
+          "code": "#include <assert.h>\n#include <limits.h>\n#include <stdint.h>\n#include <stdio.h>\n#if CHAR_BIT != 8\n#error This teaching format requires eight-bit bytes\n#endif\nstatic void encode(uint16_t value, unsigned char out[4]) {\n    out[0] = 0x4c; out[1] = 1;\n    out[2] = (unsigned char)(value >> 8);\n    out[3] = (unsigned char)(value & 0xffu);\n}\nstatic int decode(const unsigned char *in, size_t size, uint16_t *value) {\n    if (size != 4 || in[0] != 0x4c || in[1] != 1) return 0;\n    uint16_t result = (uint16_t)(((unsigned)in[2] << 8) | in[3]);\n    *value = result;\n    return 1;\n}\nint main(void) {\n    unsigned char wire[4]; encode(513, wire);\n    printf(\"wire: %u %u %u %u\\n\", (unsigned)wire[0], (unsigned)wire[1],\n           (unsigned)wire[2], (unsigned)wire[3]);\n    FILE *file = tmpfile();\n    if (file == NULL) return 1;\n    if (fwrite(wire, 1, sizeof wire, file) != sizeof wire ||\n        fseek(file, 0, SEEK_SET) != 0) { fclose(file); return 1; }\n    unsigned char readback[5];\n    size_t count = fread(readback, 1, sizeof readback, file);\n    int failed = ferror(file);\n    int closed = fclose(file);\n    if (failed || closed != 0) return 1;\n    uint16_t value = 999;\n    int valid = decode(readback, count, &value);\n    assert(valid && value == 513);\n    printf(\"decoded: %u\\n\", (unsigned)value);\n    wire[1] = 2;\n    int wrong_version = decode(wire, 4, &value);\n    int incomplete = decode(wire, 3, &value);\n    assert(!wrong_version && !incomplete && value == 513);\n    puts(\"bad version and short record rejected; output unchanged\");\n    return 0;\n}\n",
+          "output": "wire: 76 1 2 1\ndecoded: 513\nbad version and short record rejected; output unchanged\n",
+          "walkthrough": [
+            "定义每个字节。数值标记 0x4c 等于 76；版本 1 表示唯一支持的布局。",
+            "把 513 拆成高位 2、低位 1，再用 value=256×high+low 还原。",
+            "检查写入、定位、读取错误和关闭结果。单记录格式最多读五字节，还能发现多出的一个字节。",
+            "先校验长度、标记和版本，再给调用者的输出赋值；无效输入保留原输出。"
+          ],
+          "explanation": "结构体描述内存中的对象；文件格式描述写入者与读取者之间的约定。本例记录恰好是四个八位字节，读数是 0 到 65535 的无符号整数。高位字节先写，字节序明确；结构体填充和本机字节序不会进入文件。\n\nvalue >> 8 去掉低八位；value & 255 只保留低八位。解码时把高位移回原处，再用按位或合并互不重叠的部分。513=2×256+1，因此编码得到 [2,1]。\n\n这是最小格式，不是损坏检测器。很多被改坏的正文仍会成为有效记录。真实格式可能需要校验和、长度上限以及版本迁移说明。校验和可检测部分意外损坏，却不能认证恶意发送者。本例使用临时文件，不会覆盖学习者自己的文件。",
+          "syntax_notes": [
+            {
+              "syntax": "uint16_t",
+              "meaning": "在提供该类型的平台上，精确的 16 位无符号整数。"
+            },
+            {
+              "syntax": "value & 0xffu",
+              "meaning": "取最低八位。"
+            },
+            {
+              "syntax": "ferror(file)",
+              "meaning": "区分 I/O 错误和文件结束造成的正常短读。"
+            }
+          ]
         }
       ]
     },
@@ -834,6 +867,10 @@
         {
           "question": "非零大小 realloc 失败后保留什么？",
           "answer": "原分配仍有效。应把其指针保存在独立所有者变量中。"
+        },
+        {
+          "question": "为什么必须在 reserve 成功后才增加 length？",
+          "answer": "length 承诺对应元素存在且已初始化。若先增加它再分配失败，元数据就会声称存在实际上未存入的数据。"
         }
       ],
       "instructor_notes": [
@@ -955,6 +992,35 @@
             "初始化原分配。",
             "使用临时结果，成功后才提交所有权。",
             "初始化新元素，再释放返回的分配基址。"
+          ]
+        },
+        {
+          "id": "growing-owned-vector",
+          "title": "安全扩容自己拥有的数组",
+          "intro": "传感器先产生两个读数，之后还会继续产生。米娜准备在空间不足时扩容。她最初把 realloc 的结果直接赋给唯一的指针，一旦分配失败，就再也找不到旧内存。她把操作改成一次小事务：检查所需大小，用临时指针申请内存，成功之后才更新拥有者。",
+          "language": "c",
+          "code": "#include <assert.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\nstruct Vector { int *data; size_t length; size_t capacity; };\nstatic int reserve(struct Vector *v, size_t need) {\n    const size_t limit = SIZE_MAX / sizeof *v->data;\n    if (need <= v->capacity) return 1;\n    if (need > limit) return 0;\n    size_t next = v->capacity ? v->capacity : 2;\n    while (next < need) {\n        if (next > limit / 2) { next = need; break; }\n        next *= 2;\n    }\n    int *temporary = realloc(v->data, next * sizeof *v->data);\n    if (temporary == NULL) return 0;\n    v->data = temporary;\n    v->capacity = next;\n    return 1;\n}\nstatic int push(struct Vector *v, int value) {\n    if (v->length == SIZE_MAX || !reserve(v, v->length + 1)) return 0;\n    v->data[v->length++] = value;\n    return 1;\n}\nstatic void destroy(struct Vector *v) {\n    free(v->data);\n    *v = (struct Vector){0};\n}\nint main(void) {\n    struct Vector values = {0};\n    for (int n = 1; n <= 5; ++n) {\n        if (!push(&values, n * 10)) { destroy(&values); return 1; }\n        printf(\"length=%zu capacity=%zu\\n\", values.length, values.capacity);\n    }\n    int rejected = !reserve(&values, SIZE_MAX);\n    assert(rejected && values.length == 5 && values.data[0] == 10);\n    printf(\"oversized request rejected: %d\\n\", rejected);\n    printf(\"last value: %d\\n\", values.data[values.length - 1]);\n    destroy(&values);\n    assert(values.data == NULL && values.length == 0 && values.capacity == 0);\n    puts(\"owner reset after free\");\n    return 0;\n}\n",
+          "output": "length=1 capacity=2\nlength=2 capacity=2\nlength=3 capacity=4\nlength=4 capacity=4\nlength=5 capacity=8\noversized request rejected: 1\nlast value: 50\nowner reset after free\n",
+          "walkthrough": [
+            "保持 length <= capacity；只有 length 之前的元素才是已初始化读数。",
+            "乘法前检查 need 是否超过 SIZE_MAX / sizeof(元素)，翻倍前检查溢出。",
+            "realloc 成功之前保留旧指针；失败时旧分配和元数据仍描述同一数组。",
+            "只有 reserve 成功后才追加。释放一次，再重置拥有者，明确恢复空状态。"
+          ],
+          "explanation": "Vector 拥有分配的内存。reserve 只是临时借用拥有者，不会制造第二个拥有者。成功的 realloc 可能搬迁存储，因此扩容成功后，原有元素指针必须视为失效。若需要跨扩容记住位置，应保存下标，再重新取得指针。\n\n五次追加后的容量为 2、2、4、4、8。在每次增长都复制旧元素的成本模型下，后两次增长复制 2+4=6 个元素。翻倍使 n 次追加的总复制量为 O(n)，所以追加的摊还成本为 O(1)；某一次追加仍可能花费 O(n)。这只是成本模型，不表示 realloc 每次都一定复制。\n\nSIZE_MAX 请求被拒绝，测试的是整数保护，不是真正的系统内存耗尽。更完整的测试应注入分配失败，并核对内容不变。本例只执行非零分配，假定 Vector 由本接口正确创建，也不是并发容器。",
+          "syntax_notes": [
+            {
+              "syntax": "sizeof *v->data",
+              "meaning": "按指针指向的元素类型计算字节数。"
+            },
+            {
+              "syntax": "int *temporary",
+              "meaning": "保存可能的新分配，同时保留旧拥有者。"
+            },
+            {
+              "syntax": "(struct Vector){0}",
+              "meaning": "复合字面量，把各成员重置为零。"
+            }
           ]
         }
       ]
@@ -1849,6 +1915,10 @@
         {
           "question": "大型写入者为什么应先排空输出再等待？",
           "answer": "子进程可能因管道已满而阻塞，不读取就等待会阻止它完成。"
+        },
+        {
+          "question": "为什么一次成功的 write 不保证一次对应的 read？",
+          "answer": "读取器自己指定请求大小，流读取也可能只返回当前可用的部分字节。需要由应用协议和循环重建完整消息。"
         }
       ],
       "instructor_notes": [
@@ -1918,6 +1988,35 @@
             "关闭本进程不用的继承端点。",
             "读取并验证长度，再读取载荷。",
             "排空完整帧，关闭管道并回收写入者。"
+          ]
+        },
+        {
+          "id": "framed-short-reads",
+          "title": "从字节流中读出完整消息",
+          "intro": "两个小程序交换单词。米娜以为一次 read 就能读出一个完整单词。第一次成功，后来某次读取只有两个字节，程序就出错了。她给每个单词添加一个字节的长度头。读取器不断收集，直到达到声明的长度；还要区分下一条消息开始前的正常结束，与单词只收到一半时的异常结束。",
+          "language": "c",
+          "code": "#define _POSIX_C_SOURCE 200809L\n#include <assert.h>\n#include <errno.h>\n#include <stdio.h>\n#include <unistd.h>\nenum Result { COMPLETE, CLEAN_EOF, TRUNCATED, IO_ERROR };\nstatic enum Result read_exact(int fd, unsigned char *out, size_t need) {\n    size_t used = 0;\n    while (used < need) {\n        size_t request = need - used;\n        if (request > 2) request = 2; /* Deliberately fragment reads. */\n        ssize_t n = read(fd, out + used, request);\n        if (n > 0) { used += (size_t)n; continue; }\n        if (n == 0) return used == 0 ? CLEAN_EOF : TRUNCATED;\n        if (errno == EINTR) continue;\n        return IO_ERROR;\n    }\n    return COMPLETE;\n}\nstatic int write_all(int fd, const unsigned char *data, size_t size) {\n    size_t sent = 0;\n    while (sent < size) {\n        ssize_t n = write(fd, data + sent, size - sent);\n        if (n > 0) sent += (size_t)n;\n        else if (n < 0 && errno == EINTR) continue;\n        else return 0;\n    }\n    return 1;\n}\nint main(void) {\n    int channel[2];\n    if (pipe(channel) == -1) return 1;\n    const unsigned char wire[] = {4, 'p', 'i', 'n', 'g', 3, 'o', 'k'};\n    int sent = write_all(channel[1], wire, sizeof wire);\n    int closed = close(channel[1]);\n    if (!sent || closed == -1) { close(channel[0]); return 1; }\n    unsigned char length, payload[16];\n    enum Result header = read_exact(channel[0], &length, 1);\n    if (header != COMPLETE || length == 0 || length > sizeof payload) {\n        close(channel[0]); return 1;\n    }\n    enum Result body = read_exact(channel[0], payload, length);\n    if (body != COMPLETE) { close(channel[0]); return 1; }\n    printf(\"frame: %.*s\\n\", (int)length, (char *)payload);\n    header = read_exact(channel[0], &length, 1);\n    if (header != COMPLETE || length == 0 || length > sizeof payload) {\n        close(channel[0]); return 1;\n    }\n    body = read_exact(channel[0], payload, length);\n    assert(body == TRUNCATED);\n    puts(\"second frame: truncated payload\");\n    enum Result end = read_exact(channel[0], &length, 1);\n    assert(end == CLEAN_EOF);\n    puts(\"next header: clean EOF\");\n    return close(channel[0]) == 0 ? 0 : 1;\n}\n",
+          "output": "frame: ping\nsecond frame: truncated payload\nnext header: clean EOF\n",
+          "walkthrough": [
+            "先写入八个字节，再关闭写端。这个很小的样例能装进管道，无须创建子进程。",
+            "分别保存已读 used 和目标 need。正数短读会推进已读量及下次写入位置。",
+            "写入 payload 前先校验长度，最多接受 16 字节。",
+            "第二个头声明三个字节，实际只剩两个，必须报告截断，不能当成完整消息。"
+          ],
+          "explanation": "字节流保留字节顺序，不保留应用消息的边界。循环不变量是：out[0:used] 恰好保存这次请求已经收到的字节。每次正数读取都会减少 need-used；EINTR 重试时不改变 used；EOF 或其他错误则结束循环。\n\n若当前请求一个字节也没读到，辅助函数返回 CLEAN_EOF。调用者必须结合上下文解释它：新消息头之前的零字节可表示正常结束；已收到正长度头之后的零字节却表示正文缺失，也必须拒绝。本例拒绝所有非 COMPLETE 的正文结果。\n\n长度为 n 的正文需要 O(n) 字节传输工作，本例使用有上限的缓冲区。真实阻塞流可能无限等待剩余字节，因此网络服务还需要超时策略、对端关闭处理和分配前的长度上限。这个确定性管道示例没有实现这些策略；打印用的文本正文也不是通用二进制解码器。",
+          "syntax_notes": [
+            {
+              "syntax": "ssize_t",
+              "meaning": "有符号返回类型，可表示字节数或 -1。"
+            },
+            {
+              "syntax": "out + used",
+              "meaning": "从已收到字节之后继续填充。"
+            },
+            {
+              "syntax": "errno == EINTR",
+              "meaning": "该调用被中断时重试，不假设已经增加了字节。"
+            }
           ]
         }
       ]
@@ -3217,6 +3316,10 @@
     {
       "title": "WG14 C11 defect discussion: realloc failure and zero-size requests",
       "url": "https://open-std.org/JTC1/SC22/WG14/issues/c11c17/issue0400.html"
+    },
+    {
+      "title": "Apple developer archive: read(2), short reads and interruptions",
+      "url": "https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/read.2.html"
     }
   ]
 }

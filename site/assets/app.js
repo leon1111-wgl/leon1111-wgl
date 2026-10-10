@@ -57,7 +57,9 @@
         : sections.map(section => {
           const box = section.getBoundingClientRect();
           return { section, visible: Math.max(0, Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 100)) };
-        }).sort((a, b) => b.visible - a.visible).find(item => item.visible > 0)?.section;
+        }).sort((a, b) => b.visible - a.visible ||
+          (a.section.contains(b.section) ? 1 : b.section.contains(a.section) ? -1 : 0)
+        ).find(item => item.visible > 0)?.section;
       const target = new URL(link.href);
       target.hash = current?.id || window.location.hash;
       link.href = target.href;

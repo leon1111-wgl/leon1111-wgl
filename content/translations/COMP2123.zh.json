@@ -1903,6 +1903,10 @@
         {
           "question": "一边路线花 20 分钟，两边路线花 2 分钟怎么办？",
           "answer": "BFS 选边少而非时间少，应使用加权路径算法，例如非负权的 Dijkstra。"
+        },
+        {
+          "question": "为什么不能等第一个出口搜索结束后，再加入第二个出口？",
+          "answer": "格子已被标上到第一个出口的距离。若不重置或松弛，第二股波无法改善结果，所以应先放入整个源点集合。"
         }
       ],
       "code_examples": [
@@ -1991,6 +1995,21 @@
               ]
             ]
           }
+        },
+        {
+          "id": "nearest-exit-wavefront",
+          "title": "让 BFS 同时从所有出口出发",
+          "intro": "学校地图有两个出口。米娜想知道每个位置到最近出口需要走几步。如果从每个格子分别搜索，会重复大量工作。她把两个出口都以距离零加入同一个队列，让两股波同时扩散。某个格子第一次被波到达时，就得到了到最近出口的距离。",
+          "language": "python",
+          "code": "from collections import deque\n\ndef nearest_exit(grid, exits):\n    rows, cols = len(grid), len(grid[0])\n    if any(len(row) != cols for row in grid):\n        raise ValueError(\"rectangular grid required\")\n    distance = {}\n    queue = deque()\n    for r, c in exits:\n        if not (0 <= r < rows and 0 <= c < cols) or grid[r][c] == \"#\":\n            raise ValueError(\"exit must be an open cell\")\n        if (r, c) not in distance:\n            distance[r, c] = 0\n            queue.append((r, c))\n    while queue:\n        r, c = queue.popleft()\n        for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:\n            nr, nc = r + dr, c + dc\n            if (0 <= nr < rows and 0 <= nc < cols and\n                    grid[nr][nc] != \"#\" and (nr, nc) not in distance):\n                distance[nr, nc] = distance[r, c] + 1\n                queue.append((nr, nc))\n    return distance\n\ngrid = [\"..#.\", \"....\", \".#..\"]\ndistance = nearest_exit(grid, [(0, 0), (2, 3)])\nassert distance[0, 3] == 2 and distance[1, 1] == 2\nassert nearest_exit(grid, []) == {}\nfor r, row in enumerate(grid):\n    print(\" \".join(\"#\" if cell == \"#\" else str(distance.get((r, c), \"X\"))\n                   for c, cell in enumerate(row)))\n",
+          "output": "0 1 # 2\n1 2 2 1\n2 # 1 0\n",
+          "walkthrough": [
+            "处理格子之前先放入全部出口，每个出口都在距离零这一层。",
+            "入队时立即标记，避免两股波反复加入同一格子。",
+            "每次合法移动增加一步，FIFO 顺序保证先处理完较近层。",
+            "墙显示 #，不可达空格显示 X；缺失结果不能默认为距离零。"
+          ],
+          "explanation": "目标是 d(v)=对所有出口 s 取 min dist(s,v)。不变量是：出队格子拥有尚未处理格子中最小的“到源点集合距离”。如果新格子还有更短路线，那条路线的前驱应当更早被处理。\n\nR 行 C 列的网格最多有 RC 个格子，每格最多四条边，时间和空间都是 O(RC)。本例假设非空矩形网格、双向移动、每步成本相同。若走廊单向，要在反向图上从出口搜索，才能求各点到出口的距离。若成本不相等但非负，应改用多源 Dijkstra。\n\n小网格只是算法示例，不是疏散规划器；它没有考虑拥堵、门的状态及随时间变化的条件。真正值得迁移的工程思路是：先明确所求方向与成本，再选择图算法。"
         }
       ],
       "instructor_notes": [
@@ -2015,6 +2034,18 @@
           ],
           "answer": "E 距离为三条边。父路径证明三可达到，层次顺序排除更短路线。",
           "sanity_check": "S→B→D→E 也长三条边，算法不必选出唯一路线。"
+        },
+        {
+          "title": "手工读取距离层",
+          "question": "地图三行为 [\"..#.\",\"....\",\".#..\"]，出口是 (0,0)、(2,3)。四方向移动，每步成本一，求 (1,1) 的距离。",
+          "strategy": "同时从两源点逐层扩展，目标首次出现时停止。",
+          "steps": [
+            "第 0 层包含 (0,0)、(2,3)。",
+            "第 1 层包含 (1,0)、(0,1)、(1,3)、(2,2)。",
+            "第 2 层通过 (1,0) 或 (0,1) 到达 (1,1)。"
+          ],
+          "answer": "最近出口距离为 2。存在多条同长最短路，不影响距离值。",
+          "sanity_check": "从 (0,0) 出发的曼哈顿下界为 |1|+|1|=2，且确实存在合法两步路线，因此结果最优。"
         }
       ]
     },
@@ -2057,6 +2088,10 @@
         {
           "question": "负边一定让答案错误吗？",
           "answer": "并非每个输入都错，但失去定点距离为最终值的证明，应使用为负权设计的算法。"
+        },
+        {
+          "question": "有负权边就一定存在负环吗？",
+          "answer": "不是。环必须回到起点，而且总权重必须为负。单独一条权重为 -2 的 A→B 边不能证明任一条件。"
         }
       ],
       "code_examples": [
@@ -2149,6 +2184,21 @@
               ]
             ]
           }
+        },
+        {
+          "id": "negative-edge-relaxation",
+          "title": "用 Bellman–Ford 处理负权边",
+          "intro": "米娜为路线打分，某个训练站的奖励可以表示为负权边。她不能再认为当前分数较小的节点已经永久确定。于是改问一个更稳妥的问题：最多用一条边、两条边、三条边时，最佳分数分别是多少？若可达环让分数一直下降，她就报告不存在有限最优值，而不是输出误导性的路线。",
+          "language": "python",
+          "code": "from math import inf\n\ndef bellman_ford(nodes, edges, source):\n    distance = {node: inf for node in nodes}\n    distance[source] = 0\n    history = [distance.copy()]\n    for _ in range(len(nodes) - 1):\n        next_distance = distance.copy()\n        for u, v, cost in edges:\n            if distance[u] != inf:\n                next_distance[v] = min(next_distance[v], distance[u] + cost)\n        history.append(next_distance.copy())\n        if next_distance == distance:\n            break\n        distance = next_distance\n    if any(distance[u] != inf and distance[u] + w < distance[v]\n           for u, v, w in edges):\n        raise ValueError(\"reachable negative cycle\")\n    return distance, history\n\nnodes = [\"S\", \"A\", \"B\", \"C\", \"Z\"]\nedges = [(\"S\", \"A\", 4), (\"S\", \"B\", 5), (\"A\", \"B\", -2),\n         (\"B\", \"C\", 3), (\"Z\", \"Z\", -1)]\ndistance, history = bellman_ford(nodes, edges, \"S\")\nassert distance == {\"S\": 0, \"A\": 4, \"B\": 2, \"C\": 5, \"Z\": inf}\nfor k, row in enumerate(history[:4]):\n    print(f\"at most {k} edges:\", [row[v] for v in nodes[:4]])\nprint(\"Z is unreachable:\", distance[\"Z\"] == inf)\ntry:\n    bellman_ford(nodes, edges + [(\"C\", \"A\", -6)], \"S\")\nexcept ValueError as error:\n    print(error)\n",
+          "output": "at most 0 edges: [0, inf, inf, inf]\nat most 1 edges: [0, 4, 5, inf]\nat most 2 edges: [0, 4, 2, 8]\nat most 3 edges: [0, 4, 2, 5]\nZ is unreachable: True\nreachable negative cycle\n",
+          "walkthrough": [
+            "源点距离设为零，其他设为无穷。零条边只能到达源点。",
+            "读取旧字典、写入新字典，每轮最多多用一条边，严格对应不变量。",
+            "最多运行 |V|-1 轮。没有可达负环时，可以选择不重复顶点的最短路径。",
+            "再尝试一轮松弛，若还能改善就存在可达负环；忽略 Z 这类不可达起点。"
+          ],
+          "explanation": "递推式为 d_k(v)=min(d_(k-1)(v), 对所有 u→v 取 min[d_(k-1)(u)+w(u,v)])。下标 k 限制边数，不是时间距离。无穷表示暂时没有找到路线，不是随便选的很大整数。\n\n|V| 个顶点、|E| 条边的最坏时间为 O(|V||E|)。工作距离数组只需要 O(|V|) 空间，但教学版还保存历史，空间可达 O(|V|²)。Z 上的负自环不影响从 S 出发的路线，因为 Z 不可达。如果存在可达负环，本实现拒绝整个查询，而不是分别标记哪些终点受影响。\n\n逐轮复制的版本比原地更新更容易跟踪。原地更新在一轮内可能传播多条边。两种写法都可能正确，但中间表的含义不同，不要拿一种实现的不变量解释另一种。"
         }
       ],
       "instructor_notes": [
@@ -2173,6 +2223,18 @@
           ],
           "answer": "S→B→A→C 成本为 6，非负权假设下的定点证明不存在更便宜路线。",
           "sanity_check": "替代路线 S→A→C 与 S→B→C 的成本都为 9。"
+        },
+        {
+          "title": "先数边，再解释距离",
+          "question": "边为 S→A:4、S→B:5、A→B:-2、B→C:3。d_2(C) 是多少？最终到 C 的最短距离是多少？",
+          "strategy": "跟踪最多 k 条边的限制，不要混用上一轮和当前轮的值。",
+          "steps": [
+            "最多一条边时，d_1(A)=4、d_1(B)=5，C 不可达。",
+            "最多两条边时，C 得到 d_1(B)+3=8；同一轮 B 改善为 4-2=2。",
+            "第三轮才能使用已改善的 B，得到 d_3(C)=2+3=5。"
+          ],
+          "answer": "d_2(C)=8；最终距离为 5，路线是 S、A、B、C。",
+          "sanity_check": "直接把路径边权相加：4-2+3=5。该路线有三条边，不可能出现在最多两条边的表中。"
         }
       ]
     },
@@ -2369,6 +2431,10 @@
         {
           "question": "为什么证明对密封箱失效？",
           "answer": "箱子不能逐千克交换，可行的分数选择在整件不可分时可能无法实现。"
+        },
+        {
+          "question": "拿取物品时，为什么不能用 F(i,c-w_i)？",
+          "answer": "该状态可能已经包含第 i 件物品，再加 v_i 就可能重复拿取。第 i-1 行只包含之前的物品。"
         }
       ],
       "code_examples": [
@@ -2455,6 +2521,21 @@
               ]
             ]
           }
+        },
+        {
+          "id": "indivisible-kit-dp",
+          "title": "贪心失效时：装入不可拆分的科学套件",
+          "intro": "米娜去科学展，只能携带四单位重量。A 套件重三单位，能帮助五位访客；B、C 各重两单位，各帮助三位。A 的价值密度最高，按密度贪心会先选 A，之后什么也装不下。米娜改选 B 和 C，却能帮助六位。套件不能切开，因此她需要比较完整选择，不能套用只对可分割物品成立的规则。",
+          "language": "python",
+          "code": "def knapsack(items, capacity):\n    if not isinstance(capacity, int) or capacity < 0:\n        raise ValueError(\"capacity must be a nonnegative integer\")\n    if any(not isinstance(w, int) or w <= 0 or v < 0 for _, w, v in items):\n        raise ValueError(\"positive integer weights and nonnegative values required\")\n    n = len(items)\n    best = [[0] * (capacity + 1) for _ in range(n + 1)]\n    for i, (_, weight, value) in enumerate(items, 1):\n        for room in range(capacity + 1):\n            best[i][room] = best[i - 1][room]\n            if weight <= room:\n                take = value + best[i - 1][room - weight]\n                best[i][room] = max(best[i][room], take)\n    chosen, room = [], capacity\n    for i in range(n, 0, -1):\n        if best[i][room] != best[i - 1][room]:\n            name, weight, _ = items[i - 1]\n            chosen.append(name)\n            room -= weight\n    return best[n][capacity], list(reversed(chosen)), best\n\nitems = [(\"A\", 3, 5), (\"B\", 2, 3), (\"C\", 2, 3)]\nvalue, chosen, table = knapsack(items, 4)\nassert (value, chosen) == (6, [\"B\", \"C\"])\nassert knapsack(items, 0)[0] == 0\nassert knapsack([], 4)[0] == 0\nfor i, row in enumerate(table):\n    print(f\"first {i} kits: {row}\")\nprint(\"selected:\", chosen, \"value:\", value)\n",
+          "output": "first 0 kits: [0, 0, 0, 0, 0]\nfirst 1 kits: [0, 0, 0, 5, 5]\nfirst 2 kits: [0, 0, 3, 5, 5]\nfirst 3 kits: [0, 0, 3, 5, 6]\nselected: ['B', 'C'] value: 6\n",
+          "walkthrough": [
+            "先定义状态，再写循环：best[i][c] 表示只用前 i 件物品、容量为 c 时的最大价值。",
+            "比较跳过第 i 件与拿取一次两种方案。两分支都读取第 i-1 行，避免重复拿同一物品。",
+            "先填较短物品前缀，再填较长前缀，依赖的状态已经计算完。",
+            "倒着检查哪些行提升了结果，恢复具体选择。平局时明确采用跳过分支。"
+          ],
+          "explanation": "设第 i 件物品重量为 w_i、价值为 v_i。当 c<w_i 时，F(i,c)=F(i-1,c)；否则 F(i,c)=max(F(i-1,c), v_i+F(i-1,c-w_i))。正重量条件下，F(0,c)=0、F(i,0)=0。任何可行解要么包含最后一件，要么不包含；两种情况覆盖所有可能，因此可以对 i 做归纳证明递推式。\n\nn 件物品、整数容量 C 的表需要 O(nC) 时间和空间。这是伪多项式复杂度：C 的二进制表示只需要约 log2(C) 位。容量极大时，即使物品不多，表也可能不可用。可以优化成一行，但容量循环需要从大到小，防止同一物品重复使用。\n\n这个扩展比较的是两种问题约定：密度贪心适用于可分割版本，表格解决这里规定的 0/1 版本。没有新的论证，就不能把结论迁移到其他调度问题。"
         }
       ],
       "instructor_notes": [
@@ -2479,6 +2560,18 @@
           ],
           "answer": "总重量 10 时最优可分价值为 56。",
           "sanity_check": "用较低密度重量替换已选较高密度重量不能增值；禁止拆分时此交换失效。"
+        },
+        {
+          "title": "计算最后两行状态表",
+          "question": "A=(3,5)、B=(2,3)、C=(2,3)，整数容量为 4。加入 B、C 后的状态行分别是什么？",
+          "strategy": "列出容量 0 到 4。对新物品比较上一行的跳过值与拿取值。",
+          "steps": [
+            "加入 A 后：[0,0,0,5,5]。A 只在容量 3、4 时能放入。",
+            "加入 B 后：[0,0,3,5,5]。容量 4 时拿 B 得到 3+F(1,2)=3，因此保留 5。",
+            "加入 C 后：[0,0,3,5,6]。容量 4 时拿 C 得到 3+F(2,2)=6。"
+          ],
+          "answer": "最佳价值为 6，选择 B、C，总重量恰好为 4。",
+          "sanity_check": "枚举非空可行子集 A、B、C、BC，价值分别为 5、3、3、6，可独立核对结论。"
         }
       ]
     },
@@ -4131,6 +4224,14 @@
     {
       "title": "Cornell CS 2112 — AVL invariants, rotations and deletion",
       "url": "https://courses.cs.cornell.edu/cs2112/2017fa/lectures/lec_avl/index.html"
+    },
+    {
+      "title": "MIT 6.006: Bellman-Ford and negative cycles",
+      "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/lecture-17-bellman-ford/"
+    },
+    {
+      "title": "MIT 6.006: Dynamic programming II",
+      "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/lecture-20-dynamic-programming-ii-text-justification-blackjack/"
     }
   ]
 }
