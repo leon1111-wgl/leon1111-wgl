@@ -75,15 +75,15 @@ def build_profile(root, profile, courses, guides):
 
 ## Featured project
 
-### [FinScope — Evidence-Grounded Financial Risk Lab](https://leon1111-wgl.github.io/finscope/)
+### [FinScope — Earnings Quality & Financial Resilience](https://leon1111-wgl.github.io/finscope/)
 
-An interactive AI × finance workbench. Explore volatility forecasts, trace filings, social signals and supply-chain events, compare model variants, and inspect the effect of trading costs.
+Does reported profit have cash-flow support? Review real SEC accounts, compare six companies, inspect AI anomaly cues and test a downside scenario. Export a research brief with formulas, assumptions and source evidence.
 
-`Python` · `Machine learning` · `As-of evidence` · `Rolling evaluation`
+`Python` · `Machine learning` · `SEC financial evidence` · `Browser scenarios`
 
-The public demo uses fictional market data. Real SEC facts appear separately. The local service supports your own authorized data, saved experiments and audit exports.
+Use it online without an account or Python installation. Official annual filings and Treasury rates carry explicit source dates. The original synthetic forecasting lab remains a separate research track.
 
-**[OPEN THE LIVE WORKBENCH ↗](https://leon1111-wgl.github.io/finscope/)** · [Source code and local setup](https://github.com/leon1111-wgl/finscope) · [Methodology](https://github.com/leon1111-wgl/finscope/blob/main/docs/METHODOLOGY.md)
+**[START A COMPANY REVIEW ↗](https://leon1111-wgl.github.io/finscope/)** · [Source code and setup](https://github.com/leon1111-wgl/finscope) · [Worked case](https://github.com/leon1111-wgl/finscope/blob/main/docs/CASE_STUDY.md)
 
 ## Selected research
 
