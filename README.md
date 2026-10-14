@@ -3,6 +3,7 @@
 <p align="center">
   <a href="https://leon1111-wgl.github.io/leon1111-wgl/"><strong>ENTER MY WEBSITE ↗</strong></a> &nbsp; / &nbsp;
   <a href="#about-me">About me</a> &nbsp; / &nbsp;
+  <a href="#featured-project">Project</a> &nbsp; / &nbsp;
   <a href="#selected-research">Research</a> &nbsp; / &nbsp;
   <a href="#learning-portals">Courses</a> &nbsp; / &nbsp;
   <a href="mailto:zetongw6@gmail.com">Contact</a>
@@ -19,6 +20,18 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 | Efficient video inference | Explain ideas through stories, formulas and examples |
 
 **Tools & interests** · Python · Java · C · Multimodal evaluation · lmms-eval · Instruction tuning · Knowledge distillation · Model quantization
+
+## Featured project
+
+### [FinScope — Evidence-Grounded Financial Risk Lab](https://leon1111-wgl.github.io/finscope/)
+
+An interactive AI × finance workbench. Explore volatility forecasts, trace filings, social signals and supply-chain events, compare model variants, and inspect the effect of trading costs.
+
+`Python` · `Machine learning` · `As-of evidence` · `Rolling evaluation`
+
+The public demo uses fictional market data. Real SEC facts appear separately. The local service supports your own authorized data, saved experiments and audit exports.
+
+**[OPEN THE LIVE WORKBENCH ↗](https://leon1111-wgl.github.io/finscope/)** · [Source code and local setup](https://github.com/leon1111-wgl/finscope) · [Methodology](https://github.com/leon1111-wgl/finscope/blob/main/docs/METHODOLOGY.md)
 
 ## Selected research
 
