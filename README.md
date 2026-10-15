@@ -23,6 +23,16 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 ## Featured project
 
+### [EstateGuard · 社区智能巡检](https://leon1111-wgl.github.io/estateguard/)
+
+将电梯搬运、通道占用和停车线索整理成可复核的物业事件。浏览器运行真实轻量视觉模型，分析本地图片或短视频，通过区域与时间规则形成候选，再记录人工判断并导出交接单。
+
+`浏览器端视觉推理` · `场景规则` · `事件复核` · `中文工作台`
+
+素材在本地处理，无需账户或 API key。当前是通用物体模型与规则基线；专门的违规行为识别仍需领域数据验证。
+
+**[打开中文工作台 ↗](https://leon1111-wgl.github.io/estateguard/)** · [源码与运行说明](https://github.com/leon1111-wgl/estateguard) · [场景与实现案例](https://github.com/leon1111-wgl/estateguard/blob/main/docs/CASE_STUDY.md)
+
 ### [FinScope — Earnings Quality & Financial Resilience](https://leon1111-wgl.github.io/finscope/)
 
 Does reported profit have cash-flow support? Review real SEC accounts, compare six companies, inspect AI anomaly cues and test a downside scenario. Export a research brief with formulas, assumptions and source evidence.
