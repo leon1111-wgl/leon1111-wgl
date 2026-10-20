@@ -23,6 +23,16 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 ## Featured project
 
+### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
+
+把客服大模型做成能上线的系统：回答逐句对照知识库和业务数据校验，超额退款暂停等人工审批，模型故障时转人工或引用政策原文，坐席的每一次纠错都会变成知识补丁和回归测试。
+
+`Agent 工具调用` · `RAG` · `人工审批` · `证据校验` · `回归评测` · `FastAPI + React`
+
+在线演示是控制台的静态构建，数据录制自真实后端的离线运行（虚构数据），可以切换顾客、坐席、管理员浏览。完整版本在本地运行，可接入豆包、混元、DeepSeek 等模型。
+
+**[打开在线演示 ↗](https://leon1111-wgl.github.io/loopdesk/)** · [源码与运行说明](https://github.com/leon1111-wgl/loopdesk) · [案例：一位顾客的退款](https://github.com/leon1111-wgl/loopdesk/blob/main/docs/CASE_STUDY.md)
+
 ### [EstateGuard · 社区智能巡检](https://leon1111-wgl.github.io/estateguard/)
 
 将电梯搬运、通道占用和停车线索整理成可复核的物业事件。浏览器运行真实轻量视觉模型，分析本地图片或短视频，通过区域与时间规则形成候选，再记录人工判断并导出交接单。
