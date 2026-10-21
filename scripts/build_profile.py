@@ -114,7 +114,7 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 
 <a href="{site}python-zero-to-practice/index.html"><img src="site/assets/profile-python.svg" width="100%" alt="Python — Zero to Practice. Open the Chinese self-study handbook." /></a>
 
-**Python — Zero to Practice** · Chinese handbook · 19 learning units · 91 runnable examples · 100 self-study exercises · 4 complete projects.
+**Python — Zero to Practice** · Chinese handbook · 19 learning units · 105 runnable examples · 114 self-study exercises · 4 complete projects.
 
 [Read online ↗]({site}python-zero-to-practice/index.html) · [Download the complete learning kit ↓]({site}downloads/Python-Zero-to-Practice.zip) · [Browse the source](site/python-zero-to-practice/)
 

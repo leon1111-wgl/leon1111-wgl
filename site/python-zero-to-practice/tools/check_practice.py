@@ -28,8 +28,16 @@ def run_case(item, solutions=False, example=False):
         if result.returncode:
             return False, "运行报错：\n" + result.stderr[-4000:]
         if normalize(result.stdout) != normalize(item["output"]):
+            expected_lines = normalize(item["output"]).split("\n")
+            actual_lines = normalize(result.stdout).split("\n")
+            mismatch = next(i for i in range(max(len(expected_lines), len(actual_lines)))
+                            if (expected_lines[i] if i < len(expected_lines) else None)
+                            != (actual_lines[i] if i < len(actual_lines) else None))
+            expected_line = repr(expected_lines[mismatch]) if mismatch < len(expected_lines) else "<没有这一行>"
+            actual_line = repr(actual_lines[mismatch]) if mismatch < len(actual_lines) else "<没有这一行>"
+            difference = f"\n第一处不同在第 {mismatch + 1} 行（引号帮助显示空格）：\n预期 {expected_line}\n实际 {actual_line}\n"
             return False, ("输出不同。\n预期：\n" + item["output"] + "实际：\n" + result.stdout[:4000]
-                + "\n若看不出区别，请检查空格、大小写与额外的提示文字。")
+                + difference + "请检查空格、大小写与额外的提示文字。")
         if not example and item.get("tests"):
             try:
                 extra = subprocess.run([sys.executable, "-X", "utf8", str(ROOT / "tools" / "function_worker.py"), str(path), item["id"]],
@@ -37,7 +45,7 @@ def run_case(item, solutions=False, example=False):
             except subprocess.TimeoutExpired:
                 return False, "额外函数测试超时。请检查空输入和循环终止条件。"
             if extra.returncode:
-                return False, "额外函数测试未通过：\n" + extra.stderr[-4000:]
+                return False, "额外函数测试未通过：\n" + extra.stderr[-4000:] + "\n先看 traceback 中的 assert：它写出了本次输入与期望结果。仅示例输出正确还不够。"
     return True, "示例输出及额外测试通过" if item.get("tests") else "示例输出通过"
 
 def main():

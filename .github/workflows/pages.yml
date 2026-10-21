@@ -11,7 +11,12 @@ concurrency:
   group: github-pages
   cancel-in-progress: true
 jobs:
+  verify-python:
+    uses: ./.github/workflows/python-course.yml
+    permissions:
+      contents: read
   deploy:
+    needs: verify-python
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

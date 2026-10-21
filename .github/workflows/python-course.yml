@@ -1,0 +1,56 @@
+name: Verify existing Python course
+
+on:
+  workflow_call:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.12']
+        include:
+          - os: ubuntu-latest
+            python: '3.10'
+          - os: ubuntu-latest
+            python: '3.14'
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    defaults:
+      run:
+        working-directory: site/python-zero-to-practice
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Rebuild from source
+        run: python source/build.py
+      - name: Require generated files to match committed source
+        run: git diff --exit-code -- .
+      - name: Verify runnable examples
+        run: python tools/verify_examples.py
+      - name: Verify reference answers and boundary cases
+        run: python tools/check_practice.py --all --solutions
+      - name: Verify four reference projects
+        run: python tools/check_projects.py
+      - name: Verify portable archive and local links
+        run: python tools/package.py
+      - name: Verify original site integration and downloadable archive
+        working-directory: .
+        run: |
+          python scripts/build_python_course.py
+          python scripts/validate_python_course.py
+          git diff --exit-code -- site/python-zero-to-practice

@@ -12,7 +12,7 @@ def validate_python_course():
     page = (COURSE / 'index.html').read_text()
     if page.count('<article class="chapter"') != 19:
         errors.append('Python handbook: expected 19 learning units')
-    if len(manifest['examples']) != 91 or len(manifest['exercises']) != 100:
+    if len(manifest['examples']) != 105 or len(manifest['exercises']) != 114:
         errors.append('Python handbook: example/exercise coverage changed')
     for group in ['examples', 'exercises']:
         for entry in manifest[group]:
@@ -24,7 +24,7 @@ def validate_python_course():
         errors.append('Python handbook: expected four complete projects')
     for path in COURSE.rglob('*.py'):
         ast.parse(path.read_text(), filename=str(path), feature_version=(3, 10))
-    for marker in ['Leon', 'class="guoliang-route"', 'Python-Zero-to-Practice.zip',
+    for marker in ['部分内容为info1110课程', 'python-zero-practice-v1', 'v1.3', 'Leon', 'class="guoliang-route"', 'Python-Zero-to-Practice.zip',
                    'id="search"', 'id="export-progress"', 'id="import-progress"']:
         if marker not in page:
             errors.append('Python handbook: missing navigation or learning control ' + marker)

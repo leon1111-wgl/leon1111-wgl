@@ -31,8 +31,8 @@ function progress() {
   let chapters = 0, exercises = 0;
   for (const key of allowed) if (state.checks[key]) { if (key.startsWith('chapter:')) chapters++; else exercises++; }
   $('#progress').value = chapters;
-  $('#progress-label').textContent = `已完成 ${chapters} / 19 章`;
-  $('#exercise-progress').textContent = `独立完成 ${exercises} / 100 题`;
+  $('#progress-label').textContent = `已完成 ${chapters} / ${all('.chapter').length} 章`;
+  $('#exercise-progress').textContent = `独立完成 ${exercises} / ${all('.exercise').length} 题`;
   all('[data-nav]').forEach(el => { const done = state.checks['chapter:' + el.dataset.nav]; el.querySelector('.nav-done').textContent = done ? '✓' : ''; });
 }
 function route(scroll = true) {

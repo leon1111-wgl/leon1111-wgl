@@ -151,6 +151,16 @@
       "path": "examples/ch03/ex03_05.py"
     },
     {
+      "id": "03_06",
+      "title": "AI / Agent：用字符串组织提示词",
+      "code": "topic = \"  Python 列表  \"\nlevel = \"零基础\"\nclean_topic = topic.strip()\nprompt = f\"请面向{level}读者解释：{clean_topic}。\"\nprint(prompt)\nprint(f\"主题字符数：{len(clean_topic)}\")\n",
+      "output": "请面向零基础读者解释：Python 列表。\n主题字符数：9\n",
+      "explain": "输入是带首尾空格的 topic。strip 返回去掉首尾空白的新字符串，原 topic 不会被自动修改；赋值后 clean_topic 是 'Python 列表'。f-string 把两个变量的值插入文字，print 才显示结果。len 在这里数 Python 字符串的 Unicode 码位，空格也算一个；它不是模型 token 数。本例只生成提示词，没有模型回复。",
+      "challenge": "先把 topic 改成只有三个空格，预测清理后的字符数。再把模板改成要求输出一个例子，观察引号内文字与变量名各在哪里。",
+      "stdin": "",
+      "path": "examples/ch03/ex03_06.py"
+    },
+    {
       "id": "04_01",
       "title": "判断是否通过",
       "code": "score = 59\nif score >= 60:\n    print(\"通过\")\nelse:\n    print(\"继续练习\")\nprint(\"记录完成\")\n",
@@ -199,6 +209,16 @@
       "challenge": "把 score 改成 None，观察分支改变。",
       "stdin": "",
       "path": "examples/ch04/ex04_05.py"
+    },
+    {
+      "id": "04_06",
+      "title": "AI / Agent：按明确规则选择处理路径",
+      "code": "request = \" 请解释列表 \"\ncleaned = request.strip()\nif cleaned == \"\":\n    route = \"请先输入问题\"\nelif \"计算\" in cleaned:\n    route = \"交给计算工具\"\nelse:\n    route = \"进入文字讲解\"\nprint(route)\n",
+      "output": "进入文字讲解\n",
+      "explain": "先清理 request，再从上到下尝试条件。当前内容非空且不含“计算”，所以进入 else。这叫规则路由：由你写的条件决定走哪条路径，不包含模型理解。后面的章节会把这些文字路径换成函数调用。包含“不要计算”的句子也会命中关键词，说明关键词判断有明确局限。",
+      "challenge": "依次替换 request 为三个空格、“请计算 2 + 3”、“不要计算，只解释”。记录实际路线，再写一句话说明这种规则为什么不能代表理解了用户意图。",
+      "stdin": "",
+      "path": "examples/ch04/ex04_06.py"
     },
     {
       "id": "05_01",
@@ -319,6 +339,16 @@
       "challenge": "在中间加入 4，确认只打印第一个偶数。",
       "stdin": "",
       "path": "examples/ch06/ex06_06.py"
+    },
+    {
+      "id": "06_07",
+      "title": "AI / Agent：最多执行三轮的任务循环",
+      "code": "step = 0\nmax_steps = 3\nfinished = False\nwhile step < max_steps:\n    step += 1\n    print(f\"第 {step} 轮\")\n    if step == 2:\n        finished = True\n        break\nprint(f\"已完成：{finished}\")\nprint(f\"实际轮数：{step}\")\n",
+      "output": "第 1 轮\n第 2 轮\n已完成：True\n实际轮数：2\n",
+      "explain": "step 从 0 开始，每轮先加 1；第 1 轮未完成，重新判断 while；第 2 轮把 finished 改为 True 后 break，跳到循环后。max_steps 限制最多启动几轮；finished 单独记录是否完成。运行了两轮和任务完成是两个不同事实。本例用 step == 2 模拟完成条件，真实 Agent 需要根据执行结果判断。",
+      "challenge": "把完成条件改成 step == 5，max_steps 保持 3。应执行三轮且 finished 为 False。再把 max_steps 改成 0，说明为什么循环体一次也不执行。",
+      "stdin": "",
+      "path": "examples/ch06/ex06_07.py"
     },
     {
       "id": "07_01",
@@ -451,6 +481,16 @@
       "path": "examples/ch08/ex08_06.py"
     },
     {
+      "id": "08_07",
+      "title": "AI / Agent：列表保存顺序，字典保存消息字段",
+      "code": "messages = [\n    {\"role\": \"user\", \"content\": \"什么是列表？\"},\n    {\"role\": \"assistant\", \"content\": \"列表保存有顺序的元素。\"},\n]\nmessages.append({\"role\": \"user\", \"content\": \"给我一个例子。\"})\nfor message in messages:\n    print(f\"{message['role']}: {message['content']}\")\nprint(len(messages))\n",
+      "output": "user: 什么是列表？\nassistant: 列表保存有顺序的元素。\nuser: 给我一个例子。\n3\n",
+      "explain": "messages 外层列表保存时间顺序；每个内层字典保存一条消息。messages[0] 取得第一条字典，再用 ['content'] 取得正文；for 每次让 message 指向一条字典。这里 role 只是我们约定的字段，assistant 文字是预先写好的，没有模型参与。真实服务的消息格式和角色语义要查对应接口。",
+      "challenge": "只输出 role 为 user 的消息，再统计用户消息的条数。不要删除遍历中的元素；先用 if 选择要处理的记录。",
+      "stdin": "",
+      "path": "examples/ch08/ex08_07.py"
+    },
+    {
       "id": "09_01",
       "title": "定义与调用",
       "code": "def add(a, b):\n    return a + b\n\nresult = add(2, 3)\nprint(result)\nprint(add(10, 20) * 2)\n",
@@ -529,6 +569,26 @@
       "challenge": "再返回最大值，并为无元素情况写约定。",
       "stdin": "",
       "path": "examples/ch09/ex09_08.py"
+    },
+    {
+      "id": "09_09",
+      "title": "AI / Agent：工具函数把结果交回调用者",
+      "code": "def count_words(text):\n    words = text.split()\n    return {\"count\": len(words), \"empty\": len(words) == 0}\n\nresult = count_words(\"  learn Python   today \")\nprint(result[\"count\"])\nprint(result[\"empty\"])\nprint(count_words(\"\")[\"count\"])\n",
+      "output": "3\nFalse\n0\n",
+      "explain": "输入字符串进入 text；split 得到三个按空白分开的词；函数构造字典并 return；外层 result 接收字典后取字段。函数体不打印，所以可以重复用于统计、测试或保存文件。它要求 text 是字符串；第 13 章再学习怎样验证来自外部的数据。按空白分词只适合此处演示，既不是通用中文分词器，也不是模型 tokenizer。",
+      "challenge": "把 return 改成 print 字典，再运行，观察 result 的值为什么变成 None。修复后传入纯空白字符串，预测 count 和 empty。",
+      "stdin": "",
+      "path": "examples/ch09/ex09_09.py"
+    },
+    {
+      "id": "09_10",
+      "title": "AI / Agent：返回的新轮数要由调用者接住",
+      "code": "def next_round(current):\n    return current + 1\n\nrounds = 0\nfor _ in range(3):\n    next_round(rounds)\nprint(f\"未接收：{rounds}\")\n\nfor _ in range(3):\n    rounds = next_round(rounds)\n    print(f\"保存后：{rounds}\")\n",
+      "output": "未接收：0\n保存后：1\n保存后：2\n保存后：3\n",
+      "explain": "第一个循环每次都传入 0，并得到 1，但没有变量接收这三个返回值。第二个循环的右边先计算 next_round(rounds)，然后左边 rounds 才绑定新值；所以下一轮能接着上次的结果计算。下划线只是一个变量名，表示本例不需要循环索引。这是离线计数实验，没有执行真实 Agent 或模型调用。",
+      "challenge": "把初始 rounds 改为 5，先写出全部四行输出再运行。随后只删掉第二个循环中的赋值，解释为什么三次打印都不再增长。",
+      "stdin": "",
+      "path": "examples/ch09/ex09_10.py"
     },
     {
       "id": "10_01",
@@ -701,6 +761,16 @@
       "path": "examples/ch12/ex12_06.py"
     },
     {
+      "id": "12_07",
+      "title": "AI / Agent：把会话快照写入 JSON 再读回",
+      "code": "import json\nfrom pathlib import Path\n\nmessages = [{\"role\": \"user\", \"content\": \"学习函数\"}]\npath = Path(\"outputs/ai_chat_demo.json\")\npath.parent.mkdir(parents=True, exist_ok=True)\ntext = json.dumps(messages, ensure_ascii=False, indent=2)\npath.write_text(text, encoding=\"utf-8\")\nrestored = json.loads(path.read_text(encoding=\"utf-8\"))\nprint(type(restored).__name__)\nprint(restored[0][\"content\"])\nprint(restored == messages)\n",
+      "output": "list\n学习函数\nTrue\n",
+      "explain": "messages 是内存列表；dumps 把它变成 JSON 字符串；write_text 把字符串写到当前工作目录下的 outputs/ai_chat_demo.json；read_text 读回字符串；loads 再得到列表。两次转换方向相反，值相等不代表还是同一个内存对象。重复运行会重写这个演示文件；在学习包根目录运行时，可到 outputs 查看内容。这里叫持久化，因为文件在程序退出后仍在；不是训练模型或修改模型权重。",
+      "challenge": "给列表追加一条 assistant 消息再运行，确认文件里出现两条。随后只修改内存列表而不写文件，再读文件，说明为什么文件不会自动跟着改变。",
+      "stdin": "",
+      "path": "examples/ch12/ex12_07.py"
+    },
+    {
       "id": "13_01",
       "title": "具体捕获转换错误",
       "code": "texts = [\"10\", \"bad\", \"20\"]\nvalues = []\nfor text in texts:\n    try:\n        value = int(text)\n    except ValueError:\n        print(\"跳过无效值\", repr(text))\n    else:\n        values.append(value)\nprint(sum(values))\n",
@@ -749,6 +819,46 @@
       "challenge": "加一条 120，验证范围检查。",
       "stdin": "",
       "path": "examples/ch13/ex13_05.py"
+    },
+    {
+      "id": "13_06",
+      "title": "AI / Agent：解析、校验、有限次重试",
+      "code": "import json\n\ndef read_answer(text):\n    data = json.loads(text)\n    if not isinstance(data, dict):\n        raise ValueError(\"最外层必须是对象\")\n    answer = data.get(\"answer\")\n    if not isinstance(answer, str) or not answer.strip():\n        raise ValueError(\"answer 必须是非空字符串\")\n    return answer.strip()\n\nreplies = [\"not-json\", '{\"answer\": 12}', '{\"answer\": \"先学函数\"}']\nfor attempt, reply in enumerate(replies, start=1):\n    try:\n        answer = read_answer(reply)\n    except ValueError:\n        print(f\"第 {attempt} 次：格式或内容不合格\")\n        continue\n    print(f\"第 {attempt} 次：{answer}\")\n    break\nelse:\n    print(\"已用完预设回复，停止\")\n",
+      "output": "第 1 次：格式或内容不合格\n第 2 次：格式或内容不合格\n第 3 次：先学函数\n",
+      "explain": "第 1 条连 JSON 语法都不满足；第 2 条能解析，但 answer 是整数；第 3 条才满足本题结构约定。json.JSONDecodeError 属于 ValueError，因此此处一起捕获；正式调试时可以分别记录原因。try 只包住解析函数，成功后打印并 break。for 的 else 仅在没有 break、正常遍历结束时执行。本例读取三条预设字符串，不会请求模型重试；通过校验也只说明结构合格，不保证答案事实正确。",
+      "challenge": "把第三条改成空字符串字段，确认出现“停止”。再把第二条改为合法答案，确认第三条不会读取。",
+      "stdin": "",
+      "path": "examples/ch13/ex13_06.py"
+    },
+    {
+      "id": "13_07",
+      "title": "作用域排错：先复现，再用参数和返回值修复",
+      "code": "rounds = 0\n\ndef broken_round():\n    rounds += 1\n    return rounds\n\ntry:\n    broken_round()\nexcept UnboundLocalError as error:\n    print(type(error).__name__)\nprint(f\"外部轮数：{rounds}\")\n\ndef fixed_round(current):\n    return current + 1\n\nrounds = fixed_round(rounds)\nrounds = fixed_round(rounds)\nprint(f\"修复后：{rounds}\")\n",
+      "output": "UnboundLocalError\n外部轮数：0\n修复后：2\n",
+      "explain": "broken_round 的 += 要读取还不存在的局部 rounds，赋值未能完成就出错。捕获异常后，外部 rounds 仍为 0。fixed_round 两次分别收到 0 和 1，返回 1 和 2，调用者保存返回值后得到 2。捕获错误本身没有修复逻辑；修复来自明确的参数和返回值。",
+      "challenge": "把第二次修复调用改成单独的 fixed_round(rounds)，不接收返回值，预测最后输出。再对照第 09 章 09_10，解释“报错”和“能运行但没保存结果”的区别。",
+      "stdin": "",
+      "path": "examples/ch13/ex13_07.py"
+    },
+    {
+      "id": "13_08",
+      "title": "AI 数据排错：保留坏行位置，继续处理下一行",
+      "code": "import json\n\ndef read_training_lines(text):\n    records, errors = [], []\n    blank_lines = 0\n    for line_number, line in enumerate(text.splitlines(), start=1):\n        if not line.strip():\n            blank_lines += 1\n            continue\n        try:\n            item = json.loads(line)\n        except json.JSONDecodeError:\n            errors.append({\"line\": line_number, \"kind\": \"json\"})\n            continue\n        if not isinstance(item, dict):\n            errors.append({\"line\": line_number, \"kind\": \"schema\"})\n            continue\n        content = item.get(\"text\")\n        label = item.get(\"label\")\n        if not isinstance(content, str) or type(label) is not int:\n            errors.append({\"line\": line_number, \"kind\": \"schema\"})\n            continue\n        if not content.strip() or label not in (0, 1):\n            errors.append({\"line\": line_number, \"kind\": \"value\"})\n            continue\n        records.append({\"text\": content.strip(), \"label\": label})\n    return records, errors, blank_lines\n\ntext = '\\n'.join([\n    '{\"text\": \" Python \", \"label\": 1}',\n    '',\n    '{\"text\": \"broken\", \"label\": 0',\n    '{\"text\": 42, \"label\": 0}',\n    '{\"text\": \"hello\", \"label\": 2}',\n    '{\"text\": \"Agent\", \"label\": 0}',\n])\nrecords, errors, blank_lines = read_training_lines(text)\nprint(f\"保留 {len(records)} 条，跳过 {blank_lines} 个空行\")\nfor error in errors:\n    print(f\"第 {error['line']} 行：{error['kind']}\")\nprint(records)\n",
+      "output": "保留 2 条，跳过 1 个空行\n第 3 行：json\n第 4 行：schema\n第 5 行：value\n[{'text': 'Python', 'label': 1}, {'text': 'Agent', 'label': 0}]\n",
+      "explain": "输入文本先分行并编号；空行跳过但保留原行号；每行依次经过解析、类型和取值检查；只有合格记录进入 records。坏行的类别与行号进入 errors，不影响第 6 行被保留。多个字段同时出错时，只报告本程序最先检查到的类别，不代表已经列出所有问题。这里只检查数据格式，没有训练模型。",
+      "challenge": "把第 4 行的 label 改为 true、text 改为 \"ok\"，预测它仍属于 schema；再把第 5 行 text 改为空白且 label 改为 0，预测属于 value。最后在首行前加一个空行，核对所有原错误行号加 1。",
+      "stdin": "",
+      "path": "examples/ch13/ex13_08.py"
+    },
+    {
+      "id": "13_09",
+      "title": "CSV 清洗：空行、缺列与零分分别处理",
+      "code": "import csv\nimport io\n\ndef clean_scores_csv(text):\n    reader = csv.reader(io.StringIO(text, newline=\"\"), strict=True)\n    if next(reader, None) != [\"name\", \"score\"]:\n        raise ValueError(\"表头必须为 name,score\")\n    valid, errors = [], []\n    for row in reader:\n        end_line = reader.line_num\n        if not row:\n            continue\n        if len(row) != 2:\n            errors.append((end_line, \"columns\"))\n            continue\n        name = row[0].strip()\n        if not name:\n            errors.append((end_line, \"name\"))\n            continue\n        try:\n            score = int(row[1].strip())\n        except ValueError:\n            errors.append((end_line, \"integer\"))\n            continue\n        if not 0 <= score <= 100:\n            errors.append((end_line, \"range\"))\n            continue\n        valid.append({\"name\": name, \"score\": score})\n    return valid, errors\n\ntext = 'name,score\\n\"林,一\",80\\n\\n小陈,bad\\n小周,101\\n小李\\n小何,0\\n'\nvalid, errors = clean_scores_csv(text)\nprint(valid)\nfor end_line, reason in errors:\n    print(f\"结束行 {end_line}：{reason}\")\n",
+      "output": "[{'name': '林,一', 'score': 80}, {'name': '小何', 'score': 0}]\n结束行 4：integer\n结束行 5：range\n结束行 6：columns\n",
+      "explain": "reader 先把文本解析成字段列表。列数与姓名合格后才尝试 int，只有转换成功才判断分数范围。第 3 行空行不应挤掉后面的物理行号，所以从 reader.line_num 取得结束行。第 7 行的 0 转换成功且在范围内，必须保留。所有错误分支都 continue，因此错误记录不会落入最后的 valid.append。",
+      "challenge": "先做正文的四次单项改写，再试只有表头的输入，确认返回两个空列表；改错表头时应得到 ValueError。最后用带引号换行的姓名，观察结束行号为什么可能跳两个数。",
+      "stdin": "",
+      "path": "examples/ch13/ex13_09.py"
     },
     {
       "id": "14_01",
@@ -801,6 +911,16 @@
       "path": "examples/ch14/ex14_05.py"
     },
     {
+      "id": "14_06",
+      "title": "AI / Agent：两个会话不能共用消息列表",
+      "code": "class ChatSession:\n    def __init__(self, name):\n        self.name = name\n        self.messages = []\n\n    def add(self, text):\n        self.messages.append(text)\n        return len(self.messages)\n\nalice = ChatSession(\"Alice\")\nbob = ChatSession(\"Bob\")\ncount = alice.add(\"我在学习 Python\")\nprint(alice.name, count)\nprint(bob.name, len(bob.messages))\nprint(alice.messages is bob.messages)\n",
+      "output": "Alice 1\nBob 0\nFalse\n",
+      "explain": "每次 ChatSession(...) 都调用 __init__，其中 [] 各创建一次。alice.add 调用时 self 是 alice，只修改她的 messages；方法把新长度 return 给 count。最后的 is 比较是否为同一对象，不是比较内容是否相等。两个会话当前只在内存保存消息；关闭程序后要靠第 12 章的文件操作恢复。",
+      "challenge": "在临时副本里把 messages = [] 移到类的顶层并删除 self.messages 初始化，重新运行并解释结果变化。随后恢复实例属性写法。",
+      "stdin": "",
+      "path": "examples/ch14/ex14_06.py"
+    },
+    {
       "id": "15_01",
       "title": "迭代器逐项取值",
       "code": "iterator = iter([10, 20, 30])\nprint(next(iterator))\nprint(list(iterator))\nprint(list(iterator))\n",
@@ -849,6 +969,16 @@
       "challenge": "自己用错误类型调用，确认真正失败发生在哪个操作。",
       "stdin": "",
       "path": "examples/ch15/ex15_05.py"
+    },
+    {
+      "id": "15_06",
+      "title": "AI / Agent：用生成器模拟逐段到达的文字",
+      "code": "def simulated_stream():\n    yield \"先学\"\n    yield \" Python\"\n    yield \"，再做项目。\"\n\npieces = []\nstream = simulated_stream()\nfor piece in stream:\n    pieces.append(piece)\n    print(f\"收到：{piece}\")\nprint(\"完整：\" + \"\".join(pieces))\nprint(list(stream))\n",
+      "output": "收到：先学\n收到： Python\n收到：，再做项目。\n完整：先学 Python，再做项目。\n[]\n",
+      "explain": "调用 simulated_stream 得到生成器，此时还未产出任何片段。for 每次索取下一个值，函数执行到 yield 暂停；下一轮从暂停处继续。遍历结束后，这个 stream 已耗尽，再转成列表是 []；重新调用函数才能得到新的生成器。片段是预设字符串，不是实际模型 token，也没有真实网络延迟。join 用空字符串连接，保留片段自身的空格。",
+      "challenge": "把 join 的分隔符改成一个空格，观察为何会多出空格。再创建一个新的 stream，验证它能重新输出全部片段。",
+      "stdin": "",
+      "path": "examples/ch15/ex15_06.py"
     },
     {
       "id": "16_01",
@@ -909,6 +1039,16 @@
       "challenge": "把最后一行改为 [5]，确认检查能发现不齐。",
       "stdin": "",
       "path": "examples/ch16/ex16_06.py"
+    },
+    {
+      "id": "16_07",
+      "title": "AI / Agent：串起决策、工具、观察和结束",
+      "code": "def search_notes(query):\n    notes = [\n        {\"keyword\": \"列表\", \"text\": \"列表保存有顺序的元素。\", \"source\": \"note-01\"},\n        {\"keyword\": \"函数\", \"text\": \"return 把结果交回调用位置。\", \"source\": \"note-02\"},\n    ]\n    for note in notes:\n        if note[\"keyword\"] in query:\n            return {\"text\": note[\"text\"], \"source\": note[\"source\"]}\n    return {\"text\": \"没有找到相关笔记。\", \"source\": None}\n\ndef decide(state):\n    if state[\"observation\"] is None:\n        return {\"action\": \"search\", \"query\": state[\"query\"]}\n    return {\"action\": \"finish\"}\n\nstate = {\"query\": \"怎么理解函数？\", \"observation\": None}\nfinished = False\nfor step in range(1, 4):\n    decision = decide(state)\n    print(f\"第 {step} 步：{decision['action']}\")\n    if decision[\"action\"] == \"search\":\n        state[\"observation\"] = search_notes(decision[\"query\"])\n    elif decision[\"action\"] == \"finish\":\n        print(state[\"observation\"][\"text\"])\n        print(f\"来源：{state['observation']['source']}\")\n        finished = True\n        break\n    else:\n        raise ValueError(\"未知动作\")\nif not finished:\n    print(\"达到步数上限，尚未完成\")\n",
+      "output": "第 1 步：search\n第 2 步：finish\nreturn 把结果交回调用位置。\n来源：note-02\n",
+      "explain": "输入 query 进入 state；第一次 decide 看见 observation 为 None，提出 search 动作；执行器调用工具 search_notes，把结果写回 observation；第二次 decide 因已有结果而选择 finish；执行器输出结果和来源后结束。决策函数在这里完全由规则实现；没有模型推理、向量检索或生成式回答。检索只返回第一个命中的关键词笔记，能追踪来源不等于覆盖所有问题。固定上限可以限制此循环执行次数，但不能中断某一次已经卡住的工具函数。",
+      "challenge": "把问题改成“什么是张量？”，观察无命中时的结果。把 range(1, 4) 改为 range(1, 2)，确认工具虽执行了但流程还未 finish。最后解释：为什么只把一个函数命名为 agent 并不自动获得规划能力？",
+      "stdin": "",
+      "path": "examples/ch16/ex16_07.py"
     }
   ],
   "exercises": [
@@ -1165,6 +1305,20 @@
       "solution": "solutions/ch03/ex03_07.py"
     },
     {
+      "id": "03_08",
+      "title": "AI / Agent：整理检索问题",
+      "level": "迁移",
+      "task": "给定 question = \"  What is Python?  \"，先去掉首尾空白，再变成小写，保存为 cleaned。输出 cleaned，下一行输出它的字符数。只练字符串处理，不做真实搜索。",
+      "hint": "先写 cleaned = question.strip().lower()。方法从左到右执行；len 统计的是清理后字符串。",
+      "code": "question = \"  What is Python?  \"\ncleaned = question.strip().lower()\nprint(cleaned)\nprint(len(cleaned))\n",
+      "output": "what is python?\n15\n",
+      "explain": "原始文字 → strip 去边缘空白 → lower 统一英文大小写 → len 计数。中间的两个空格和问号都保留。常见错误是对原 question 求长度，或忘了接住方法返回的新字符串。边界试验：空字符串清理后仍为空，长度为 0；中文不因为 lower 而变成英文。",
+      "stdin": "",
+      "tests": "",
+      "path": "practice/ch03/ex03_08.py",
+      "solution": "solutions/ch03/ex03_08.py"
+    },
+    {
       "id": "04_01",
       "title": "奇偶判断",
       "level": "基础",
@@ -1261,6 +1415,20 @@
       "tests": "",
       "path": "practice/ch04/ex04_07.py",
       "solution": "solutions/ch04/ex04_07.py"
+    },
+    {
+      "id": "04_08",
+      "title": "AI / Agent：输出长度约定",
+      "level": "迁移",
+      "task": "给定 reply = \"  hello  \"、limit = 5。清理首尾空白后：空内容输出 empty；字符数超过 limit 输出 too_long；否则输出 ok。条件按此顺序组织。",
+      "hint": "长度恰好等于 5 应通过，比较符号应是 >。先判断空内容，可以把两种错误明确区分。",
+      "code": "reply = \"  hello  \"\nlimit = 5\ncleaned = reply.strip()\nif cleaned == \"\":\n    print(\"empty\")\nelif len(cleaned) > limit:\n    print(\"too_long\")\nelse:\n    print(\"ok\")\n",
+      "output": "ok\n",
+      "explain": "清理后 hello 长度为 5，没有超过上限，因此输出 ok。请分别用空白、四字符、五字符、六字符测试。这是我们自己制定的字符长度规则，不是实际模型的上下文长度限制；模型上下文一般需要按对应 tokenizer 的 token 计算。",
+      "stdin": "",
+      "tests": "",
+      "path": "practice/ch04/ex04_08.py",
+      "solution": "solutions/ch04/ex04_08.py"
     },
     {
       "id": "05_01",
@@ -1457,6 +1625,20 @@
       "tests": "",
       "path": "practice/ch06/ex06_07.py",
       "solution": "solutions/ch06/ex06_07.py"
+    },
+    {
+      "id": "06_08",
+      "title": "AI / Agent：完成前先扣减工作量",
+      "level": "迁移",
+      "task": "给定 remaining = 5、steps = 0。每轮处理一项，remaining 减 1，steps 加 1；只要有剩余且 steps 小于 3 就继续。最后分别输出 steps、remaining。不要写无限循环。",
+      "hint": "while 条件同时检查 remaining > 0 和 steps < 3。两个计数器都在循环体中更新。",
+      "code": "remaining = 5\nsteps = 0\nwhile remaining > 0 and steps < 3:\n    remaining -= 1\n    steps += 1\nprint(steps)\nprint(remaining)\n",
+      "output": "3\n2\n",
+      "explain": "执行前为 (steps, remaining) = (0, 5)，三轮后依次为 (1, 4)、(2, 3)、(3, 2)。下一次条件检查因 steps < 3 为 False 停止。没有完成的两项仍保留，不能把达到轮数上限写成“任务完成”。改 remaining 为 0 和 1，分别应得到 0/0 与 1/0。",
+      "stdin": "",
+      "tests": "",
+      "path": "practice/ch06/ex06_08.py",
+      "solution": "solutions/ch06/ex06_08.py"
     },
     {
       "id": "07_01",
@@ -1683,6 +1865,20 @@
       "solution": "solutions/ch08/ex08_08.py"
     },
     {
+      "id": "08_09",
+      "title": "AI / Agent：统计用户消息",
+      "level": "迁移",
+      "task": "messages 为 [{\"role\": \"user\", \"content\": \"hi\"}, {\"role\": \"assistant\", \"content\": \"hello\"}, {\"role\": \"user\", \"content\": \"bye\"}]。只输出用户消息正文，并在最后输出用户消息数。所有记录都保证有这两个键。",
+      "hint": "count 从 0 开始；只有 role 等于 user 时才打印正文并加 1。",
+      "code": "messages = [\n    {\"role\": \"user\", \"content\": \"hi\"},\n    {\"role\": \"assistant\", \"content\": \"hello\"},\n    {\"role\": \"user\", \"content\": \"bye\"},\n]\ncount = 0\nfor message in messages:\n    if message[\"role\"] == \"user\":\n        print(message[\"content\"])\n        count += 1\nprint(count)\n",
+      "output": "hi\nbye\n2\n",
+      "explain": "先取 role 决定是否进入分支，再取 content。count 不应在分支外增加，否则会把 assistant 也算进去。空列表没有任何正文输出，最后应输出 0；将所有 role 改为 assistant 也应得到 0。字段缺失的处理留到第 13 章，不能把本题的输入保证推广到任何外部数据。",
+      "stdin": "",
+      "tests": "",
+      "path": "practice/ch08/ex08_09.py",
+      "solution": "solutions/ch08/ex08_09.py"
+    },
+    {
       "id": "09_01",
       "title": "温度转换函数",
       "level": "基础",
@@ -1793,6 +1989,34 @@
       "tests": "assert discounted([]) == []\nsource = [10, 20]\nassert discounted(source, 0.5) == [5, 10]\nassert source == [10, 20]",
       "path": "practice/ch09/ex09_08.py",
       "solution": "solutions/ch09/ex09_08.py"
+    },
+    {
+      "id": "09_09",
+      "title": "AI / Agent：先约定工具的输入和返回结构",
+      "level": "场景",
+      "task": "实现 summarize_text(text)，输入保证是字符串。先 strip；返回字典，字段 chars 为清理后的长度、preview 为前 4 个字符、empty 表示是否为空。函数不能打印。用 \"  Python  \" 调用，依次打印三个字段。",
+      "hint": "先保存 cleaned，再构造一个字典 return。切片 [:4] 遇到不足 4 个字符时不会越界报错。",
+      "code": "def summarize_text(text):\n    cleaned = text.strip()\n    return {\n        \"chars\": len(cleaned),\n        \"preview\": cleaned[:4],\n        \"empty\": cleaned == \"\",\n    }\n\nresult = summarize_text(\"  Python  \")\nprint(result[\"chars\"])\nprint(result[\"preview\"])\nprint(result[\"empty\"])\n",
+      "output": "6\nPyth\nFalse\n",
+      "explain": "清理后的 Python 长度为 6，前四字符是 Pyth。把计算与输出分开后，调用者可以只显示 preview，或把整个结果写成 JSON。边界：空白返回 chars=0、preview=''、empty=True；短字符串原样作为预览。本题额外检查空白、短字符串和函数没有打印的约定。",
+      "stdin": "",
+      "tests": "f = summarize_text\nassert f(\"   \") == {\"chars\": 0, \"preview\": \"\", \"empty\": True}\nassert f(\"AI\") == {\"chars\": 2, \"preview\": \"AI\", \"empty\": False}\nimport contextlib, io\ncaptured = io.StringIO()\nwith contextlib.redirect_stdout(captured):\n    f(\"test\")\nassert captured.getvalue() == \"\", \"函数应返回结果，不应打印\"",
+      "path": "practice/ch09/ex09_09.py",
+      "solution": "solutions/ch09/ex09_09.py"
+    },
+    {
+      "id": "09_10",
+      "title": "AI / Agent：把剩余预算逐步传下去",
+      "level": "迁移",
+      "task": "实现 remaining_budget(remaining, used)，两个输入保证为非负整数，返回扣减后的余额，最低为 0；函数不得打印或依赖全局余额。先设 budget=60，接收扣 15 的结果并打印；再接收扣 50 的结果并打印。",
+      "hint": "函数先计算 remaining - used，负数返回 0，否则返回计算值。调用时要把返回值赋给 budget，再进行下一次调用。",
+      "code": "def remaining_budget(remaining, used):\n    result = remaining - used\n    if result < 0:\n        return 0\n    return result\n\nbudget = 60\nbudget = remaining_budget(budget, 15)\nprint(budget)\nbudget = remaining_budget(budget, 50)\nprint(budget)\n",
+      "output": "45\n0\n",
+      "explain": "第一步 60-15 得到 45，第二步把 45 传回函数，45-50 小于 0，按约定返回 0。若没有保存第一次的返回值，就会错误地从 60 再扣 50。本题的预算是人为设定的整数额度，不是 API 账单或模型 token 数。边界：扣 0 不变、恰好扣完为 0、超过余额也为 0；重复输入应得到相同结果。",
+      "stdin": "",
+      "tests": "assert remaining_budget(0, 0) == 0\nassert remaining_budget(10, 0) == 10\nassert remaining_budget(10, 10) == 0\nassert remaining_budget(10, 11) == 0\nassert remaining_budget(60, 15) == 45\nassert remaining_budget(60, 15) == 45, \"函数不能偷偷累积全局余额\"\nassert remaining_budget(remaining_budget(60, 15), 50) == 0\nimport contextlib, io\ncapture = io.StringIO()\nwith contextlib.redirect_stdout(capture):\n    remaining_budget(3, 1)\nassert capture.getvalue() == \"\", \"函数负责返回，显示交给调用者\"",
+      "path": "practice/ch09/ex09_10.py",
+      "solution": "solutions/ch09/ex09_10.py"
     },
     {
       "id": "10_01",
@@ -2033,6 +2257,20 @@
       "solution": "solutions/ch12/ex12_06.py"
     },
     {
+      "id": "12_07",
+      "title": "AI / Agent：读回合法的 JSONL 消息",
+      "level": "场景",
+      "task": "实现 parse_messages(text)：输入为多行文本，每个非空行保证是含 role、content 的合法 JSON 对象；跳过空行，返回解析后的字典列表。调用文本为两行 {\"role\":\"user\",\"content\":\"hi\"} 与 {\"role\":\"assistant\",\"content\":\"hello\"}，中间有一空行。输出列表长度和第二条正文。",
+      "hint": "用 splitlines 遍历行，strip 后为空就 continue；否则 json.loads 后 append。此题只处理合法记录，坏 JSON 留到下一章。",
+      "code": "import json\n\ndef parse_messages(text):\n    messages = []\n    for line in text.splitlines():\n        if not line.strip():\n            continue\n        messages.append(json.loads(line))\n    return messages\n\ntext = '{\"role\":\"user\",\"content\":\"hi\"}\\n\\n{\"role\":\"assistant\",\"content\":\"hello\"}'\nmessages = parse_messages(text)\nprint(len(messages))\nprint(messages[1][\"content\"])\n",
+      "output": "2\nhello\n",
+      "explain": "splitlines 把文本拆成行；空行被跳过；每个非空行独立 loads，而不是把整段 JSONL 当一个 JSON 文档。最后返回列表供调用者使用。尝试末尾换行、Windows 的 CRLF 换行和全空输入；这些都不应多产生一条消息。下一章再区分格式错误和字段错误。",
+      "stdin": "",
+      "tests": "f = parse_messages\nassert f(\"\") == []\nassert f(\" \\n\\r\\n\") == []\nassert f('{\"role\":\"user\",\"content\":\"a\"}\\r\\n') == [{\"role\":\"user\",\"content\":\"a\"}]",
+      "path": "practice/ch12/ex12_07.py",
+      "solution": "solutions/ch12/ex12_07.py"
+    },
+    {
       "id": "13_01",
       "title": "容错转整数",
       "level": "基础",
@@ -2117,6 +2355,62 @@
       "solution": "solutions/ch13/ex13_06.py"
     },
     {
+      "id": "13_07",
+      "title": "AI / Agent：验证工具调用数据",
+      "level": "场景",
+      "task": "实现 read_call(text)：解析 JSON，要求最外层为字典、name 恰好为 \"char_count\"、arguments 为字典且其中 text 为字符串。成功时返回 arguments[\"text\"]；不满足任一条件时 raise ValueError。空字符串允许。调用 {\"name\":\"char_count\",\"arguments\":{\"text\":\"Python\"}} 并打印返回文本。",
+      "hint": "分层检查，不要连写 data['arguments']['text'] 后才判断。get 取不到键会得到 None，正好可以进入错误分支。JSON 语法错误本身也是 ValueError 的一种。",
+      "code": "import json\n\ndef read_call(text):\n    data = json.loads(text)\n    if not isinstance(data, dict):\n        raise ValueError(\"调用必须是对象\")\n    if data.get(\"name\") != \"char_count\":\n        raise ValueError(\"不支持的工具名\")\n    arguments = data.get(\"arguments\")\n    if not isinstance(arguments, dict):\n        raise ValueError(\"arguments 必须是对象\")\n    content = arguments.get(\"text\")\n    if not isinstance(content, str):\n        raise ValueError(\"text 必须是字符串\")\n    return content\n\nrequest = '{\"name\":\"char_count\",\"arguments\":{\"text\":\"Python\"}}'\nprint(read_call(request))\n",
+      "output": "Python\n",
+      "explain": "先解析，再按层检查类型和字段，最后才返回允许的数据。本题只负责验证，不执行任何工具。name 的允许值只有 char_count；其他名字应明确拒绝，不能 eval 数据中的文本。空文本是字符串，符合本题约定；数字、null 和缺失字段不符合。额外测试会检查这些分支，并要求错误类型为 ValueError。",
+      "stdin": "",
+      "tests": "assert read_call('{\"name\":\"char_count\",\"arguments\":{\"text\":\"\"}}') == \"\"\nfor invalid in [\n    \"bad-json\", \"[]\", \"null\",\n    '{\"name\":\"unknown\",\"arguments\":{\"text\":\"a\"}}',\n    '{\"name\":\"char_count\"}',\n    '{\"name\":\"char_count\",\"arguments\":[]}',\n    '{\"name\":\"char_count\",\"arguments\":{\"text\":12}}',\n    '{\"name\":\"char_count\",\"arguments\":{}}',\n]:\n    try:\n        read_call(invalid)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError(f\"应拒绝：{invalid}\")",
+      "path": "practice/ch13/ex13_07.py",
+      "solution": "solutions/ch13/ex13_07.py"
+    },
+    {
+      "id": "13_08",
+      "title": "作用域修复：统计工具执行成功次数",
+      "level": "场景",
+      "task": "坏思路是在函数中直接给外部 total += 1。请改为实现 count_successes(results, start=0)：results 保证是布尔列表，start 保证为非负整数。以 start 为起点，只为 True 增加 1，返回新计数，不修改 results，不依赖全局计数，不打印。设 total=10，用 [True, False, True] 调用后保存到 total 并打印。",
+      "hint": "进入函数先用 count=start 建立局部计数；循环中按结果更新 count，最后 return。外面用 total = count_successes(..., start=total)。",
+      "code": "def count_successes(results, start=0):\n    count = start\n    for succeeded in results:\n        if succeeded:\n            count += 1\n    return count\n\ntotal = 10\ntotal = count_successes([True, False, True], start=total)\nprint(total)\n",
+      "output": "12\n",
+      "explain": "局部 count 有明确初始值，所以 += 有旧值可读。三次判断后依次是 11、11、12；调用者再把返回的 12 存为 total。空列表应原样返回 start；全 False 不增加；重复调用默认 start=0 时不能记住上一次结果。这里的 True/False 是固定输入，只表示练习中的状态标记，不证明真实模型回答质量。",
+      "stdin": "",
+      "tests": "assert count_successes([]) == 0\nassert count_successes([], start=7) == 7\nassert count_successes([False, False], start=3) == 3\nassert count_successes([True, True]) == 2\nassert count_successes([True]) == 1\nassert count_successes([True]) == 1, \"多次调用不能共享全局计数\"\ndata = [True, False, True]\nassert count_successes(data, start=10) == 12\nassert data == [True, False, True]\nimport contextlib, io\ncapture = io.StringIO()\nwith contextlib.redirect_stdout(capture):\n    count_successes([True])\nassert capture.getvalue() == \"\"",
+      "path": "practice/ch13/ex13_08.py",
+      "solution": "solutions/ch13/ex13_08.py"
+    },
+    {
+      "id": "13_09",
+      "title": "AI / Agent：逐行检查工具日志并记录错误",
+      "level": "综合",
+      "task": "实现 read_tool_log(text)，输入保证是字符串。每个非空行应为 JSON 对象，tool 为非空字符串，ok 为 bool。跳过空行；合法记录将 tool.strip() 后保存为只含 tool、ok 的新字典。返回 (records, errors)，errors 每项为 {\"line\":原始行号,\"kind\":类别}；坏 JSON 类别为 json，非字典/缺字段/类型错误为 schema，tool 仅空白为 value。每行最多报一个错误，按上述顺序检查。五行依次为 {\"tool\":\" search \",\"ok\":true}、空行、bad-json、{\"tool\":\"count\",\"ok\":1}、{\"tool\":\"save\",\"ok\":false}。最后打印 records 和 errors，各占一行。",
+      "hint": "沿用示例的 enumerate → 跳空行 → try loads → 检查类型 → 检查取值顺序；ok=1 不是本题允许的 bool。不要在编号之前删除空行。",
+      "code": "import json\n\ndef read_tool_log(text):\n    records, errors = [], []\n    for line_number, line in enumerate(text.splitlines(), start=1):\n        if not line.strip():\n            continue\n        try:\n            item = json.loads(line)\n        except json.JSONDecodeError:\n            errors.append({\"line\": line_number, \"kind\": \"json\"})\n            continue\n        if not isinstance(item, dict):\n            errors.append({\"line\": line_number, \"kind\": \"schema\"})\n            continue\n        tool = item.get(\"tool\")\n        ok = item.get(\"ok\")\n        if not isinstance(tool, str) or not isinstance(ok, bool):\n            errors.append({\"line\": line_number, \"kind\": \"schema\"})\n            continue\n        if not tool.strip():\n            errors.append({\"line\": line_number, \"kind\": \"value\"})\n            continue\n        records.append({\"tool\": tool.strip(), \"ok\": ok})\n    return records, errors\n\ntext = '\\n'.join([\n    '{\"tool\":\" search \",\"ok\":true}',\n    '',\n    'bad-json',\n    '{\"tool\":\"count\",\"ok\":1}',\n    '{\"tool\":\"save\",\"ok\":false}',\n])\nrecords, errors = read_tool_log(text)\nprint(records)\nprint(errors)\n",
+      "output": "[{'tool': 'search', 'ok': True}, {'tool': 'save', 'ok': False}]\n[{'line': 3, 'kind': 'json'}, {'line': 4, 'kind': 'schema'}]\n",
+      "explain": "第 2 行为空，但第 3 行仍编号为 3。第 4 行 ok 是整数 1，不能当作 bool。第 5 行 ok=False 表示日志记录的工具状态失败，但这条日志本身格式合法，所以应保留。日志的格式合格与记录的操作成功是两件事；额外字段按题目约定不进入新记录。本题既不重新执行工具，也不证明日志内容真实。",
+      "stdin": "",
+      "tests": "assert read_tool_log(\"\") == ([], [])\nassert read_tool_log(\" \\n\\r\\n\") == ([], [])\ngood = '{\"tool\":\" save \",\"ok\":false,\"extra\":1}'\nassert read_tool_log(good) == ([{\"tool\":\"save\",\"ok\":False}], [])\ntext = '\\r\\n'.join(['', 'bad', good])\nassert read_tool_log(text) == ([{\"tool\":\"save\",\"ok\":False}], [{\"line\":2,\"kind\":\"json\"}])\nbad_schema = ['[]', 'null', '{}', '{\"tool\":\"a\",\"ok\":1}', '{\"tool\":1,\"ok\":true}', '{\"tool\":\"a\",\"ok\":\"false\"}']\nfor line in bad_schema:\n    assert read_tool_log(line) == ([], [{\"line\":1,\"kind\":\"schema\"}]), line\nassert read_tool_log('{\"tool\":\"  \",\"ok\":true}') == ([], [{\"line\":1,\"kind\":\"value\"}])\nboth_bad = '{\"tool\":\" \",\"ok\":0}'\nassert read_tool_log(both_bad) == ([], [{\"line\":1,\"kind\":\"schema\"}])\nassert read_tool_log(good + '\\n' + good) == ([{\"tool\":\"save\",\"ok\":False}, {\"tool\":\"save\",\"ok\":False}], [])\nassert read_tool_log(good) == ([{\"tool\":\"save\",\"ok\":False}], []), \"不同调用不能共用结果列表\"",
+      "path": "practice/ch13/ex13_09.py",
+      "solution": "solutions/ch13/ex13_09.py"
+    },
+    {
+      "id": "13_10",
+      "title": "AI / Agent：汇总本地工具耗时 CSV",
+      "level": "迁移",
+      "task": "实现 tool_time_total(text)，严格要求表头为 tool,ms，否则抛出 ValueError（包括空文本）。用 csv.reader 解析，忽略完全空行；逐条按顺序检查：恰好两列、工具名 strip 后非空、ms 能经 int 转换、ms 不小于 0。失败只记录第一项原因，代码依次为 columns、tool、integer、range，位置为该记录结束物理行号。返回 (合法耗时之和, 错误列表)，错误项为 (结束行号, 原因)。不打印，不写文件。打印对 'tool,ms\\n\"lookup,local\",12\\n\\nfetch,bad\\ncache,-1\\nsave\\nfinish,0\\n' 的返回值。严重 CSV 语法错误交给 csv 模块抛出。",
+      "hint": "先读表头；total=0、errors=[]。每次 next(reader) 由 for 自动完成后，reader.line_num 已指向记录结束行。所有检查通过才 total += ms。不要把合法的 0 当作缺失。",
+      "code": "import csv\nimport io\n\ndef tool_time_total(text):\n    reader = csv.reader(io.StringIO(text, newline=\"\"), strict=True)\n    if next(reader, None) != [\"tool\", \"ms\"]:\n        raise ValueError(\"表头必须为 tool,ms\")\n    total, errors = 0, []\n    for row in reader:\n        end_line = reader.line_num\n        if not row:\n            continue\n        if len(row) != 2:\n            errors.append((end_line, \"columns\"))\n            continue\n        if not row[0].strip():\n            errors.append((end_line, \"tool\"))\n            continue\n        try:\n            ms = int(row[1].strip())\n        except ValueError:\n            errors.append((end_line, \"integer\"))\n            continue\n        if ms < 0:\n            errors.append((end_line, \"range\"))\n            continue\n        total += ms\n    return total, errors\n\ntext = 'tool,ms\\n\"lookup,local\",12\\n\\nfetch,bad\\ncache,-1\\nsave\\nfinish,0\\n'\nprint(tool_time_total(text))\n",
+      "output": "(12, [(4, 'integer'), (5, 'range'), (6, 'columns')])\n",
+      "explain": "两条合法记录的耗时为 12 与 0，所以合计 12。空行不参与求和，错误仍对应第 4、5、6 物理行。缺失第二列属于 columns，存在第二列但为空属于 integer。额外列也必须拒绝。只有表头返回 (0, [])；空文本连表头都没有，应抛出 ValueError。这是人为填写的离线日志，毫秒不是 token；记录格式合法和耗时非负，不代表工具执行成功，也不代表最终任务正确。",
+      "stdin": "",
+      "tests": "assert tool_time_total(\"tool,ms\\n\") == (0, [])\nassert tool_time_total(\"tool,ms\\na,0\\nb, 8 \\n\") == (8, [])\nassert tool_time_total('tool,ms\\n\"a,b\",3\\n') == (3, [])\nassert tool_time_total(\"tool,ms\\n\\na,no\\nb,2\\n\") == (2, [(3, \"integer\")])\nassert tool_time_total(\"tool,ms\\na\\nb,\\nc,-2\\n,3\\nd,1,extra\\n\") == (0, [(2, \"columns\"), (3, \"integer\"), (4, \"range\"), (5, \"tool\"), (6, \"columns\")])\nassert tool_time_total('tool,ms\\n\"two\\nlines\",bad\\nend,2\\n') == (2, [(3, \"integer\")])\nassert tool_time_total(\"tool,ms\\r\\na,2\\r\\nb,x\\r\\n\") == (2, [(3, \"integer\")])\nassert tool_time_total(\"tool,ms\\n   ,bad\\na,1.5\\n\") == (0, [(2, \"tool\"), (3, \"integer\")])\nassert tool_time_total(\"tool,ms\\na,2\\n\") == (2, [])\nassert tool_time_total(\"tool,ms\\na,2\\n\") == (2, []), \"多次调用不能累积上次的合计\"\nfor invalid in [\"\", \"tool,cost\\na,3\\n\", \"ms,tool\\n3,a\\n\"]:\n    try:\n        tool_time_total(invalid)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError(\"错误表头必须抛出 ValueError\")\nimport contextlib, io\ncapture = io.StringIO()\nwith contextlib.redirect_stdout(capture):\n    tool_time_total(\"tool,ms\\na,1\\n\")\nassert capture.getvalue() == \"\", \"返回数据，打印交给调用者\"",
+      "path": "practice/ch13/ex13_10.py",
+      "solution": "solutions/ch13/ex13_10.py"
+    },
+    {
       "id": "14_01",
       "title": "步数计数器",
       "level": "基础",
@@ -2173,6 +2467,20 @@
       "solution": "solutions/ch14/ex14_04.py"
     },
     {
+      "id": "14_05",
+      "title": "AI / Agent：有条数上限的会话记忆",
+      "level": "场景",
+      "task": "实现 RecentMessages(limit)。limit 必须为大于 0 的 int，bool 不接受，否则 raise ValueError。每个实例有自己的 messages 列表；add(text) 只接受字符串，添加后保留最后 limit 条，返回当前条数。用 limit=2 依次添加 \"a\"、\"b\"、\"c\"，打印 messages。",
+      "hint": "先完成参数验证，再初始化实例列表。超过上限时可以用切片 self.messages[-self.limit:]。验证应在修改状态之前。",
+      "code": "class RecentMessages:\n    def __init__(self, limit):\n        if type(limit) is not int or limit <= 0:\n            raise ValueError(\"limit 必须为正整数\")\n        self.limit = limit\n        self.messages = []\n\n    def add(self, text):\n        if not isinstance(text, str):\n            raise ValueError(\"text 必须为字符串\")\n        self.messages.append(text)\n        self.messages = self.messages[-self.limit:]\n        return len(self.messages)\n\nsession = RecentMessages(2)\nsession.add(\"a\")\nsession.add(\"b\")\nsession.add(\"c\")\nprint(session.messages)\n",
+      "output": "['b', 'c']\n",
+      "explain": "前三次添加后的列表依次为 ['a']、['a','b']、['b','c']。切片创建新列表，再绑定给这个实例的属性。两个实例必须分别初始化；非法添加不能先污染已有记录再报错。这里只按消息条数截取，不按 token 总量，也没有保证对话语义完整；真实上下文管理需要另外设计。",
+      "stdin": "",
+      "tests": "a, b = RecentMessages(2), RecentMessages(2)\nassert a.add(\"x\") == 1\nassert b.messages == []\na.add(\"y\")\nassert a.add(\"z\") == 2\nassert a.messages == [\"y\", \"z\"]\nfor bad in [0, -1, True, 1.5]:\n    try:\n        RecentMessages(bad)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError(f\"应拒绝 limit={bad!r}\")\ntry:\n    a.add(None)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"应拒绝非字符串\")\nassert a.messages == [\"y\", \"z\"], \"非法输入不能改坏已有状态\"",
+      "path": "practice/ch14/ex14_05.py",
+      "solution": "solutions/ch14/ex14_05.py"
+    },
+    {
       "id": "15_01",
       "title": "偶数生成器",
       "level": "基础",
@@ -2227,6 +2535,20 @@
       "tests": "",
       "path": "practice/ch15/ex15_04.py",
       "solution": "solutions/ch15/ex15_04.py"
+    },
+    {
+      "id": "15_05",
+      "title": "AI / Agent：从事件流中提取文字片段",
+      "level": "迁移",
+      "task": "实现 text_pieces(events) 生成器。events 中每项保证是字典；只 yield kind 为 \"text\" 且 content 为非空字符串的内容，跳过其他项。用 [{\"kind\":\"start\"}, {\"kind\":\"text\",\"content\":\"Py\"}, {\"kind\":\"usage\",\"content\":3}, {\"kind\":\"text\",\"content\":\"thon\"}] 生成片段并拼接打印。",
+      "hint": "先判 kind，再取 content 并检查类型与是否等于空字符串。不要 strip 后再输出，文本片段的空格可能是正文的一部分。",
+      "code": "def text_pieces(events):\n    for event in events:\n        if event.get(\"kind\") != \"text\":\n            continue\n        content = event.get(\"content\")\n        if isinstance(content, str) and content != \"\":\n            yield content\n\nevents = [\n    {\"kind\": \"start\"},\n    {\"kind\": \"text\", \"content\": \"Py\"},\n    {\"kind\": \"usage\", \"content\": 3},\n    {\"kind\": \"text\", \"content\": \"thon\"},\n]\nprint(\"\".join(text_pieces(events)))\n",
+      "output": "Python\n",
+      "explain": "start 和 usage 是非文本事件，不能把整个事件字典都拼进答案。生成器只产出 Py 和 thon，join 后得到 Python。额外测试保留单个空格片段、跳过空串和非字符串内容。本题使用自定义事件格式；实际 SDK 的事件名称与字段可能不同。",
+      "stdin": "",
+      "tests": "assert list(text_pieces([])) == []\nevents = [\n    {\"kind\":\"text\",\"content\":\"\"},\n    {\"kind\":\"text\",\"content\":\" \"},\n    {\"kind\":\"text\",\"content\":None},\n    {\"kind\":\"text\"},\n    {\"kind\":\"text\",\"content\":\"A\"},\n]\nassert list(text_pieces(events)) == [\" \", \"A\"]\nstream = text_pieces([{\"kind\":\"text\",\"content\":\"x\"}])\nassert iter(stream) is stream, \"请使用生成器而非提前返回列表\"\nassert next(stream) == \"x\"\nassert list(stream) == []",
+      "path": "practice/ch15/ex15_05.py",
+      "solution": "solutions/ch15/ex15_05.py"
     },
     {
       "id": "16_01",
@@ -2311,6 +2633,20 @@
       "tests": "assert unique_ids([]) is True\nassert unique_ids([{\"id\": 1}, {\"id\": 2}]) is True\nassert unique_ids([{\"id\": \"a\"}, {\"id\": \"a\"}]) is False",
       "path": "practice/ch16/ex16_06.py",
       "solution": "solutions/ch16/ex16_06.py"
+    },
+    {
+      "id": "16_07",
+      "title": "AI / Agent：实现可测试的两步工具流程",
+      "level": "综合",
+      "task": "实现 lookup_agent(query, max_steps=2)。query 必须是字符串；max_steps 必须是非负 int（不接受 bool），否则 raise ValueError。固定笔记字典为 {\"列表\":\"有序容器\", \"函数\":\"可复用的处理步骤\"}，按 query 完全匹配查找。第 1 步保存查找结果；第 2 步返回 {\"status\":\"done\", \"answer\":结果或\"未找到\", \"steps\":2}。若步数不够，返回 {\"status\":\"limit\", \"answer\":None, \"steps\":已执行步数}。只需这两种动作，最多执行两步。调用 \"函数\" 并依次输出 status、answer、steps。",
+      "hint": "先验证输入，再用 for 从 1 到 max_steps 迭代。第 1 步查询，第 2 步立即 return。循环正常结束则说明还没完成。max_steps=0 时应执行零步。",
+      "code": "def lookup_agent(query, max_steps=2):\n    if not isinstance(query, str):\n        raise ValueError(\"query 必须是字符串\")\n    if type(max_steps) is not int or max_steps < 0:\n        raise ValueError(\"max_steps 必须为非负整数\")\n    notes = {\"列表\": \"有序容器\", \"函数\": \"可复用的处理步骤\"}\n    observation = None\n    steps = 0\n    for step in range(1, max_steps + 1):\n        steps = step\n        if step == 1:\n            observation = notes.get(query, \"未找到\")\n        else:\n            return {\"status\": \"done\", \"answer\": observation, \"steps\": steps}\n    return {\"status\": \"limit\", \"answer\": None, \"steps\": steps}\n\nresult = lookup_agent(\"函数\")\nprint(result[\"status\"])\nprint(result[\"answer\"])\nprint(result[\"steps\"])\n",
+      "output": "done\n可复用的处理步骤\n2\n",
+      "explain": "第 1 步只查找，第 2 步才交付结果，因此 max_steps=1 必须报告 limit。max_steps 很大时也在第 2 步提前返回，不能为了用完预算继续循环。未知问题得到 done/未找到，表示流程已结束但没有证据；不能伪造知识补空缺。先画出 max_steps=0、1、2、5 四条执行轨迹，再运行额外测试。本题是离线规则流程，完成它意味着理解了 Python 控制流与状态传递。",
+      "stdin": "",
+      "tests": "assert lookup_agent(\"列表\") == {\"status\":\"done\",\"answer\":\"有序容器\",\"steps\":2}\nassert lookup_agent(\"张量\") == {\"status\":\"done\",\"answer\":\"未找到\",\"steps\":2}\nassert lookup_agent(\"函数\", 0) == {\"status\":\"limit\",\"answer\":None,\"steps\":0}\nassert lookup_agent(\"函数\", 1) == {\"status\":\"limit\",\"answer\":None,\"steps\":1}\nassert lookup_agent(\"函数\", 5)[\"steps\"] == 2\nfor bad in [-1, True, 1.2]:\n    try:\n        lookup_agent(\"函数\", bad)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError(f\"应拒绝 max_steps={bad!r}\")\ntry:\n    lookup_agent(None)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError(\"应拒绝非字符串 query\")",
+      "path": "practice/ch16/ex16_07.py",
+      "solution": "solutions/ch16/ex16_07.py"
     }
   ]
 }

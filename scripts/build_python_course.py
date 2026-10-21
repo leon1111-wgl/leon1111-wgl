@@ -2,6 +2,7 @@
 from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 import os
+import runpy
 import subprocess
 import sys
 
@@ -10,8 +11,8 @@ COURSE = ROOT / 'site/python-zero-to-practice'
 
 
 def course_files():
-    return sorted(p for p in COURSE.rglob('*') if p.is_file()
-                  and '__pycache__' not in p.parts and p.suffix != '.pyc')
+    package = runpy.run_path(str(COURSE / 'tools/package.py'))
+    return package['distribution_files']()
 
 
 def build():

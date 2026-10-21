@@ -1,17 +1,40 @@
 """生成离线教材与练习文件；仅使用标准库。重建不会覆盖已存在的练习文件。"""
 from pathlib import Path
-import html, re, json, io, tokenize, keyword
+import html, re, json, io, tokenize, keyword, hashlib
 from course_data import CHAPTERS
 from project_data import PROJECTS
 from starter_templates import STARTERS
+from refinements import apply_refinements
+from refinement_v12 import apply_v12
+from refinement_v13 import apply_v13
 ROOT = Path(__file__).resolve().parent.parent
 ESC = html.escape
+VERSION = "1.3"
+RELEASE_DATE = "2026-10-21"
+apply_refinements(CHAPTERS)
+apply_v12(CHAPTERS)
+apply_v13(CHAPTERS)
+
+# 定时维护前先检查生成文件是否被手工编辑，避免覆盖学习者的修改。
+GENERATED = {}
+manifest_path = ROOT / "tools/generated_files.json"
+if manifest_path.exists():
+    previous = json.loads(manifest_path.read_text(encoding="utf-8"))
+    conflicts = []
+    for relative, digest in previous.items():
+        target = ROOT / relative
+        if target.exists() and hashlib.sha256(target.read_bytes()).hexdigest() != digest:
+            conflicts.append(relative)
+    if conflicts:
+        raise SystemExit("以下生成文件有手工修改，请先保留并人工合并，再重建：\n" + "\n".join(conflicts))
 
 def write(path, text, preserve=False):
     target = ROOT / path
     target.parent.mkdir(parents=True, exist_ok=True)
     if not (preserve and target.exists()):
-        target.write_text(text, encoding='utf-8')
+        target.write_text(text, encoding='utf-8', newline='\n')
+    if not preserve:
+        GENERATED[path] = hashlib.sha256(target.read_bytes()).hexdigest()
 
 def inline(text):
     saved = []
@@ -102,7 +125,7 @@ for p in PROJECTS:
     steps='\n\n'.join(f'### {i+1} {title}\n{body}' for i,(title,body) in enumerate(p['steps']))
     text=f'# {p["title"]}\n\n前置：{p["prerequisites"]}\n\n{p["task"]}\n\n{steps}\n\n### 运行命令\n\n从学习包根目录执行。Windows 用 py，Mac 用 python3，激活环境后可用 python。\n\n```terminal\n{p["commands"]}\n```\n\n### 预期结果\n\n{p["expected"]}\n\n### 验收\n\n运行学习包的 python tools/check_projects.py 核验参考实现；自己的实现按上面手算结果和边界逐项验证。\n'
     write(folder+'/README.md',text)
-    write(folder+'/TASKS.md',text+'\n\n## 独立实现记录\n\n- 输入约定：\n- 输出约定：\n- 最小样例手算：\n- 空数据测试：\n- 边界测试：\n- 错误输入测试：\n- 我的新增功能：\n')
+    write(folder+'/TASKS.md',text+'\n\n## 独立实现记录\n\n- 输入约定：\n- 输出约定：\n- 最小样例手算：\n- 空数据测试：\n- 边界测试：\n- 错误输入测试：\n- 我的新增功能：\n',preserve=True)
     write(folder+'/starter.py',STARTERS[p['folder']],preserve=True)
     block=f'<section class="project" id="c17-{p["folder"]}"><div class="eyebrow">PROJECT {p["folder"][:2]}</div><h3>{ESC(p["title"])}</h3><p class="muted">前置：{ESC(p["prerequisites"])}</p><p>{ESC(p["task"])}</p>{md(steps,"p"+p["folder"])}<h4>运行命令</h4>{codeblock(p["commands"],"终端命令")}<h4>预期结果与输出位置</h4><p>{ESC(p["expected"])}</p><p><a download href="{folder}/TASKS.md">保存项目任务书</a> · <a download href="{folder}/app.py">保存完整参考代码</a></p><details><summary>展开完整实现（建议先尝试）</summary>{codeblock(p["code"])}<p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section>'
     project_html.append(block); project_text.append(text+'\n\n```python\n'+p['code']+'```\n')
@@ -122,7 +145,7 @@ for c in CHAPTERS:
     goals='<ul>'+''.join('<li>'+ESC(g)+'</li>' for g in c['goals'])+'</ul>'
     inner=f'<header class="chapter-header"><div class="eyebrow">第一阶段 / CHAPTER {n:02d}</div><h2>{ESC(c["title"])}</h2><p class="lead">{ESC(c["subtitle"])}</p><div class="chapter-meta">{metadata}</div></header><section class="goals"><h3>本章学会什么</h3>{goals}</section>'
     if n==0:
-        inner='<div class="course-intro"><div class="eyebrow">OFFLINE LEARNING KIT · v1.0</div><h1>从零开始<br><span>学会 Python 实操</span></h1><p>逐步理解语法，亲手完成练习。<br>为深度学习与大模型学习打好第一层基础。</p><div class="hero-stats"><span><b>19</b>个学习单元</span><span><b>91</b>个运行示例</span><span><b>100</b>道分层习题</span><span><b>4</b>个完整项目</span></div><a class="primary-link" href="#c01">已装好 Python，开始第一课 →</a><p class="muted">Windows / Mac · 阅读完全离线 · 运行练习需 Python 3.10+</p></div>'+inner
+        inner=f'<div class="course-intro"><div class="eyebrow">OFFLINE LEARNING KIT · v{VERSION}</div><h1>从零开始<br><span>学会 Python 实操</span></h1><p class="course-caption">部分内容为info1110课程</p><p>逐步理解语法，亲手完成练习。<br>穿插大模型与 Agent 场景，为后续学习打好基础。</p><div class="hero-stats"><span><b>{len(CHAPTERS)}</b>个学习单元</span><span><b>{len(EXAMPLES)}</b>个运行示例</span><span><b>{len(EXERCISES)}</b>道分层习题</span><span><b>{len(PROJECTS)}</b>个完整项目</span></div><a class="primary-link" href="#c01">已装好 Python，开始第一课 →</a><p class="muted">Windows / Mac · 阅读完全离线 · 运行练习需 Python 3.10+</p><p class="muted">本轮精讲：CSV 分层校验、结束行定位与工具耗时日志实操。<a href="#c18">查看学习路线与开源参考 →</a></p></div>'+inner
     inner+=md(c['body'],cid)
     if n in SIMS: inner+=SIMS[n]
     chapter_md=f'# {title}\n\n{c["subtitle"]}\n\n## 学习目标\n\n'+''.join('- '+g+'\n' for g in c['goals'])+'\n'+c['body']+'\n'
@@ -149,7 +172,7 @@ for c in CHAPTERS:
     inner+='<nav class="page-nav" aria-label="章节翻页">'+(f'<a href="#c{n-1:02d}">← 上一章</a>' if n else '<span></span>')+(f'<a href="#c{n+1:02d}">下一章 →</a>' if n<18 else '<a href="#c00">回到学习入口 ↑</a>')+'</nav>'
     chapters_html.append(f'<article class="chapter" id="{cid}" {"hidden" if n else ""}>{inner}</article>')
     all_md.append(chapter_md+'\n## 记忆要点\n'+''.join('- '+s+'\n' for s in c['recall'])+'\n## 通关检查\n'+''.join('- '+s+'\n' for s in c['checkpoint']))
-write('textbook.md','# Python 零基础实操教程\n\n> Leon · Python — Zero to Practice\n\n版本 1.0 · 2026-10-07 · Windows / Mac\n\n'+ '\n\n'.join(all_md))
+write('textbook.md',f'# Python 零基础实操教程\n\n> Leon · Python — Zero to Practice\n\n部分内容为info1110课程\n\n版本 {VERSION} · {RELEASE_DATE} · Windows / Mac\n\n'+ '\n\n'.join(all_md))
 nav=''.join(f'<a href="#c{c["number"]:02d}" data-nav="{c["number"]:02d}"><span class="nav-number">{c["number"]:02d}</span><span>{ESC(c["title"])}</span><span class="nav-done" aria-hidden="true"></span></a>' for c in CHAPTERS)
 style=(Path(__file__).parent/'style.css').read_text()
 script=(Path(__file__).parent/'app.js').read_text()
@@ -157,20 +180,22 @@ index_json=json.dumps(search,ensure_ascii=False).replace('</','<\\/')
 page=f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Python 零基础实操教程</title><style>{style}</style></head>
 <body><a class="skip-link" href="#reading">跳到正文</a><header class="mobile-header"><b>Python 自学手册</b><button id="toggle-nav" aria-expanded="false" aria-controls="sidebar">目录与搜索</button></header>
-<aside id="sidebar"><a class="brand" href="#c00"><span class="brand-mark">Py</span><span>Python 自学手册<small>从第一行代码到独立项目</small></span></a><label class="search-label" for="search">查找知识点或题号</label><input id="search" type="search" placeholder="试试：return、浅拷贝、09_02"><div id="search-results" hidden aria-live="polite"></div><nav id="chapter-nav" aria-label="课程目录">{nav}</nav><div class="sidebar-bottom"><div id="progress-label">已完成 0 / 19 章</div><progress id="progress" max="19" value="0" aria-label="章节学习进度"></progress><div id="exercise-progress">独立完成 0 / 100 题</div><p>本地保存 · 换电脑前请导出进度</p></div></aside>
-<main id="reading"><div class="toolbar"><span id="breadcrumb">学习入口</span><div><button id="theme">切换深浅色</button><button id="export-progress">导出进度</button><button id="import-progress">导入进度</button><button id="print">打印本章</button></div></div><p id="storage-warning" hidden>浏览器未允许本地保存；笔记仍可在本次使用中编辑，请手动导出进度。</p><input id="import-file" type="file" accept=".json,application/json" hidden><div id="status" role="status" aria-live="polite"></div><noscript><p>请启用浏览器 JavaScript 来切换章节，或阅读同目录的 textbook.md 文字备份。</p></noscript>{''.join(chapters_html)}<footer>Python 零基础实操教程 · v1.0 · 离线学习包<br>代码在本机 Python 中运行。基础课程无需第三方包。</footer></main><script type="application/json" id="search-data">{index_json}</script><script>{script}</script></body></html>'''
+<aside id="sidebar"><a class="brand" href="#c00"><span class="brand-mark">Py</span><span>Python 自学手册<small>从第一行代码到独立项目</small></span></a><label class="search-label" for="search">查找知识点或题号</label><input id="search" type="search" placeholder="试试：return、浅拷贝、09_02"><div id="search-results" hidden aria-live="polite"></div><nav id="chapter-nav" aria-label="课程目录">{nav}</nav><div class="sidebar-bottom"><div id="progress-label">已完成 0 / {len(CHAPTERS)} 章</div><progress id="progress" max="{len(CHAPTERS)}" value="0" aria-label="章节学习进度"></progress><div id="exercise-progress">独立完成 0 / {len(EXERCISES)} 题</div><p>本地保存 · 换电脑前请导出进度</p></div></aside>
+<main id="reading"><div class="toolbar"><span id="breadcrumb">学习入口</span><div><button id="theme">切换深浅色</button><button id="export-progress">导出进度</button><button id="import-progress">导入进度</button><button id="print">打印本章</button></div></div><p id="storage-warning" hidden>浏览器未允许本地保存；笔记仍可在本次使用中编辑，请手动导出进度。</p><input id="import-file" type="file" accept=".json,application/json" hidden><div id="status" role="status" aria-live="polite"></div><noscript><p>请启用浏览器 JavaScript 来切换章节，或阅读同目录的 textbook.md 文字备份。</p></noscript>{''.join(chapters_html)}<footer>Python 零基础实操教程 · v{VERSION} · 离线学习包<br>代码在本机 Python 中运行。基础课程无需第三方包。</footer></main><script type="application/json" id="search-data">{index_json}</script><script>{script}</script></body></html>'''
 # Leon integration: keep the supplied teaching and learning-state keys.
 site_url = 'https://leon1111-wgl.github.io/leon1111-wgl/'
 portal = '<nav class="guoliang-portal" aria-label="Leon 学习资料"><a href="'+site_url+'"><strong>Leon</strong> · 学习主页 ↗</a><a href="'+site_url+'downloads/Python-Zero-to-Practice.zip" download>下载完整学习包 ↓</a><a href="textbook.md" download>文字版讲义 ↓</a></nav>'
-page = page.replace('<title>Python 零基础实操教程</title>', '<title>Python — Zero to Practice | Leon</title><meta name="description" content="Leon 的 Python 中文自学教程：19 个单元、91 个示例、100 道自学练习和 4 个完整项目。">')
+page = page.replace('<title>Python 零基础实操教程</title>', f'<title>Python — Zero to Practice | Leon</title><meta name="description" content="Leon 的 Python 中文自学教程：{len(CHAPTERS)} 个单元、{len(EXAMPLES)} 个示例、{len(EXERCISES)} 道自学练习和 {len(PROJECTS)} 个完整项目。">')
 page = page.replace('<main id="reading">', '<main id="reading">'+portal)
 page = page.replace('第一阶段 / CHAPTER', 'LEON / CHAPTER')
-page = page.replace('OFFLINE LEARNING KIT · v1.0', 'LEON / PYTHON · ZERO TO PRACTICE')
+page = page.replace(f'OFFLINE LEARNING KIT · v{VERSION}', f'LEON / PYTHON · ZERO TO PRACTICE · v{VERSION}')
 page = page.replace('<footer>Python 零基础实操教程', '<footer><strong>Leon</strong> · Python 零基础实操教程')
 route = '<nav class="guoliang-route" aria-label="学习路线"><h3>学习路线</h3><ol><li><a href="#c00">01 · 安装与运行</a></li><li><a href="#c01">02 · 语法与控制</a></li><li><a href="#c07">03 · 容器与函数</a></li><li><a href="#c12">04 · 文件与工程</a></li><li><a href="#c17">05 · 四个完整项目</a></li></ol></nav>'
 page = page.replace('<a class="primary-link" href="#c01">', route+'<a class="primary-link" href="#c01">')
 write('index.html',page)
-write('README_先读我.txt',f'''Leon · Python 零基础实操教程 v1.0
+write('README_先读我.txt',f'''Leon · Python 零基础实操教程 v{VERSION}
+
+部分内容为info1110课程
 
 1. 完整解压，再双击 index.html，在浏览器阅读。
 2. 第 00 章包含 Windows 与 Mac 的 Python 安装、编辑、运行步骤。
@@ -222,5 +247,6 @@ write('notes/跨电脑迁移清单.txt','''离开旧电脑前
 [ ] 完整解压；双击 index.html
 [ ] 点击导入进度，选择之前的 JSON（会替换当前网页进度，请先备份）
 [ ] 按第 00 章运行一个示例；需要时重建虚拟环境
-''')
+''',preserve=True)
+manifest_path.write_text(json.dumps(GENERATED,ensure_ascii=False,indent=2),encoding="utf-8",newline="\n")
 print(json.dumps({'chapters':len(CHAPTERS),'examples':len(EXAMPLES),'exercises':len(EXERCISES),'projects':len(PROJECTS),'html_bytes':len(page.encode())},ensure_ascii=False))

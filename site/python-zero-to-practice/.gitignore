@@ -1,0 +1,19 @@
+# Local verification evidence can contain machine paths and source review copies.
+/qa/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+**/outputs/
+*.zip
+.DS_Store
+.idea/
+.vscode/
+.env
+.env.*
+*.pem
+*.key
+# Store personal copies and exported browser progress here, outside tracked templates.
+/personal/
+*progress*.json
