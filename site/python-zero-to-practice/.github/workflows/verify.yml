@@ -42,6 +42,8 @@ jobs:
         run: python tools/verify_examples.py
       - name: Verify reference answers and boundary cases
         run: python tools/check_practice.py --all --solutions
+      - name: Verify knowledge map links and scenario calculations
+        run: python tools/check_knowledge_map.py
       - name: Verify four reference projects
         run: python tools/check_projects.py
       - name: Verify portable archive and local links

@@ -7,9 +7,10 @@ from starter_templates import STARTERS
 from refinements import apply_refinements
 from refinement_v12 import apply_v12
 from refinement_v13 import apply_v13
+from knowledge_map import NODES, render_map, chapter_connections, map_markdown
 ROOT = Path(__file__).resolve().parent.parent
 ESC = html.escape
-VERSION = "1.3"
+VERSION = "1.4"
 RELEASE_DATE = "2026-10-21"
 apply_refinements(CHAPTERS)
 apply_v12(CHAPTERS)
@@ -157,7 +158,9 @@ for c in CHAPTERS:
     goals='<ul>'+''.join('<li>'+ESC(g)+'</li>' for g in c['goals'])+'</ul>'
     inner=f'<header class="chapter-header"><div class="eyebrow">第一阶段 / CHAPTER {n:02d}</div><h2>{ESC(c["title"])}</h2><p class="lead">{ESC(c["subtitle"])}</p><div class="chapter-meta">{metadata}</div></header><section class="goals"><h3>本章学会什么</h3>{goals}</section>'
     if n==0:
-        inner=f'<div class="course-intro"><div class="eyebrow">OFFLINE LEARNING KIT · v{VERSION}</div><h1>从零开始<br><span>学会 Python 实操</span></h1><p class="course-caption">部分内容为info1110课程</p><p>逐步理解语法，亲手完成练习。<br>穿插大模型与 Agent 场景，为后续学习打好基础。</p><div class="hero-stats"><span><b>{len(CHAPTERS)}</b>个学习单元</span><span><b>{len(EXAMPLES)}</b>个运行示例</span><span><b>{len(EXERCISES)}</b>道分层习题</span><span><b>{len(PROJECTS)}</b>个完整项目</span></div><a class="primary-link" href="#c01">已装好 Python，开始第一课 →</a><p class="muted">Windows / Mac · 阅读完全离线 · 运行练习需 Python 3.10+</p><p class="muted">本轮精讲：CSV 分层校验、结束行定位与工具耗时日志实操。<a href="#c18">查看学习路线与开源参考 →</a></p></div>'+inner
+        inner=f'<div class="course-intro"><div class="eyebrow">OFFLINE LEARNING KIT · v{VERSION}</div><h1>从零开始<br><span>学会 Python 实操</span></h1><p class="course-caption">部分内容为info1110课程</p><p>逐步理解语法，亲手完成练习。<br>穿插大模型与 Agent 场景，为后续学习打好基础。</p><div class="hero-stats"><span><b>{len(CHAPTERS)}</b>个学习单元</span><span><b>{len(EXAMPLES)}</b>个运行示例</span><span><b>{len(EXERCISES)}</b>道分层习题</span><span><b>{len(PROJECTS)}</b>个完整项目</span></div><a class="primary-link" href="#c01">已装好 Python，开始第一课 →</a><p class="muted">Windows / Mac · 阅读完全离线 · 运行练习需 Python 3.10+</p><p class="muted">本轮新增：可交互知识图谱、五条目标路线与项目 / Agent 场景链路。<a href="#c00-knowledge-map">打开知识图谱 →</a> <a href="#c18">查看学习路线与开源参考 →</a></p></div>'+inner
+    if n == 0: inner += render_map()
+    else: inner += chapter_connections(n)
     inner+=md(c['body'],cid)
     if n in SIMS: inner+=SIMS[n]
     chapter_md=f'# {title}\n\n{c["subtitle"]}\n\n## 学习目标\n\n'+''.join('- '+g+'\n' for g in c['goals'])+'\n'+c['body']+'\n'
@@ -184,15 +187,19 @@ for c in CHAPTERS:
     inner+='<nav class="page-nav" aria-label="章节翻页">'+(f'<a href="#c{n-1:02d}">← 上一章</a>' if n else '<span></span>')+(f'<a href="#c{n+1:02d}">下一章 →</a>' if n<18 else '<a href="#c00">回到学习入口 ↑</a>')+'</nav>'
     chapters_html.append(f'<article class="chapter" id="{cid}" {"hidden" if n else ""}>{inner}</article>')
     all_md.append(chapter_md+'\n## 记忆要点\n'+''.join('- '+s+'\n' for s in c['recall'])+'\n## 通关检查\n'+''.join('- '+s+'\n' for s in c['checkpoint']))
+write('知识图谱.md', map_markdown())
+all_md.append(map_markdown())
+for node in NODES:
+    search.append({'target': 'c00-map-'+node['id'], 'title': '知识图谱 · '+node['title'], 'text': node['idea']+' '+node['pitfall']+' '+node['question'], 'kind': '知识连接'})
 write('textbook.md',f'# Python 零基础实操教程\n\n> Leon · Python — Zero to Practice\n\n部分内容为info1110课程\n\n版本 {VERSION} · {RELEASE_DATE} · Windows / Mac\n\n'+ '\n\n'.join(all_md))
 nav=''.join(f'<a href="#c{c["number"]:02d}" data-nav="{c["number"]:02d}"><span class="nav-number">{c["number"]:02d}</span><span>{ESC(c["title"])}</span><span class="nav-done" aria-hidden="true"></span></a>' for c in CHAPTERS)
 style=(Path(__file__).parent/'style.css').read_text()
-script=(Path(__file__).parent/'app.js').read_text()
+script=(Path(__file__).parent/'app.js').read_text()+'\n'+(Path(__file__).parent/'knowledge_map.js').read_text()
 index_json=json.dumps(search,ensure_ascii=False).replace('</','<\\/')
 page=f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Python 零基础实操教程</title><style>{style}</style></head>
 <body><a class="skip-link" href="#reading">跳到正文</a><header class="mobile-header"><b>Python 自学手册</b><button id="toggle-nav" aria-expanded="false" aria-controls="sidebar">目录与搜索</button></header>
-<aside id="sidebar"><a class="brand" href="#c00"><span class="brand-mark">Py</span><span>Python 自学手册<small>从第一行代码到独立项目</small></span></a><label class="search-label" for="search">查找知识点或题号</label><input id="search" type="search" placeholder="试试：return、浅拷贝、09_02"><div id="search-results" hidden aria-live="polite"></div><nav id="chapter-nav" aria-label="课程目录">{nav}</nav><div class="sidebar-bottom"><div id="progress-label">已完成 0 / {len(CHAPTERS)} 章</div><progress id="progress" max="{len(CHAPTERS)}" value="0" aria-label="章节学习进度"></progress><div id="exercise-progress">独立完成 0 / {len(EXERCISES)} 题</div><p>本地保存 · 换电脑前请导出进度</p></div></aside>
+<aside id="sidebar"><a class="brand" href="#c00"><span class="brand-mark">Py</span><span>Python 自学手册<small>从第一行代码到独立项目</small></span></a><label class="search-label" for="search">查找知识点或题号</label><input id="search" type="search" placeholder="试试：return、浅拷贝、09_02"><div id="search-results" hidden aria-live="polite"></div><a class="map-shortcut" href="#c00-knowledge-map">◇ 知识图谱与场景链路</a><nav id="chapter-nav" aria-label="课程目录">{nav}</nav><div class="sidebar-bottom"><div id="progress-label">已完成 0 / {len(CHAPTERS)} 章</div><progress id="progress" max="{len(CHAPTERS)}" value="0" aria-label="章节学习进度"></progress><div id="exercise-progress">独立完成 0 / {len(EXERCISES)} 题</div><p>本地保存 · 换电脑前请导出进度</p></div></aside>
 <main id="reading"><div class="toolbar"><span id="breadcrumb">学习入口</span><div><button id="theme">切换深浅色</button><button id="export-progress">导出进度</button><button id="import-progress">导入进度</button><button id="print">打印本章</button></div></div><p id="storage-warning" hidden>浏览器未允许本地保存；笔记仍可在本次使用中编辑，请手动导出进度。</p><input id="import-file" type="file" accept=".json,application/json" hidden><div id="status" role="status" aria-live="polite"></div><noscript><p>请启用浏览器 JavaScript 来切换章节，或阅读同目录的 textbook.md 文字备份。</p></noscript>{''.join(chapters_html)}<footer>Python 零基础实操教程 · v{VERSION} · 离线学习包<br>代码在本机 Python 中运行。基础课程无需第三方包。</footer></main><script type="application/json" id="search-data">{index_json}</script><script>{script}</script></body></html>'''
 # Leon integration: keep the supplied teaching and learning-state keys.
 site_url = 'https://leon1111-wgl.github.io/leon1111-wgl/'
@@ -231,6 +238,7 @@ write('README_先读我.txt',f'''Leon · Python 零基础实操教程 v{VERSION}
 自检输出中不含你在终端键入字符的键盘回显。
 
 开始建议：今天完成第 00—01 章并独立做前 3 题，次日关掉答案重写。
+知识连接：主页打开知识图谱，或阅读 知识图谱.md。
 文字备份：textbook.md。编辑源稿：source/；source/build.py 可重新生成教材，保留已有练习文件。
 ''')
 write('notes/错题本.md','''# 我的 Python 错题本

@@ -6,7 +6,7 @@
 
 本教材继续维护于 [Leon 的原有课程目录](https://github.com/leon1111-wgl/leon1111-wgl/tree/main/site/python-zero-to-practice)，沿用 [原在线阅读地址](https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html)。这是原课程的增补版，保留旧章节、题号和进度存储格式。
 
-当前 v1.3：**19 个单元 · 105 个可运行示例 · 114 道分层练习 · 4 个项目**。阅读完全离线，第一阶段代码只使用 Python 标准库，无需 API Key、付费服务或第三方框架。
+当前 v1.4：**19 个单元 · 105 个可运行示例 · 114 道分层练习 · 4 个项目**。阅读完全离线，第一阶段代码只使用 Python 标准库，无需 API Key、付费服务或第三方框架。
 
 ## 现在开始
 
@@ -29,6 +29,12 @@
 **读懂输入 → 手写预测 → 运行对照 → 每次改一个条件 → 独立作答 → 次日关掉答案重写。**
 
 每章都有学习目标、逐步解释、可运行例子、预期输出、改写任务、练习提示与参考解析。不要把“看懂答案”勾成“独立完成”。例如第 13 章的 CSV 清洗先追踪字符串如何变成数字，再练习空行、缺列、零值与错误定位，最后迁移到工具日志汇总。
+
+## 知识图谱：把知识串起来
+
+在网页侧栏或首页点击“知识图谱与场景链路”。24 个知识节点用 42 条带解释的关系串联起来，提供从零打基础、成绩分析、AI 数据、Agent 和大模型准备五条目标路线。点击节点可查看建议先会的知识、后续用途、易混点和一道联想自测，再跳到原章节或示例。学习关系是建议，不是唯一的先修顺序。
+
+“成绩表 → 清洗 → 报告”和“任务 → 工具 → 观察 → 判断”把同一场景中的输入、中间值和输出逐步展开。图谱与正文都可离线使用；纯文字版见 [知识图谱.md](知识图谱.md)。节点点击不会勾选进度，也不代表已掌握。
 
 ## 学习路线
 
@@ -84,12 +90,13 @@ python3 source/build.py
 python3 tools/verify_examples.py
 python3 tools/check_practice.py --all --solutions
 python3 tools/check_projects.py
+python3 tools/check_knowledge_map.py
 python3 tools/package.py
 ```
 
 Windows 将 `python3` 替换为 `py`。`--solutions` 验证教材参考答案，不代表学习者已通过。打包输出位于仓库的上一级目录，文件名为 `Python-Zero-to-Practice.zip`。
 
-GitHub Actions 已在 Windows、macOS、Linux 上完成本版本检查，包含 Python 3.10、3.12、3.14 的五组组合，具体证据见 [通过的工作流](https://github.com/leon1111-wgl/leon1111-wgl/actions/runs/39623640001)。每次后续发布仍以对应提交的实际结果为准。环境与验证范围见 [验证说明.md](验证说明.md)，改动见 [维护记录.md](维护记录.md)。
+GitHub Actions 在 Windows、macOS、Ubuntu 上运行 Python 3.10、3.12、3.14 的五组检查，Pages 部署依赖这些检查成功。历史 v1.3 已通过；v1.4 及后续提交请核对 [原仓库 Actions](https://github.com/leon1111-wgl/leon1111-wgl/actions) 中对应提交的状态，不把历史结果当成本轮结果。环境与验证范围见 [验证说明.md](验证说明.md)，改动见 [维护记录.md](维护记录.md)。
 
 欢迎报告看不懂的讲解、无法复现的输出或欠缺的边界情况。请附题号、操作系统、Python 版本、最小输入、预期与实际结果；提交教学修改前先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
