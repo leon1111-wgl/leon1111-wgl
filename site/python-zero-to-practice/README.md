@@ -89,7 +89,7 @@ python3 tools/package.py
 
 Windows 将 `python3` 替换为 `py`。`--solutions` 验证教材参考答案，不代表学习者已通过。打包输出位于仓库的上一级目录，文件名为 `Python-Zero-to-Practice.zip`。
 
-仓库提供 GitHub Actions，计划在 Windows、macOS、Linux 上运行检查；配置存在本身不代表这些平台已验证。每次发布以实际运行结果为准。本机验证详情见 [验证说明.md](验证说明.md)，改动见 [维护记录.md](维护记录.md)。
+GitHub Actions 已在 Windows、macOS、Linux 上完成本版本检查，包含 Python 3.10、3.12、3.14 的五组组合，具体证据见 [通过的工作流](https://github.com/leon1111-wgl/leon1111-wgl/actions/runs/39623640001)。每次后续发布仍以对应提交的实际结果为准。环境与验证范围见 [验证说明.md](验证说明.md)，改动见 [维护记录.md](维护记录.md)。
 
 欢迎报告看不懂的讲解、无法复现的输出或欠缺的边界情况。请附题号、操作系统、Python 版本、最小输入、预期与实际结果；提交教学修改前先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
