@@ -54,8 +54,20 @@ def highlight(code):
     for line in lines: offsets.append(offsets[-1]+len(line))
     def pos(p): return offsets[min(p[0]-1,len(offsets)-1)]+p[1]
     output=[]; last=0
+    # Python 3.12+ splits f-strings into tokens; older Python emits one STRING.
+    # Treat the whole outer f-string as one string on every supported version.
+    fstring_depth=0; fstring_start=None
     try:
         for token in tokenize.generate_tokens(io.StringIO(code).readline):
+            if token.type == getattr(tokenize, 'FSTRING_START', -1):
+                if not fstring_depth: fstring_start=token.start
+                fstring_depth+=1
+                continue
+            if fstring_depth:
+                if token.type != getattr(tokenize, 'FSTRING_END', -1): continue
+                fstring_depth-=1
+                if fstring_depth: continue
+                token=tokenize.TokenInfo(tokenize.STRING, code[pos(fstring_start):pos(token.end)], fstring_start, token.end, token.line)
             if token.type in (tokenize.ENDMARKER, tokenize.ENCODING): continue
             a,b=pos(token.start),pos(token.end)
             if b<=a or a<last: continue

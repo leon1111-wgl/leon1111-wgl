@@ -143,7 +143,7 @@ print(<span class="tok-str">&quot;总分钟&quot;</span>, days * <span class="to
 quantity = <span class="tok-num">3</span>
 total_fen = price_fen * quantity
 print(total_fen)
-print(f&quot;应付 {total_fen / <span class="tok-num">100</span>:.2f} 元&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>3750
+print(<span class="tok-str">f&quot;应付 {total_fen / 100:.2f} 元&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>3750
 应付 37.50 元</code></pre></div></details><h5>怎么执行</h5><p>运算在整数分上完成，显示时除以 100 并保留两位。f 开头的字符串允许在花括号里填表达式，第 03 章展开。</p><p class="try"><strong>动手改写：</strong>把数量改成 0，说明它是否符合你的业务规则。</p></section><section class="example" id="c02-example-02_06"><div class="item-number">示例 02_06</div><h4>交换变量</h4><p class="fileline">运行文件：<a href="examples/ch02/ex02_06.py" download>examples/ch02/ex02_06.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>a = <span class="tok-num">10</span>
 b = <span class="tok-num">20</span>
 a, b = b, a
@@ -204,9 +204,9 @@ print(<span class="tok-str">&quot;-&quot;</span>.join(words))</code></pre></div>
 learn-python-today</code></pre></div></details><h5>怎么执行</h5><p>split 无参数时把连续空白当分隔。结果是列表，第 07 章详细学习。join 的接收者是分隔字符串，参数是字符串序列。</p><p class="try"><strong>动手改写：</strong>把 split() 改成 split(&quot; &quot;)，比较连续空格的处理。</p></section><section class="example" id="c03-example-03_04"><div class="item-number">示例 03_04</div><h4>报告格式</h4><p class="fileline">运行文件：<a href="examples/ch03/ex03_04.py" download>examples/ch03/ex03_04.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>name = <span class="tok-str">&quot;小林&quot;</span>
 score = <span class="tok-num">86.456</span>
 rate = <span class="tok-num">0.875</span>
-print(f&quot;{name}的分数：{score:.2f}&quot;)
-print(f&quot;完成率：{rate:.1%}&quot;)
-print(f&quot;编号：{<span class="tok-num">7</span>:03d}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>小林的分数：86.46
+print(<span class="tok-str">f&quot;{name}的分数：{score:.2f}&quot;</span>)
+print(<span class="tok-str">f&quot;完成率：{rate:.1%}&quot;</span>)
+print(<span class="tok-str">f&quot;编号：{7:03d}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>小林的分数：86.46
 完成率：87.5%
 编号：007</code></pre></div></details><h5>怎么执行</h5><p>.2f 是小数点后两位；.1% 会乘 100 并添加百分号；03d 将整数补齐为至少三位，不足用 0 填充。</p><p class="try"><strong>动手改写：</strong>将完成率改成 1 与 0，解释输出。</p></section><section class="example" id="c03-example-03_05"><div class="item-number">示例 03_05</div><h4>方法返回新文本</h4><p class="fileline">运行文件：<a href="examples/ch03/ex03_05.py" download>examples/ch03/ex03_05.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>text = <span class="tok-str">&quot;python is fun&quot;</span>
 text.replace(<span class="tok-str">&quot;fun&quot;</span>, <span class="tok-str">&quot;useful&quot;</span>)
@@ -218,9 +218,9 @@ python is useful
 True</code></pre></div></details><h5>怎么执行</h5><p>第一次 replace 的返回值被丢弃。第二次赋回 text 才改变名字指向的对象。in 判断子串是否出现，返回布尔值。</p><p class="try"><strong>动手改写：</strong>检查大小写不同的 &quot;Python&quot; 是否在 text 中。</p></section><section class="example" id="c03-example-03_06"><div class="item-number">示例 03_06</div><h4>AI / Agent：用字符串组织提示词</h4><p class="fileline">运行文件：<a href="examples/ch03/ex03_06.py" download>examples/ch03/ex03_06.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>topic = <span class="tok-str">&quot;  Python 列表  &quot;</span>
 level = <span class="tok-str">&quot;零基础&quot;</span>
 clean_topic = topic.strip()
-prompt = f&quot;请面向{level}读者解释：{clean_topic}。&quot;
+prompt = <span class="tok-str">f&quot;请面向{level}读者解释：{clean_topic}。&quot;</span>
 print(prompt)
-print(f&quot;主题字符数：{len(clean_topic)}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>请面向零基础读者解释：Python 列表。
+print(<span class="tok-str">f&quot;主题字符数：{len(clean_topic)}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>请面向零基础读者解释：Python 列表。
 主题字符数：9</code></pre></div></details><h5>怎么执行</h5><p>输入是带首尾空格的 topic。strip 返回去掉首尾空白的新字符串，原 topic 不会被自动修改；赋值后 clean_topic 是 &#x27;Python 列表&#x27;。f-string 把两个变量的值插入文字，print 才显示结果。len 在这里数 Python 字符串的 Unicode 码位，空格也算一个；它不是模型 token 数。本例只生成提示词，没有模型回复。</p><p class="try"><strong>动手改写：</strong>先把 topic 改成只有三个空格，预测清理后的字符数。再把模板改成要求输出一个例子，观察引号内文字与变量名各在哪里。</p></section><h3 class="section-break">独立练习</h3><p>先在 practice 中作答；提示和答案默认收起。勾选表示你已独立完成，不是自动判定通过。</p><section class="exercise" id="c03-exercise-03_01"><div class="exercise-top"><span class="item-number">练习 03_01 · 基础</span><label class="done-check"><input type="checkbox" data-check="exercise:03_01"> 我已独立完成</label></div><h4>邮箱清洗</h4><p>把 &quot;  Learner@Example.COM  &quot; 去两端空白并转小写，输出 learner@example.com。</p><p class="fileline">作答文件：<a href="practice/ch03/ex03_01.py" download>practice/ch03/ex03_01.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>learner@example.com</code></pre></div><details><summary>给我一点提示</summary><p>链式调用 strip 和 lower。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>email = <span class="tok-str">&quot;  Learner@Example.COM  &quot;</span>
 print(email.strip().lower())</code></pre></div><h5>解题思路</h5><p>只去两端，不改变内部结构。这里是字符串操作练习，不是完整的邮箱有效性验证。</p><p><a href="solutions/ch03/ex03_01.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 03_01</code></p></section><section class="exercise" id="c03-exercise-03_02"><div class="exercise-top"><span class="item-number">练习 03_02 · 场景</span><label class="done-check"><input type="checkbox" data-check="exercise:03_02"> 我已独立完成</label></div><h4>遮盖号码</h4><p>给定 phone = &quot;13812345678&quot;，保留前 3 位和后 4 位，中间用 4 个星号，输出 138****5678。</p><p class="fileline">作答文件：<a href="practice/ch03/ex03_02.py" download>practice/ch03/ex03_02.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>138****5678</code></pre></div><details><summary>给我一点提示</summary><p>切片 [:3] 和 [-4:]。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>phone = <span class="tok-str">&quot;13812345678&quot;</span>
 print(phone[:<span class="tok-num">3</span>] + <span class="tok-str">&quot;****&quot;</span> + phone[-<span class="tok-num">4</span>:])</code></pre></div><h5>解题思路</h5><p>先确认本题假定长度为 11。真实输入还需检查长度和内容，不能把遮盖当作完整隐私保护。</p><p><a href="solutions/ch03/ex03_02.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 03_02</code></p></section><section class="exercise" id="c03-exercise-03_03"><div class="exercise-top"><span class="item-number">练习 03_03 · 基础</span><label class="done-check"><input type="checkbox" data-check="exercise:03_03"> 我已独立完成</label></div><h4>提取文件扩展名</h4><p>给定 filename = &quot;report.final.csv&quot;，按点拆分，输出最后一部分 csv。</p><p class="fileline">作答文件：<a href="practice/ch03/ex03_03.py" download>practice/ch03/ex03_03.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>csv</code></pre></div><details><summary>给我一点提示</summary><p>split 返回列表，[-1] 取最后一项。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>filename = <span class="tok-str">&quot;report.final.csv&quot;</span>
@@ -232,7 +232,7 @@ print(s[<span class="tok-num">1</span>::<span class="tok-num">2</span>])
 print(s[::-<span class="tok-num">1</span>])
 print(s[:<span class="tok-num">3</span>])</code></pre></div><h5>解题思路</h5><p>第一个索引序列是 1、3、5。第二个是 5、4、3、2、1、0。第三个是 0、1、2。</p><p><a href="solutions/ch03/ex03_05.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 03_05</code></p></section><section class="exercise" id="c03-exercise-03_06"><div class="exercise-top"><span class="item-number">练习 03_06 · 迁移</span><label class="done-check"><input type="checkbox" data-check="exercise:03_06"> 我已独立完成</label></div><h4>学习进度百分比</h4><p>完成 7 节，共 20 节。输出 已完成 35.0%。</p><p class="fileline">作答文件：<a href="practice/ch03/ex03_06.py" download>practice/ch03/ex03_06.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>已完成 35.0%</code></pre></div><details><summary>给我一点提示</summary><p>先算比例，再用 .1% 格式。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>completed = <span class="tok-num">7</span>
 total = <span class="tok-num">20</span>
-print(f&quot;已完成 {completed / total:.1%}&quot;)</code></pre></div><h5>解题思路</h5><p>比例是 0.35；百分号格式自己乘以 100。不要先乘 100 再用 %，否则会显示 3500.0%。</p><p><a href="solutions/ch03/ex03_06.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 03_06</code></p></section><section class="exercise" id="c03-exercise-03_07"><div class="exercise-top"><span class="item-number">练习 03_07 · 纠错</span><label class="done-check"><input type="checkbox" data-check="exercise:03_07"> 我已独立完成</label></div><h4>确认是否已保存清洗结果</h4><p>text=&quot;  Python  &quot;。有人调用 text.strip() 后直接打印 text。请修复并输出 Python，再输出长度 6。</p><p class="fileline">作答文件：<a href="practice/ch03/ex03_07.py" download>practice/ch03/ex03_07.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>Python
+print(<span class="tok-str">f&quot;已完成 {completed / total:.1%}&quot;</span>)</code></pre></div><h5>解题思路</h5><p>比例是 0.35；百分号格式自己乘以 100。不要先乘 100 再用 %，否则会显示 3500.0%。</p><p><a href="solutions/ch03/ex03_06.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 03_06</code></p></section><section class="exercise" id="c03-exercise-03_07"><div class="exercise-top"><span class="item-number">练习 03_07 · 纠错</span><label class="done-check"><input type="checkbox" data-check="exercise:03_07"> 我已独立完成</label></div><h4>确认是否已保存清洗结果</h4><p>text=&quot;  Python  &quot;。有人调用 text.strip() 后直接打印 text。请修复并输出 Python，再输出长度 6。</p><p class="fileline">作答文件：<a href="practice/ch03/ex03_07.py" download>practice/ch03/ex03_07.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>Python
 6</code></pre></div><details><summary>给我一点提示</summary><p>方法返回新字符串，要保存返回值。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>text = <span class="tok-str">&quot;  Python  &quot;</span>
 text = text.strip()
 print(text)
@@ -282,7 +282,7 @@ total = <span class="tok-num">80</span>
 <span class="tok-kw">if</span> score <span class="tok-kw">is</span> <span class="tok-kw">None</span>:
     print(<span class="tok-str">&quot;尚未提交&quot;</span>)
 <span class="tok-kw">else</span>:
-    print(f&quot;已提交，成绩 {score}&quot;)
+    print(<span class="tok-str">f&quot;已提交，成绩 {score}&quot;</span>)
 print(bool(<span class="tok-str">&quot;False&quot;</span>), bool(<span class="tok-str">&quot;&quot;</span>))</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>已提交，成绩 0
 True False</code></pre></div></details><h5>怎么执行</h5><p>零分仍是已提交的有效成绩。若使用 if not score，会把 0 和缺失混在一起。</p><p class="try"><strong>动手改写：</strong>把 score 改成 None，观察分支改变。</p></section><section class="example" id="c04-example-04_06"><div class="item-number">示例 04_06</div><h4>AI / Agent：按明确规则选择处理路径</h4><p class="fileline">运行文件：<a href="examples/ch04/ex04_06.py" download>examples/ch04/ex04_06.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>request = <span class="tok-str">&quot; 请解释列表 &quot;</span>
 cleaned = request.strip()
@@ -404,7 +404,7 @@ print(days)
 print(total)</code></pre></div><h5>解题思路</h5><p>总和可以对所有项累加，因为 0 不影响结果；有效天数只在大于 0 时增加。</p><p><a href="solutions/ch05/ex05_03.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 05_03</code></p></section><section class="exercise" id="c05-exercise-05_04"><div class="exercise-top"><span class="item-number">练习 05_04 · 场景</span><label class="done-check"><input type="checkbox" data-check="exercise:05_04"> 我已独立完成</label></div><h4>单词长度报告</h4><p>对 [&quot;cat&quot;, &quot;python&quot;, &quot;AI&quot;] 输出 cat:3、python:6、AI:2，各占一行。</p><p class="fileline">作答文件：<a href="practice/ch05/ex05_04.py" download>practice/ch05/ex05_04.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>cat:3
 python:6
 AI:2</code></pre></div><details><summary>给我一点提示</summary><p>每次处理一个词，len 得到长度。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">for</span> word <span class="tok-kw">in</span> [<span class="tok-str">&quot;cat&quot;</span>, <span class="tok-str">&quot;python&quot;</span>, <span class="tok-str">&quot;AI&quot;</span>]:
-    print(f&quot;{word}:{len(word)}&quot;)</code></pre></div><h5>解题思路</h5><p>把“单个词怎样处理”写好后，再用 for 应用到整个列表，这正是批量处理的基本模式。</p><p><a href="solutions/ch05/ex05_04.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 05_04</code></p></section><section class="exercise" id="c05-exercise-05_05"><div class="exercise-top"><span class="item-number">练习 05_05 · 迁移</span><label class="done-check"><input type="checkbox" data-check="exercise:05_05"> 我已独立完成</label></div><h4>找最大值</h4><p>不用 max，求非空列表 [-5, -2, -9] 的最大值，输出 -2。</p><p class="fileline">作答文件：<a href="practice/ch05/ex05_05.py" download>practice/ch05/ex05_05.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>-2</code></pre></div><details><summary>给我一点提示</summary><p>初始最大值不能设为 0，全部为负会出错。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>numbers = [-<span class="tok-num">5</span>, -<span class="tok-num">2</span>, -<span class="tok-num">9</span>]
+    print(<span class="tok-str">f&quot;{word}:{len(word)}&quot;</span>)</code></pre></div><h5>解题思路</h5><p>把“单个词怎样处理”写好后，再用 for 应用到整个列表，这正是批量处理的基本模式。</p><p><a href="solutions/ch05/ex05_04.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 05_04</code></p></section><section class="exercise" id="c05-exercise-05_05"><div class="exercise-top"><span class="item-number">练习 05_05 · 迁移</span><label class="done-check"><input type="checkbox" data-check="exercise:05_05"> 我已独立完成</label></div><h4>找最大值</h4><p>不用 max，求非空列表 [-5, -2, -9] 的最大值，输出 -2。</p><p class="fileline">作答文件：<a href="practice/ch05/ex05_05.py" download>practice/ch05/ex05_05.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>-2</code></pre></div><details><summary>给我一点提示</summary><p>初始最大值不能设为 0，全部为负会出错。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>numbers = [-<span class="tok-num">5</span>, -<span class="tok-num">2</span>, -<span class="tok-num">9</span>]
 largest = numbers[<span class="tok-num">0</span>]
 <span class="tok-kw">for</span> number <span class="tok-kw">in</span> numbers[<span class="tok-num">1</span>:]:
     <span class="tok-kw">if</span> number &gt; largest:
@@ -475,12 +475,12 @@ max_steps = <span class="tok-num">3</span>
 finished = <span class="tok-kw">False</span>
 <span class="tok-kw">while</span> step &lt; max_steps:
     step += <span class="tok-num">1</span>
-    print(f&quot;第 {step} 轮&quot;)
+    print(<span class="tok-str">f&quot;第 {step} 轮&quot;</span>)
     <span class="tok-kw">if</span> step == <span class="tok-num">2</span>:
         finished = <span class="tok-kw">True</span>
         <span class="tok-kw">break</span>
-print(f&quot;已完成：{finished}&quot;)
-print(f&quot;实际轮数：{step}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>第 1 轮
+print(<span class="tok-str">f&quot;已完成：{finished}&quot;</span>)
+print(<span class="tok-str">f&quot;实际轮数：{step}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>第 1 轮
 第 2 轮
 已完成：True
 实际轮数：2</code></pre></div></details><h5>怎么执行</h5><p>step 从 0 开始，每轮先加 1；第 1 轮未完成，重新判断 while；第 2 轮把 finished 改为 True 后 break，跳到循环后。max_steps 限制最多启动几轮；finished 单独记录是否完成。运行了两轮和任务完成是两个不同事实。本例用 step == 2 模拟完成条件，真实 Agent 需要根据执行结果判断。</p><p class="try"><strong>动手改写：</strong>把完成条件改成 step == 5，max_steps 保持 3。应执行三轮且 finished 为 False。再把 max_steps 改成 0，说明为什么循环体一次也不执行。</p></section><h3 class="section-break">独立练习</h3><p>先在 practice 中作答；提示和答案默认收起。勾选表示你已独立完成，不是自动判定通过。</p><section class="exercise" id="c06-exercise-06_01"><div class="exercise-top"><span class="item-number">练习 06_01 · 基础</span><label class="done-check"><input type="checkbox" data-check="exercise:06_01"> 我已独立完成</label></div><h4>while 求和</h4><p>用 while 求 1 到 5 的和，输出 15。</p><p class="fileline">作答文件：<a href="practice/ch06/ex06_01.py" download>practice/ch06/ex06_01.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>15</code></pre></div><details><summary>给我一点提示</summary><p>计数器从 1 开始，每轮递增。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>number = <span class="tok-num">1</span>
@@ -702,7 +702,7 @@ print(unique)</code></pre></div><details class="output"><summary>预测完后，
 ]
 messages.append({<span class="tok-str">&quot;role&quot;</span>: <span class="tok-str">&quot;user&quot;</span>, <span class="tok-str">&quot;content&quot;</span>: <span class="tok-str">&quot;给我一个例子。&quot;</span>})
 <span class="tok-kw">for</span> message <span class="tok-kw">in</span> messages:
-    print(f&quot;{message[<span class="tok-str">&#x27;role&#x27;</span>]}: {message[<span class="tok-str">&#x27;content&#x27;</span>]}&quot;)
+    print(<span class="tok-str">f&quot;{message[&#x27;role&#x27;]}: {message[&#x27;content&#x27;]}&quot;</span>)
 print(len(messages))</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>user: 什么是列表？
 assistant: 列表保存有顺序的元素。
 user: 给我一个例子。
@@ -817,7 +817,7 @@ None</code></pre></div></details><h5>怎么执行</h5><p>函数先显示 6；没
 print(mean([<span class="tok-num">80</span>, <span class="tok-num">100</span>]))
 print(mean([]))</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>90.0
 None</code></pre></div></details><h5>怎么执行</h5><p>sum 是内置求和函数。空输入路径提前返回，后面的除法不会执行；调用者必须理解 None 表示没有平均值。</p><p class="try"><strong>动手改写：</strong>将空输入约定改成抛 ValueError，并在第 13 章练习捕获。</p></section><section class="example" id="c09-example-09_04"><div class="item-number">示例 09_04</div><h4>默认参数与关键字</h4><p class="fileline">运行文件：<a href="examples/ch09/ex09_04.py" download>examples/ch09/ex09_04.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">def</span> greet(name, prefix=<span class="tok-str">&quot;你好&quot;</span>):
-    <span class="tok-kw">return</span> f&quot;{prefix}，{name}&quot;
+    <span class="tok-kw">return</span> <span class="tok-str">f&quot;{prefix}，{name}&quot;</span>
 
 print(greet(<span class="tok-str">&quot;小林&quot;</span>))
 print(greet(prefix=<span class="tok-str">&quot;晚上好&quot;</span>, name=<span class="tok-str">&quot;小陈&quot;</span>))</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>你好，小林
@@ -874,11 +874,11 @@ False
 rounds = <span class="tok-num">0</span>
 <span class="tok-kw">for</span> _ <span class="tok-kw">in</span> range(<span class="tok-num">3</span>):
     next_round(rounds)
-print(f&quot;未接收：{rounds}&quot;)
+print(<span class="tok-str">f&quot;未接收：{rounds}&quot;</span>)
 
 <span class="tok-kw">for</span> _ <span class="tok-kw">in</span> range(<span class="tok-num">3</span>):
     rounds = next_round(rounds)
-    print(f&quot;保存后：{rounds}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>未接收：0
+    print(<span class="tok-str">f&quot;保存后：{rounds}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>未接收：0
 保存后：1
 保存后：2
 保存后：3</code></pre></div></details><h5>怎么执行</h5><p>第一个循环每次都传入 0，并得到 1，但没有变量接收这三个返回值。第二个循环的右边先计算 next_round(rounds)，然后左边 rounds 才绑定新值；所以下一轮能接着上次的结果计算。下划线只是一个变量名，表示本例不需要循环索引。这是离线计数实验，没有执行真实 Agent 或模型调用。</p><p class="try"><strong>动手改写：</strong>把初始 rounds 改为 5，先写出全部四行输出再运行。随后只删掉第二个循环中的赋值，解释为什么三次打印都不再增长。</p></section><h3 class="section-break">独立练习</h3><p>先在 practice 中作答；提示和答案默认收起。勾选表示你已独立完成，不是自动判定通过。</p><section class="exercise" id="c09-exercise-09_01"><div class="exercise-top"><span class="item-number">练习 09_01 · 基础</span><label class="done-check"><input type="checkbox" data-check="exercise:09_01"> 我已独立完成</label></div><h4>温度转换函数</h4><p>实现 to_fahrenheit(celsius)，返回摄氏转华氏的值。展示 print(to_fahrenheit(25)) 输出 77.0。</p><p class="fileline">作答文件：<a href="practice/ch09/ex09_01.py" download>practice/ch09/ex09_01.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>77.0</code></pre></div><p class="muted">本题含额外函数测试，请使用题目指定的函数或类名。</p><details><summary>给我一点提示</summary><p>函数负责返回，外面负责显示。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">def</span> to_fahrenheit(celsius):
@@ -915,7 +915,7 @@ print(clean_names([<span class="tok-str">&quot; A &quot;</span>, <span class="to
             count += <span class="tok-num">1</span>
     <span class="tok-kw">return</span> count / len(scores)
 
-print(f&quot;{pass_rate([<span class="tok-num">50</span>, <span class="tok-num">60</span>, <span class="tok-num">90</span>]):.1%}&quot;)</code></pre></div><h5>解题思路</h5><p>threshold 可以通过关键字修改。显示百分比放在外部，函数返回数值便于后续运算。</p><p><a href="solutions/ch09/ex09_05.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 09_05</code></p></section><section class="exercise" id="c09-exercise-09_06"><div class="exercise-top"><span class="item-number">练习 09_06 · 纠错</span><label class="done-check"><input type="checkbox" data-check="exercise:09_06"> 我已独立完成</label></div><h4>无共享默认值</h4><p>实现 append_new(value, items=None)，未传 items 时每次建立独立列表；传入列表时追加到该列表。依次打印 append_new(&quot;A&quot;) 与 append_new(&quot;B&quot;)。</p><p class="fileline">作答文件：<a href="practice/ch09/ex09_06.py" download>practice/ch09/ex09_06.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>[&#x27;A&#x27;]
+print(<span class="tok-str">f&quot;{pass_rate([50, 60, 90]):.1%}&quot;</span>)</code></pre></div><h5>解题思路</h5><p>threshold 可以通过关键字修改。显示百分比放在外部，函数返回数值便于后续运算。</p><p><a href="solutions/ch09/ex09_05.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 09_05</code></p></section><section class="exercise" id="c09-exercise-09_06"><div class="exercise-top"><span class="item-number">练习 09_06 · 纠错</span><label class="done-check"><input type="checkbox" data-check="exercise:09_06"> 我已独立完成</label></div><h4>无共享默认值</h4><p>实现 append_new(value, items=None)，未传 items 时每次建立独立列表；传入列表时追加到该列表。依次打印 append_new(&quot;A&quot;) 与 append_new(&quot;B&quot;)。</p><p class="fileline">作答文件：<a href="practice/ch09/ex09_06.py" download>practice/ch09/ex09_06.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>[&#x27;A&#x27;]
 [&#x27;B&#x27;]</code></pre></div><p class="muted">本题含额外函数测试，请使用题目指定的函数或类名。</p><details><summary>给我一点提示</summary><p>必须检查 is None。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">def</span> append_new(value, items=<span class="tok-kw">None</span>):
     <span class="tok-kw">if</span> items <span class="tok-kw">is</span> <span class="tok-kw">None</span>:
         items = []
@@ -1080,7 +1080,7 @@ True</code></pre></div></details><h5>怎么执行</h5><p>两个生成器在当�
     main()</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>10</code></pre></div></details><h5>怎么执行</h5><p>直接运行时 main 被调用；导入时只定义函数，不执行 main。综合项目都会使用这个结构。</p><p class="try"><strong>动手改写：</strong>在同目录新建文件导入这个示例模块并调用 double。</p></section><h3 class="section-break">独立练习</h3><p>先在 practice 中作答；提示和答案默认收起。勾选表示你已独立完成，不是自动判定通过。</p><section class="exercise" id="c11-exercise-11_01"><div class="exercise-top"><span class="item-number">练习 11_01 · 场景</span><label class="done-check"><input type="checkbox" data-check="exercise:11_01"> 我已独立完成</label></div><h4>均值与中位数</h4><p>用 statistics 模块计算 [1,2,100] 的 mean 和 median，分别输出并把均值格式化为两位小数。</p><p class="fileline">作答文件：<a href="practice/ch11/ex11_01.py" download>practice/ch11/ex11_01.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>34.33
 2</code></pre></div><details><summary>给我一点提示</summary><p>中位数是排序后的中间值，不等于平均值。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">import</span> statistics
 values = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">100</span>]
-print(f&quot;{statistics.mean(values):.2f}&quot;)
+print(<span class="tok-str">f&quot;{statistics.mean(values):.2f}&quot;</span>)
 print(statistics.median(values))</code></pre></div><h5>解题思路</h5><p>异常大值显著影响均值，中位数在这里仍为 2。这里只练库函数，不作完整统计推断。</p><p><a href="solutions/ch11/ex11_01.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 11_01</code></p></section><section class="exercise" id="c11-exercise-11_02"><div class="exercise-top"><span class="item-number">练习 11_02 · 基础</span><label class="done-check"><input type="checkbox" data-check="exercise:11_02"> 我已独立完成</label></div><h4>词频最多者</h4><p>用 Counter 统计 &quot;red blue red green red blue&quot;，输出 most_common(1) 的结果。</p><p class="fileline">作答文件：<a href="practice/ch11/ex11_02.py" download>practice/ch11/ex11_02.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>[(&#x27;red&#x27;, 3)]</code></pre></div><details><summary>给我一点提示</summary><p>先 split。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">from</span> collections <span class="tok-kw">import</span> Counter
 counts = Counter(<span class="tok-str">&quot;red blue red green red blue&quot;</span>.split())
 print(counts.most_common(<span class="tok-num">1</span>))</code></pre></div><h5>解题思路</h5><p>most_common 返回列表，其中元素是词和次数组成的元组，即使只取一个也是列表。</p><p><a href="solutions/ch11/ex11_02.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 11_02</code></p></section><section class="exercise" id="c11-exercise-11_03"><div class="exercise-top"><span class="item-number">练习 11_03 · 迁移</span><label class="done-check"><input type="checkbox" data-check="exercise:11_03"> 我已独立完成</label></div><h4>向上取整批次数</h4><p>23 条数据，每批最多 8 条，用 math.ceil 输出需要几批：3。</p><p class="fileline">作答文件：<a href="practice/ch11/ex11_03.py" download>practice/ch11/ex11_03.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>3</code></pre></div><details><summary>给我一点提示</summary><p>先做除法再向上取整。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">import</span> math
@@ -1377,10 +1377,10 @@ print(<span class="tok-str">&quot;3 个检查通过&quot;</span>)</code></pre></
     <span class="tok-kw">try</span>:
         score = int(text)
     <span class="tok-kw">except</span> ValueError:
-        print(f&quot;第 {line_number} 行不是整数：{text}&quot;)
+        print(<span class="tok-str">f&quot;第 {line_number} 行不是整数：{text}&quot;</span>)
         <span class="tok-kw">continue</span>
     <span class="tok-kw">if</span> <span class="tok-kw">not</span> <span class="tok-num">0</span> &lt;= score &lt;= <span class="tok-num">100</span>:
-        print(f&quot;第 {line_number} 行超出范围&quot;)
+        print(<span class="tok-str">f&quot;第 {line_number} 行超出范围&quot;</span>)
         <span class="tok-kw">continue</span>
     print(<span class="tok-str">&quot;保留&quot;</span>, score)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>保留 80
 第 2 行不是整数：oops
@@ -1400,9 +1400,9 @@ replies = [<span class="tok-str">&quot;not-json&quot;</span>, <span class="tok-s
     <span class="tok-kw">try</span>:
         answer = read_answer(reply)
     <span class="tok-kw">except</span> ValueError:
-        print(f&quot;第 {attempt} 次：格式或内容不合格&quot;)
+        print(<span class="tok-str">f&quot;第 {attempt} 次：格式或内容不合格&quot;</span>)
         <span class="tok-kw">continue</span>
-    print(f&quot;第 {attempt} 次：{answer}&quot;)
+    print(<span class="tok-str">f&quot;第 {attempt} 次：{answer}&quot;</span>)
     <span class="tok-kw">break</span>
 <span class="tok-kw">else</span>:
     print(<span class="tok-str">&quot;已用完预设回复，停止&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>第 1 次：格式或内容不合格
@@ -1417,14 +1417,14 @@ replies = [<span class="tok-str">&quot;not-json&quot;</span>, <span class="tok-s
     broken_round()
 <span class="tok-kw">except</span> UnboundLocalError <span class="tok-kw">as</span> error:
     print(type(error).__name__)
-print(f&quot;外部轮数：{rounds}&quot;)
+print(<span class="tok-str">f&quot;外部轮数：{rounds}&quot;</span>)
 
 <span class="tok-kw">def</span> fixed_round(current):
     <span class="tok-kw">return</span> current + <span class="tok-num">1</span>
 
 rounds = fixed_round(rounds)
 rounds = fixed_round(rounds)
-print(f&quot;修复后：{rounds}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>UnboundLocalError
+print(<span class="tok-str">f&quot;修复后：{rounds}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>UnboundLocalError
 外部轮数：0
 修复后：2</code></pre></div></details><h5>怎么执行</h5><p>broken_round 的 += 要读取还不存在的局部 rounds，赋值未能完成就出错。捕获异常后，外部 rounds 仍为 0。fixed_round 两次分别收到 0 和 1，返回 1 和 2，调用者保存返回值后得到 2。捕获错误本身没有修复逻辑；修复来自明确的参数和返回值。</p><p class="try"><strong>动手改写：</strong>把第二次修复调用改成单独的 fixed_round(rounds)，不接收返回值，预测最后输出。再对照第 09 章 09_10，解释“报错”和“能运行但没保存结果”的区别。</p></section><section class="example" id="c13-example-13_08"><div class="item-number">示例 13_08</div><h4>AI 数据排错：保留坏行位置，继续处理下一行</h4><p class="fileline">运行文件：<a href="examples/ch13/ex13_08.py" download>examples/ch13/ex13_08.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">import</span> json
 
@@ -1463,9 +1463,9 @@ text = <span class="tok-str">&#x27;\n&#x27;</span>.join([
     <span class="tok-str">&#x27;{&quot;text&quot;: &quot;Agent&quot;, &quot;label&quot;: 0}&#x27;</span>,
 ])
 records, errors, blank_lines = read_training_lines(text)
-print(f&quot;保留 {len(records)} 条，跳过 {blank_lines} 个空行&quot;)
+print(<span class="tok-str">f&quot;保留 {len(records)} 条，跳过 {blank_lines} 个空行&quot;</span>)
 <span class="tok-kw">for</span> error <span class="tok-kw">in</span> errors:
-    print(f&quot;第 {error[<span class="tok-str">&#x27;line&#x27;</span>]} 行：{error[<span class="tok-str">&#x27;kind&#x27;</span>]}&quot;)
+    print(<span class="tok-str">f&quot;第 {error[&#x27;line&#x27;]} 行：{error[&#x27;kind&#x27;]}&quot;</span>)
 print(records)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>保留 2 条，跳过 1 个空行
 第 3 行：json
 第 4 行：schema
@@ -1504,7 +1504,7 @@ text = <span class="tok-str">&#x27;name,score\n&quot;林,一&quot;,80\n\n小陈,
 valid, errors = clean_scores_csv(text)
 print(valid)
 <span class="tok-kw">for</span> end_line, reason <span class="tok-kw">in</span> errors:
-    print(f&quot;结束行 {end_line}：{reason}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>[{&#x27;name&#x27;: &#x27;林,一&#x27;, &#x27;score&#x27;: 80}, {&#x27;name&#x27;: &#x27;小何&#x27;, &#x27;score&#x27;: 0}]
+    print(<span class="tok-str">f&quot;结束行 {end_line}：{reason}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>[{&#x27;name&#x27;: &#x27;林,一&#x27;, &#x27;score&#x27;: 80}, {&#x27;name&#x27;: &#x27;小何&#x27;, &#x27;score&#x27;: 0}]
 结束行 4：integer
 结束行 5：range
 结束行 6：columns</code></pre></div></details><h5>怎么执行</h5><p>reader 先把文本解析成字段列表。列数与姓名合格后才尝试 int，只有转换成功才判断分数范围。第 3 行空行不应挤掉后面的物理行号，所以从 reader.line_num 取得结束行。第 7 行的 0 转换成功且在范围内，必须保留。所有错误分支都 continue，因此错误记录不会落入最后的 valid.append。</p><p class="try"><strong>动手改写：</strong>先做正文的四次单项改写，再试只有表头的输入，确认返回两个空列表；改错表头时应得到 ValueError。最后用带引号换行的姓名，观察结束行号为什么可能跳两个数。</p></section><h3 class="section-break">独立练习</h3><p>先在 practice 中作答；提示和答案默认收起。勾选表示你已独立完成，不是自动判定通过。</p><section class="exercise" id="c13-exercise-13_01"><div class="exercise-top"><span class="item-number">练习 13_01 · 基础</span><label class="done-check"><input type="checkbox" data-check="exercise:13_01"> 我已独立完成</label></div><h4>容错转整数</h4><p>实现 parse_int(text)，转换成功返回整数，ValueError 时返回 None。依次打印对 &quot;12&quot; 和 &quot;abc&quot; 的结果。输入约定为字符串。</p><p class="fileline">作答文件：<a href="practice/ch13/ex13_01.py" download>practice/ch13/ex13_01.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>12
@@ -1875,7 +1875,7 @@ pieces = []
 stream = simulated_stream()
 <span class="tok-kw">for</span> piece <span class="tok-kw">in</span> stream:
     pieces.append(piece)
-    print(f&quot;收到：{piece}&quot;)
+    print(<span class="tok-str">f&quot;收到：{piece}&quot;</span>)
 print(<span class="tok-str">&quot;完整：&quot;</span> + <span class="tok-str">&quot;&quot;</span>.join(pieces))
 print(list(stream))</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>收到：先学
 收到： Python
@@ -1892,7 +1892,7 @@ print(list(even_numbers(<span class="tok-num">7</span>)))</code></pre></div><h5>
         <span class="tok-kw">yield</span> values[start:start + size]
 
 print(list(batches([<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>, <span class="tok-num">4</span>, <span class="tok-num">5</span>], <span class="tok-num">2</span>)))</code></pre></div><h5>解题思路</h5><p>最后切片自动截到结尾。生成器中的验证在迭代开始时执行，而不是仅调用函数拿到对象时执行。</p><p><a href="solutions/ch15/ex15_02.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 15_02</code></p></section><section class="exercise" id="c15-exercise-15_03"><div class="exercise-top"><span class="item-number">练习 15_03 · 迁移</span><label class="done-check"><input type="checkbox" data-check="exercise:15_03"> 我已独立完成</label></div><h4>配置展开调用</h4><p>实现 format_run(name,epochs)，返回 &quot;名称:轮数&quot;。用 config={&quot;name&quot;:&quot;demo&quot;,&quot;epochs&quot;:3} 的 ** 展开调用并打印。</p><p class="fileline">作答文件：<a href="practice/ch15/ex15_03.py" download>practice/ch15/ex15_03.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>demo:3</code></pre></div><p class="muted">本题含额外函数测试，请使用题目指定的函数或类名。</p><details><summary>给我一点提示</summary><p>字典键必须与形参名匹配。</p></details><details class="solution"><summary>查看参考代码与解析</summary><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code><span class="tok-kw">def</span> format_run(name, epochs):
-    <span class="tok-kw">return</span> f&quot;{name}:{epochs}&quot;
+    <span class="tok-kw">return</span> <span class="tok-str">f&quot;{name}:{epochs}&quot;</span>
 
 config = {<span class="tok-str">&quot;name&quot;</span>: <span class="tok-str">&quot;demo&quot;</span>, <span class="tok-str">&quot;epochs&quot;</span>: <span class="tok-num">3</span>}
 print(format_run(**config))</code></pre></div><h5>解题思路</h5><p>函数不知道参数是否来自字典展开，它收到的只是相应绑定。</p><p><a href="solutions/ch15/ex15_03.py" download>保存参考答案 .py</a> · 看过后，明天关掉答案重写一次。</p></details><p class="check-command">自检：<code>python tools/check_practice.py 15_03</code></p></section><section class="exercise" id="c15-exercise-15_04"><div class="exercise-top"><span class="item-number">练习 15_04 · 推理</span><label class="done-check"><input type="checkbox" data-check="exercise:15_04"> 我已独立完成</label></div><h4>生成器消费观察</h4><p>建立 (x*x for x in range(3))，连续两次 print(list(g))，写出结果并解释。</p><p class="fileline">作答文件：<a href="practice/ch15/ex15_04.py" download>practice/ch15/ex15_04.py</a></p><h5>预期输出</h5><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>[0, 1, 4]
@@ -1997,7 +1997,7 @@ print(masks)</code></pre></div><details class="output"><summary>预测完后，�
     correct = sum(pred == label <span class="tok-kw">for</span> pred, label <span class="tok-kw">in</span> zip(predictions, labels))
     <span class="tok-kw">return</span> correct / len(labels)
 
-print(f&quot;{accuracy([<span class="tok-num">1</span>, <span class="tok-num">0</span>, <span class="tok-num">1</span>, <span class="tok-num">1</span>], [<span class="tok-num">1</span>, <span class="tok-num">1</span>, <span class="tok-num">1</span>, <span class="tok-num">0</span>]):.1%}&quot;)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>50.0%</code></pre></div></details><h5>怎么执行</h5><p>布尔值参与 sum 时 True 当作 1，False 当作 0。先检查长度，避免 zip 的截短悄悄忽略样本。</p><p class="try"><strong>动手改写：</strong>构造全部猜主要类别但准确率很高的例子，说明指标局限。</p></section><section class="example" id="c16-example-16_06"><div class="item-number">示例 16_06</div><h4>二维形状检查</h4><p class="fileline">运行文件：<a href="examples/ch16/ex16_06.py" download>examples/ch16/ex16_06.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>rows = [[<span class="tok-num">1</span>, <span class="tok-num">2</span>], [<span class="tok-num">3</span>, <span class="tok-num">4</span>], [<span class="tok-num">5</span>, <span class="tok-num">6</span>]]
+print(<span class="tok-str">f&quot;{accuracy([1, 0, 1, 1], [1, 1, 1, 0]):.1%}&quot;</span>)</code></pre></div><details class="output"><summary>预测完后，查看预期输出</summary><div class="codebox"><div class="codebar"><span>程序输出</span></div><pre><code>50.0%</code></pre></div></details><h5>怎么执行</h5><p>布尔值参与 sum 时 True 当作 1，False 当作 0。先检查长度，避免 zip 的截短悄悄忽略样本。</p><p class="try"><strong>动手改写：</strong>构造全部猜主要类别但准确率很高的例子，说明指标局限。</p></section><section class="example" id="c16-example-16_06"><div class="item-number">示例 16_06</div><h4>二维形状检查</h4><p class="fileline">运行文件：<a href="examples/ch16/ex16_06.py" download>examples/ch16/ex16_06.py</a></p><div class="codebox"><div class="codebar"><span>Python</span><button class="copy" type="button">复制代码</button></div><pre><code>rows = [[<span class="tok-num">1</span>, <span class="tok-num">2</span>], [<span class="tok-num">3</span>, <span class="tok-num">4</span>], [<span class="tok-num">5</span>, <span class="tok-num">6</span>]]
 width = len(rows[<span class="tok-num">0</span>]) <span class="tok-kw">if</span> rows <span class="tok-kw">else</span> <span class="tok-num">0</span>
 is_rectangular = all(len(row) == width <span class="tok-kw">for</span> row <span class="tok-kw">in</span> rows)
 print(len(rows), width)
@@ -2021,12 +2021,12 @@ state = {<span class="tok-str">&quot;query&quot;</span>: <span class="tok-str">&
 finished = <span class="tok-kw">False</span>
 <span class="tok-kw">for</span> step <span class="tok-kw">in</span> range(<span class="tok-num">1</span>, <span class="tok-num">4</span>):
     decision = decide(state)
-    print(f&quot;第 {step} 步：{decision[<span class="tok-str">&#x27;action&#x27;</span>]}&quot;)
+    print(<span class="tok-str">f&quot;第 {step} 步：{decision[&#x27;action&#x27;]}&quot;</span>)
     <span class="tok-kw">if</span> decision[<span class="tok-str">&quot;action&quot;</span>] == <span class="tok-str">&quot;search&quot;</span>:
         state[<span class="tok-str">&quot;observation&quot;</span>] = search_notes(decision[<span class="tok-str">&quot;query&quot;</span>])
     <span class="tok-kw">elif</span> decision[<span class="tok-str">&quot;action&quot;</span>] == <span class="tok-str">&quot;finish&quot;</span>:
         print(state[<span class="tok-str">&quot;observation&quot;</span>][<span class="tok-str">&quot;text&quot;</span>])
-        print(f&quot;来源：{state[<span class="tok-str">&#x27;observation&#x27;</span>][<span class="tok-str">&#x27;source&#x27;</span>]}&quot;)
+        print(<span class="tok-str">f&quot;来源：{state[&#x27;observation&#x27;][&#x27;source&#x27;]}&quot;</span>)
         finished = <span class="tok-kw">True</span>
         <span class="tok-kw">break</span>
     <span class="tok-kw">else</span>:
@@ -2196,14 +2196,14 @@ BASE = Path(__file__).resolve().parent
     <span class="tok-kw">try</span>:
         <span class="tok-kw">if</span> args.command == <span class="tok-str">&quot;add&quot;</span>:
             count = add_record(args.store, args.minutes, args.topic, args.date)
-            print(f&quot;已保存 {count} 条记录&quot;)
+            print(<span class="tok-str">f&quot;已保存 {count} 条记录&quot;</span>)
         <span class="tok-kw">else</span>:
             stats = summarize(load_records(args.store))
-            print(f&quot;记录数：{stats[<span class="tok-str">&#x27;count&#x27;</span>]}&quot;)
-            print(f&quot;总分钟：{stats[<span class="tok-str">&#x27;total&#x27;</span>]}&quot;)
-            print(<span class="tok-str">&quot;平均分钟：暂无&quot;</span> <span class="tok-kw">if</span> stats[<span class="tok-str">&quot;mean&quot;</span>] <span class="tok-kw">is</span> <span class="tok-kw">None</span> <span class="tok-kw">else</span> f&quot;平均分钟：{stats[<span class="tok-str">&#x27;mean&#x27;</span>]:.1f}&quot;)
+            print(<span class="tok-str">f&quot;记录数：{stats[&#x27;count&#x27;]}&quot;</span>)
+            print(<span class="tok-str">f&quot;总分钟：{stats[&#x27;total&#x27;]}&quot;</span>)
+            print(<span class="tok-str">&quot;平均分钟：暂无&quot;</span> <span class="tok-kw">if</span> stats[<span class="tok-str">&quot;mean&quot;</span>] <span class="tok-kw">is</span> <span class="tok-kw">None</span> <span class="tok-kw">else</span> <span class="tok-str">f&quot;平均分钟：{stats[&#x27;mean&#x27;]:.1f}&quot;</span>)
     <span class="tok-kw">except</span> (ValueError, OSError) <span class="tok-kw">as</span> error:
-        parser.exit(<span class="tok-num">1</span>, f&quot;无法完成：{error}\n&quot;)
+        parser.exit(<span class="tok-num">1</span>, <span class="tok-str">f&quot;无法完成：{error}\n&quot;</span>)
 
 <span class="tok-kw">if</span> __name__ == <span class="tok-str">&quot;__main__&quot;</span>:
     main()</code></pre></div><p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section><section class="project" id="c17-02_score_report"><div class="eyebrow">PROJECT 02</div><h3>成绩 CSV 清洗与报告</h3><p class="muted">前置：第 00—13 章</p><p>读取含坏数据的成绩表。逐条检查 ID、姓名、分数和重复 ID，保留有效记录，把无效行及原因写入错误报告，输出人数、平均分、通过率与排名。CSV 的逻辑记录可能跨物理行，因此报告记录号不伪称绝对物理行号。</p><h3 id="p02_score_report-part1">1 列出数据约定</h3>
@@ -2284,13 +2284,13 @@ BASE = Path(__file__).resolve().parent
         report = analyze(args.input)
         save_report(report, args.out)
     <span class="tok-kw">except</span> (OSError, ValueError, csv.Error) <span class="tok-kw">as</span> error:
-        parser.exit(<span class="tok-num">1</span>, f&quot;处理失败：{error}\n&quot;)
-    print(f&quot;有效 {report[<span class="tok-str">&#x27;valid_count&#x27;</span>]} 条，无效 {report[<span class="tok-str">&#x27;invalid_count&#x27;</span>]} 条&quot;)
+        parser.exit(<span class="tok-num">1</span>, <span class="tok-str">f&quot;处理失败：{error}\n&quot;</span>)
+    print(<span class="tok-str">f&quot;有效 {report[&#x27;valid_count&#x27;]} 条，无效 {report[&#x27;invalid_count&#x27;]} 条&quot;</span>)
     <span class="tok-kw">if</span> report[<span class="tok-str">&quot;mean&quot;</span>] <span class="tok-kw">is</span> <span class="tok-kw">None</span>:
         print(<span class="tok-str">&quot;没有有效分数，无法计算平均分与通过率&quot;</span>)
     <span class="tok-kw">else</span>:
-        print(f&quot;平均分 {report[<span class="tok-str">&#x27;mean&#x27;</span>]:.1f}&quot;)
-        print(f&quot;通过率 {report[<span class="tok-str">&#x27;pass_rate&#x27;</span>]:.1%}&quot;)
+        print(<span class="tok-str">f&quot;平均分 {report[&#x27;mean&#x27;]:.1f}&quot;</span>)
+        print(<span class="tok-str">f&quot;通过率 {report[&#x27;pass_rate&#x27;]:.1%}&quot;</span>)
 
 <span class="tok-kw">if</span> __name__ == <span class="tok-str">&quot;__main__&quot;</span>:
     main()</code></pre></div><p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section><section class="project" id="c17-03_text_cleaner"><div class="eyebrow">PROJECT 03</div><h3>文本语料清洗与词频</h3><p class="muted">前置：第 00—13 章和第 16 章</p><p>把原始 JSONL 清洗成可追踪的小语料：验证 id 与 text，统一英文大小写及空白，去除空文本和重复文本，保留原记录 ID，输出干净 JSONL、错误与重复记录报告和词频。</p><h3 id="p03_text_cleaner-part1">1 定义清洗规则</h3>
@@ -2372,8 +2372,8 @@ BASE = Path(__file__).resolve().parent
         records, report = clean_file(args.input)
         save_outputs(records, report, args.out)
     <span class="tok-kw">except</span> (OSError, UnicodeError) <span class="tok-kw">as</span> error:
-        parser.exit(<span class="tok-num">1</span>, f&quot;处理失败：{error}\n&quot;)
-    print(f&quot;非空行 {report[<span class="tok-str">&#x27;input_count&#x27;</span>]}，保留 {report[<span class="tok-str">&#x27;kept_count&#x27;</span>]}，重复 {report[<span class="tok-str">&#x27;duplicate_count&#x27;</span>]}，拒绝 {report[<span class="tok-str">&#x27;rejected_count&#x27;</span>]}&quot;)
+        parser.exit(<span class="tok-num">1</span>, <span class="tok-str">f&quot;处理失败：{error}\n&quot;</span>)
+    print(<span class="tok-str">f&quot;非空行 {report[&#x27;input_count&#x27;]}，保留 {report[&#x27;kept_count&#x27;]}，重复 {report[&#x27;duplicate_count&#x27;]}，拒绝 {report[&#x27;rejected_count&#x27;]}&quot;</span>)
 
 <span class="tok-kw">if</span> __name__ == <span class="tok-str">&quot;__main__&quot;</span>:
     main()</code></pre></div><p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section><section class="project" id="c17-04_dataset_pipeline"><div class="eyebrow">PROJECT 04</div><h3>数据集划分 编码与分批</h3><p class="muted">前置：第 00—16 章</p><p>读取小型带标签文本数据集，验证记录、ID 与规范化文本唯一性；可复现地划分训练测试；只用训练文本建词表；把各批编码、补齐并生成掩码；保存配置与输出。此项目不训练模型，专门练 Python 数据流。</p><h3 id="p04_dataset_pipeline-part1">1 先写四个纯函数</h3>
@@ -2409,17 +2409,17 @@ BASE = Path(__file__).resolve().parent
                 <span class="tok-kw">continue</span>
             row = json.loads(line)
             <span class="tok-kw">if</span> <span class="tok-kw">not</span> isinstance(row, dict):
-                <span class="tok-kw">raise</span> ValueError(f&quot;第 {number} 行不是对象&quot;)
+                <span class="tok-kw">raise</span> ValueError(<span class="tok-str">f&quot;第 {number} 行不是对象&quot;</span>)
             <span class="tok-kw">if</span> <span class="tok-kw">not</span> isinstance(row.get(<span class="tok-str">&quot;id&quot;</span>), str) <span class="tok-kw">or</span> <span class="tok-kw">not</span> row[<span class="tok-str">&quot;id&quot;</span>].strip():
-                <span class="tok-kw">raise</span> ValueError(f&quot;第 {number} 行 ID 非法&quot;)
+                <span class="tok-kw">raise</span> ValueError(<span class="tok-str">f&quot;第 {number} 行 ID 非法&quot;</span>)
             <span class="tok-kw">if</span> <span class="tok-kw">not</span> isinstance(row.get(<span class="tok-str">&quot;text&quot;</span>), str):
-                <span class="tok-kw">raise</span> ValueError(f&quot;第 {number} 行 text 非字符串&quot;)
+                <span class="tok-kw">raise</span> ValueError(<span class="tok-str">f&quot;第 {number} 行 text 非字符串&quot;</span>)
             <span class="tok-kw">if</span> type(row.get(<span class="tok-str">&quot;label&quot;</span>)) <span class="tok-kw">is</span> <span class="tok-kw">not</span> int <span class="tok-kw">or</span> row[<span class="tok-str">&quot;label&quot;</span>] <span class="tok-kw">not</span> <span class="tok-kw">in</span> (<span class="tok-num">0</span>, <span class="tok-num">1</span>):
-                <span class="tok-kw">raise</span> ValueError(f&quot;第 {number} 行 label 必须是整数 0 或 1&quot;)
+                <span class="tok-kw">raise</span> ValueError(<span class="tok-str">f&quot;第 {number} 行 label 必须是整数 0 或 1&quot;</span>)
             record_id = row[<span class="tok-str">&quot;id&quot;</span>].strip()
             text = normalize(row[<span class="tok-str">&quot;text&quot;</span>])
             <span class="tok-kw">if</span> <span class="tok-kw">not</span> text <span class="tok-kw">or</span> record_id <span class="tok-kw">in</span> ids <span class="tok-kw">or</span> text <span class="tok-kw">in</span> texts:
-                <span class="tok-kw">raise</span> ValueError(f&quot;第 {number} 行为空文本、重复 ID 或重复文本&quot;)
+                <span class="tok-kw">raise</span> ValueError(<span class="tok-str">f&quot;第 {number} 行为空文本、重复 ID 或重复文本&quot;</span>)
             ids.add(record_id)
             texts.add(text)
             records.append({<span class="tok-str">&quot;id&quot;</span>: record_id, <span class="tok-str">&quot;text&quot;</span>: text, <span class="tok-str">&quot;label&quot;</span>: row[<span class="tok-str">&quot;label&quot;</span>]})
@@ -2495,9 +2495,9 @@ BASE = Path(__file__).resolve().parent
     <span class="tok-kw">try</span>:
         result = run(args.input, args.out, args.train_ratio, args.seed, args.batch_size)
     <span class="tok-kw">except</span> (ValueError, OSError) <span class="tok-kw">as</span> error:
-        parser.exit(<span class="tok-num">1</span>, f&quot;处理失败：{error}\n&quot;)
-    print(f&quot;共 {result[<span class="tok-str">&#x27;total&#x27;</span>]} 条，训练 {result[<span class="tok-str">&#x27;train_count&#x27;</span>]}，测试 {result[<span class="tok-str">&#x27;test_count&#x27;</span>]}&quot;)
-    print(f&quot;词表 {result[<span class="tok-str">&#x27;vocab_size&#x27;</span>]} 项，批大小 {result[<span class="tok-str">&#x27;batch_size&#x27;</span>]}&quot;)
+        parser.exit(<span class="tok-num">1</span>, <span class="tok-str">f&quot;处理失败：{error}\n&quot;</span>)
+    print(<span class="tok-str">f&quot;共 {result[&#x27;total&#x27;]} 条，训练 {result[&#x27;train_count&#x27;]}，测试 {result[&#x27;test_count&#x27;]}&quot;</span>)
+    print(<span class="tok-str">f&quot;词表 {result[&#x27;vocab_size&#x27;]} 项，批大小 {result[&#x27;batch_size&#x27;]}&quot;</span>)
 
 <span class="tok-kw">if</span> __name__ == <span class="tok-str">&quot;__main__&quot;</span>:
     main()</code></pre></div><p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section><section class="recall"><h3>合上教材，回忆这几句</h3><ul><li>先内存逻辑，再文件，再命令行。</li><li>验证层把坏数据说明白，统计层只接收约定的数据。</li><li>完成一个独立扩展，比只运行参考代码更能证明掌握。</li></ul><h4>本章通关检查</h4><ul><li>我能独立完成至少一个项目的核心逻辑。</li><li>我能给项目增加一个小功能并验证边界。</li><li>我能解释原始输入如何一步步变成最终报告。</li></ul><label class="chapter-done"><input type="checkbox" data-check="chapter:17"> 我已经能独立做到以上要求</label></section><section class="notes"><h3>我的错题与理解</h3><p>写下“我原来以为……，运行后发现……，因为……”。笔记随导出进度保存；代码请保存在 .py 文件。</p><textarea aria-label="第 17 章笔记" data-note="17" maxlength="20000" placeholder="日期 / 题号 / 错因 / 修正 / 下次复习"></textarea></section><nav class="page-nav" aria-label="章节翻页"><a href="#c16">← 上一章</a><a href="#c18">下一章 →</a></nav></article><article class="chapter" id="c18" hidden><header class="chapter-header"><div class="eyebrow">LEON / CHAPTER 18</div><h2>复习路线 自测与速查</h2><p class="lead">按能力前进，不必为了赶进度跳过卡住的知识。</p><div class="chapter-meta">八周路线 · 复习与综合自测</div></header><section class="goals"><h3>本章学会什么</h3><ul><li>安排可执行的复习节奏</li><li>通过阶段检查找到薄弱点</li><li>知道进入 NumPy 与 PyTorch 前应会什么</li></ul></section><h3 id="c18-part1">一个可调整的八周路线</h3>
