@@ -23,6 +23,16 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 ## Featured project
 
+### [CreditLens · 企业信用复核与证据智能](https://github.com/leon1111-wgl/creditlens)
+
+把官方财务披露转成可追溯事实，校验数字口径，记录核查依据，再交给独立复核身份确认。当前 v0.2 包含真实披露案例、确定性计算、API-key 与租户约束、事件记录及 48 项测试；金融文档多模态理解、模型治理与预测是后续研究主线。
+
+`Financial evidence` · `Review workflow` · `Risk factors` · `Evaluation` · `FastAPI`
+
+可在本地运行，无需 GPU。FinQA dev 883 题页内证据 Recall@5 为 82.43%，并非端到端回答准确率。可选模型接口已实现，真实模型质量与微调尚未评测。
+
+[源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [研究设计](https://github.com/leon1111-wgl/creditlens/blob/main/docs/08-document-ai-and-governance.md)
+
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
 
 把客服大模型做成能上线的系统：回答逐句对照知识库和业务数据校验，超额退款暂停等人工审批，模型故障时转人工或引用政策原文，坐席的每一次纠错都会变成知识补丁和回归测试。
