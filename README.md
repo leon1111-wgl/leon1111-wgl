@@ -33,7 +33,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 **数字相同也要核查：** 检查币种是否冲突、识别文字是否挂在错误行、金额旁是否漏了负号；保留修改前后的判定，并把需要回查的位置和原因列出来。[金额证据完整性](https://github.com/leon1111-wgl/creditlens/blob/main/docs/27-evidence-integrity.md)
 
-**新材料先过输入检查：** 识别输出有坏坐标或缺字段时，先说明问题；同一报告换个编号也不会重复计数。修正后可重试，已有结果不会被覆盖。检查通过只进入准备阶段，后续仍需核对内容与来源。[输入检查与失败恢复](https://github.com/leon1111-wgl/creditlens/blob/main/docs/28-document-input-preflight.md)
+**材料没处理完，问题不会丢：** 登记页缺失、重复或识别输出损坏时，明确指出哪里需要修正；每次尝试单独保存，修正后仍能查看和导出旧记录。页集和结构检查通过后，继续核对内容与来源。[材料准备与修正记录](https://github.com/leon1111-wgl/creditlens/blob/main/docs/29-document-preparation.md)
 
 **公司怎样解释变化：** 可以补充查看微软年报对现金流变化的说明，核对正文金额与报表数字，保留主要原因和抵消项。公司说法仍需独立核实。新增解释可以另建补充底稿，记录是否采用、为什么采用，再交给另一身份复核；退回重提仍能查到旧版本。[查看功能与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/26-explanation-review.md)
 
