@@ -25,7 +25,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 ### [CreditLens · 企业信用复核与证据智能](https://github.com/leon1111-wgl/creditlens)
 
-把官方财务披露转成可追溯事实，校验数字口径，记录核查依据，再交给独立复核身份确认。当前 v0.3 包含官方 HTML/PDF 披露案例与原页定位、确定性计算、API-key 与租户约束、事件记录及 70 项测试与 15 个财务控制回归场景；通用多模态文档理解、真实模型评测与预测是后续研究主线。
+把官方财务披露转成可追溯事实，校验数字口径，记录核查依据，再交给独立复核身份确认。当前 v0.4 包含微软与苹果的官方披露案例、42 项 PDF 原页事实、期限分区与周历口径校验、API-key 与租户约束、事件记录及 86 项测试与 15 个财务控制回归场景；通用多模态文档理解、真实模型评测与预测是后续研究主线。
 
 `Financial evidence` · `Review workflow` · `Risk factors` · `Evaluation` · `FastAPI`
 
