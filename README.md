@@ -23,17 +23,17 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 ## Featured project
 
-### [CreditLens · 企业财报核查助手](https://github.com/leon1111-wgl/creditlens)
+### [CreditLens · 多模态金融研究与风险分析](https://github.com/leon1111-wgl/creditlens)
 
-帮助信贷和投研人员查财报、看现金流和债务压力，弄清楚数字从哪里来、哪些问题还需要核实。
+正在建设一个面向投研和风险团队的研究平台：把财报、公告和连续多期的数据放在一起，了解企业发生了什么变化，寻找值得关注的信号，检验预测，并留下可以回查的依据。
 
-**现在能做什么：** 查看关键财务数据和年度变化，检查单位、年份是否用对，回到财报原文核对数字。可以整理现金流质量、债务覆盖等财务因子，也就是用来比较企业状况的指标；记录疑点，交给另一位复核人员确认，再导出附有来源和计算过程的分析底稿。目前是可在本地运行的演示版，使用微软和苹果的公开财报，无需显卡。
+**现在能做什么：** 用微软和苹果的公开财报查看财务变化、计算现金流和债务指标，回到原文核对，再交给另一位复核人员确认。新增季度数据整理脚本，分清单季与累计数字，按公告时间导出研究数据。目前是本地演示与研究工具，无需显卡；季度模块尚未接入网页。
 
-**接下来准备推出：** 支持更多企业和中文财报，把多个季度的现金流、债务和风险指标连起来看；对比新旧公告，提醒哪些分析需要更新，并提供在线演示。
+**接下来准备推出：** 多公司、多季度研究工作台，查看经营趋势、对比同行和新旧公告，生成带原文依据的比较报告；建立现金流预测与因子检验的基线，并提供在线演示。
 
-**后续探索方向：** 参考机器学习顶会和金融期刊的研究，探索时序预测与因子挖掘：用连续多期的数据估计后续现金流，从财报数字和公告内容中寻找风险线索，再检验这些线索换一家公司、换一个时期是否仍然有效。同时研究 AI 阅读表格、图表和扫描件、附有原文依据的财务问答，以及预测不可靠时如何提醒并转交人工。
+**后续探索方向：** 联合数字、文字和图表分析企业，研究时序预测、金融因子、企业关系和风险变化，再扩展到计入交易成本的投资组合实验。参考吴庆耀老师参与的相关研究及机器学习、金融领域论文，用独立数据检验方法是否有效，保留失败结果和人工复核。
 
-[源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [时序与因子研究计划](https://github.com/leon1111-wgl/creditlens/blob/main/docs/10-time-series-and-factors.md)
+[源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [平台设计与论文分析](https://github.com/leon1111-wgl/creditlens/blob/main/docs/11-financial-research-platform.md)
 
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
 
