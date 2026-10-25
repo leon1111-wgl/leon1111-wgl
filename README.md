@@ -37,6 +37,8 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 **从整页找金额：** 给出报表行名和年份，查看候选金额、年份和行名的原页位置。新增整行与词级对照，保留父行、原始词和每一项回退原因。当前细分词框没有增加已观察材料的匹配数，原整行方法继续作为默认；独立测试仍在准备。[取数实验与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/33-word-table-lookup.md)
 
+**参考也要能核对：** 两名不同身份分别填写原文观察，收齐后比较金额、单位和位置，再由未参与填写的身份复核。意见不同就保留分歧，修正另开一轮，旧记录不覆盖。当前完成流程与模拟验证，真实独立人工标注仍待执行。[参考核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/34-reference-review.md)
+
 **跨页核对再计算：** 把收入页、现金流页和合并范围附注放在一起，确认公司、期间与单位后再计算经营现金流占收入的比例。选错年份或少了依据会指出问题，原页和本次检查都能回查。[跨页财务证据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/31-cross-page-evidence.md)
 
 **公司怎样解释变化：** 可以补充查看微软年报对现金流变化的说明，核对正文金额与报表数字，保留主要原因和抵消项。公司说法仍需独立核实。新增解释可以另建补充底稿，记录是否采用、为什么采用，再交给另一身份复核；退回重提仍能查到旧版本。[查看功能与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/26-explanation-review.md)
