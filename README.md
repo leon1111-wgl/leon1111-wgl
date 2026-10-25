@@ -35,6 +35,8 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 **材料准备与交接：** 缺页或识别结果损坏时，指出需要修正的位置，保留每次尝试。旧记录可以单独复查；材料登记后来改变或暂时不可读时，另外说明为什么不能直接沿用，原记录仍可查看和导出。检查通过后继续核对内容。[旧记录与当前材料核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/30-preparation-history-and-registration.md)
 
+**从整页找金额：** 给出报表行名和年份，比较按文字顺序与按页面列位置取数的结果。可以回看候选金额、年份和行名的原页位置；同名分区或识别不清时保留待核查。当前两种方法在已观察材料上的结果相同，独立测试仍在准备。[取数实验与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/32-table-lookup.md)
+
 **跨页核对再计算：** 把收入页、现金流页和合并范围附注放在一起，确认公司、期间与单位后再计算经营现金流占收入的比例。选错年份或少了依据会指出问题，原页和本次检查都能回查。[跨页财务证据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/31-cross-page-evidence.md)
 
 **公司怎样解释变化：** 可以补充查看微软年报对现金流变化的说明，核对正文金额与报表数字，保留主要原因和抵消项。公司说法仍需独立核实。新增解释可以另建补充底稿，记录是否采用、为什么采用，再交给另一身份复核；退回重提仍能查到旧版本。[查看功能与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/26-explanation-review.md)
