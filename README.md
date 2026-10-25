@@ -27,7 +27,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 面向投研和风险团队，研究一家公司的经营状况如何变化、哪些风险值得关注、什么信息有助于判断未来。项目正在把财报、公告、历史数据和 AI 分析接起来，让每个判断都能找到依据、每次实验都能重新验证。
 
-**已经能用：** 用微软和苹果的官方历史财报看财务变化、算现金流和债务指标，记录疑点并交给同事复核。文档核对页面：让识别模型看财报图片，再与提取的数字、年份和单位核对；原页、识别框和失败原因放在一起，方便找出读错或看不清的地方。实验对照页可以比较不同识别方式和图片变糊、压缩后的结果，逐项追查原因并导出。新公司核对页加入 NVIDIA 材料，可以按共同的日期表头检查受影响数据，比较规则修改前后的依据；参考出错和原规则未通过的记录仍然保留。季度研究页还能按历史日期看经营变化、查依据、导出结果。目前可在本机运行。
+**已经能用：** 用微软和苹果的官方历史财报看财务变化、算现金流和债务指标，记录疑点并交给同事复核。文档核对页面：让识别模型看财报图片，再与提取的数字、年份和单位核对；原页、识别框和失败原因放在一起，方便找出读错或看不清的地方。实验对照页可以比较不同识别方式和图片变糊、压缩后的结果，逐项追查原因并导出。新公司核对页可以切换 AMD 与 NVIDIA：先固定规则再检查新材料，保留看不清的金额；也能查看日期规则修改前后的依据。参考出错和未通过的记录都保留，方便复查。季度研究页还能按历史日期看经营变化、查依据、导出结果。目前可在本机运行。
 
 **正在推进：** 更多公司和版式的文档评测，逐步加入扫描件、跨页表格与图表理解；完善多公司、多季度研究、同行比较和公告变化跟踪，再提供在线演示。
 
@@ -37,7 +37,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 [源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [平台设计与论文分析](https://github.com/leon1111-wgl/creditlens/blob/main/docs/11-financial-research-platform.md)
 
-[企业需求与技术实现：通俗版](https://github.com/leon1111-wgl/creditlens/blob/main/docs/12-project-story-and-technology.md) · [完整项目与技术描述](https://github.com/leon1111-wgl/creditlens/blob/main/docs/14-resume-and-interview.md) · [新公司文档诊断](https://github.com/leon1111-wgl/creditlens/blob/main/docs/17-new-issuer-transfer.md) · [日期关联与原始证据核验](https://github.com/leon1111-wgl/creditlens/blob/main/docs/18-date-association.md) · [并行迭代](https://github.com/leon1111-wgl/creditlens/blob/main/docs/15-parallel-iteration.md)
+[企业需求与技术实现：通俗版](https://github.com/leon1111-wgl/creditlens/blob/main/docs/12-project-story-and-technology.md) · [完整项目与技术描述](https://github.com/leon1111-wgl/creditlens/blob/main/docs/14-resume-and-interview.md) · [新公司文档诊断](https://github.com/leon1111-wgl/creditlens/blob/main/docs/17-new-issuer-transfer.md) · [日期关联与原始证据核验](https://github.com/leon1111-wgl/creditlens/blob/main/docs/18-date-association.md) · [固定规则后的AMD检查](https://github.com/leon1111-wgl/creditlens/blob/main/docs/19-issuer-evaluation.md) · [并行迭代](https://github.com/leon1111-wgl/creditlens/blob/main/docs/15-parallel-iteration.md)
 
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
 
