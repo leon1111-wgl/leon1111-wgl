@@ -27,7 +27,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 面向投研和风险团队，研究一家公司的经营状况如何变化、哪些风险值得关注、什么信息有助于判断未来。项目正在把财报、公告、历史数据和 AI 分析接起来，让每个判断都能找到依据、每次实验都能重新验证。
 
-**已经能用：** 用微软和苹果的官方历史财报查看财务变化，计算现金流和债务指标，核对原文、记录疑点并导出分析底稿，交给另一位复核人员确认。季度工具还能区分单季与累计数据，按指定日期整理当时已披露的信息。目前可在本机运行，季度工具通过脚本使用。
+**已经能用：** 用微软和苹果的官方历史财报查看财务变化，计算现金流和债务指标，核对原文、记录疑点并导出分析底稿，交给另一位复核人员确认。新增季度研究页面：选择历史日期，看微软各季经营变化，点开数字查原文，再导出当前结果。计算值与缺失数据明确标注，目前可在本机运行。
 
 **正在推进：** 多公司、多季度的研究工作台，支持经营趋势、同行比较和公告变化跟踪；接入更多官方材料，逐步实现自动更新，并提供在线演示。
 
@@ -36,6 +36,8 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 当前使用历史披露样例，尚无自动公告更新、实时行情或已验证的模型预测。数据整理与现有演示不需要训练服务器。
 
 [源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [平台设计与论文分析](https://github.com/leon1111-wgl/creditlens/blob/main/docs/11-financial-research-platform.md)
+
+[企业需求与技术实现：通俗版](https://github.com/leon1111-wgl/creditlens/blob/main/docs/12-project-story-and-technology.md)
 
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
 
