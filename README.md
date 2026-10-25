@@ -27,9 +27,9 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 面向投研和风险团队，研究一家公司的经营状况如何变化、哪些风险值得关注、什么信息有助于判断未来。项目正在把财报、公告、历史数据和 AI 分析接起来，让每个判断都能找到依据、每次实验都能重新验证。
 
-**已经能用：** 用微软和苹果的官方历史财报看财务变化、算现金流和债务指标，记录疑点并交给同事复核。文档核对页面：让识别模型看财报图片，再与提取的数字、年份和单位核对；原页、识别框和失败原因放在一起，方便找出读错或看不清的地方。实验对照页可以比较不同识别方式和图片变糊、压缩后的结果，逐项追查原因并导出。新公司核对页可以切换 AMD 与 NVIDIA：先固定规则再检查新材料，保留看不清的金额；也能查看日期规则修改前后的依据。参考出错和未通过的记录都保留，方便复查。季度研究页还能按历史日期看经营变化、查依据、导出结果。目前可在本机运行。
+**已经能用：** 把微软和苹果的官方现金流材料放到一项研究中，逐项确认采用哪些数字、查看各公司自身的年度变化、记录还没查清的解释，再固定底稿交给同事复核。退回修订会保留旧版，口径不同时说明原因。原有工作台还能计算财务指标、按历史日期看季度变化；让识别模型读取财报图片，对照数字、年份和单位，定位看错或看不清的地方，并比较不同识别方式的结果。目前可在本机运行。
 
-**正在推进：** 把分开的研究环节接成一次完整任务：研究一家公司的现金流为什么变化，再与同行比较，交付带数字、原文、待查问题和复核记录的底稿。先补齐两家同行、两期年度的可比材料；继续完善扫描件、跨页表格、图表理解和公告变化跟踪，再提供在线演示。
+**正在推进：** 补齐现金流调节项和附注解释，扩充口径可对齐的同行与多季度材料，逐步回答经营变化的原因；继续完善扫描件、跨页表格、图表理解和公告变化跟踪，再提供在线演示。
 
 **研究方向：** 联合数字、文字和图表，研究现金流时序预测、金融因子、企业关系和风险变化，再探索计入交易成本的投资组合。先建立简单基线，再用未参与调参的数据检验 AI 方法的增量价值；论文依据、实验设计和失败结果持续公开。
 
@@ -39,7 +39,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 [企业需求与技术实现：通俗版](https://github.com/leon1111-wgl/creditlens/blob/main/docs/12-project-story-and-technology.md) · [完整项目与技术描述](https://github.com/leon1111-wgl/creditlens/blob/main/docs/14-resume-and-interview.md) · [新公司文档诊断](https://github.com/leon1111-wgl/creditlens/blob/main/docs/17-new-issuer-transfer.md) · [日期关联与原始证据核验](https://github.com/leon1111-wgl/creditlens/blob/main/docs/18-date-association.md) · [固定规则后的AMD检查](https://github.com/leon1111-wgl/creditlens/blob/main/docs/19-issuer-evaluation.md) · [并行迭代](https://github.com/leon1111-wgl/creditlens/blob/main/docs/15-parallel-iteration.md)
 
-[港大公开项目与产业合作参照](https://github.com/leon1111-wgl/creditlens/blob/main/docs/research/2026-10-25-hku-industry-projects.md) · [下一阶段研究任务设计](https://github.com/leon1111-wgl/creditlens/blob/main/docs/research/2026-10-25-enterprise-research-design.md)
+[港大公开项目与产业合作参照](https://github.com/leon1111-wgl/creditlens/blob/main/docs/research/2026-10-25-hku-industry-projects.md) · [研究任务与版本交接](https://github.com/leon1111-wgl/creditlens/blob/main/docs/20-research-tasks.md)
 
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
 
