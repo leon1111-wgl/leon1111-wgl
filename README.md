@@ -43,6 +43,8 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 **毛利率怎样变化：** 把同一公司两年的产品／服务收入和成本对齐，先核对总额，再拆开收入构成与各类毛利率分别对应的变化。每项可回查原页、查看公式和导出；数字分解与经营原因分别呈现。[毛利率变化与原页依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/35-gross-margin-bridge.md)
 
+**公司怎么解释：** 查看公司对毛利变化的说明，区分金额、比率和不同业务范围，再核对数字与方向。保留“主要”“部分抵消”等限定；数值对得上，也不自动认定原因已经证实。[公司说明与数字核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/36-margin-company-statements.md)
+
 **公司怎样解释变化：** 可以补充查看微软年报对现金流变化的说明，核对正文金额与报表数字，保留主要原因和抵消项。公司说法仍需独立核实。新增解释可以另建补充底稿，记录是否采用、为什么采用，再交给另一身份复核；退回重提仍能查到旧版本。[查看功能与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/26-explanation-review.md)
 
 **正在推进：** 扩充附注与公司原文解释，检查不同支持程度的证据；建立人工独立确认的测试题，增加口径可对齐的同行与多季度材料，继续完善跨页表格、图表、公告修订和失败恢复，再提供在线演示。
