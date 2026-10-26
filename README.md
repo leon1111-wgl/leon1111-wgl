@@ -35,7 +35,7 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 **材料准备与交接：** 缺页或识别结果损坏时，指出需要修正的位置，保留每次尝试。旧记录可以单独复查；材料登记后来改变或暂时不可读时，另外说明为什么不能直接沿用，原记录仍可查看和导出。检查通过后继续核对内容。[旧记录与当前材料核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/30-preparation-history-and-registration.md)
 
-**从整页找金额：** 给出报表行名和年份，查看候选金额与原页依据。现在可以并排比较三种取数方法，区分表头、行名的问题和金额本身的问题，检查独立货币符号属于哪一列。每项变化、仍然缺少的依据及完整原词都能回查。同名指标出现两次时，可以先看全部原行和附近文字，明确所指后再查金额；独立测试仍在准备。[取数实验与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/37-role-aware-table-lookup.md)
+**从整页找金额：** 给出报表行名和年份，查看候选金额与原页依据。现在可以并排比较三种取数方法，区分表头、行名的问题和金额本身的问题，检查独立货币符号属于哪一列。每项变化、仍然缺少的依据及完整原词都能回查。同名指标出现两次时，可以先看全部原行和附近文字，明确所指后再查金额。保存的选择记录可以重新打开，核对金额和来源是否仍与登记结果一致；独立测试仍在准备。[取数实验与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/37-role-aware-table-lookup.md)
 
 **参考也要能核对：** 两名不同身份分别填写原文观察，收齐后比较金额、单位和位置，再由未参与填写的身份复核。意见不同就保留分歧，修正另开一轮，旧记录不覆盖。当前完成流程与模拟验证，真实独立人工标注仍待执行。[参考核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/34-reference-review.md)
 
