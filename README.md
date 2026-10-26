@@ -25,41 +25,11 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 ### [CreditLens · 多模态金融证据工作台](https://github.com/leon1111-wgl/creditlens)
 
-给投研和风险团队做三件事：查到财务指标并定位原文，确认口径后比较数字，把经营变化的依据与尚未证实的解释分开。先把每一步做成可检查、可交接的工作，再逐步扩展时序、因子和风险研究。
+面向投研和风险分析中的财报核查：查指标并定位原文，检查单位与期间是否可比，整理经营变化的数字依据和公司解释。研究底稿支持版本快照、修订、独立复核与导出。
 
-**已经能用：** 把微软和苹果的官方现金流材料放到一项研究中，逐项确认采用哪些数字、查看各公司自身的年度变化、拆开现金流与利润之间的调节项目、记录还没查清的解释，再固定底稿交给同事复核。退回修订会保留旧版，口径不同时说明原因。原有工作台还能计算财务指标、按历史日期看季度变化；让识别模型读取财报图片，对照数字、年份和单位，定位看错或看不清的地方，并比较不同识别方式的结果。目前可在本机运行。
+目前可以核对官方历史披露，比较表格取数方法，拆解现金流和毛利率变化，并回查文字与页面位置。OCR 已在 CPU 上运行；通用多模态问答、自动公告更新和预测模型仍属后续方向。
 
-**任务检查：** 每项材料和计算都能查看依据与缺口。数字可查不代表原因成立，底稿已复核也不会自动填补经营解释；修改后要按新版本重新检查。[三类任务怎样验收](https://github.com/leon1111-wgl/creditlens/blob/main/docs/24-research-task-acceptance.md)
-
-**按范围查证据：** 选择公司、指标和期间后，查看对应原文、判断能否比较，或整理经营变化的依据。未登记和口径不同会说明原因，公司解释与独立核实分开；改选后重新查询，结果可单独下载。[功能与边界](https://github.com/leon1111-wgl/creditlens/blob/main/docs/41-explicit-research-queries.md)
-
-**保存结果不确定时：** 研究底稿和解释补充稿保存、提交后遇到连接异常，可以按原请求重试，再载入服务端当前记录，避免重复保存或提交。需要放弃本页未保存改动时，由使用者明确选择。[保存与提交恢复](https://github.com/leon1111-wgl/creditlens/blob/main/docs/40-research-write-recovery.md)
-
-**数字相同也要核查：** 检查币种是否冲突、识别文字是否挂在错误行、金额旁是否漏了负号；保留修改前后的判定，并把需要回查的位置和原因列出来。[金额证据完整性](https://github.com/leon1111-wgl/creditlens/blob/main/docs/27-evidence-integrity.md)
-
-**材料准备与交接：** 缺页或识别结果损坏时，指出需要修正的位置，保留每次尝试。旧记录可以单独复查；材料登记后来改变或暂时不可读时，另外说明为什么不能直接沿用，原记录仍可查看和导出。检查通过后继续核对内容。[旧记录与当前材料核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/30-preparation-history-and-registration.md)
-
-**从整页找金额：** 给出报表行名和年份，查看候选金额与原页依据。现在可以并排比较三种取数方法，区分表头、行名的问题和金额本身的问题，检查独立货币符号属于哪一列。每项变化、仍然缺少的依据及完整原词都能回查。同名指标出现两次时，可以先看全部原行和附近文字，明确所指后再查金额。保存的选择记录可以重新打开，核对金额和来源是否仍与登记结果一致；独立测试仍在准备。[取数实验与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/37-role-aware-table-lookup.md)
-
-**参考也要能核对：** 两名不同身份分别填写原文观察，收齐后比较金额、单位和位置，再由未参与填写的身份复核。意见不同就保留分歧，修正另开一轮，旧记录不覆盖。当前完成流程与模拟验证，真实独立人工标注仍待执行。[参考核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/34-reference-review.md)
-
-**跨页核对再计算：** 把收入页、现金流页和合并范围附注放在一起，确认公司、期间与单位后再计算经营现金流占收入的比例。选错年份或少了依据会指出问题，原页和本次检查都能回查。[跨页财务证据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/31-cross-page-evidence.md)
-
-**毛利率怎样变化：** 把同一公司两年的产品／服务收入和成本对齐，先核对总额，再拆开收入构成与各类毛利率分别对应的变化。每项可回查原页、查看公式和导出；数字分解与经营原因分别呈现。[毛利率变化与原页依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/35-gross-margin-bridge.md)
-
-**公司怎么解释：** 查看公司对毛利变化的说明，区分金额、比率和不同业务范围，再核对数字与方向。保留“主要”“部分抵消”等限定；数值对得上，也不自动认定原因已经证实。[公司说明与数字核对](https://github.com/leon1111-wgl/creditlens/blob/main/docs/36-margin-company-statements.md)
-
-**公司怎样解释变化：** 可以补充查看微软年报对现金流变化的说明，核对正文金额与报表数字，保留主要原因和抵消项。公司说法仍需独立核实。新增解释可以另建补充底稿，记录是否采用、为什么采用，再交给另一身份复核；退回重提仍能查到旧版本。[查看功能与依据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/26-explanation-review.md)
-
-**正在推进：** 扩充附注与公司原文解释，检查不同支持程度的证据；建立人工独立确认的测试题，增加口径可对齐的同行与多季度材料，继续完善跨页表格、图表、公告修订和失败恢复，再提供在线演示。
-
-**研究方向：** 联合数字、文字和图表，研究现金流时序预测、金融因子、企业关系和风险变化，再探索计入交易成本的投资组合。先建立简单基线，再用未参与调参的数据检验 AI 方法的增量价值；论文依据、实验设计和失败结果持续公开。
-
-当前使用历史披露样例，图像识别已在本机 CPU 实际运行；通用多模态问答、自动公告更新、实时行情和模型预测仍在建设或研究中。现有功能不需要租训练服务器。
-
-[源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [平台设计与论文分析](https://github.com/leon1111-wgl/creditlens/blob/main/docs/11-financial-research-platform.md)
-
-[现金流变化逐行拆解](https://github.com/leon1111-wgl/creditlens/blob/main/docs/21-cash-flow-bridge.md)
+[源码与运行](https://github.com/leon1111-wgl/creditlens) · [架构与数据](https://github.com/leon1111-wgl/creditlens/blob/main/docs/03-architecture-and-data.md) · [复现说明](https://github.com/leon1111-wgl/creditlens/blob/main/docs/16-experiment-reproduction.md)
 
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
 
