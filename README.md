@@ -31,6 +31,8 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 **任务检查：** 每项材料和计算都能查看依据与缺口。数字可查不代表原因成立，底稿已复核也不会自动填补经营解释；修改后要按新版本重新检查。[三类任务怎样验收](https://github.com/leon1111-wgl/creditlens/blob/main/docs/24-research-task-acceptance.md)
 
+**按范围查证据：** 选择公司、指标和期间后，查看对应原文、判断能否比较，或整理经营变化的依据。未登记和口径不同会说明原因，公司解释与独立核实分开；改选后重新查询，结果可单独下载。[功能与边界](https://github.com/leon1111-wgl/creditlens/blob/main/docs/41-explicit-research-queries.md)
+
 **保存结果不确定时：** 研究底稿和解释补充稿保存、提交后遇到连接异常，可以按原请求重试，再载入服务端当前记录，避免重复保存或提交。需要放弃本页未保存改动时，由使用者明确选择。[保存与提交恢复](https://github.com/leon1111-wgl/creditlens/blob/main/docs/40-research-write-recovery.md)
 
 **数字相同也要核查：** 检查币种是否冲突、识别文字是否挂在错误行、金额旁是否漏了负号；保留修改前后的判定，并把需要回查的位置和原因列出来。[金额证据完整性](https://github.com/leon1111-wgl/creditlens/blob/main/docs/27-evidence-integrity.md)
