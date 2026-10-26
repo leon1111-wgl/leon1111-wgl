@@ -59,10 +59,6 @@ I am an MSc student at the University of Hong Kong, working on AI. My interests 
 
 [源码与复现](https://github.com/leon1111-wgl/creditlens) · [通俗制作报告](https://github.com/leon1111-wgl/creditlens/tree/main/docs/iterations) · [平台设计与论文分析](https://github.com/leon1111-wgl/creditlens/blob/main/docs/11-financial-research-platform.md)
 
-[企业需求与技术实现：通俗版](https://github.com/leon1111-wgl/creditlens/blob/main/docs/12-project-story-and-technology.md) · [新公司文档诊断](https://github.com/leon1111-wgl/creditlens/blob/main/docs/17-new-issuer-transfer.md) · [日期关联与原始证据核验](https://github.com/leon1111-wgl/creditlens/blob/main/docs/18-date-association.md) · [固定规则后的AMD检查](https://github.com/leon1111-wgl/creditlens/blob/main/docs/19-issuer-evaluation.md) · [并行迭代](https://github.com/leon1111-wgl/creditlens/blob/main/docs/15-parallel-iteration.md)
-
-[港大公开项目与产业合作参照](https://github.com/leon1111-wgl/creditlens/blob/main/docs/research/2026-10-25-hku-industry-projects.md) · [研究任务与版本交接](https://github.com/leon1111-wgl/creditlens/blob/main/docs/20-research-tasks.md)
-
 [现金流变化逐行拆解](https://github.com/leon1111-wgl/creditlens/blob/main/docs/21-cash-flow-bridge.md)
 
 ### [LoopDesk · 证据优先的企业客服 Agent](https://leon1111-wgl.github.io/loopdesk/)
