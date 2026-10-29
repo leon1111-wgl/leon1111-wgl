@@ -11,13 +11,17 @@
 
 ## About me
 
-I am an MSc student at the University of Hong Kong, working on AI. My interests include multimodal models, LLM agents, long-video understanding and generation, and efficient video inference. I enjoy turning complex ideas into clear, practical learning resources.
+I am an MSc student at the University of Hong Kong. My research focuses on **multimodal long-video understanding and grounding**, which means answering questions about long videos with evidence located in time and space, and on **spatial intelligence**. I also build LLM agent systems that tie model outputs to verifiable evidence, and I enjoy turning complex ideas into clear, practical learning resources.
 
-| Currently exploring | How I work |
+**研究方向**：多模态长视频理解与定位 · 空间智能
+
+Hong Kong · HKU MSc (2026–) · [zetongw6@gmail.com](mailto:zetongw6@gmail.com)
+
+| Research directions | How I work |
 | :--- | :--- |
-| Multimodal models and LLM agents | Connect model outputs to verifiable evidence |
-| Long-video understanding and generation | Build datasets and evaluate models carefully |
-| Efficient video inference | Explain ideas through stories, formulas and examples |
+| Multimodal long-video understanding and temporal-spatial grounding | Connect model outputs to verifiable evidence |
+| Spatial intelligence: spatial reasoning over images, video and 3D scenes | Build datasets and evaluate models carefully |
+| LLM agents for real business workflows | Explain ideas through stories, formulas and examples |
 
 **Tools & interests** · Python · Java · C · Multimodal evaluation · lmms-eval · Instruction tuning · Knowledge distillation · Model quantization
 
