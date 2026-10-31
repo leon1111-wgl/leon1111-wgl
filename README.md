@@ -14,7 +14,7 @@
 
 ## 学术会议 · Conference
 
-<a href="https://ojs.aaai.org/index.php/AAAI/article/view/38031"><img src="site/assets/profile-publication.svg" width="100%" alt="AAAI 2026: Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence. EV²-Bench, a benchmark of 1,000 long videos whose answers must cite timestamps and spatial evidence, and DynamicSelect, question-guided dynamic token selection. Contributions: benchmark construction, evidence annotation and model evaluation." /></a>
+<a href="https://ojs.aaai.org/index.php/AAAI/article/view/38031"><img src="site/assets/profile-publication.svg" width="100%" alt="AAAI 2025: Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence. EV²-Bench, a benchmark of 1,000 long videos whose answers must cite timestamps and spatial evidence, and DynamicSelect, question-guided dynamic token selection. Contributions: benchmark construction, evidence annotation and model evaluation." /></a>
 
 [Paper ↗](https://ojs.aaai.org/index.php/AAAI/article/view/38031)
 

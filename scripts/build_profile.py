@@ -153,4 +153,4 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 <p align="center"><sub>Leon · Research, ideas & learning in public.</sub><br /><a href="{site}"><strong>Explore my personal website ↗</strong></a></p>
 '''
     (root / 'README.md').write_text(text)
-    (root / 'profile' / 'bio.txt').write_text('MSc student @ HKU | Spatial intelligence, multimodal long-video understanding & grounding, enterprise AI agents | AAAI 2026\n')
+    (root / 'profile' / 'bio.txt').write_text('MSc student @ HKU | Spatial intelligence, multimodal long-video understanding & grounding, enterprise AI agents | AAAI 2025\n')

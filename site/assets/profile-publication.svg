@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="840" height="400" viewBox="0 0 840 400" role="img" aria-labelledby="t">
-<title id="t">Academic conference paper, AAAI 2026: Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence. Data: EV²-Bench, a long-video reasoning benchmark whose answers must cite timestamps and spatial evidence; 1,000 videos over 30 minutes, about 43 minutes on average; intra-event and inter-event reasoning. Model: DynamicSelect, question-guided dynamic token selection, up to +1.9 over its base models on VideoMME, MLVU, LongVideoBench and LVBench. My part: benchmark construction, evidence annotation, model evaluation, evidence scoring with temporal IoU and bipartite matching.</title>
+<title id="t">Academic conference paper, AAAI 2025: Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence. Data: EV²-Bench, a long-video reasoning benchmark whose answers must cite timestamps and spatial evidence; 1,000 videos over 30 minutes, about 43 minutes on average; intra-event and inter-event reasoning. Model: DynamicSelect, question-guided dynamic token selection, up to +1.9 over its base models on VideoMME, MLVU, LongVideoBench and LVBench. My part: benchmark construction, evidence annotation, model evaluation, evidence scoring with temporal IoU and bipartite matching.</title>
 <style>
   .label { font: 700 13px Arial, sans-serif; fill: #60c9ce; letter-spacing: 3px; }
   .badge { font: 700 12px Arial, sans-serif; letter-spacing: .5px; }
@@ -29,7 +29,7 @@
 <rect width="840" height="400" fill="#0b111c"/><rect width="840" height="400" fill="url(#grid)"/>
 <ellipse cx="690" cy="270" rx="210" ry="190" fill="url(#glow)"/>
 <text x="36" y="40" class="label">ACADEMIC CONFERENCE</text>
-<rect x="276" y="25" width="86" height="22" rx="11" fill="#b8ee91"/><text x="319" y="40" text-anchor="middle" class="badge" fill="#152214">AAAI 2026</text>
+<rect x="276" y="25" width="86" height="22" rx="11" fill="#b8ee91"/><text x="319" y="40" text-anchor="middle" class="badge" fill="#152214">AAAI 2025</text>
 <text x="36" y="80" class="title">Seeing Is Believing: Grounding Long-Video Understanding</text>
 <text x="36" y="106" class="title">in Spatio-Temporal Visual Evidence</text>
 <text x="36" y="132" class="zh">以时空视觉证据支撑长视频推理 · 数据层面 + 模型层面</text>

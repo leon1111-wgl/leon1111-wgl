@@ -27,7 +27,7 @@
   ],
   "research": {
     "title": "Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence",
-    "venue": "AAAI 2026",
+    "venue": "AAAI 2025",
     "url": "https://ojs.aaai.org/index.php/AAAI/article/view/38031",
     "doi": "10.1609/aaai.v40i13.38031",
     "summary": "Long videos require answers that can be checked against visual evidence. This work introduces EV²-Bench and DynamicSelect to study evidence-grounded understanding and efficient video processing.",
