@@ -23,6 +23,26 @@ def smooth(points):
     return d
 
 
+def map_svg(base=''):
+    """The learning map at full size for the homepage: each house links to its course in the hub."""
+    data = catalogue()
+    courses = {c['id']: c for c in data['courses']}
+    order = [cid for r in data['route'] for cid in r['courses']]
+    road = smooth([MAP[c] for c in order])
+    houses = ''.join(
+        f'<a href="{base}learn/#/course/{c}" class="hm-house" style="--c:{COURSE_COLORS[c]}">'
+        f'<title>{courses[c]["short"]["en"]} · {courses[c]["short"]["zh"]}</title>'
+        f'<g transform="translate({x} {y})"><rect x="-11" y="-12" width="22" height="15" rx="2"/>'
+        f'<path d="M-14.5 -11L0 -24L14.5 -11Z"/><rect class="hm-door" x="-2.5" y="-6" width="5" height="9" rx="1"/>'
+        f'<text y="20" text-anchor="middle">{courses[c]["short"]["en"]}</text></g></a>'
+        for c, (x, y) in ((c, MAP[c]) for c in order))
+    return (f'<svg class="hub-map" viewBox="30 40 600 410" role="group" aria-label="Learning map: one house per course, joined in the suggested order">'
+            f'<path class="hm-river" d="M250 40C232 120 304 180 282 254S326 384 302 450"/>'
+            f'<path id="hm-road" class="hm-road" d="{road}"/><path class="hm-lane" d="{road}"/><path class="hm-flow" d="{road}"/>'
+            f'<circle class="hm-mover" r="4"><animateMotion dur="16s" repeatCount="indefinite"><mpath href="#hm-road"/></animateMotion></circle>'
+            f'{houses}</svg>')
+
+
 def build():
     data = catalogue()
     order = [cid for r in data['route'] for cid in r['courses']]

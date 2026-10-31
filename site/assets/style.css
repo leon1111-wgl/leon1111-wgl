@@ -109,3 +109,57 @@
 @media(max-width:1000px){.study-passes,.project-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.study-passes,.project-cards{grid-template-columns:1fr}.study-passes>li,.project-card,.chapter-coach,.design-card{padding:22px}.project-section>h2{font-size:27px}.project-guide .topbar nav{gap:7px}.project-guide .brand{font-size:15px;gap:6px}.project-guide .topbar .wrap{gap:6px}.project-guide nav>a{font-size:13px}.project-guide .language-switch a{padding:6px}.project-guide .theme-button{width:34px;height:34px}}
 @media print{.study-passes,.project-cards{display:block}.study-passes>li,.project-card{break-inside:avoid;margin:16px 0}.design-card{background:white}.project-file,.project-section{break-inside:auto}.chapter-coach{background:white}.project-section .code-actions{display:none}}
+
+/* Homepage: one card per project, and the learning hub with its map */
+.proj-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.proj-card{--proj-ink:var(--proj);position:relative;display:flex;flex-direction:column;padding:24px 24px 22px;border:1px solid var(--line);border-radius:14px;background:radial-gradient(120% 75% at 100% 0%,color-mix(in srgb,var(--proj) 14%,transparent),transparent 58%),var(--panel);overflow:hidden;transition:border-color .18s,transform .18s}
+.proj-card:before{content:'';position:absolute;inset:0 0 auto;height:3px;background:var(--proj)}
+.proj-card:hover{border-color:color-mix(in srgb,var(--proj) 55%,var(--line));transform:translateY(-3px)}
+.proj-top{display:flex;align-items:center;gap:12px}
+.proj-top img{flex:none;border-radius:8px}
+.proj-card h3{margin:0;font-size:22px;line-height:1.2;font-weight:600;letter-spacing:-.4px}
+.proj-card h3 a{color:var(--text)}
+.proj-card h3 a:hover{color:var(--proj-ink)}
+.proj-tag{margin-left:auto;font:12px var(--mono);letter-spacing:.5px;color:var(--proj-ink);border:1px solid color-mix(in srgb,var(--proj) 45%,transparent);border-radius:5px;padding:2px 8px;white-space:nowrap}
+.proj-card .proj-en{margin:18px 0 6px;font-size:17px;line-height:1.5;color:var(--text);font-weight:500}
+.proj-card .proj-zh{margin:0 0 16px;font-size:15px;line-height:1.75;color:var(--muted)}
+.proj-stack{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0 0 14px}
+.proj-stack li{font:12px var(--mono);color:var(--muted);background:var(--panel2);border-radius:5px;padding:3px 8px}
+.proj-card .proj-note{margin:auto 0 16px;padding-top:12px;border-top:1px dashed var(--line);font-size:13px;line-height:1.6;color:var(--muted)}
+.proj-actions{display:flex;gap:10px}
+.proj-actions .button{gap:10px;padding:9px 16px;font-size:15px}
+.proj-actions .button.primary{background:var(--proj);border-color:var(--proj);color:#0b0f14}
+:root[data-theme=light] .proj-card{--proj-ink:color-mix(in srgb,var(--proj) 56%,#000);background:radial-gradient(120% 75% at 100% 0%,color-mix(in srgb,var(--proj) 10%,transparent),transparent 58%),var(--panel)}
+:root[data-theme=light] .proj-actions .button.primary{background:var(--proj-ink);border-color:var(--proj-ink);color:#fff}
+.hub-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:36px;align-items:center;padding:34px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,var(--panel),var(--bg))}
+.hub-zh{margin:0 0 18px;font-size:24px;font-weight:600;letter-spacing:.5px}
+.hub-stats{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:8px 28px;margin:0 0 22px}
+.hub-stats div{display:flex;flex-direction:column-reverse}
+.hub-stats dt{font-size:13px;color:var(--muted)}
+.hub-stats dd{margin:0;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.hub-route{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.hub-route li{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:baseline;gap:6px 10px}.hub-chips{display:flex;flex-wrap:wrap;gap:6px}
+.hub-route li[data-track=start]{--t:#2dd4bf}.hub-route li[data-track=core]{--t:#4c9bff}.hub-route li[data-track=systems]{--t:#f5b83d}.hub-route li[data-track=ai]{--t:#a78bfa}
+.hub-track{font:12px var(--mono);letter-spacing:.5px;color:var(--t)}
+.hub-route a{font-size:14px;padding:3px 10px;border:1px solid var(--line);border-radius:999px;color:var(--text);background:var(--panel)}
+.hub-route a:before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-right:7px;vertical-align:1px}
+.hub-route a:hover{border-color:var(--c)}
+.hub-panel .actions{align-items:center;margin-top:26px}
+.hub-map-wrap{border:1px solid var(--line);border-radius:14px;background:var(--bg);padding:6px}
+.hub-map{display:block;width:100%;height:auto}
+.hm-river{fill:none;stroke:color-mix(in srgb,#4c9bff 22%,transparent);stroke-width:12;stroke-linecap:round}
+.hm-road{fill:none;stroke:color-mix(in srgb,var(--bg) 60%,#000);stroke-width:14;stroke-linecap:round}
+.hm-lane{fill:none;stroke:var(--line);stroke-width:9;stroke-linecap:round}
+.hm-flow{fill:none;stroke:color-mix(in srgb,var(--text) 45%,transparent);stroke-width:1.4;stroke-dasharray:5 8;animation:hm-flow 3s linear infinite}
+@keyframes hm-flow{to{stroke-dashoffset:-52}}
+.hm-mover{fill:var(--text)}
+.hm-house rect{fill:var(--panel2);stroke:var(--c);stroke-width:1.5}
+.hm-house path{fill:var(--c)}
+.hm-house .hm-door{fill:#ffe9a3;stroke:none;opacity:.85}
+.hm-house text{font:600 12px var(--sans);fill:var(--muted)}
+.hm-house:hover text{fill:var(--text)}
+.hm-house:focus-visible{outline:none}.hm-house:focus-visible rect{stroke:var(--accent);stroke-width:3.5}.hm-house:focus-visible text{fill:var(--accent);text-decoration:underline}
+:root[data-theme=light] .hub-track{color:color-mix(in srgb,var(--t) 50%,#000)}:root[data-theme=light] .hm-road{stroke:#c3cfc8}:root[data-theme=light] .hm-lane{stroke:#e3ebe6}:root[data-theme=light] .hm-house .hm-door{fill:#f5c542}
+@media(prefers-reduced-motion:reduce){.hm-flow{animation:none}.hm-mover{display:none}.proj-card,.proj-card:hover{transform:none}}
+@media(max-width:1100px){.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hub-panel{grid-template-columns:1fr}.hub-map-wrap{max-width:640px}}
+@media(max-width:640px){.proj-grid{grid-template-columns:1fr}.proj-card{padding:20px}.hub-panel{padding:20px;gap:24px}.hub-stats{grid-template-columns:repeat(2,auto);gap:10px 28px}.hub-route li{grid-template-columns:1fr}.hub-zh{font-size:20px}.hub-map-wrap{display:none}}
