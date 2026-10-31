@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="840" height="270" viewBox="0 0 840 270" role="img" aria-labelledby="t">
-<title id="t">Experience: AI Algorithm Intern at Shenzhen Beidou Institute, video anomaly event detection for China Resources property management; Intern at Hua Xia Bank (branch), credit due-diligence agent; Research Intern at the Institute of Automation, CAS; Research Intern at Shenzhen Institutes of Advanced Technology, CAS</title>
+<title id="t">Experience: AI Algorithm Intern at Shenzhen Beidou Institute, video anomaly event detection for China Resources property management; Intern at Hua Xia Bank (branch), credit due-diligence agent; ongoing research at the Institute of Automation, CAS, and at Shenzhen Institutes of Advanced Technology, CAS</title>
 <style>
   .label { font: 700 13px Arial, sans-serif; fill: #60c9ce; letter-spacing: 3px; }
   .step { font: 12px monospace; fill: #527e86; }
@@ -49,7 +49,7 @@
 <rect x="423" y="118" width="194" height="2.5" rx="1.2" fill="#60c9ce"><animate attributeName="opacity" values="0.15;0.15;1;0.35;0.15" keyTimes="0;0.613;0.643;0.863;1" dur="7.0s" repeatCount="indefinite"/></rect>
 <text x="520" y="146" text-anchor="middle" class="org">中国科学院自动化研究所</text>
 <text x="520" y="166" text-anchor="middle" class="en">CASIA · Beijing</text>
-<text x="520" y="191" text-anchor="middle" class="role">Research Intern</text>
+<text x="520" y="191" text-anchor="middle" class="role">研究中</text>
 <text x="720" y="76" text-anchor="middle" class="step">04</text>
 <circle class="ring" cx="720" cy="96" r="7" fill="none" stroke="#60c9ce" style="animation-delay:6.5s"/>
 <circle cx="720" cy="96" r="7" fill="#101d29" stroke="#60c9ce" stroke-width="1.5"/>
@@ -58,7 +58,7 @@
 <rect x="623" y="118" width="194" height="2.5" rx="1.2" fill="#60c9ce"><animate attributeName="opacity" values="0.15;0.15;1;0.35" keyTimes="0;0.899;0.929;1" dur="7.0s" repeatCount="indefinite"/></rect>
 <text x="720" y="146" text-anchor="middle" class="org">中国科学院深圳先进技术研究院</text>
 <text x="720" y="166" text-anchor="middle" class="en">SIAT, CAS · Shenzhen</text>
-<text x="720" y="191" text-anchor="middle" class="role">Research Intern</text>
+<text x="720" y="191" text-anchor="middle" class="role">研究中</text>
 <rect x="10" y="94.5" width="60" height="3" rx="1.5" fill="url(#trail)"><animate attributeName="x" values="10;710" dur="7.0s" repeatCount="indefinite"/></rect>
 <circle cx="70" cy="96" r="4" fill="#b8ee91"><animate attributeName="cx" values="70;770" dur="7.0s" repeatCount="indefinite"/></circle>
 </g>

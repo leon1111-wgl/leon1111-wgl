@@ -10,7 +10,7 @@
 
 ## Background
 
-<img src="site/assets/profile-experience.svg" width="100%" alt="Experience, oldest first: AI Algorithm Intern at Shenzhen Beidou Applied Technology Research Institute (video anomaly event detection for China Resources property management); Intern at Hua Xia Bank, branch office (credit due-diligence assistant agent; client requirements); Research Intern at the Institute of Automation, Chinese Academy of Sciences, Beijing; Research Intern at Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences." />
+<img src="site/assets/profile-experience.svg" width="100%" alt="Experience, oldest first: AI Algorithm Intern at Shenzhen Beidou Applied Technology Research Institute (video anomaly event detection for China Resources property management); Intern at Hua Xia Bank, branch office (credit due-diligence assistant agent; client requirements); ongoing research at the Institute of Automation, Chinese Academy of Sciences, Beijing, and at Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences." />
 
 **Education** · The University of Hong Kong, MSc (2026 –) · The University of Sydney, Finance and Computer Science (Dalyell Scholar) · Zhejiang University, short-term exchange
 
