@@ -10,11 +10,7 @@
 
 ## Background
 
-<img src="site/assets/profile-experience.svg" width="100%" alt="Experience, oldest first: AI Algorithm Intern at Shenzhen Beidou Applied Technology Research Institute (video anomaly event detection for China Resources property management); Intern at Hua Xia Bank, branch office (credit due-diligence assistant agent; client requirements); ongoing research at the Institute of Automation, Chinese Academy of Sciences, Beijing, and at Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences." />
-
-**Education** · The University of Hong Kong, MSc (2026 –) · The University of Sydney, Finance and Computer Science (Dalyell Scholar) · Zhejiang University, short-term exchange
-
-**研究领域** · 空间智能 · 多模态长视频理解与定位 · 具身智能（未来） · 企业级 Agent 应用与开发
+<img src="site/assets/profile-background.svg" width="100%" alt="Experience, oldest first: AI Algorithm Intern at Shenzhen Beidou Applied Technology Research Institute (video anomaly event detection for China Resources property management); Intern at Hua Xia Bank, branch office (credit due-diligence assistant agent; client requirements); ongoing research at the Chinese Academy of Sciences, Beijing, and at Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences. Education: The University of Hong Kong, MSc (2026 –); The University of Sydney, Finance and Computer Science (Dalyell Scholar); Zhejiang University, short-term exchange. Research: spatial intelligence; multimodal long-video understanding and grounding; embodied AI (future); enterprise AI agent applications." />
 
 ## 学术会议 · Conference
 
