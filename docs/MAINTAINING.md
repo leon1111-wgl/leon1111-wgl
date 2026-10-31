@@ -40,6 +40,7 @@ The supplied source PDFs and extraction audit remain outside this project. Do no
 - `scripts/palette.py` gives each course one colour, used by the hub, the map and the reading pages.
 - `scripts/build_learn_card.py` writes the README card `site/assets/profile-learn.svg`.
 - Reading pages load `site/assets/reader.css` after `style.css`. They open on the first chapter; the route through a course lives on its hub page. `app.js` adds the progress bar, chapter dots, reveal motion and remembers the chapter in view.
+- Step-through diagrams: `content/visuals.json` places one after a chapter's worked example; `scripts/visuals.py` writes the empty figure and `site/assets/viz.js` draws it. Each kind replays the chapter's own example with the same numbers, so change the two together.
 - Stars, recent courses and reading position stay in the reader's browser (`leon-learn-*` keys). Nothing is uploaded.
 
 ## Python — Zero to Practice

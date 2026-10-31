@@ -59,7 +59,7 @@ for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn') for part in f.relative_to(ROOT).parts) or f.name in ('app.js','viz.js'))
   # The README, the profile cards and the homepage carry Chinese labels at the author's request.
   bilingual=bilingual or f.name=='README.md' or f.name.startswith('profile-') or f==SITE/'index.html'
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))
@@ -104,6 +104,17 @@ for folder in ('courses','ai'):
    check(f'href="../learn/#/course/{course.group(1)}"' in page,f.name+' missing link to its hub page')
    check(f'"id":"{course.group(1)}"' in hub,f.name+' missing from the learning hub')
   check('class="framework"' in page and 'class="topic-nav"' in page,f.name+' missing chapter navigation')
+# Every step-through diagram is placed in its chapter on both language pages and has a renderer.
+viz_source=(SITE/'assets'/'viz.js').read_text()
+guide_pages={'START':'start','ML':'ml','DL':'dl','CV':'vision','MM':'multimodal'}
+for code,topics in json.loads((ROOT/'content'/'visuals.json').read_text()).items():
+ for topic,v in topics.items():
+  check(f'KINDS.{v["kind"]} =' in viz_source,f'viz.js has no renderer for {v["kind"]}')
+  editions=[f'ai/{guide_pages[code]}.en.html',f'ai/{guide_pages[code]}.zh.html'] if code in guide_pages else [f'courses/{code.lower()}.html',f'courses/{code.lower()}.zh.html']
+  for page in editions:
+   text=(SITE/page).read_text()
+   start=text.find(f'id="{topic}"');end=text.find('</article>',start)
+   check(start>=0 and f'data-viz="{v["kind"]}"' in text[start:end],f'{page} missing the {v["kind"]} diagram in {topic}')
 for f in (SITE/'notes').glob('*.md'):
  check('assets/maps/' in f.read_text()[:1200],f.name+' missing opening roadmap in downloaded notes')
 if errors:

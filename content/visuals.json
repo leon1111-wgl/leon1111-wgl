@@ -1,0 +1,23 @@
+{
+  "COMP2123": {
+    "sorting-baselines": {"kind": "sort", "title": {"en": "Insertion and selection sort on [5, 2, 4, 1]", "zh": "插入排序和选择排序处理 [5, 2, 4, 1]"}},
+    "recurrences-merge-sort": {"kind": "merge", "title": {"en": "Merge sort on [8, 3, 7, 1]", "zh": "归并排序处理 [8, 3, 7, 1]"}},
+    "bfs-distance": {"kind": "bfs", "title": {"en": "Breadth-first search from S", "zh": "从 S 出发的广度优先搜索"}},
+    "hashing-collisions": {"kind": "probe", "title": {"en": "Linear probing, and why deletion needs a tombstone", "zh": "线性探测，以及删除时为什么要留墓碑"}}
+  },
+  "COMP2017": {
+    "pointers-arrays": {"kind": "layout", "title": {"en": "Where int grid[2][3] lives in memory", "zh": "int grid[2][3] 在内存里的样子"}}
+  },
+  "INFO1113": {
+    "methods-references": {"kind": "refs", "title": {"en": "A copied reference: mutation versus reassignment", "zh": "复制的引用：修改对象和重新赋值"}}
+  },
+  "COMP2022": {
+    "dfa-state-invariants": {"kind": "dfa", "title": {"en": "Run the odd-number-of-1s DFA", "zh": "运行“奇数个 1”的 DFA"}}
+  },
+  "START": {
+    "slopes-gradients": {"kind": "descent", "title": {"en": "Gradient steps on L(w) = (w − 3)²", "zh": "在 L(w) = (w − 3)² 上走梯度步"}}
+  },
+  "ML": {
+    "gradient-descent-scaling": {"kind": "linefit", "title": {"en": "Gradient descent fits a line to two points", "zh": "梯度下降用直线拟合两个点"}}
+  }
+}
