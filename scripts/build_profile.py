@@ -18,7 +18,7 @@ def artwork(root, courses, guides):
 <path d="M36 37H804" stroke="#2a3b4b"/>
 <g fill="#b8ee91"><circle cx="42" cy="36" r="5"/><circle cx="62" cy="36" r="5" opacity=".6"/><circle cx="82" cy="36" r="5" opacity=".3"/></g>
 <text x="32" y="123" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="64" font-weight="700" letter-spacing="-2">Leon Wang</text>
-<text x="36" y="179" fill="#b8ee91" font-family="Arial,sans-serif" font-size="34">MSc @ HKU · AI</text>
+<text x="36" y="177" fill="#b8ee91" font-family="Arial,sans-serif" font-size="27">MSc @ HKU · Video &amp; Spatial AI</text>
 <g fill="none" stroke="#527e86"><circle cx="665" cy="159" r="86"/><circle cx="665" cy="159" r="61" stroke-dasharray="3 9"/><ellipse cx="665" cy="159" rx="122" ry="45" transform="rotate(-35 665 159)"/><path d="M611 89L751 181L606 219L611 89M751 181L665 159L611 89"/></g>
 <g fill="#b8ee91"><circle cx="611" cy="89" r="5"/><circle cx="751" cy="181" r="5"/><circle cx="606" cy="219" r="5"/></g>
 <circle cx="665" cy="159" r="35" fill="#101d29" stroke="#b8ee91"/>
@@ -26,7 +26,7 @@ def artwork(root, courses, guides):
 <rect x="36" y="222" width="365" height="62" rx="9" fill="#b8ee91"/>
 <text x="58" y="263" fill="#152214" font-family="Arial,sans-serif" font-size="32" font-weight="700">Explore my site</text>
 <path d="M346 263l19-19m-19 0h19v19" fill="none" stroke="#152214" stroke-width="3"/>'''
-    (assets / 'profile-banner.svg').write_text(svg(hero,840,320,'Leon Wang — MSc student at HKU, working on AI. Enter my website.'))
+    (assets / 'profile-banner.svg').write_text(svg(hero,840,320,'Leon Wang — MSc student at HKU, working on long-video understanding and spatial intelligence. Enter my website.'))
     python_card='''<path d="M32 30H112" stroke="#b8ee91" stroke-width="4"/>
 <text x="32" y="92" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="52" font-weight="700">Python</text>
 <text x="32" y="152" fill="#b8ee91" font-family="Arial,sans-serif" font-size="38">Zero to Practice</text>
@@ -65,11 +65,11 @@ def build_profile(root, profile, courses, guides):
 
 {profile['bio']}
 
-| Currently exploring | How I work |
+| Research directions | How I work |
 | :--- | :--- |
-| Multimodal models and LLM agents | Connect model outputs to verifiable evidence |
-| Long-video understanding and generation | Build datasets and evaluate models carefully |
-| Efficient video inference | Explain ideas through stories, formulas and examples |
+| Multimodal long-video understanding and temporal-spatial grounding | Connect model outputs to verifiable evidence |
+| Spatial intelligence: spatial reasoning over images, video and 3D scenes | Build datasets and evaluate models carefully |
+| LLM agents for real business workflows | Explain ideas through stories, formulas and examples |
 
 **Tools & interests** · {' · '.join(profile['skills'])}
 
@@ -152,4 +152,4 @@ Choose a card to enter the teaching website. Follow **story → concept → form
 <p align="center"><sub>Leon · Research, ideas & learning in public.</sub><br /><a href="{site}"><strong>Explore my personal website ↗</strong></a></p>
 '''
     (root / 'README.md').write_text(text)
-    (root / 'profile' / 'bio.txt').write_text('MSc student @ HKU | Multimodal AI, LLM agents & long-video understanding | AAAI 2026 co-first author\n')
+    (root / 'profile' / 'bio.txt').write_text('MSc student @ HKU | Multimodal long-video understanding & grounding, spatial intelligence | AAAI 2026 co-first author\n')

@@ -2,7 +2,7 @@
   "name": "Leon Wang",
   "brand": "Leon",
   "headline": "Exploring intelligent systems. Making complex ideas clear.",
-  "bio": "I am an MSc student at the University of Hong Kong, working on AI. My interests include multimodal models, LLM agents, long-video understanding and generation, and efficient video inference. I enjoy turning complex ideas into clear, practical learning resources.",
+  "bio": "I am an MSc student at the University of Hong Kong. My research focuses on multimodal long-video understanding and grounding, which means answering questions about long videos with evidence located in time and space, and on spatial intelligence. I also build LLM agent systems that tie model outputs to verifiable evidence. I enjoy turning complex ideas into clear, practical learning resources.",
   "email": "zetongw6@gmail.com",
   "github": "https://github.com/leon1111-wgl",
   "education": [
