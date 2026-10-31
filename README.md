@@ -10,12 +10,9 @@
 
 ## Background
 
-- **The University of Hong Kong** · MSc · 2026 –
-- **The University of Sydney** · Finance and Computer Science · 2023 – 2026 · Dalyell Scholar
-- **Zhejiang University** · Exchange · 2024 – 2025
-- **Research Intern** · Institute of Automation, Chinese Academy of Sciences（中国科学院自动化研究所）
-- **Research Intern** · Shenzhen Institutes of Advanced Technology, CAS（中国科学院深圳先进技术研究院）
-- **AI Algorithm Intern** · Shenzhen Beidou Applied Technology Research Institute · 2025
+<img src="site/assets/profile-experience.svg" width="100%" alt="Experience, oldest first: AI Algorithm Intern at Shenzhen Beidou Applied Technology Research Institute (safety-monitoring violation detection; model fine-tuning, distillation, quantization and deployment); Intern at Hua Xia Bank, branch office (credit due-diligence assistant agent; client requirements); Research Intern at the Institute of Automation, Chinese Academy of Sciences, Beijing; Research Intern at Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences." />
+
+**Education** · The University of Hong Kong, MSc (2026 –) · The University of Sydney, Finance and Computer Science (Dalyell Scholar) · Zhejiang University, short-term exchange
 
 **研究领域** · 空间智能 · 多模态长视频理解与定位 · 具身智能（未来） · 企业级 Agent 应用与开发
 

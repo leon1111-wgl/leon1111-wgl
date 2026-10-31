@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="270" viewBox="0 0 840 270" role="img" aria-labelledby="t">
+<title id="t">Experience: AI Algorithm Intern at Shenzhen Beidou Institute; Intern at Hua Xia Bank (branch), credit due-diligence agent; Research Intern at the Institute of Automation, CAS; Research Intern at Shenzhen Institutes of Advanced Technology, CAS</title>
+<style>
+  .label { font: 700 13px Arial, sans-serif; fill: #60c9ce; letter-spacing: 3px; }
+  .step { font: 12px monospace; fill: #527e86; }
+  .org { font: 700 13.5px 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',Arial,sans-serif; fill: #f2f6fb; }
+  .en { font: 12px Arial, sans-serif; fill: #8aa0b4; }
+  .role { font: 700 13px Arial, sans-serif; fill: #b8ee91; }
+  .desc { font: 12.5px 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',Arial,sans-serif; fill: #c4d0dc; }
+  .ring { animation: ring 2.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes ring { 0% { opacity: .7; transform: scale(1); } 100% { opacity: 0; transform: scale(2.4); } }
+  @media (prefers-reduced-motion: reduce) { .ring { animation: none; opacity: 0; } }
+</style>
+<defs>
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#1d2b3a" stroke-width=".7"/></pattern>
+  <linearGradient id="trail" x1="0" x2="1"><stop offset="0" stop-color="#b8ee91" stop-opacity="0"/><stop offset="1" stop-color="#b8ee91" stop-opacity=".9"/></linearGradient>
+  <clipPath id="round"><rect width="840" height="270" rx="18"/></clipPath>
+</defs>
+<g clip-path="url(#round)">
+<rect width="840" height="270" fill="#0b111c"/><rect width="840" height="270" fill="url(#grid)"/>
+<text x="36" y="40" class="label">EXPERIENCE</text>
+<line x1="70" y1="96" x2="770" y2="96" stroke="#2a3b4b" stroke-width="2"/>
+<text x="120" y="76" text-anchor="middle" class="step">01</text>
+<circle class="ring" cx="120" cy="96" r="7" fill="none" stroke="#60c9ce" style="animation-delay:0.5s"/>
+<circle cx="120" cy="96" r="7" fill="#101d29" stroke="#60c9ce" stroke-width="1.5"/>
+<circle cx="120" cy="96" r="3.2" fill="#b8ee91"><animate attributeName="opacity" values="0.25;0.25;1;0.45;0.25" keyTimes="0;0.040999999999999995;0.071;0.291;1" dur="7.0s" repeatCount="indefinite"/></circle>
+<rect x="23" y="118" width="194" height="132" rx="10" fill="#0f1824" stroke="#1f2f3e"/>
+<rect x="23" y="118" width="194" height="2.5" rx="1.2" fill="#60c9ce"><animate attributeName="opacity" values="0.15;0.15;1;0.35;0.15" keyTimes="0;0.040999999999999995;0.071;0.291;1" dur="7.0s" repeatCount="indefinite"/></rect>
+<text x="120" y="146" text-anchor="middle" class="org">深圳北斗应用技术研究院</text>
+<text x="120" y="166" text-anchor="middle" class="en">Shenzhen Beidou Institute</text>
+<text x="120" y="191" text-anchor="middle" class="role">AI Algorithm Intern</text>
+<text x="120" y="214" text-anchor="middle" class="desc">安全监控违规行为检测</text>
+<text x="120" y="233" text-anchor="middle" class="desc">大模型微调 · 蒸馏 · 量化部署</text>
+<text x="320" y="76" text-anchor="middle" class="step">02</text>
+<circle class="ring" cx="320" cy="96" r="7" fill="none" stroke="#60c9ce" style="animation-delay:2.5s"/>
+<circle cx="320" cy="96" r="7" fill="#101d29" stroke="#60c9ce" stroke-width="1.5"/>
+<circle cx="320" cy="96" r="3.2" fill="#b8ee91"><animate attributeName="opacity" values="0.25;0.25;1;0.45;0.25" keyTimes="0;0.32699999999999996;0.357;0.577;1" dur="7.0s" repeatCount="indefinite"/></circle>
+<rect x="223" y="118" width="194" height="132" rx="10" fill="#0f1824" stroke="#1f2f3e"/>
+<rect x="223" y="118" width="194" height="2.5" rx="1.2" fill="#60c9ce"><animate attributeName="opacity" values="0.15;0.15;1;0.35;0.15" keyTimes="0;0.32699999999999996;0.357;0.577;1" dur="7.0s" repeatCount="indefinite"/></rect>
+<text x="320" y="146" text-anchor="middle" class="org">华夏银行（分行）</text>
+<text x="320" y="166" text-anchor="middle" class="en">Hua Xia Bank · Branch</text>
+<text x="320" y="191" text-anchor="middle" class="role">Intern</text>
+<text x="320" y="214" text-anchor="middle" class="desc">授信尽调智能助手（Agent）</text>
+<text x="320" y="233" text-anchor="middle" class="desc">对接客户需求</text>
+<text x="520" y="76" text-anchor="middle" class="step">03</text>
+<circle class="ring" cx="520" cy="96" r="7" fill="none" stroke="#60c9ce" style="animation-delay:4.5s"/>
+<circle cx="520" cy="96" r="7" fill="#101d29" stroke="#60c9ce" stroke-width="1.5"/>
+<circle cx="520" cy="96" r="3.2" fill="#b8ee91"><animate attributeName="opacity" values="0.25;0.25;1;0.45;0.25" keyTimes="0;0.613;0.643;0.863;1" dur="7.0s" repeatCount="indefinite"/></circle>
+<rect x="423" y="118" width="194" height="132" rx="10" fill="#0f1824" stroke="#1f2f3e"/>
+<rect x="423" y="118" width="194" height="2.5" rx="1.2" fill="#60c9ce"><animate attributeName="opacity" values="0.15;0.15;1;0.35;0.15" keyTimes="0;0.613;0.643;0.863;1" dur="7.0s" repeatCount="indefinite"/></rect>
+<text x="520" y="146" text-anchor="middle" class="org">中国科学院自动化研究所</text>
+<text x="520" y="166" text-anchor="middle" class="en">CASIA · Beijing</text>
+<text x="520" y="191" text-anchor="middle" class="role">Research Intern</text>
+<text x="720" y="76" text-anchor="middle" class="step">04</text>
+<circle class="ring" cx="720" cy="96" r="7" fill="none" stroke="#60c9ce" style="animation-delay:6.5s"/>
+<circle cx="720" cy="96" r="7" fill="#101d29" stroke="#60c9ce" stroke-width="1.5"/>
+<circle cx="720" cy="96" r="3.2" fill="#b8ee91"><animate attributeName="opacity" values="0.25;0.25;1;0.45" keyTimes="0;0.899;0.929;1" dur="7.0s" repeatCount="indefinite"/></circle>
+<rect x="623" y="118" width="194" height="132" rx="10" fill="#0f1824" stroke="#1f2f3e"/>
+<rect x="623" y="118" width="194" height="2.5" rx="1.2" fill="#60c9ce"><animate attributeName="opacity" values="0.15;0.15;1;0.35" keyTimes="0;0.899;0.929;1" dur="7.0s" repeatCount="indefinite"/></rect>
+<text x="720" y="146" text-anchor="middle" class="org">中国科学院深圳先进技术研究院</text>
+<text x="720" y="166" text-anchor="middle" class="en">SIAT, CAS · Shenzhen</text>
+<text x="720" y="191" text-anchor="middle" class="role">Research Intern</text>
+<rect x="10" y="94.5" width="60" height="3" rx="1.5" fill="url(#trail)"><animate attributeName="x" values="10;710" dur="7.0s" repeatCount="indefinite"/></rect>
+<circle cx="70" cy="96" r="4" fill="#b8ee91"><animate attributeName="cx" values="70;770" dur="7.0s" repeatCount="indefinite"/></circle>
+</g>
+</svg>

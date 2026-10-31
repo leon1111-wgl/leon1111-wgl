@@ -19,10 +19,10 @@
       "detail": "Dalyell Scholar."
     },
     {
-      "period": "Dec 2024 - Jan 2025",
+      "period": "",
       "institution": "Zhejiang University",
-      "degree": "Exchange study",
-      "detail": "Short-term exchange experience."
+      "degree": "Short-term exchange",
+      "detail": ""
     }
   ],
   "research": {
@@ -38,26 +38,26 @@
     {
       "period": "",
       "role": "Research Intern",
-      "organization": "Institute of Automation, Chinese Academy of Sciences",
-      "detail": "中国科学院自动化研究所"
-    },
-    {
-      "period": "",
-      "role": "Research Intern",
       "organization": "Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences",
       "detail": "中国科学院深圳先进技术研究院"
     },
     {
-      "period": "2025 - 2026",
-      "role": "Long-video research",
-      "organization": "EV²-Bench & model evaluation",
-      "detail": "Contributed to dataset construction and reproducible evaluation with lmms-eval, structured model outputs, and evidence precision, recall, and F1."
+      "period": "",
+      "role": "Research Intern",
+      "organization": "Institute of Automation, Chinese Academy of Sciences",
+      "detail": "中国科学院自动化研究所 · Beijing"
     },
     {
-      "period": "2025",
+      "period": "",
+      "role": "Intern",
+      "organization": "Hua Xia Bank, branch office",
+      "detail": "Built a credit due-diligence assistant (LLM agent) and worked with clients on their requirements."
+    },
+    {
+      "period": "",
       "role": "AI Algorithm Intern",
       "organization": "Shenzhen Beidou Applied Technology Research Institute",
-      "detail": "Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring."
+      "detail": "Violation detection for safety monitoring: instruction tuning, knowledge distillation, quantization and deployment of multimodal models."
     }
   ],
   "skills": [
