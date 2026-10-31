@@ -21,6 +21,9 @@ GLYPHS = {
     # a home inside a detection box
     "estateguard": f'<path {LINE} d="M10.5 16.5l5.5-5 5.5 5V22h-11z"/>'
                    f'<path {MARK} d="M6 10V6h4M22 6h4v4M26 22v4h-4M10 26H6v-4"/>',
+    # an open book, for the tutorials
+    "tutorials": f'<path {LINE} d="M16 10c-2.5-2-6-2.5-9-2v15c3-.5 6.5 0 9 2 2.5-2 6-2.5 9-2V8c-3-.5-6.5 0-9 2zM16 10v15"/>'
+                 f'<path {MARK} d="M10 13h3M10 16.5h3M19 13h3"/>',
     # an earnings line under a scope
     "finscope": f'<path {LINE} d="M6.5 23l5-5.5 4 2.5 5-7.5 5 3"/>'
                 f'<circle {MARK} cx="20.5" cy="12.5" r="4"/><path {MARK} d="M20.5 6.5v2M20.5 16.5v2M14.5 12.5h2M24.5 12.5h2"/>',
