@@ -20,7 +20,7 @@
 
 ## Projects
 
-| | | | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | | | |
 | :---: | :--- | :--- | :--- |
 | <img src="site/assets/icons/loopdesk.svg" width="20" height="20" align="absmiddle" alt="" /> | **LoopDesk** | 企业客服助手：能查订单、办退款，关键操作先等人工确认，每句回答都有依据 | [Demo](https://leon1111-wgl.github.io/loopdesk/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/loopdesk) |
 | <img src="site/assets/icons/proofbi.svg" width="20" height="20" align="absmiddle" alt="" /> | **ProofBI** | 用大白话问数据，自动查数出表，每个数字都能追到来源 | [Code](https://github.com/leon1111-wgl/proofbi) |
