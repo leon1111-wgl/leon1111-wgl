@@ -20,7 +20,8 @@ def check(condition,message):
 parsers={}
 for f in SITE.rglob('*.html'):
  p=Page();p.feed(f.read_text());parsers[f.resolve()]=p
- expected_language='zh-CN' if f.parent.name=='python-zero-to-practice' else ('zh-Hans' if f.name.endswith('.zh.html') else 'en')
+ # the learning hub opens in Chinese and switches language in place
+ expected_language='zh-CN' if f.parent.name=='python-zero-to-practice' else ('zh-Hans' if f.name.endswith('.zh.html') or f.parent.name=='learn' else 'en')
  check(p.language==expected_language,f'{f.name}: incorrect page language')
  check(len(p.ids)==len(set(p.ids)),f'{f.name}: duplicate IDs')
 for f,p in parsers.items():
@@ -58,7 +59,9 @@ for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn') for part in f.relative_to(ROOT).parts) or f.name=='app.js')
+  # The README, the profile cards and the homepage carry Chinese labels at the author's request.
+  bilingual=bilingual or f.name=='README.md' or f.name.startswith('profile-') or f==SITE/'index.html'
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))
   check('TODO' not in s and 'Lorem ipsum' not in s,'Placeholder '+str(f))
 for f in [ROOT/'README.md']+list((ROOT/'notes').glob('*.md')):
@@ -86,13 +89,23 @@ errors.extend(validate_python_course())
 from validate_extensions import validate_extensions
 extension_errors,extension_count=validate_extensions()
 errors.extend(extension_errors)
-for folder in ('courses','ai','projects'):
+for f in (SITE/'projects').glob('*.html'):
+ page=f.read_text()
+ check('class="learning-route"' in page,f.name+' missing opening roadmap')
+ check(page.index('class="learning-route"')<page.index('class="course-layout"'),f.name+' roadmap is too late')
+# Course and guide pages open on their first chapter; the route through a course lives on its hub page.
+hub=(SITE/'learn'/'index.html').read_text()
+for folder in ('courses','ai'):
  for f in (SITE/folder).glob('*.html'):
   page=f.read_text()
-  check('class="learning-route"' in page,f.name+' missing opening roadmap')
-  check(page.index('class="learning-route"')<page.index('class="course-layout"'),f.name+' roadmap is too late')
+  course=re.search(r'data-course-id="([a-z0-9]+)"',page)
+  check(bool(course),f.name+' missing course id')
+  if course:
+   check(f'href="../learn/#/course/{course.group(1)}"' in page,f.name+' missing link to its hub page')
+   check(f'"id":"{course.group(1)}"' in hub,f.name+' missing from the learning hub')
+  check('class="framework"' in page and 'class="topic-nav"' in page,f.name+' missing chapter navigation')
 for f in (SITE/'notes').glob('*.md'):
  check('assets/maps/' in f.read_text()[:1200],f.name+' missing opening roadmap in downloaded notes')
 if errors:
  print('\n'.join(errors));sys.exit(1)
-print(f'PASS: {len(parsers)} HTML pages, local links and anchors, opening roadmaps, five full bilingual courses and bilingual AI guides, excluded source content, five single-page PDFs and collection; course detail: {counts}; project detail: {project_counts}.')
+print(f'PASS: {len(parsers)} HTML pages, local links and anchors, hub links, five full bilingual courses and bilingual AI guides, excluded source content, five single-page PDFs and collection; course detail: {counts}; project detail: {project_counts}.')

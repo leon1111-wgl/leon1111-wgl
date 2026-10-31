@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="236" viewBox="0 0 840 236" role="img" aria-labelledby="t">
+<title id="t">Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、356 份可运行代码</title>
+<style>
+  .k { font: 700 11px Arial, Helvetica, sans-serif; letter-spacing: 2px; fill: #4c9bff; }
+  .h { font: 700 34px -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #eceef2; }
+  .s { font: 400 14px -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #9aa3b2; }
+  .n { font: 700 22px Arial, Helvetica, sans-serif; fill: #eceef2; }
+  .u { font: 400 12px -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #8d95a3; }
+  .b { font: 700 13px -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #fff; }
+  .line { fill: none; stroke: rgb(255 255 255 / 50%); stroke-width: 1; stroke-dasharray: 4 6; animation: flow 3s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -40; } }
+  @media (prefers-reduced-motion: reduce) { .line { animation: none; } .mover { display: none; } }
+</style>
+<defs>
+  <clipPath id="r"><rect width="840" height="236" rx="18"/></clipPath>
+  <radialGradient id="g1" cx=".82" cy=".1" r=".55"><stop stop-color="#1e6bff" stop-opacity=".28"/><stop offset="1" stop-color="#1e6bff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="g2" cx=".98" cy=".9" r=".4"><stop stop-color="#c084fc" stop-opacity=".18"/><stop offset="1" stop-color="#c084fc" stop-opacity="0"/></radialGradient>
+  <linearGradient id="btn" x1="0" x2="1"><stop stop-color="#1e6bff"/><stop offset=".6" stop-color="#6d5dfc"/><stop offset="1" stop-color="#c084fc"/></linearGradient>
+  <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#1a1f2a" stroke-width=".7"/></pattern>
+</defs>
+<g clip-path="url(#r)">
+  <rect width="840" height="236" fill="#0b0d12"/><rect width="840" height="236" fill="url(#grid)"/>
+  <rect width="840" height="236" fill="url(#g1)"/><rect width="840" height="236" fill="url(#g2)"/>
+  <rect x="530" y="10" width="296" height="216" rx="14" fill="#12151c" fill-opacity=".85" stroke="#262b37"/>
+  <path d="M655.5 12.0C647.8 46.4 678.7 72.2 669.3 104.0S688.2 159.9 677.9 214.1" fill="none" stroke="rgb(76 155 255 / 22%)" stroke-width="6" stroke-linecap="round"/>
+  <path id="road" d="M585.0 189.2 C592.9 186.7 631.6 186.0 632.3 174.5 C633.0 163.1 590.0 136.7 589.3 120.4 C588.6 104.0 611.5 88.0 628.0 76.5 C644.5 65.0 669.1 53.9 688.2 51.6 C707.2 49.3 739.5 50.6 742.4 62.7 C745.2 74.9 703.5 112.3 705.4 124.7 C707.2 137.0 738.6 138.3 753.5 136.7 C768.4 135.1 788.5 109.3 794.8 115.2 C801.1 121.1 801.0 160.4 791.4 172.0 C781.8 183.6 746.2 182.7 737.2 184.9" fill="none" stroke="#07080c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M585.0 189.2 C592.9 186.7 631.6 186.0 632.3 174.5 C633.0 163.1 590.0 136.7 589.3 120.4 C588.6 104.0 611.5 88.0 628.0 76.5 C644.5 65.0 669.1 53.9 688.2 51.6 C707.2 49.3 739.5 50.6 742.4 62.7 C745.2 74.9 703.5 112.3 705.4 124.7 C707.2 137.0 738.6 138.3 753.5 136.7 C768.4 135.1 788.5 109.3 794.8 115.2 C801.1 121.1 801.0 160.4 791.4 172.0 C781.8 183.6 746.2 182.7 737.2 184.9" fill="none" stroke="#2a3040" stroke-width="5.5" stroke-linecap="round"/>
+  <path class="line" d="M585.0 189.2 C592.9 186.7 631.6 186.0 632.3 174.5 C633.0 163.1 590.0 136.7 589.3 120.4 C588.6 104.0 611.5 88.0 628.0 76.5 C644.5 65.0 669.1 53.9 688.2 51.6 C707.2 49.3 739.5 50.6 742.4 62.7 C745.2 74.9 703.5 112.3 705.4 124.7 C707.2 137.0 738.6 138.3 753.5 136.7 C768.4 135.1 788.5 109.3 794.8 115.2 C801.1 121.1 801.0 160.4 791.4 172.0 C781.8 183.6 746.2 182.7 737.2 184.9"/>
+  <circle class="mover" r="3" fill="#fff"><animateMotion dur="14s" repeatCount="indefinite"><mpath href="#road"/></animateMotion></circle>
+  <g transform="translate(585.0 189.2)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#ffd43b"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#ffd43b"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(632.3 174.5)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#a3e635"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#a3e635"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(589.3 120.4)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#ff7a45"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#ff7a45"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(628.0 76.5)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#4c9bff"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#4c9bff"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(688.2 51.6)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#22d3ee"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#22d3ee"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(742.4 62.7)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#f472b6"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#f472b6"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(705.4 124.7)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#c084fc"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#c084fc"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(753.5 136.7)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#34d399"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#34d399"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(794.8 115.2)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#818cf8"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#818cf8"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(791.4 172.0)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#f59e0b"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#f59e0b"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g><g transform="translate(737.2 184.9)"><rect x="-7" y="-8" width="14" height="10" rx="1.5" fill="#141823" stroke="#fb7185"/><path d="M-9.5 -7.5L0 -16L9.5 -7.5Z" fill="#fb7185"/><rect x="-1.6" y="-4" width="3.2" height="6" rx=".8" fill="#ffe9a3" opacity=".8"/></g>
+  <text x="36" y="50" class="k">LEARNING HUB · 学习中心</text>
+  <text x="36" y="94" class="h">从零学会编程，中英双语</text>
+  <text x="36" y="122" class="s">Python · Java · C · 算法 · 计算理论 · 人工智能</text>
+  <text x="36" y="168" class="n">11</text><text x="64" y="168" class="u">门课程</text>
+  <text x="128" y="168" class="n">212</text><text x="172" y="168" class="u">章</text>
+  <text x="206" y="168" class="n">356</text><text x="250" y="168" class="u">份可运行代码</text>
+  <rect x="36" y="186" width="150" height="34" rx="17" fill="url(#btn)"/>
+  <text x="111" y="208" text-anchor="middle" class="b">进入学习中心 ↗</text>
+</g>
+</svg>

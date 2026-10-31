@@ -58,7 +58,8 @@ def validate_extensions():
                 html = (ROOT / 'site' / page).read_text()
                 check('href="#' + anchor + '"' in html and 'id="' + anchor + '"' in html, label + ': broken rendered case link in ' + lang)
                 check(escape(case['title'][lang]) in html, label + ': missing case title in ' + lang)
-                check(html.index('id="extensions"') < html.index('class="course-layout"'), label + ': case route is too late')
+                # the guided cases follow the last chapter, inside the reading column
+                check(html.index('class="course-layout"') < html.index('id="extensions"') < html.index('id="references"'), label + ': case route is out of place')
                 for directory in ('notes', 'site/notes'):
                     text = (ROOT / directory / note).read_text()
                     check('](#' + anchor + ')' in text and 'id="' + anchor + '"' in text, label + ': broken downloaded case link')

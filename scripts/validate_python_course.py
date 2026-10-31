@@ -28,8 +28,10 @@ def validate_python_course():
                    'id="search"', 'id="export-progress"', 'id="import-progress"']:
         if marker not in page:
             errors.append('Python handbook: missing navigation or learning control ' + marker)
-    if 'python-zero-to-practice/index.html' not in (ROOT / 'README.md').read_text():
+    if 'learn/#/course/python' not in (ROOT / 'README.md').read_text():
         errors.append('Python handbook: missing GitHub profile entry')
+    if '"read":{"zh":"python-zero-to-practice/index.html"}' not in (ROOT / 'site/learn/index.html').read_text():
+        errors.append('Python handbook: missing from the learning hub')
     if 'python-zero-to-practice/index.html' not in (ROOT / 'site/index.html').read_text():
         errors.append('Python handbook: missing website entry')
     files = {p.relative_to(COURSE).as_posix(): p.read_bytes() for p in course_files()}

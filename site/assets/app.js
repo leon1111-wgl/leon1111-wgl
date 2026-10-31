@@ -65,6 +65,75 @@
       link.href = target.href;
     });
   });
+  // Remember the chapter in view for the learning hub, and mark it in the contents rail.
+  const courseId = document.body.dataset.courseId;
+  const chapters = [...document.querySelectorAll('article.topic[data-reading-id]')];
+  if (courseId && chapters.length) {
+    const tocLinks = new Map([...document.querySelectorAll('.toc ol a')].map(link => [link.getAttribute('href').slice(1), link]));
+    let pending;
+    const track = () => {
+      let current = null;
+      for (const chapter of chapters) {
+        if (chapter.getBoundingClientRect().top <= 140) current = chapter; else break;
+      }
+      tocLinks.forEach((link, id) => link.classList.toggle('is-current', id === current?.id));
+      if (!current) return;
+      try {
+        const saved = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}');
+        saved.courses = saved.courses || {};
+        saved.courses[courseId] = {
+          topic: current.id,
+          title: current.querySelector('h2')?.textContent || '',
+          url: `${location.pathname.split('/').slice(-2).join('/')}#${current.id}`,
+          lang: chinese ? 'zh' : 'en',
+          time: Date.now(),
+        };
+        saved.latest = courseId;
+        localStorage.setItem('leon-learn-progress', JSON.stringify(saved));
+      } catch (_) {}
+    };
+    window.addEventListener('scroll', () => { clearTimeout(pending); pending = setTimeout(track, 250); }, { passive: true });
+    track();
+  }
+  if (document.body.classList.contains('reader')) {
+    // a thin progress bar under the top bar
+    const bar = document.createElement('div');
+    bar.className = 'read-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.append(bar);
+    const paint = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+    };
+    window.addEventListener('scroll', paint, { passive: true });
+    window.addEventListener('resize', paint);
+    paint();
+    // where each chapter sits in the course: one dot per chapter, each a link
+    chapters.forEach((chapter, index) => {
+      const dots = document.createElement('nav');
+      dots.className = 'chapter-dots';
+      dots.setAttribute('aria-label', chinese ? '章节位置' : 'Chapter position');
+      chapters.forEach((other, j) => {
+        const dot = document.createElement('a');
+        dot.href = `#${other.id}`;
+        dot.title = other.querySelector('h2')?.textContent || '';
+        if (j < index) dot.className = 'done';
+        if (j === index) { dot.className = 'now'; dot.setAttribute('aria-current', 'step'); }
+        dots.append(dot);
+      });
+      chapter.querySelector('.topic-head')?.append(dots);
+    });
+    // blocks rise into view as you read
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+      const blocks = document.querySelectorAll('.topic > :not(.topic-head):not(h2), .framework .map-stage, .overview, .extension-card, .cheat-item');
+      const seen = new IntersectionObserver(entries => entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('in'); seen.unobserve(entry.target); }
+      }), { rootMargin: '0px 0px -8% 0px' });
+      blocks.forEach(block => {
+        if (block.getBoundingClientRect().top > window.innerHeight) { block.classList.add('rise'); seen.observe(block); }
+      });
+    }
+  }
   let language;
   try { language = localStorage.getItem('guoliang-language'); } catch (_) {}
   if (language === 'zh') {

@@ -31,6 +31,17 @@ The personal homepage is English. All five foundational courses, four AI field g
 
 The supplied source PDFs and extraction audit remain outside this project. Do not copy the parent directory into a public repository.
 
+## Learning hub
+
+`site/learn/` is the entry to every tutorial, linked from the README and the homepage. It opens on an intro page with a clickable learning map, then switches to a workspace with five views: course list, course page, learning route, cheatsheets and "my learning". Routes are hash URLs (`#/courses`, `#/course/<id>`, `#/route`, `#/sheets`, `#/mine`), so links into a course page work from anywhere.
+
+- `scripts/build_learn.py` gathers titles, chapters, counts and links from `content/` and the Python handbook and writes `site/learn/index.html`. Rerun it after any course change.
+- `site/learn/learn.css` and `site/learn/learn.js` hold the look and behaviour; there is no build step.
+- `scripts/palette.py` gives each course one colour, used by the hub, the map and the reading pages.
+- `scripts/build_learn_card.py` writes the README card `site/assets/profile-learn.svg`.
+- Reading pages load `site/assets/reader.css` after `style.css`. They open on the first chapter; the route through a course lives on its hub page. `app.js` adds the progress bar, chapter dots, reveal motion and remembers the chapter in view.
+- Stars, recent courses and reading position stay in the reader's browser (`leon-learn-*` keys). Nothing is uploaded.
+
 ## Python — Zero to Practice
 
 The Chinese handbook lives at `site/python-zero-to-practice/`. Its 19 units, 91 runnable examples, 100 self-study exercises with reference solutions, four complete projects and blank note templates come from the author-supplied learning ZIP. The website and profile label it as a Chinese edition. It is separate from the bilingual AI beginner primer.

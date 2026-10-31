@@ -120,4 +120,19 @@ all('[data-lab]').forEach(lab => {
   render();
 });
 renderState(); route(!!location.hash);
+// Tell the Leon learning hub which chapter is open (same browser only).
+const rememberForHub = () => {
+  const chapter = (location.hash.match(/^#(c\d\d)/) || [])[1];
+  if (!chapter) return;
+  const title = chapter === 'c00' ? '从这里开始' : document.querySelector(`#${chapter} h2`)?.textContent;
+  try {
+    const saved = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}');
+    saved.courses = saved.courses || {};
+    saved.courses.python = { topic: chapter, title: title || '', url: `python-zero-to-practice/index.html#${chapter}`, lang: 'zh', time: Date.now() };
+    saved.latest = 'python';
+    localStorage.setItem('leon-learn-progress', JSON.stringify(saved));
+  } catch (_) {}
+};
+window.addEventListener('hashchange', rememberForHub);
+rememberForHub();
 })();
