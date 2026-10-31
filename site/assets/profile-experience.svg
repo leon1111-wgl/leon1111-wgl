@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="840" height="270" viewBox="0 0 840 270" role="img" aria-labelledby="t">
-<title id="t">Experience: AI Algorithm Intern at Shenzhen Beidou Institute; Intern at Hua Xia Bank (branch), credit due-diligence agent; Research Intern at the Institute of Automation, CAS; Research Intern at Shenzhen Institutes of Advanced Technology, CAS</title>
+<title id="t">Experience: AI Algorithm Intern at Shenzhen Beidou Institute, video anomaly event detection for China Resources property management; Intern at Hua Xia Bank (branch), credit due-diligence agent; Research Intern at the Institute of Automation, CAS; Research Intern at Shenzhen Institutes of Advanced Technology, CAS</title>
 <style>
   .label { font: 700 13px Arial, sans-serif; fill: #60c9ce; letter-spacing: 3px; }
   .step { font: 12px monospace; fill: #527e86; }
@@ -29,8 +29,7 @@
 <text x="120" y="146" text-anchor="middle" class="org">深圳北斗应用技术研究院</text>
 <text x="120" y="166" text-anchor="middle" class="en">Shenzhen Beidou Institute</text>
 <text x="120" y="191" text-anchor="middle" class="role">AI Algorithm Intern</text>
-<text x="120" y="214" text-anchor="middle" class="desc">安全监控违规行为检测</text>
-<text x="120" y="233" text-anchor="middle" class="desc">大模型微调 · 蒸馏 · 量化部署</text>
+<text x="120" y="214" text-anchor="middle" class="desc">华润物业视频异常事件检测</text>
 <text x="320" y="76" text-anchor="middle" class="step">02</text>
 <circle class="ring" cx="320" cy="96" r="7" fill="none" stroke="#60c9ce" style="animation-delay:2.5s"/>
 <circle cx="320" cy="96" r="7" fill="#101d29" stroke="#60c9ce" stroke-width="1.5"/>
