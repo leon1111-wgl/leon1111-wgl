@@ -16,9 +16,11 @@
 
 **研究领域** · 空间智能 · 多模态长视频理解与定位 · 具身智能（未来） · 企业级 Agent 应用与开发
 
-## Publication
+## 学术会议 · Conference
 
-**[Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence](https://ojs.aaai.org/index.php/AAAI/article/view/38031)** · `AAAI 2026` · `Co-first author` — benchmark construction, evidence annotation and evaluation for EV²-Bench.
+<a href="https://ojs.aaai.org/index.php/AAAI/article/view/38031"><img src="site/assets/profile-publication.svg" width="100%" alt="AAAI 2026: Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence. EV²-Bench, a benchmark of 1,000 long videos whose answers must cite timestamps and spatial evidence, and DynamicSelect, question-guided dynamic token selection. Contributions: benchmark construction, evidence annotation and model evaluation." /></a>
+
+[Paper ↗](https://ojs.aaai.org/index.php/AAAI/article/view/38031)
 
 ## Projects
 

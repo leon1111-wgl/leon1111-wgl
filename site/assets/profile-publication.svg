@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="400" viewBox="0 0 840 400" role="img" aria-labelledby="t">
+<title id="t">Academic conference paper, AAAI 2026: Seeing Is Believing: Grounding Long-Video Understanding in Spatio-Temporal Visual Evidence. Data: EV²-Bench, a long-video reasoning benchmark whose answers must cite timestamps and spatial evidence; 1,000 videos over 30 minutes, about 43 minutes on average; intra-event and inter-event reasoning. Model: DynamicSelect, question-guided dynamic token selection, up to +1.9 over its base models on VideoMME, MLVU, LongVideoBench and LVBench. My part: benchmark construction, evidence annotation, model evaluation, evidence scoring with temporal IoU and bipartite matching.</title>
+<style>
+  .label { font: 700 13px Arial, sans-serif; fill: #60c9ce; letter-spacing: 3px; }
+  .badge { font: 700 12px Arial, sans-serif; letter-spacing: .5px; }
+  .title { font: 700 22px Arial, Helvetica, sans-serif; fill: #f2f6fb; letter-spacing: -.3px; }
+  .zh { font: 13.5px 'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif; fill: #8aa0b4; }
+  .tag { font: 11px monospace; fill: #60c9ce; letter-spacing: 1px; }
+  .h { font: 700 18px Arial, sans-serif; fill: #f2f6fb; }
+  .d { font: 13px Arial, sans-serif; fill: #c4d0dc; }
+  .num { font: 700 19px Arial, sans-serif; fill: #b8ee91; }
+  .cap { font: 11.5px Arial, sans-serif; fill: #8aa0b4; }
+  .chip { font: 12px Arial, sans-serif; fill: #c4d0dc; }
+  .tiny { font: 10.5px monospace; fill: #527e86; letter-spacing: .5px; }
+  .head { animation: play 6s linear infinite; }
+  @keyframes play { from { transform: translateX(0); } to { transform: translateX(230px); } }
+  .sel { opacity: 0; animation: pick 9s infinite; }
+  .q2 { animation-delay: 3s; } .q3 { animation-delay: 6s; }
+  @keyframes pick { 0%, 2% { opacity: 0; } 8%, 28% { opacity: 1; } 34%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .head, .sel { animation: none; } .q1 { opacity: 1; } }
+</style>
+<defs>
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#1d2b3a" stroke-width=".7"/></pattern>
+  <radialGradient id="glow"><stop stop-color="#60c9ce" stop-opacity=".15"/><stop offset="1" stop-color="#0b111c" stop-opacity="0"/></radialGradient>
+  <clipPath id="round"><rect width="840" height="400" rx="18"/></clipPath>
+  <clipPath id="frame"><rect x="568" y="170" width="232" height="78" rx="6"/></clipPath>
+</defs>
+<g clip-path="url(#round)">
+<rect width="840" height="400" fill="#0b111c"/><rect width="840" height="400" fill="url(#grid)"/>
+<ellipse cx="690" cy="270" rx="210" ry="190" fill="url(#glow)"/>
+<text x="36" y="40" class="label">ACADEMIC CONFERENCE</text>
+<rect x="276" y="25" width="86" height="22" rx="11" fill="#b8ee91"/><text x="319" y="40" text-anchor="middle" class="badge" fill="#152214">AAAI 2026</text>
+<text x="36" y="80" class="title">Seeing Is Believing: Grounding Long-Video Understanding</text>
+<text x="36" y="106" class="title">in Spatio-Temporal Visual Evidence</text>
+<text x="36" y="132" class="zh">以时空视觉证据支撑长视频推理 · 数据层面 + 模型层面</text>
+
+<text x="36" y="164" class="tag">01 · DATA</text>
+<text x="36" y="186" class="h">EV²-Bench</text><text x="136" y="186" class="d">answers must cite timestamps and spatial evidence</text>
+<text x="36" y="214" class="num">1,000</text><text x="36" y="230" class="cap">long videos</text>
+<text x="118" y="214" class="num">&gt; 30 min</text><text x="118" y="230" class="cap">each video</text>
+<text x="222" y="214" class="num">≈ 43 min</text><text x="222" y="230" class="cap">on average</text>
+<text x="326" y="214" class="num">2 levels</text><text x="326" y="230" class="cap">intra- and inter-event reasoning</text>
+
+<text x="36" y="262" class="tag">02 · MODEL</text>
+<text x="36" y="284" class="h">DynamicSelect</text><text x="168" y="284" class="d">question-guided dynamic token selection</text>
+<text x="36" y="312" class="num">up to +1.9</text><text x="146" y="312" class="cap">over base models on VideoMME · MLVU · LongVideoBench · LVBench</text>
+
+<rect x="36" y="334" width="158" height="26" rx="13" fill="#0f1824" stroke="#2a3b4b"/><text x="115.0" y="351" text-anchor="middle" class="chip">Benchmark construction</text>
+<rect x="202" y="334" width="146" height="26" rx="13" fill="#0f1824" stroke="#2a3b4b"/><text x="275.0" y="351" text-anchor="middle" class="chip">Evidence annotation</text>
+<rect x="356" y="334" width="126" height="26" rx="13" fill="#0f1824" stroke="#2a3b4b"/><text x="419.0" y="351" text-anchor="middle" class="chip">Model evaluation</text>
+<rect x="36" y="366" width="210" height="26" rx="13" fill="#0f1824" stroke="#2a3b4b"/><text x="141" y="383" text-anchor="middle" class="chip">tIoU · bipartite matching</text>
+<text x="568" y="162" class="tiny">SPATIAL EVIDENCE</text>
+<rect x="568" y="170" width="232" height="78" rx="6" fill="#101d29" stroke="#2a3b4b"/>
+<g clip-path="url(#frame)" fill="#1c2c3b"><rect x="580" y="222" width="208" height="20" rx="3"/><circle cx="610" cy="200" r="13"/><rect x="648" y="184" width="30" height="38" rx="4"/><rect x="712" y="192" width="56" height="30" rx="4"/></g>
+<rect x="642" y="178" width="42" height="48" rx="4" fill="#b8ee91" fill-opacity=".1" stroke="#b8ee91" stroke-width="1.6">
+  <animate attributeName="x" values="642;706;594;642" keyTimes="0;.35;.7;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1"/>
+  <animate attributeName="width" values="42;68;32;42" keyTimes="0;.35;.7;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1"/>
+</rect>
+<text x="568" y="272" class="tiny">TEMPORAL EVIDENCE · tIoU</text>
+<rect x="568" y="280" width="232" height="10" rx="5" fill="#142130"/>
+<rect x="660" y="280" width="56" height="10" rx="5" fill="#b8ee91" fill-opacity=".75"/>
+<rect x="590" y="280" width="56" height="10" rx="5" fill="#60c9ce" fill-opacity=".55"><animate attributeName="x" values="590;656;664;590" keyTimes="0;.45;.75;1" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1;.45 0 .55 1"/></rect>
+<g class="head"><rect x="568" y="276" width="2" height="18" fill="#f2f6fb" fill-opacity=".8"/></g>
+<text x="568" y="314" class="tiny">TOKEN SELECTION · per question</text>
+<rect x="568.0" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="587.3" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="606.6" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="625.9" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="645.2" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="664.5" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="683.8" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="703.1" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="722.4" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="741.7" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="761.0" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="780.3" y="322.0" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="568.0" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="587.3" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="606.6" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="625.9" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="645.2" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="664.5" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="683.8" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="703.1" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="722.4" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="741.7" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="761.0" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="780.3" y="341.3" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="568.0" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="587.3" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="606.6" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="625.9" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="645.2" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="664.5" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="683.8" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="703.1" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="722.4" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="741.7" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="761.0" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="780.3" y="360.6" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="568.0" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="587.3" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="606.6" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="625.9" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="645.2" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="664.5" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="683.8" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="703.1" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="722.4" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="741.7" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="761.0" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect x="780.3" y="379.9" width="14" height="14" rx="2.5" fill="#142130" stroke="#22344a"/>
+<rect class="sel q1" x="722.4" y="341.3" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="741.7" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="587.3" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="664.5" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="625.9" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="645.2" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="761.0" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="683.8" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="780.3" y="341.3" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="587.3" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q1" x="703.1" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="722.4" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="587.3" y="341.3" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="606.6" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="664.5" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="625.9" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="606.6" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="645.2" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="625.9" y="341.3" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="722.4" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="780.3" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q2" x="703.1" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="625.9" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="568.0" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="703.1" y="322.0" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="606.6" y="341.3" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="645.2" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="703.1" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="587.3" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="780.3" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="761.0" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="664.5" y="379.9" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+<rect class="sel q3" x="587.3" y="360.6" width="14" height="14" rx="2.5" fill="#b8ee91" fill-opacity=".8"/>
+</g>
+</svg>
