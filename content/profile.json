@@ -2,7 +2,7 @@
   "name": "Leon Wang",
   "brand": "Leon",
   "headline": "Exploring intelligent systems. Making complex ideas clear.",
-  "bio": "I am an MSc student at the University of Hong Kong. My research focuses on multimodal long-video understanding and grounding, which means answering questions about long videos with evidence located in time and space, and on spatial intelligence. I also build LLM agent systems that tie model outputs to verifiable evidence. I enjoy turning complex ideas into clear, practical learning resources.",
+  "bio": "I am an MSc student at the University of Hong Kong. My research areas are spatial intelligence and multimodal long-video understanding and grounding, with embodied intelligence as a future direction. On the engineering side, I build enterprise AI agent applications that tie model outputs to verifiable evidence. I enjoy turning complex ideas into clear, practical learning resources.",
   "email": "zetongw6@gmail.com",
   "github": "https://github.com/leon1111-wgl",
   "education": [
@@ -35,6 +35,18 @@
     "contribution": "My contributions included benchmark construction, temporal and visual evidence annotation, model evaluation, and evidence scoring using temporal IoU, text similarity, and bipartite matching."
   },
   "experience": [
+    {
+      "period": "",
+      "role": "Research Intern",
+      "organization": "Institute of Automation, Chinese Academy of Sciences",
+      "detail": "中国科学院自动化研究所"
+    },
+    {
+      "period": "",
+      "role": "Research Intern",
+      "organization": "Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences",
+      "detail": "中国科学院深圳先进技术研究院"
+    },
     {
       "period": "2025 - 2026",
       "role": "Long-video research",

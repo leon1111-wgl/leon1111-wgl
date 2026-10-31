@@ -1,7 +1,8 @@
-<a href="https://leon1111-wgl.github.io/leon1111-wgl/"><img src="site/assets/profile-banner.svg" width="100%" alt="Leon Wang — MSc student at HKU, working on long-video understanding and spatial intelligence. Click to enter my website." /></a>
+<a href="https://leon1111-wgl.github.io/leon1111-wgl/"><img src="site/assets/profile-banner.svg" width="100%" alt="Leon Wang — working on spatial intelligence and long-video understanding. Click to enter my website." /></a>
 
 <p align="center">
   <a href="https://leon1111-wgl.github.io/leon1111-wgl/"><strong>ENTER MY WEBSITE ↗</strong></a> &nbsp; / &nbsp;
+  <a href="#background--experience">Background</a> &nbsp; / &nbsp;
   <a href="#about-me">About me</a> &nbsp; / &nbsp;
   <a href="#featured-project">Project</a> &nbsp; / &nbsp;
   <a href="#selected-research">Research</a> &nbsp; / &nbsp;
@@ -9,19 +10,33 @@
   <a href="mailto:zetongw6@gmail.com">Contact</a>
 </p>
 
+## Background & experience
+
+- **The University of Hong Kong** · MSc · 2026 - Present. Working on AI. Enrolled September 2026.
+- **The University of Sydney** · Studied Finance and Computer Science · 2023–2026. Dalyell Scholar.
+- **Zhejiang University** · Exchange study · Dec 2024 - Jan 2025. Short-term exchange experience.
+
+- **Research Intern**, Institute of Automation, Chinese Academy of Sciences (中国科学院自动化研究所)
+- **Research Intern**, Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences (中国科学院深圳先进技术研究院)
+- **Long-video research**, EV²-Bench & model evaluation · 2025 - 2026. Contributed to dataset construction and reproducible evaluation with lmms-eval, structured model outputs, and evidence precision, recall, and F1.
+- **AI Algorithm Intern**, Shenzhen Beidou Applied Technology Research Institute · 2025. Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring.
+
+**Languages** · Mandarin Chinese and English (IELTS 7.5)
+
 ## About me
 
-I am an MSc student at the University of Hong Kong. My research focuses on **multimodal long-video understanding and grounding**, which means answering questions about long videos with evidence located in time and space, and on **spatial intelligence**. I also build LLM agent systems that tie model outputs to verifiable evidence, and I enjoy turning complex ideas into clear, practical learning resources.
+I am an MSc student at the University of Hong Kong. My research areas are **spatial intelligence** and **multimodal long-video understanding and grounding**, which means answering questions about long videos with evidence located in time and space. **Embodied intelligence** is a direction I plan to move into. On the engineering side, I build **enterprise AI agent applications** that tie model outputs to verifiable evidence.
 
-**研究方向**：多模态长视频理解与定位 · 空间智能
+**主要研究领域**：空间智能 · 多模态长视频理解与定位 · 具身智能（未来方向） · 企业级 Agent 应用与开发
 
 Hong Kong · HKU MSc (2026–) · [zetongw6@gmail.com](mailto:zetongw6@gmail.com)
 
-| Research directions | How I work |
+| Research areas | How I work |
 | :--- | :--- |
-| Multimodal long-video understanding and temporal-spatial grounding | Connect model outputs to verifiable evidence |
-| Spatial intelligence: spatial reasoning over images, video and 3D scenes | Build datasets and evaluate models carefully |
-| LLM agents for real business workflows | Explain ideas through stories, formulas and examples |
+| Spatial intelligence: spatial reasoning over images, video and 3D scenes | Connect model outputs to verifiable evidence |
+| Multimodal long-video understanding and temporal-spatial grounding | Build datasets and evaluate models carefully |
+| Embodied intelligence (future direction) | Explain ideas through stories, formulas and examples |
+| Enterprise AI agent applications and development | Ship systems that are tested and run end to end |
 
 **Tools & interests** · Python · Java · C · Multimodal evaluation · lmms-eval · Instruction tuning · Knowledge distillation · Model quantization
 
@@ -76,17 +91,6 @@ Long videos require answers that can be checked against visual evidence. This wo
 My contributions included benchmark construction, temporal and visual evidence annotation, model evaluation, and evidence scoring using temporal IoU, text similarity, and bipartite matching.
 
 [Read the paper ↗](https://ojs.aaai.org/index.php/AAAI/article/view/38031) · [Research on my website ↗](https://leon1111-wgl.github.io/leon1111-wgl/#research)
-
-## Background & experience
-
-- **The University of Hong Kong** · MSc · 2026 - Present. Working on AI. Enrolled September 2026.
-- **The University of Sydney** · Studied Finance and Computer Science · 2023–2026. Dalyell Scholar.
-- **Zhejiang University** · Exchange study · Dec 2024 - Jan 2025. Short-term exchange experience.
-
-- **Long-video research**, EV²-Bench & model evaluation · 2025 - 2026. Contributed to dataset construction and reproducible evaluation with lmms-eval, structured model outputs, and evidence precision, recall, and F1.
-- **AI Algorithm Intern**, Shenzhen Beidou Applied Technology Research Institute · 2025. Worked on video data preparation, annotation consistency checks, and model fine-tuning, distillation, quantization, and deployment validation for safety monitoring.
-
-**Languages** · Mandarin Chinese and English (IELTS 7.5)
 
 ## Learning portals
 
