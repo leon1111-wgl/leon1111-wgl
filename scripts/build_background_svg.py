@@ -6,7 +6,7 @@ into education, then into research, so the three sections read as one sequence.
 import math
 from pathlib import Path
 
-W, H, CYCLE = 840, 700, 12.0
+W, H, CYCLE = 840, 588, 12.0
 CJK = "'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',Arial,sans-serif"
 
 
@@ -88,21 +88,26 @@ def emblem(kind, cx, cy, t):
     return out
 
 
+def small(kind, cx, cy, t, scale):
+    return [f'<g transform="translate({cx} {cy}) scale({scale}) translate({-cx} {-cy})">', *emblem(kind, cx, cy, t), '</g>']
+
+
 def education():
-    schools = [
-        ("hku", "香港大学", "The University of Hong Kong", "MSc · 2026 –", "理学硕士"),
-        ("usyd", "悉尼大学", "The University of Sydney", "Finance &amp; Computer Science", "金融与计算机科学 · Dalyell 学者"),
-        ("zju", "浙江大学", "Zhejiang University", "Short-term exchange", "短期交流"),
+    # A compact strip: the two degrees side by side, the exchange as a smaller supplement.
+    degrees = [
+        ("hku", 23, "香港大学", "The University of Hong Kong", "理学硕士 · MSc", "2026 –"),
+        ("usyd", 330, "悉尼大学", "The University of Sydney", "金融与计算机科学", "Dalyell 学者"),
     ]
-    out = [sweep(272, 6.9, 7.7), '<text x="36" y="312" class="label">EDUCATION</text>']
-    for i, (kind, zh, en, role, desc) in enumerate(schools):
-        x, t = 23 + 270 * i, 7.6 + .6 * i
-        cx = x + 126
-        out += [card(x, 330, 252, 166, t), *emblem(kind, cx, 370, t),
-                f'<text x="{cx}" y="422" text-anchor="middle" class="org">{zh}</text>',
-                f'<text x="{cx}" y="440" text-anchor="middle" class="en">{en}</text>',
-                f'<text x="{cx}" y="461" text-anchor="middle" class="role">{role}</text>',
-                f'<text x="{cx}" y="480" text-anchor="middle" class="desc">{desc}</text>']
+    out = [sweep(272, 6.9, 7.7), '<text x="36" y="304" class="label">EDUCATION</text>', card(23, 318, 794, 62, 7.6),
+           '<line x1="330" y1="331" x2="330" y2="367" stroke="#1f2f3e"/><line x1="637" y1="331" x2="637" y2="367" stroke="#1f2f3e"/>']
+    for i, (kind, x, zh, en, degree, extra) in enumerate(degrees):
+        t = 7.6 + .6 * i
+        out += [*small(kind, x + 36, 349, t, .6),
+                f'<text x="{x + 66}" y="344" class="org">{zh}<tspan class="en" dx="8">{en}</tspan></text>',
+                f'<text x="{x + 66}" y="364" class="role">{degree}<tspan class="desc" dx="8">{extra}</tspan></text>']
+    out += [*small("zju", 663, 349, 8.8, .46),
+            '<text x="684" y="345" class="desc">浙江大学 · 短期交流</text>',
+            '<text x="684" y="362" class="en" font-size="11">Zhejiang University</text>']
     return out
 
 
@@ -172,15 +177,16 @@ def research():
         (arm_icon, "具身智能（未来）", "Embodied AI · next", True),
         (graph_icon, "企业级 Agent 应用与开发", "Enterprise AI Agents", False),
     ]
-    out = [sweep(512, 9.0, 9.8), '<text x="36" y="548" class="label">RESEARCH</text>']
+    y = 452
+    out = [sweep(y - 52, 9.0, 9.8), f'<text x="36" y="{y - 16}" class="label">RESEARCH</text>']
     for i, (icon, zh, en, future) in enumerate(areas):
         x, t = 23 + 202 * i, 9.8 + .5 * i
-        cx = x + 40
-        out += [card(x, 564, 188, 112, t, dashed=future),
-                f'<g transform="translate({cx} 600) scale(1.25) translate({-cx} -600)">', *icon(cx, 600), '</g>',
-                f'<text x="{x + 172}" y="590" text-anchor="end" class="step">0{i + 1}</text>',
-                f'<text x="{x + 16}" y="645" class="org">{zh}</text>',
-                f'<text x="{x + 16}" y="663" class="en">{en}</text>']
+        cx, cy = x + 40, y + 36
+        out += [card(x, y, 188, 112, t, dashed=future),
+                f'<g transform="translate({cx} {cy}) scale(1.25) translate({-cx} {-cy})">', *icon(cx, cy), '</g>',
+                f'<text x="{x + 172}" y="{y + 26}" text-anchor="end" class="step">0{i + 1}</text>',
+                f'<text x="{x + 16}" y="{y + 81}" class="org">{zh}</text>',
+                f'<text x="{x + 16}" y="{y + 99}" class="en">{en}</text>']
     return out
 
 
