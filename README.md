@@ -22,12 +22,12 @@
 
 | | | |
 | :--- | :--- | :--- |
-| <img src="site/assets/icons/loopdesk.svg" width="20" height="20" align="absmiddle" alt="" /> &nbsp;**LoopDesk** | 企业客服助手：能查订单、办退款，关键操作先等人工确认，每句回答都有依据 | [Demo](https://leon1111-wgl.github.io/loopdesk/) · [Code](https://github.com/leon1111-wgl/loopdesk) |
-| <img src="site/assets/icons/proofbi.svg" width="20" height="20" align="absmiddle" alt="" /> &nbsp;**ProofBI** | 用大白话问数据，自动查数出表，每个数字都能追到来源 | [Code](https://github.com/leon1111-wgl/proofbi) |
-| <img src="site/assets/icons/adproof.svg" width="20" height="20" align="absmiddle" alt="" /> &nbsp;**AdProof** | 检查广告文案是否违规，标出问题句和对应法规，并给出改写建议 | [Code](https://github.com/leon1111-wgl/adproof) |
-| <img src="site/assets/icons/creditlens.svg" width="20" height="20" align="absmiddle" alt="" /> &nbsp;**CreditLens** | 读财报和图表，核对关键数字，点一下就跳回原文出处 | [Code](https://github.com/leon1111-wgl/creditlens) |
-| <img src="site/assets/icons/estateguard.svg" width="20" height="20" align="absmiddle" alt="" /> &nbsp;**EstateGuard** | 在浏览器里看小区巡检画面，找出违停、堆物等问题，再交给人工确认 | [Demo](https://leon1111-wgl.github.io/estateguard/) · [Code](https://github.com/leon1111-wgl/estateguard) |
-| <img src="site/assets/icons/finscope.svg" width="20" height="20" align="absmiddle" alt="" /> &nbsp;**FinScope** | 读美股公司的财报（SEC 文件），看利润有没有水分 | [Demo](https://leon1111-wgl.github.io/finscope/) · [Code](https://github.com/leon1111-wgl/finscope) |
+| <img src="site/assets/icons/loopdesk.svg" width="20" height="20" align="absmiddle" alt="" />&nbsp;&nbsp;**LoopDesk** | 企业客服助手：能查订单、办退款，关键操作先等人工确认，每句回答都有依据 | [Demo](https://leon1111-wgl.github.io/loopdesk/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/loopdesk) |
+| <img src="site/assets/icons/proofbi.svg" width="20" height="20" align="absmiddle" alt="" />&nbsp;&nbsp;**ProofBI** | 用大白话问数据，自动查数出表，每个数字都能追到来源 | [Code](https://github.com/leon1111-wgl/proofbi) |
+| <img src="site/assets/icons/adproof.svg" width="20" height="20" align="absmiddle" alt="" />&nbsp;&nbsp;**AdProof** | 检查广告文案是否违规，标出问题句和对应法规，并给出改写建议 | [Code](https://github.com/leon1111-wgl/adproof) |
+| <img src="site/assets/icons/creditlens.svg" width="20" height="20" align="absmiddle" alt="" />&nbsp;&nbsp;**CreditLens** | 读财报和图表，核对关键数字，点一下就跳回原文出处 | [Code](https://github.com/leon1111-wgl/creditlens) |
+| <img src="site/assets/icons/estateguard.svg" width="20" height="20" align="absmiddle" alt="" />&nbsp;&nbsp;**EstateGuard** | 在浏览器里看小区巡检画面，找出违停、堆物等问题，再交给人工确认 | [Demo](https://leon1111-wgl.github.io/estateguard/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/estateguard) |
+| <img src="site/assets/icons/finscope.svg" width="20" height="20" align="absmiddle" alt="" />&nbsp;&nbsp;**FinScope** | 读美股公司的财报（SEC 文件），看利润有没有水分 | [Demo](https://leon1111-wgl.github.io/finscope/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/finscope) |
 
 `Python` `Java` `C` `LLM Agents` `RAG` `Multimodal Evaluation` `Distillation` `Quantization` · Mandarin, English (IELTS 7.5)
 
