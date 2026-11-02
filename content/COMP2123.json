@@ -4113,7 +4113,7 @@
   "cheatsheet": [
     {
       "title": "Name the guarantee",
-      "body": "Worst-case maximizes over inputs; expected averages over stated randomness; amortized averages over a sequence. Input size and arithmetic cost model must be explicit before interpreting any bound."
+      "body": "Worst-case maximizes over inputs; expected averages over stated randomness; amortized bounds the worst-case total of any sequence, divided by its length (no probability). Input size and arithmetic cost model must be explicit before interpreting any bound."
     },
     {
       "title": "Representation tradeoffs",
@@ -4133,7 +4133,7 @@
     },
     {
       "title": "Graph traversals",
-      "body": "Adjacency-list BFS and DFS cost O(n+m). BFS minimizes edge count. Undirected DFS tree edge (u,v) is a bridge when low[v]>disc[u], with parent edges handled correctly."
+      "body": "Adjacency-list BFS and DFS cost O(n+m). BFS minimizes edge count. In undirected DFS, the tree edge from parent u to child v is a bridge iff low[v]>disc[u]; skip only that parent edge (by edge id)."
     },
     {
       "title": "Path versus tree",

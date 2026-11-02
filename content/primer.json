@@ -1427,7 +1427,7 @@
       },
       "body": {
         "en": "Ask which group you are counting. P(rain given alert) and P(alert given rain) generally use different denominators.",
-        "zh": "先问清楚统计哪个群体。“提醒后下雨”与“下雨时提醒”通常使用不同的分母。"
+        "zh": "先问清楚统计哪个群体。P(下雨|提醒)（发出提醒的日子里下雨的比例）与 P(提醒|下雨) 通常使用不同的分母。"
       }
     },
     {

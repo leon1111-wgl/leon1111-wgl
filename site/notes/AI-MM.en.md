@@ -2186,7 +2186,7 @@ Match the audio objective to the question: retrieving a described sound, transcr
 
 ### [CLIP: learn by choosing the right partner](#clip-contrastive)
 
-CLIP learns relative compatibility in two directions; its scores depend on the candidate set, temperature, and whether the assumed negatives are truly different.
+CLIP learns relative compatibility in two directions. A pair's similarity is fixed by its two embeddings; its softmax share and loss depend on the candidate set, temperature, and whether the assumed negatives truly differ.
 
 ### [Cross-attention: ask one stream to inspect another](#cross-attention-fusion)
 

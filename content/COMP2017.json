@@ -3225,7 +3225,7 @@
   "cheatsheet": [
     {
       "title": "Representation is a contract",
-      "body": "Unsigned arithmetic wraps modulo its range; signed overflow is undefined. sizeof returns size_t in C bytes. Initialize automatic objects and match formatted-I/O conversions to actual argument types."
+      "body": "unsigned int and wider wrap modulo max+1, but narrower unsigned types promote to int first; signed overflow is undefined. sizeof returns size_t in C bytes. Initialize automatic objects and match formatted-I/O conversions to actual argument types."
     },
     {
       "title": "Pointers need live bounds",
@@ -3245,7 +3245,7 @@
     },
     {
       "title": "Signals need a minimal handler",
-      "body": "Prefer sigaction and async-signal-safe operations. A small stop flag can defer cleanup to normal flow. Use an atomic mask-and-wait protocol when checking a predicate and sleeping for signals."
+      "body": "Prefer sigaction and async-signal-safe operations. A volatile sig_atomic_t stop flag can defer cleanup to normal flow. Use an atomic mask-and-wait protocol when checking a predicate and sleeping for signals."
     },
     {
       "title": "Process lifecycle",

@@ -9,7 +9,7 @@ project('01_study_log','学习打卡与统计','第 00—13 章',
 [
 ('先写核心函数','先对内存中的记录列表写 summarize(records)，输入 30、60 分钟时总量为 90、平均 45.0。空列表返回平均 None。此时完全不需要文件或命令行。'),
 ('加入文件持久化','用 JSON 保存记录列表。文件不存在视作首次使用，返回空列表；文件存在但内容错误则抛出清楚异常。分清这两种情况，避免误覆盖用户数据。'),
-('检查输入再修改','将日期用 date.fromisoformat 验证；分钟用整数且非负检查；主题 strip 后检查非空。所有检查通过后才 append。'),
+('检查输入再修改','用 date.fromisoformat 验证日期，并保存 isoformat() 的结果，统一为 YYYY-MM-DD（3.11 起它也接受 20261007 这样的写法）；分钟用整数且非负检查；主题 strip 后检查非空。所有检查通过后才 append。'),
 ('加入命令行入口','argparse 是标准库命令行参数解析器。add 子命令收 minutes 与 topic；summary 子命令显示统计；--store 指定记录位置。看不懂时先运行 --help，再按已给命令练习。'),
 ('独立扩展','增加按主题汇总，不直接改现有统计函数；给新函数写 3 个例子。进一步可做删除记录，但先为每条记录设计稳定 ID，并明确删除规则。')
 ],
@@ -57,6 +57,7 @@ def summarize(records):
 def add_record(path, minutes, topic, day):
     record = {"date": day, "minutes": minutes, "topic": topic.strip()}
     validate_record(record)
+    record["date"] = date.fromisoformat(day).isoformat()
     records = load_records(path)
     records.append(record)
     path.parent.mkdir(parents=True, exist_ok=True)

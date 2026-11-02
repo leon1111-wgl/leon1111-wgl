@@ -2184,7 +2184,7 @@ kept evidence indices: [0, 1] tokens: 140
 
 ### [CLIP：通过选择正确伙伴来学习](#clip-contrastive)
 
-CLIP 在两个方向学习相对兼容性；其分数取决于候选集合、温度，以及假定的负例是否确实不同。
+CLIP 在两个方向学习相对兼容性。一对样本的相似度只由两个嵌入决定；其 softmax 份额与损失取决于候选集合、温度，以及假定的负例是否确实不同。
 
 ### [交叉注意力：让一条信息流查询另一条](#cross-attention-fusion)
 

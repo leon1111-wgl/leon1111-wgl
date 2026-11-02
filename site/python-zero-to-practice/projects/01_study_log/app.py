@@ -37,6 +37,7 @@ def summarize(records):
 def add_record(path, minutes, topic, day):
     record = {"date": day, "minutes": minutes, "topic": topic.strip()}
     validate_record(record)
+    record["date"] = date.fromisoformat(day).isoformat()
     records = load_records(path)
     records.append(record)
     path.parent.mkdir(parents=True, exist_ok=True)

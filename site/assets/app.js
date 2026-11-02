@@ -75,22 +75,31 @@
     });
   });
   // Remember the chapter in view for the learning hub, and mark it in the contents rail.
+  // A chapter counts as read once its end (the previous/next links) is on screen while you are in that chapter.
   const courseId = document.body.dataset.courseId;
   const chapters = [...document.querySelectorAll('article.topic[data-reading-id]')];
   if (courseId && chapters.length) {
     const tocLinks = new Map([...document.querySelectorAll('.toc ol a')].map(link => [link.getAttribute('href').slice(1), link]));
     let pending;
+    let read = [];
+    try { read = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}').courses?.[courseId]?.read || []; } catch (_) {}
+    const markRead = () => tocLinks.forEach((link, id) => link.classList.toggle('is-read', read.includes(id)));
+    markRead();
     const track = () => {
       let current = null;
       for (const chapter of chapters) {
         if (chapter.getBoundingClientRect().top <= 140) current = chapter; else break;
       }
       tocLinks.forEach((link, id) => link.classList.toggle('is-current', id === current?.id));
+      // only the chapter being read can be finished: after a jump, the previous chapter's end may still peek in at the top
+      const end = current?.querySelector('.topic-nav')?.getBoundingClientRect();
+      if (end && end.top < window.innerHeight && end.bottom > 0 && !read.includes(current.id)) { read = [...read, current.id]; markRead(); }
       if (!current) return;
       try {
         const saved = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}');
         saved.courses = saved.courses || {};
         saved.courses[courseId] = {
+          read,
           topic: current.id,
           title: current.querySelector('h2')?.textContent || '',
           url: `${location.pathname.split('/').slice(-2).join('/')}#${current.id}`,

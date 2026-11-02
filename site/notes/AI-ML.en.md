@@ -2128,7 +2128,7 @@ Use validation to choose complexity, reserve testing for the completed choice, a
 
 ### [Check confidence and watch for change](#calibration-monitoring)
 
-Confidence needs frequency checks. Model quality needs fresh labels, especially when inputs or conditions change.
+Check calibration: among predictions made with confidence near p, about a fraction p should be correct. Model quality needs fresh labels, especially when inputs or conditions change.
 
 ## Official tutorials & original research
 

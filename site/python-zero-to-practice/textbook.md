@@ -44,7 +44,7 @@
 ### Windows 安装与首次运行
 1. 打开 [Python 官方下载页](https://www.python.org/downloads/)，按照 [Windows 官方安装说明](https://docs.python.org/3/using/windows.html) 安装 Python。官方目前提供 Python install manager；已有正常工作的 Python 3 不必为了本教材重装。安装流程随版本变化，以官方页面为准。
 2. 安装完成后，关闭旧终端，再从开始菜单打开 PowerShell 或 Windows Terminal，输入 `py --version`。若 `py` 不可用但 `python --version` 成功，后续把 `py` 换成 `python`。
-3. 确认输出是 Python 3.10 或更高。本教材使用的语法按 Python 3.10+ 编写，交付前在 3.12 环境实际验证；不是对所有操作系统组合都做过现场测试。
+3. 确认输出是 Python 3.10 或更高。新安装请选官网当前的稳定版：3.10 已在 2026 年 10 月停止安全更新，建议用 3.11 或更高。本教材的语法按 Python 3.10+ 编写，交付前在 3.12 环境实际验证；不是对所有操作系统组合都做过现场测试。
 4. 将整个文件夹放在一个容易找到的位置，例如桌面。打开该文件夹，在文件资源管理器地址栏输入 `powershell` 并回车，通常即可在此目录启动 PowerShell。也可以手动输入 `cd "完整文件夹路径"`。
 5. 输入下面的命令，看到文字即成功。命令前面没有要你复制的 `$` 或 `>>>`。
 
@@ -83,9 +83,9 @@ python3 examples/ch01/ex01_01.py
 不需要显卡，不需要注册模型 API，不需要安装 PyTorch，也不需要一次配置多个编辑器。第 00—16 章和四个项目只使用标准库。先把这条最短路径走通：保存一个文件 → 运行 → 修改 → 再运行。
 
 ### AI / Agent 穿插内容怎样学
-主页的“部分内容为info1110课程”用于标记你的课程关联。基础语法可以配合课堂复习；v1.1 新增的 AI / Agent 场景是自编延伸练习，不据此推定课程的考核范围。
+主页的“部分内容为info1110课程”只表示部分基础语法可以配合该课程复习；本教材是独立整理的学习材料，不是官方课程材料，也不代表考试范围。v1.1 新增的 AI / Agent 场景是自编延伸练习，不据此推定课程的考核范围。
 
-保持原来的顺序：先学本章语法，完成普通示例，再做本章最后的“AI / Agent”示例与练习。遇到暂时不懂的 AI 名词，先关注代码中的字符串、列表、判断和函数；不需要先学神经网络。
+保持原来的顺序：先学本章语法，完成普通示例，再做本章最后的“AI / Agent”示例与练习。遇到暂时不懂的 AI 名词，先关注代码中的字符串、列表、判断和函数；不需要先学神经网络。两个常见词先记住大意：token 是模型切分文本的单位，可能是一个字、一个词的一部分或一个标点；张量可以先理解为数值计算库里的多维数组。
 
 本轮的小实验只使用 Python 标准库，完全离线。提示词是给模型的文字要求；大模型（LLM）根据上下文生成内容；工具（tool）是程序可以调用的函数；Agent 则围绕目标组织决策、工具执行和结果反馈。这里用固定数据和规则模拟部分流程，**没有调用真实模型、没有网络推理、没有产生 API 费用**。
 
@@ -1795,7 +1795,7 @@ python
 `n = 3`；检查 n>0 为真，输出 3，然后 n-=1；再检查 2>0，输出 2；再检查 1>0，输出 1；最后 n=0，条件为假，退出。条件不是进入时检查一次就永远不变，每轮都会重新计算。
 
 ### break 与 continue
-`break` 立即结束它所在的最内层循环；`continue` 跳过本轮剩余语句，开始下一轮。嵌套循环里的 break 通常只退出内层。函数里的 `return` 则结束整个当前函数，第 09 章会讲。
+`break` 立即结束它所在的最内层循环；`continue` 跳过本轮剩余语句，开始下一轮。嵌套循环里的 break 只退出它所在的那一层，也就是最内层循环。函数里的 `return` 则结束整个当前函数，第 09 章会讲。
 
 while 中如果把计数器更新放在 continue 之后，某些路径可能永远跳过更新。解决方法是确保每条继续执行的路径都推进状态，或者直接用 for 遍历。
 
@@ -1803,7 +1803,7 @@ while 中如果把计数器更新放在 continue 之后，某些路径可能永�
 哨兵是约定的结束标记，例如输入 q 就结束录入。先检查是不是 q，再把其他输入转换成数字，否则 int("q") 会直接报错。数据值可能本身为 0 时，别把 0 随意当结束信号；选不会与有效输入冲突的标记。
 
 ### 嵌套循环怎样执行
-外层走一步，内层通常完整走一遍。两组实验学习率 × 三个批大小，会有 2×3=6 种组合。把外层看成行、内层看成列有助于理解，但它不必真是二维表。不要把“两个顺序排列的循环”误认为“两个嵌套循环”。
+外层走一步，内层通常完整走一遍。两种颜色 × 三种尺码，会有 2×3=6 种组合。把外层看成行、内层看成列有助于理解，但它不必真是二维表。不要把“两个顺序排列的循环”误认为“两个嵌套循环”。
 
 ### 从错误中退出
 终端里的长时间循环通常可以用 Ctrl+C 中断；IDLE 可用 Shell 中断或 Restart Shell。Ctrl+C 是恢复控制的方法，不是正确终止条件的替代品。调试时先限制最大次数，例如最多 5 轮，再观察状态。
@@ -3094,14 +3094,14 @@ print 把内容显示到屏幕，便于人看；return 把对象交还给调用�
 执行 return 后，当前函数立即结束，后面的函数体语句不执行。所有需要结果的路径都应有明确返回，否则有些输入会意外得到 None。返回多个值时常用 `return total, count`，实际返回的是一个元组，调用者可以解包。
 
 ### 参数的几种写法
-位置参数按顺序对应；关键字参数按名字对应。`power(3, exponent=2)` 更容易看出第二项含义。`def power(base, exponent=2)` 给了默认值，调用者可以省略 exponent。普通调用中位置参数放在关键字参数前面，避免给同一个参数赋值两次。
+位置参数按顺序对应；关键字参数按名字对应。`power(3, exponent=2)` 更容易看出第二项含义。`def power(base, exponent=2)` 给了默认值，调用者可以省略 exponent。调用时位置参数必须写在关键字参数前面，否则是 SyntaxError；同一个参数也不能既按位置又按名字传值，否则是 TypeError。
 
 默认值在函数定义时求值，不是每次调用重新创建。不要使用 `items=[]` 作为想要“每次一个新列表”的默认值，改为 `items=None`，进入后 `if items is None: items=[]`。这个检查必须用 is None，不能简单 if not items，否则调用者传入的空列表也会被替换。
 
 ### 作用域决定去哪里找名字
 函数内部赋值创建的名字通常是局部变量，外面不能直接使用。函数可以读取外层可见名字，但把所有输入写成参数更容易理解和测试。不要一开始就依赖 global 修改全局变量。
 
-如果函数里给 x 赋值，Python 通常把该函数中的 x 当作局部名字，即使你在赋值之前试图读外部 x，也可能得到 UnboundLocalError。改为传参和返回值，比到处加 global 更清楚。
+如果函数里给 x 赋值，Python 会把该函数中的 x 当作局部名字（除非用 global 或 nonlocal 声明）；在赋值之前读 x，会得到 UnboundLocalError。改为传参和返回值，比到处加 global 更清楚。
 
 ### 传入列表会不会被修改
 函数参数获得的是对象引用的绑定。函数内执行 `items.append(x)` 会修改调用者共享的列表；执行 `items = []` 只改变局部参数的绑定，不会替换调用者的名字。不能简单说“Python 都是值传递”或“所有赋值都修改外部”。要看是否修改了同一个对象。
@@ -3114,7 +3114,7 @@ print 把内容显示到屏幕，便于人看；return 把对象交还给调用�
 本章开始的部分习题附带额外函数测试。你除了打印展示结果，还要按指定函数名与参数实现功能；自检器会用其他输入调用函数，检查边界和是否修改了输入。
 
 ### 精讲：把一次函数调用拆成五个时刻
-读示例 09_01 时，按“实参 → 形参 → 函数体 → 返回值 → 接收位置”追踪。对于 `answer = add(2, 3)`：
+读示例 09_01 时，按“实参 → 形参 → 函数体 → 返回值 → 接收位置”追踪。对于 `result = add(2, 3)`：
 
 | 时刻 | 正在发生什么 | 目前能知道什么 |
 | --- | --- | --- |
@@ -3122,14 +3122,14 @@ print 把内容显示到屏幕，便于人看；return 把对象交还给调用�
 | 2 | 进入 add，建立局部名字 a 和 b | a 是 2，b 是 3 |
 | 3 | 计算 a + b | 得到 5，但外面的赋值尚未完成 |
 | 4 | 执行 return 5 | 本次调用结束，add(2, 3) 的值是 5 |
-| 5 | 调用位置继续赋值 | answer 现在是 5 |
+| 5 | 调用位置继续赋值 | result 现在是 5 |
 
 `def` 出现时先定义函数，函数体要等调用才运行。形参是函数定义里的名字，实参是调用时提供的值。第二次调用会有新的一次局部执行环境。
 
 ### 精讲：print 与 return 分别通向哪里
 可以把 `print` 看作显示窗口，把 `return` 看作把结果交回调用位置。函数可以一边打印、一边返回，两件事互不替代。没有执行到带值的 return 时，正常结束的函数返回 None；None 是一个值，表示这里没有提供具体结果，不是字符串 `"None"`。
 
-先运行示例 09_02，只把函数体中的 `print(x * 2)` 改成 `return x * 2`，预测输出会从几行变为几行。外面的 `print(answer)` 保持原样，这样才能单独观察返回值的变化。
+先运行示例 09_02，只把函数体中的 `print(number * 2)` 改成 `return number * 2`，预测输出会从几行变为几行。外面的 `print(result)` 保持原样，这样才能单独观察返回值的变化。
 
 **为什么 AI 工具要 return？** 后面的程序需要拿到结果继续处理。若工具只打印“找到 3 条记录”，调用者拿到的可能是 None，不能把它当成列表遍历。调试日志可以 print；供下游使用的数据要设计明确的返回结构。
 
@@ -3381,7 +3381,7 @@ False
 
 解析：输入字符串进入 text；split 得到三个按空白分开的词；函数构造字典并 return；外层 result 接收字典后取字段。函数体不打印，所以可以重复用于统计、测试或保存文件。它要求 text 是字符串；第 13 章再学习怎样验证来自外部的数据。按空白分词只适合此处演示，既不是通用中文分词器，也不是模型 tokenizer。
 
-改写：把 return 改成 print 字典，再运行，观察 result 的值为什么变成 None。修复后传入纯空白字符串，预测 count 和 empty。
+改写：把 return 改成 print 字典，再运行：result 变成 None，下一行取字段时会报 TypeError: 'NoneType' object is not subscriptable，读懂这个报错。修复后传入纯空白字符串，预测 count 和 empty。
 
 ## 示例 09_10 AI / Agent：返回的新轮数要由调用者接住
 
@@ -3730,7 +3730,7 @@ print(budget)
 ### zip 把多个序列并排配对
 `zip(names, scores)` 每次给一个姓名和一个分数。默认遇到较短序列结束，较长序列余下元素会被忽略。需要一一对应时，先检查长度，或在本教材支持的 Python 3.10+ 中使用 `zip(..., strict=True)`，不等长会报 ValueError。
 
-enumerate 给单个序列配索引；zip 把多个序列配成行。zip 和 enumerate 返回可迭代工具对象，要观察所有结果可 list(...)，但遍历时不必先转列表。
+enumerate 给单个序列配索引；zip 把多个序列配成行。zip 和 enumerate 返回可迭代工具对象，要观察所有结果可 list(...)，但遍历时不必先转列表。注意它们只能遍历一次：用 list(...) 看过之后，要再遍历需要重新调用 zip(...) 或 enumerate(...)。
 
 ### any 与 all
 `any(条件序列)` 问是否至少一个为真；`all(条件序列)` 问是否全部为真。空输入时 any 返回 False，all 返回 True。这是逻辑约定，不能用 all([]) 推断“有数据而且合格”，业务上还要检查非空。
@@ -4332,7 +4332,7 @@ True
 - 选择 CSV、JSON、JSONL 表示结构化数据
 
 ### 相对路径相对于哪里
-`Path("data.txt")` 默认相对于**当前工作目录**，不一定是代码文件所在目录。你从不同目录启动脚本，可能读到不同地方。终端先 cd 到学习包根目录可以减少混乱。
+`Path("data.txt")` 默认相对于**当前工作目录**，不一定是代码文件所在目录。你从不同目录启动脚本，可能读到不同地方。终端先 cd 到学习包根目录可以减少混乱。注意：在 IDLE 里用 Run Module 运行时，工作目录会切到这个 .py 所在的文件夹；在终端运行时，才以你 cd 进入的目录为准。
 
 需要固定相对脚本位置时用 `BASE = Path(__file__).resolve().parent`，再写 `BASE / "data" / "scores.csv"`。`__file__` 通常在脚本中存在，但交互窗口和某些 notebook 环境中没有。Path 的 `/` 在这里是拼接路径，不是数值除法；它会按操作系统处理分隔符。
 
@@ -4347,7 +4347,7 @@ True
 ### CSV 是表格，不是随便按逗号拆
 CSV 一行一条记录，通常第一行是列名。字段里可能包含逗号、引号甚至换行，所以使用 csv.DictReader / DictWriter。打开 CSV 时加 `newline=""`，让 csv 模块正确处理换行。
 
-CSV 读取的字段默认是字符串，"80" 要 int 后才能计算。不要把表头拼错或空字符串当成正常分数；第 13 章学习识别与记录错误。Excel 导出的文件可能含 BOM，可尝试 `encoding="utf-8-sig"` 读取 UTF-8 BOM 文件，不要对所有编码问题盲目使用 errors="ignore"。
+CSV 读取的字段默认是字符串，"80" 要 int 后才能计算。不要把表头拼错或空字符串当成正常分数；第 13 章学习识别与记录错误。Excel 导出的文件可能含 BOM，可尝试 `encoding="utf-8-sig"` 读取 UTF-8 BOM 文件，不要对所有编码问题盲目使用 errors="ignore"。中文版 Excel 另存为“CSV（逗号分隔）”时常用 GBK 编码，按 UTF-8 读取会报 UnicodeDecodeError：优先另存为“CSV UTF-8”，或明确写 encoding="gbk"。
 
 ### JSON 保存嵌套结构
 JSON 能表示对象、数组、字符串、数字、布尔值和 null。读入 Python 后对应 dict、list、str、int/float、bool、None。JSON 文本里是 true/false/null，Python 源码里是 True/False/None。JSON 要求对象键为字符串；集合等类型不能直接序列化。
@@ -4363,7 +4363,7 @@ JSON 能表示对象、数组、字符串、数字、布尔值和 null。读入 
 ### 精讲：路径正确，文件才会出现在你预期的位置
 `Path("data/input.json")` 从当前工作目录开始寻找；当前工作目录由你怎样启动程序决定。`Path(__file__).resolve().parent` 从脚本文件的位置定位。把项目放到另一台电脑后，后者更适合寻找随项目一起复制的数据。`__file__` 用于脚本；在交互窗口或某些笔记本里不要假设它存在。
 
-请从学习包根目录运行示例 12_06，再换一个目录用完整路径运行同一个文件，观察它打印的路径字段。该示例只解析路径，不会创建文件。真正需要写文件时，先确认目标目录；`mkdir(parents=True, exist_ok=True)` 可以创建缺失目录。
+示例 12_06 只解析路径的名字、主干和后缀，不访问磁盘，所以从哪个目录运行，输出都一样。想看工作目录的影响，可以新建一个小文件，写 `print(Path.cwd())` 和 `print(Path(__file__).resolve().parent)`，分别在学习包根目录和其他目录运行，比较哪一行变了。真正需要写文件时，先确认目标目录；`mkdir(parents=True, exist_ok=True)` 可以创建缺失目录。
 
 | 模式 | 目标文件不存在时 | 目标文件已存在时 | 常见用途 |
 | --- | --- | --- | --- |
@@ -4881,7 +4881,8 @@ assert 适合本教材的开发检查。运行 Python 时若使用 `-O`，断言
 先确保最外层是字典，才能按字段读取；先确保 text 是字符串，才能 strip；先确保 label 是本题允许的整数类型，才能检查值域。**格式能解析、字段类型正确、符合使用约定，是三件事。**
 
 ### 为什么原始行号必须在跳过空行之前取得
-用 `enumerate(text.splitlines(), start=1)` 先得到物理行号，再跳过空行。如果先删掉空行再编号，第 3 行的错误就可能被写成第 2 行，回原文件时会找错位置。
+用 `enumerate(text.splitlines(), start=1)` 先得到物理行号，再跳过空行。splitlines 除了换行符，也会在 、U+2028 等少见字符处断行；如果 JSON 用 ensure_ascii=False 写出这些字符，按 `text.split("
+")` 编号，或读文件时用 `for line in file` 更稳妥。如果先删掉空行再编号，第 3 行的错误就可能被写成第 2 行，回原文件时会找错位置。
 
 新增示例 13_08 有 6 行：第 1 行合法、第 2 行为空、第 3 行 JSON 损坏、第 4 行字段类型错误、第 5 行 label 超范围、第 6 行合法。先手算：保留 2 条、跳过 1 行、记录 3 个错误，错误行号应为 3、4、5。运行后逐个比对。
 
@@ -5702,7 +5703,7 @@ print(a.total(), b.total())
 
 解析：两个 __init__ 分别创建列表，因此 a 的追加不会进入 b。
 
-改写：把 minutes=[] 移成类属性，观察共享问题后恢复。
+改写：把 minutes=[] 移成类属性，并删除 __init__ 里的 self.minutes = []，观察共享问题后恢复。
 
 ## 示例 14_03 方法中的校验
 
@@ -5953,7 +5954,7 @@ print(book.scores)
 
 ## 练习 14_05 AI / Agent：有条数上限的会话记忆（场景）
 
-实现 RecentMessages(limit)。limit 必须为大于 0 的 int，bool 不接受，否则 raise ValueError。每个实例有自己的 messages 列表；add(text) 只接受字符串，添加后保留最后 limit 条，返回当前条数。用 limit=2 依次添加 "a"、"b"、"c"，打印 messages。
+实现 RecentMessages(limit)。limit 必须是 int（bool 不算）且大于 0：类型不对 raise TypeError，数值不大于 0 raise ValueError。每个实例有自己的 messages 列表；add(text) 只接受字符串，否则 raise TypeError；添加后保留最后 limit 条，返回当前条数。用 limit=2 依次添加 "a"、"b"、"c"，打印 messages。
 
 作答文件：practice/ch14/ex14_05.py
 
@@ -5963,14 +5964,16 @@ print(book.scores)
 ```python
 class RecentMessages:
     def __init__(self, limit):
-        if type(limit) is not int or limit <= 0:
-            raise ValueError("limit 必须为正整数")
+        if type(limit) is not int:
+            raise TypeError("limit 必须是 int")
+        if limit <= 0:
+            raise ValueError("limit 必须大于 0")
         self.limit = limit
         self.messages = []
 
     def add(self, text):
         if not isinstance(text, str):
-            raise ValueError("text 必须为字符串")
+            raise TypeError("text 必须为字符串")
         self.messages.append(text)
         self.messages = self.messages[-self.limit:]
         return len(self.messages)
@@ -6767,7 +6770,7 @@ False
 
 ## 练习 16_07 AI / Agent：实现可测试的两步工具流程（综合）
 
-实现 lookup_agent(query, max_steps=2)。query 必须是字符串；max_steps 必须是非负 int（不接受 bool），否则 raise ValueError。固定笔记字典为 {"列表":"有序容器", "函数":"可复用的处理步骤"}，按 query 完全匹配查找。第 1 步保存查找结果；第 2 步返回 {"status":"done", "answer":结果或"未找到", "steps":2}。若步数不够，返回 {"status":"limit", "answer":None, "steps":已执行步数}。只需这两种动作，最多执行两步。调用 "函数" 并依次输出 status、answer、steps。
+实现 lookup_agent(query, max_steps=2)。query 必须是字符串，max_steps 必须是 int（不接受 bool），类型不对 raise TypeError；max_steps 为负数 raise ValueError。固定笔记字典为 {"列表":"有序容器", "函数":"可复用的处理步骤"}，按 query 完全匹配查找。第 1 步保存查找结果；第 2 步返回 {"status":"done", "answer":结果或"未找到", "steps":2}。若步数不够，返回 {"status":"limit", "answer":None, "steps":已执行步数}。只需这两种动作，最多执行两步。调用 "函数" 并依次输出 status、answer、steps。
 
 作答文件：practice/ch16/ex16_07.py
 
@@ -6777,9 +6780,11 @@ False
 ```python
 def lookup_agent(query, max_steps=2):
     if not isinstance(query, str):
-        raise ValueError("query 必须是字符串")
-    if type(max_steps) is not int or max_steps < 0:
-        raise ValueError("max_steps 必须为非负整数")
+        raise TypeError("query 必须是字符串")
+    if type(max_steps) is not int:
+        raise TypeError("max_steps 必须是 int")
+    if max_steps < 0:
+        raise ValueError("max_steps 不能为负数")
     notes = {"列表": "有序容器", "函数": "可复用的处理步骤"}
     observation = None
     steps = 0
@@ -6852,7 +6857,7 @@ done
 - 同样输入再跑一次，哪些文件覆盖、哪些记录追加，行为是否符合说明？
 
 ### 新出现的 argparse 不用死记
-项目里的 argparse 来自标准库。`ArgumentParser` 建立命令说明，`add_argument` 声明参数，`parse_args` 把终端输入读成对象。`args.input` 对应 `--input`；命令中的带空格主题要加引号。先运行 `python app.py --help`，按照给出的命令执行，再回看源代码中相应定义。
+项目里的 argparse 来自标准库。`ArgumentParser` 建立命令说明，`add_argument` 声明参数，`parse_args` 把终端输入读成对象。`args.input` 对应 `--input`；命令中的带空格主题要加引号。在学习包根目录先运行 `python projects/项目文件夹/app.py --help`（例如 `python projects/02_score_report/app.py --help`），按照给出的命令执行，再回看源代码中相应定义。
 
 注意运行位置：本章给出的命令从**学习包根目录**执行。如果已进入某个项目目录，命令可以简化为 `python app.py`。Windows/Mac 的解释器名字按第 00 章替换。
 
@@ -6884,7 +6889,7 @@ python tools/check_projects.py
 用 JSON 保存记录列表。文件不存在视作首次使用，返回空列表；文件存在但内容错误则抛出清楚异常。分清这两种情况，避免误覆盖用户数据。
 
 ### 3 检查输入再修改
-将日期用 date.fromisoformat 验证；分钟用整数且非负检查；主题 strip 后检查非空。所有检查通过后才 append。
+用 date.fromisoformat 验证日期，并保存 isoformat() 的结果，统一为 YYYY-MM-DD（3.11 起它也接受 20261007 这样的写法）；分钟用整数且非负检查；主题 strip 后检查非空。所有检查通过后才 append。
 
 ### 4 加入命令行入口
 argparse 是标准库命令行参数解析器。add 子命令收 minutes 与 topic；summary 子命令显示统计；--store 指定记录位置。看不懂时先运行 --help，再按已给命令练习。
@@ -6951,6 +6956,7 @@ def summarize(records):
 def add_record(path, minutes, topic, day):
     record = {"date": day, "minutes": minutes, "topic": topic.strip()}
     validate_record(record)
+    record["date"] = date.fromisoformat(day).isoformat()
     records = load_records(path)
     records.append(record)
     path.parent.mkdir(parents=True, exist_ok=True)

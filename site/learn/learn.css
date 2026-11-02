@@ -531,3 +531,6 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
   --text: #eceef2; --text-2: #b9bfca; --muted: #8d95a3; --faint: #7d8594; --brand: #4c9bff; --invert-bg: #fff; --invert-text: #000;
   color: var(--text);
 }
+/* chapters read to the end on a reading page */
+.chapter.read .no { color: var(--accent); }
+.chapter.read .no::before { content: "✓ " / ""; }

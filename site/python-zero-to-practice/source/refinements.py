@@ -10,9 +10,9 @@ def add_body(chapters, number, text):
 def apply_refinements(chapters):
     add_body(chapters, 0, """
 ### AI / Agent 穿插内容怎样学
-主页的“部分内容为info1110课程”用于标记你的课程关联。基础语法可以配合课堂复习；v1.1 新增的 AI / Agent 场景是自编延伸练习，不据此推定课程的考核范围。
+主页的“部分内容为info1110课程”只表示部分基础语法可以配合该课程复习；本教材是独立整理的学习材料，不是官方课程材料，也不代表考试范围。v1.1 新增的 AI / Agent 场景是自编延伸练习，不据此推定课程的考核范围。
 
-保持原来的顺序：先学本章语法，完成普通示例，再做本章最后的“AI / Agent”示例与练习。遇到暂时不懂的 AI 名词，先关注代码中的字符串、列表、判断和函数；不需要先学神经网络。
+保持原来的顺序：先学本章语法，完成普通示例，再做本章最后的“AI / Agent”示例与练习。遇到暂时不懂的 AI 名词，先关注代码中的字符串、列表、判断和函数；不需要先学神经网络。两个常见词先记住大意：token 是模型切分文本的单位，可能是一个字、一个词的一部分或一个标点；张量可以先理解为数值计算库里的多维数组。
 
 本轮的小实验只使用 Python 标准库，完全离线。提示词是给模型的文字要求；大模型（LLM）根据上下文生成内容；工具（tool）是程序可以调用的函数；Agent 则围绕目标组织决策、工具执行和结果反馈。这里用固定数据和规则模拟部分流程，**没有调用真实模型、没有网络推理、没有产生 API 费用**。
 
@@ -44,7 +44,7 @@ def apply_refinements(chapters):
 """)
     add_body(chapters, 9, """
 ### 精讲：把一次函数调用拆成五个时刻
-读示例 09_01 时，按“实参 → 形参 → 函数体 → 返回值 → 接收位置”追踪。对于 `answer = add(2, 3)`：
+读示例 09_01 时，按“实参 → 形参 → 函数体 → 返回值 → 接收位置”追踪。对于 `result = add(2, 3)`：
 
 | 时刻 | 正在发生什么 | 目前能知道什么 |
 | --- | --- | --- |
@@ -52,14 +52,14 @@ def apply_refinements(chapters):
 | 2 | 进入 add，建立局部名字 a 和 b | a 是 2，b 是 3 |
 | 3 | 计算 a + b | 得到 5，但外面的赋值尚未完成 |
 | 4 | 执行 return 5 | 本次调用结束，add(2, 3) 的值是 5 |
-| 5 | 调用位置继续赋值 | answer 现在是 5 |
+| 5 | 调用位置继续赋值 | result 现在是 5 |
 
 `def` 出现时先定义函数，函数体要等调用才运行。形参是函数定义里的名字，实参是调用时提供的值。第二次调用会有新的一次局部执行环境。
 
 ### 精讲：print 与 return 分别通向哪里
 可以把 `print` 看作显示窗口，把 `return` 看作把结果交回调用位置。函数可以一边打印、一边返回，两件事互不替代。没有执行到带值的 return 时，正常结束的函数返回 None；None 是一个值，表示这里没有提供具体结果，不是字符串 `"None"`。
 
-先运行示例 09_02，只把函数体中的 `print(x * 2)` 改成 `return x * 2`，预测输出会从几行变为几行。外面的 `print(answer)` 保持原样，这样才能单独观察返回值的变化。
+先运行示例 09_02，只把函数体中的 `print(number * 2)` 改成 `return number * 2`，预测输出会从几行变为几行。外面的 `print(result)` 保持原样，这样才能单独观察返回值的变化。
 
 **为什么 AI 工具要 return？** 后面的程序需要拿到结果继续处理。若工具只打印“找到 3 条记录”，调用者拿到的可能是 None，不能把它当成列表遍历。调试日志可以 print；供下游使用的数据要设计明确的返回结构。
 
@@ -74,7 +74,7 @@ def apply_refinements(chapters):
 ### 精讲：路径正确，文件才会出现在你预期的位置
 `Path("data/input.json")` 从当前工作目录开始寻找；当前工作目录由你怎样启动程序决定。`Path(__file__).resolve().parent` 从脚本文件的位置定位。把项目放到另一台电脑后，后者更适合寻找随项目一起复制的数据。`__file__` 用于脚本；在交互窗口或某些笔记本里不要假设它存在。
 
-请从学习包根目录运行示例 12_06，再换一个目录用完整路径运行同一个文件，观察它打印的路径字段。该示例只解析路径，不会创建文件。真正需要写文件时，先确认目标目录；`mkdir(parents=True, exist_ok=True)` 可以创建缺失目录。
+示例 12_06 只解析路径的名字、主干和后缀，不访问磁盘，所以从哪个目录运行，输出都一样。想看工作目录的影响，可以新建一个小文件，写 `print(Path.cwd())` 和 `print(Path(__file__).resolve().parent)`，分别在学习包根目录和其他目录运行，比较哪一行变了。真正需要写文件时，先确认目标目录；`mkdir(parents=True, exist_ok=True)` 可以创建缺失目录。
 
 | 模式 | 目标文件不存在时 | 目标文件已存在时 | 常见用途 |
 | --- | --- | --- | --- |
@@ -340,7 +340,7 @@ def add_ai_examples(chapters):
     False
     0
     ''', "输入字符串进入 text；split 得到三个按空白分开的词；函数构造字典并 return；外层 result 接收字典后取字段。函数体不打印，所以可以重复用于统计、测试或保存文件。它要求 text 是字符串；第 13 章再学习怎样验证来自外部的数据。按空白分词只适合此处演示，既不是通用中文分词器，也不是模型 tokenizer。",
-    "把 return 改成 print 字典，再运行，观察 result 的值为什么变成 None。修复后传入纯空白字符串，预测 count 和 empty。")
+    "把 return 改成 print 字典，再运行：result 变成 None，下一行取字段时会报 TypeError: 'NoneType' object is not subscriptable，读懂这个报错。修复后传入纯空白字符串，预测 count 和 empty。")
     exercise(chapters[9], "AI / Agent：先约定工具的输入和返回结构", "场景",
     '实现 summarize_text(text)，输入保证是字符串。先 strip；返回字典，字段 chars 为清理后的长度、preview 为前 4 个字符、empty 表示是否为空。函数不能打印。用 "  Python  " 调用，依次打印三个字段。',
     '先保存 cleaned，再构造一个字典 return。切片 [:4] 遇到不足 4 个字符时不会越界报错。',
@@ -515,19 +515,21 @@ def add_ai_examples(chapters):
     ''', "每次 ChatSession(...) 都调用 __init__，其中 [] 各创建一次。alice.add 调用时 self 是 alice，只修改她的 messages；方法把新长度 return 给 count。最后的 is 比较是否为同一对象，不是比较内容是否相等。两个会话当前只在内存保存消息；关闭程序后要靠第 12 章的文件操作恢复。",
     "在临时副本里把 messages = [] 移到类的顶层并删除 self.messages 初始化，重新运行并解释结果变化。随后恢复实例属性写法。")
     exercise(chapters[14], "AI / Agent：有条数上限的会话记忆", "场景",
-    '实现 RecentMessages(limit)。limit 必须为大于 0 的 int，bool 不接受，否则 raise ValueError。每个实例有自己的 messages 列表；add(text) 只接受字符串，添加后保留最后 limit 条，返回当前条数。用 limit=2 依次添加 "a"、"b"、"c"，打印 messages。',
+    '实现 RecentMessages(limit)。limit 必须是 int（bool 不算）且大于 0：类型不对 raise TypeError，数值不大于 0 raise ValueError。每个实例有自己的 messages 列表；add(text) 只接受字符串，否则 raise TypeError；添加后保留最后 limit 条，返回当前条数。用 limit=2 依次添加 "a"、"b"、"c"，打印 messages。',
     "先完成参数验证，再初始化实例列表。超过上限时可以用切片 self.messages[-self.limit:]。验证应在修改状态之前。",
     '''
     class RecentMessages:
         def __init__(self, limit):
-            if type(limit) is not int or limit <= 0:
-                raise ValueError("limit 必须为正整数")
+            if type(limit) is not int:
+                raise TypeError("limit 必须是 int")
+            if limit <= 0:
+                raise ValueError("limit 必须大于 0")
             self.limit = limit
             self.messages = []
 
         def add(self, text):
             if not isinstance(text, str):
-                raise ValueError("text 必须为字符串")
+                raise TypeError("text 必须为字符串")
             self.messages.append(text)
             self.messages = self.messages[-self.limit:]
             return len(self.messages)
@@ -546,16 +548,16 @@ def add_ai_examples(chapters):
     a.add("y")
     assert a.add("z") == 2
     assert a.messages == ["y", "z"]
-    for bad in [0, -1, True, 1.5]:
+    for bad, error in [(0, ValueError), (-1, ValueError), (True, (TypeError, ValueError)), (1.5, (TypeError, ValueError))]:
         try:
             RecentMessages(bad)
-        except ValueError:
+        except error:
             pass
         else:
             raise AssertionError(f"应拒绝 limit={bad!r}")
     try:
         a.add(None)
-    except ValueError:
+    except (TypeError, ValueError):
         pass
     else:
         raise AssertionError("应拒绝非字符串")
@@ -660,14 +662,16 @@ def add_ai_examples(chapters):
     ''', "输入 query 进入 state；第一次 decide 看见 observation 为 None，提出 search 动作；执行器调用工具 search_notes，把结果写回 observation；第二次 decide 因已有结果而选择 finish；执行器输出结果和来源后结束。决策函数在这里完全由规则实现；没有模型推理、向量检索或生成式回答。检索只返回第一个命中的关键词笔记，能追踪来源不等于覆盖所有问题。固定上限可以限制此循环执行次数，但不能中断某一次已经卡住的工具函数。",
     "把问题改成“什么是张量？”，观察无命中时的结果。把 range(1, 4) 改为 range(1, 2)，确认工具虽执行了但流程还未 finish。最后解释：为什么只把一个函数命名为 agent 并不自动获得规划能力？")
     exercise(chapters[16], "AI / Agent：实现可测试的两步工具流程", "综合",
-    '实现 lookup_agent(query, max_steps=2)。query 必须是字符串；max_steps 必须是非负 int（不接受 bool），否则 raise ValueError。固定笔记字典为 {"列表":"有序容器", "函数":"可复用的处理步骤"}，按 query 完全匹配查找。第 1 步保存查找结果；第 2 步返回 {"status":"done", "answer":结果或"未找到", "steps":2}。若步数不够，返回 {"status":"limit", "answer":None, "steps":已执行步数}。只需这两种动作，最多执行两步。调用 "函数" 并依次输出 status、answer、steps。',
+    '实现 lookup_agent(query, max_steps=2)。query 必须是字符串，max_steps 必须是 int（不接受 bool），类型不对 raise TypeError；max_steps 为负数 raise ValueError。固定笔记字典为 {"列表":"有序容器", "函数":"可复用的处理步骤"}，按 query 完全匹配查找。第 1 步保存查找结果；第 2 步返回 {"status":"done", "answer":结果或"未找到", "steps":2}。若步数不够，返回 {"status":"limit", "answer":None, "steps":已执行步数}。只需这两种动作，最多执行两步。调用 "函数" 并依次输出 status、answer、steps。',
     "先验证输入，再用 for 从 1 到 max_steps 迭代。第 1 步查询，第 2 步立即 return。循环正常结束则说明还没完成。max_steps=0 时应执行零步。",
     '''
     def lookup_agent(query, max_steps=2):
         if not isinstance(query, str):
-            raise ValueError("query 必须是字符串")
-        if type(max_steps) is not int or max_steps < 0:
-            raise ValueError("max_steps 必须为非负整数")
+            raise TypeError("query 必须是字符串")
+        if type(max_steps) is not int:
+            raise TypeError("max_steps 必须是 int")
+        if max_steps < 0:
+            raise ValueError("max_steps 不能为负数")
         notes = {"列表": "有序容器", "函数": "可复用的处理步骤"}
         observation = None
         steps = 0
@@ -694,16 +698,16 @@ def add_ai_examples(chapters):
     assert lookup_agent("函数", 0) == {"status":"limit","answer":None,"steps":0}
     assert lookup_agent("函数", 1) == {"status":"limit","answer":None,"steps":1}
     assert lookup_agent("函数", 5)["steps"] == 2
-    for bad in [-1, True, 1.2]:
+    for bad, error in [(-1, ValueError), (True, (TypeError, ValueError)), (1.2, (TypeError, ValueError))]:
         try:
             lookup_agent("函数", bad)
-        except ValueError:
+        except error:
             pass
         else:
             raise AssertionError(f"应拒绝 max_steps={bad!r}")
     try:
         lookup_agent(None)
-    except ValueError:
+    except (TypeError, ValueError):
         pass
     else:
         raise AssertionError("应拒绝非字符串 query")

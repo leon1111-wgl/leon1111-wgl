@@ -331,3 +331,6 @@ body.reader { --accent: var(--course, #4c9bff); }
 .route-next .lang-note { font-weight: 400; font-size: 14px; color: var(--muted); }
 .route-next .all { display: inline-block; margin-top: 14px; font-size: 15px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 @media print { .route-next { display: none; } }
+
+/* chapters whose end the reader has reached */
+.reader .toc ol a.is-read::after { content: " ✓"; color: var(--accent); }

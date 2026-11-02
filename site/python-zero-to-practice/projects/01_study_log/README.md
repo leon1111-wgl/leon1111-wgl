@@ -11,7 +11,7 @@
 用 JSON 保存记录列表。文件不存在视作首次使用，返回空列表；文件存在但内容错误则抛出清楚异常。分清这两种情况，避免误覆盖用户数据。
 
 ### 3 检查输入再修改
-将日期用 date.fromisoformat 验证；分钟用整数且非负检查；主题 strip 后检查非空。所有检查通过后才 append。
+用 date.fromisoformat 验证日期，并保存 isoformat() 的结果，统一为 YYYY-MM-DD（3.11 起它也接受 20261007 这样的写法）；分钟用整数且非负检查；主题 strip 后检查非空。所有检查通过后才 append。
 
 ### 4 加入命令行入口
 argparse 是标准库命令行参数解析器。add 子命令收 minutes 与 topic；summary 子命令显示统计；--store 指定记录位置。看不懂时先运行 --help，再按已给命令练习。

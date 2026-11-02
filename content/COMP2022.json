@@ -2098,7 +2098,7 @@
     },
     {
       "title": "Quantifier discipline",
-      "body": "All A are B: ∀x(A(x)→B(x)). Some A are B: ∃x(A(x)∧B(x)). Negation swaps ∀ and ∃; mixed quantifier order controls witness dependence."
+      "body": "All A are B: ∀x(A(x)→B(x)). Some A are B: ∃x(A(x)∧B(x)). ¬∀xP≡∃x¬P and ¬∃xP≡∀x¬P, so \"not all A are B\" is ∃x(A(x)∧¬B(x)); mixed quantifier order controls witness dependence."
     },
     {
       "title": "Impossibility proofs",

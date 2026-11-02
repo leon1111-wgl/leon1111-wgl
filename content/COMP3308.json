@@ -2107,7 +2107,7 @@
     },
     {
       "title": "Prevent leakage",
-      "body": "Fit preprocessing and model choices inside training and validation data. Keep the final test untouched. Use groups or time order when independent random splitting would misrepresent deployment."
+      "body": "Fit preprocessing on training data only (refit per fold); make model choices on validation data. Keep the final test untouched. Use groups or time order when independent random splitting would misrepresent deployment."
     },
     {
       "title": "Evaluate the relevant errors",
@@ -2119,11 +2119,11 @@
     },
     {
       "title": "Backpropagation bookkeeping",
-      "body": "Save a forward pass, compute all gradients with those parameter values, then update. For sigmoid squared loss, output delta=(a−t)a(1−a). Hidden deltas sum weighted downstream sensitivities."
+      "body": "Save a forward pass, compute all gradients with those parameter values, then update. For L=½Σ(a−t)² and sigmoid units, output δ=(a−t)a(1−a); hidden δⱼ=aⱼ(1−aⱼ)Σₖwₖⱼδₖ."
     },
     {
       "title": "Regularize deliberately",
-      "body": "Learning rate affects stability; zero gradient need not indicate a minimum. Choose early stopping on validation. Inverted dropout scales retained training activations by 1/q and uses no dropout at inference."
+      "body": "Learning rate affects stability; zero gradient need not indicate a minimum. Choose early stopping on validation. Inverted dropout scales retained training activations by 1/q (q = keep probability) and uses no dropout at inference."
     },
     {
       "title": "Margins and committees",

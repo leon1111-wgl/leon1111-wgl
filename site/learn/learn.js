@@ -68,7 +68,7 @@
       toLight: '切换到浅色主题', toDark: '切换到深色主题', skipMain: '跳到正文', colChapters: '章节', colCode: '代码', colLang: '语言',
       chaptersUnit: '章', programsUnit: '份', bilingual: '中英双语', zhOnly: '仅中文', both: '中 · EN',
       read: '阅读', details: '详情', star: '收藏', unstar: '取消收藏', noMatch: '没有找到匹配的课程。', noCourseOnly: '没有课程名称匹配；标题里含这个词的章节在下面。',
-      readTo: (n) => `读到第 ${n} 章`,
+      readTo: (n) => `读到第 ${n} 章`, readCount: (n) => `已读完 ${n} 章`, readMark: '已读完',
       facts: { chapters: '章节', programs: '可运行代码', problems: '推导例题', exercises: '练习', projects: '综合项目', language: '语言' },
       toc: '章节目录', chaptersCount: (n) => `${n} 章`,
       startRead: '从第 1 章开始', continueAt: '继续上次', otherLang: 'Read in English', otherLangOnly: '这门课只有中文版',
@@ -128,7 +128,7 @@
       toLight: 'Switch to light theme', toDark: 'Switch to dark theme', skipMain: 'Skip to content', colChapters: 'Chapters', colCode: 'Code', colLang: 'Language',
       chaptersUnit: 'chapters', programsUnit: 'programs', bilingual: 'Chinese + English', zhOnly: 'Chinese only', both: '中 · EN',
       read: 'Read', details: 'Details', star: 'Star', unstar: 'Remove star', noMatch: 'No course matches.', noCourseOnly: 'No course title matches; chapters whose titles contain it are listed below.',
-      readTo: (n) => `At chapter ${n}`,
+      readTo: (n) => `At chapter ${n}`, readCount: (n) => `${n} read to the end`, readMark: 'read',
       facts: { chapters: 'Chapters', programs: 'Runnable programs', problems: 'Worked problems', exercises: 'Exercises', projects: 'Projects', language: 'Language' },
       toc: 'Chapters', chaptersCount: (n) => `${n} chapters`,
       startRead: 'Start at chapter 1', continueAt: 'Continue', otherLang: '用中文阅读', otherLangOnly: 'This course is in Chinese only',
@@ -192,6 +192,8 @@
   const readUrl = (c, chapter, l = readLang(c)) => SITE + c.read[l] + (chapter ? '#' + chapter : '');
   const courseProgress = (c) => progress().courses?.[c.id];
   const chapterIndex = (c, id) => c.chapters.findIndex((ch) => ch.id === id);
+  // chapters whose end the reader reached on a reading page (saved there in the same progress record)
+  const readSet = (c) => new Set((courseProgress(c)?.read || []).filter((id) => chapterIndex(c, id) >= 0));
   const href = { intro: '#/', list: '#/courses', course: (id) => `#/course/${id}`, route: '#/route', sheets: '#/sheets', mine: '#/mine' };
 
   /* ------------------------------------------------------------ pieces */
@@ -347,7 +349,8 @@
     return list.map((c) => {
       const pr = courseProgress(c);
       const at = pr ? chapterIndex(c, pr.topic) : -1;
-      const prog = at >= 0 ? `<small>${t('readTo')(at + 1)}</small><span class="progress-line"><i style="width:${Math.round(((at + 1) / c.chapters.length) * 100)}%"></i></span>` : `<small>${t('chaptersUnit')}</small>`;
+      const done = readSet(c).size;
+      const prog = at >= 0 ? `<small>${t('readTo')(at + 1)}${done ? ` · ${t('readCount')(done)}` : ''}</small><span class="progress-line"><i style="width:${Math.round(((at + 1) / c.chapters.length) * 100)}%"></i></span>` : `<small>${t('chaptersUnit')}</small>`;
       const starred = s.includes(c.id);
       return `<tr style="--accent:${c.color}">
         <td class="star-cell"><button type="button" class="star" data-star="${c.id}" aria-pressed="${starred}" aria-label="${starred ? t('unstar') : t('star')}">${icon('star')}</button></td>
@@ -483,11 +486,13 @@
     const rl = readLang(c);
     const chapterNo = Object.fromEntries(c.chapters.map((ch, i) => [ch.id, i + 1]));
     const byId = Object.fromEntries(c.chapters.map((ch) => [ch.id, ch]));
+    const read = readSet(c);
     const stages = c.stages.map((s, si) => `<div class="stage"><div class="stage-head"><h3>${pad(si + 1)} · ${esc(L(s.title))}</h3><span>${t('chaptersCount')(s.chapters.length)}</span></div>` +
       s.chapters.map((cid) => {
         const ch = byId[cid];
         const langs = c.langs.map((l) => `<a href="${readUrl(c, cid, l)}" lang="${l}">${l === 'zh' ? '中文' : 'EN'}</a>`).join('');
-        return `<div class="chapter${pr && pr.topic === cid ? ' current' : ''}"><span class="no">${pad(chapterNo[cid])}</span><span><a class="ttl" href="${readUrl(c, cid, rl)}">${esc(L(ch.title))}</a><span class="alt">${esc(other(ch.title) || '')}</span></span><span class="langs">${langs}</span></div>`;
+        const isRead = read.has(cid);
+        return `<div class="chapter${pr && pr.topic === cid ? ' current' : ''}${isRead ? ' read' : ''}"><span class="no">${isRead ? `<span class="sr-only">${t('readMark')} </span>` : ''}${pad(chapterNo[cid])}</span><span><a class="ttl" href="${readUrl(c, cid, rl)}">${esc(L(ch.title))}</a><span class="alt">${esc(other(ch.title) || '')}</span></span><span class="langs">${langs}</span></div>`;
       }).join('') + '</div>').join('');
     const facts = [['chapters', c.stats.chapters], ['programs', c.stats.programs], ['problems', c.stats.problems], ['exercises', c.stats.exercises], ['projects', c.stats.projects]]
       .filter(([, v]) => v).slice(0, 3)

@@ -2978,8 +2978,8 @@
         "zh": "检查置信程度并监测变化"
       },
       "body": {
-        "en": "Confidence needs frequency checks. Model quality needs fresh labels, especially when inputs or conditions change.",
-        "zh": "置信程度需要频率检查。模型质量需要新标签，尤其是在输入或环境变化时。"
+        "en": "Check calibration: among predictions made with confidence near p, about a fraction p should be correct. Model quality needs fresh labels, especially when inputs or conditions change.",
+        "zh": "检查校准：置信度约为 p 的预测中，约有 p 比例应当正确。模型质量需要新标签，尤其是在输入或环境变化时。"
       }
     }
   ]
