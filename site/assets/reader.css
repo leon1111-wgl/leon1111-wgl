@@ -70,11 +70,14 @@ body.reader:before { display: none; }
 .reader .map-stage h3 { font: 600 12.5px/1.6 var(--sans); }
 .reader .map-nodes a { border-radius: 8px; }
 .reader .map-nodes a:hover { border-color: var(--accent); color: var(--text); }
-.topic-nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 18px; border-top: 1px dashed var(--line); font-size: 14px; }
-.topic-nav a { color: var(--muted); }
-.topic-nav a:hover { color: var(--text); }
-.topic-nav .next { padding: 8px 14px; border-radius: 999px; color: var(--text); background: var(--panel); border: 1px solid var(--line2); }
-.topic-nav .next:hover { border-color: var(--accent); }
+.topic-nav { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 14px; margin-top: 30px; padding-top: 18px; border-top: 1px dashed var(--line); font-size: 15px; line-height: 1.5; }
+.topic-nav .up { grid-column: 1 / -1; justify-self: start; color: var(--muted); }
+.topic-nav .up:hover { color: var(--text); }
+.topic-nav .prev, .topic-nav .next { display: block; padding: 12px 16px; border-radius: 12px; color: var(--text); background: var(--panel); border: 1px solid var(--line2); }
+.topic-nav .prev { grid-column: 1; }
+.topic-nav .next { grid-column: 2; text-align: right; }
+.topic-nav .prev:hover, .topic-nav .next:hover { border-color: var(--accent); }
+.topic-nav small { display: block; margin-bottom: 2px; font-size: 13px; color: var(--muted); }
 
 /* reading tools and footer */
 .reader .reading-tools { border-radius: 12px; }
@@ -89,8 +92,9 @@ body.reader:before { display: none; }
   .reader-back { font-size: 12px; padding: 5px 10px; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .reader-bar nav { gap: 8px; }
   .reader .language-switch { display: inline-flex; }
-  .topic-nav { flex-direction: column-reverse; align-items: stretch; }
-  .topic-nav .next { text-align: center; }
+  .topic-nav { grid-template-columns: minmax(0, 1fr); }
+  .topic-nav .next { grid-column: 1; grid-row: 2; text-align: left; }
+  .topic-nav .prev { grid-column: 1; grid-row: 3; }
 }
 @media print {
   .reader-bar, .topic-nav, .reader-back { display: none; }
@@ -300,3 +304,30 @@ body.reader { --accent: var(--course, #4c9bff); }
 }
 :root[data-theme=light] .viz-stage { background: #f7f8fa; }
 :root[data-theme=light] .chip.is-hot, :root[data-theme=light] .bar.is-hot { color: #111; }
+
+/* code: a calmer size and line height than body text, so programs read as programs */
+:root { --code-font: 15px; }
+:root[data-reading-size=large] { --code-font: 17px; }
+.reader .highlighted { line-height: 1.65; padding: 22px 24px; }
+.reader pre[tabindex]:focus-visible, .reader .trace-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.code-example.fits .code-hint { display: none; }
+@media (max-width: 760px) {
+  :root { --code-font: 13.5px; }
+  :root[data-reading-size=large] { --code-font: 15.5px; }
+  .reader .highlighted { padding: 16px; }
+}
+
+/* the end of a reading page: the courses before and after this one on the suggested route */
+.route-next { margin: 64px 0 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+.route-next header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; margin-bottom: 16px; }
+.route-next h2 { margin: 0; font-size: 20px; }
+.route-next header span { font-size: 14px; color: var(--muted); }
+.route-next .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.route-next .cards a { display: block; padding: 14px 16px; border: 1px solid var(--line2); border-left: 3px solid var(--c); border-radius: 12px; color: var(--text); text-decoration: none; }
+.route-next .cards a:hover { border-color: var(--c); }
+.route-next small { display: block; font-size: 13px; color: var(--muted); }
+.route-next b { display: block; margin-top: 4px; font-size: 16px; line-height: 1.5; }
+.route-next .code-chip { margin-right: 6px; }
+.route-next .lang-note { font-weight: 400; font-size: 14px; color: var(--muted); }
+.route-next .all { display: inline-block; margin-top: 14px; font-size: 15px; color: var(--accent); }
+@media print { .route-next { display: none; } }

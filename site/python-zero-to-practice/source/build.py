@@ -204,7 +204,24 @@ page=f'''<!doctype html>
 # Leon integration: keep the supplied teaching and learning-state keys.
 site_url = 'https://leon1111-wgl.github.io/leon1111-wgl/'
 portal = '<nav class="guoliang-portal" aria-label="Leon 学习资料"><a href="'+site_url+'learn/#/course/python"><strong>Leon</strong> · 学习中心 ↗</a><a href="'+site_url+'downloads/Python-Zero-to-Practice.zip" download>下载完整学习包 ↓</a><a href="textbook.md" download>文字版讲义 ↓</a></nav>'
-page = page.replace('<title>Python 零基础实操教程</title>', f'<title>Python — Zero to Practice | Leon</title><meta name="description" content="Leon 的 Python 中文自学教程：{len(CHAPTERS)} 个单元、{len(EXAMPLES)} 个示例、{len(EXERCISES)} 道自学练习和 {len(PROJECTS)} 个完整项目。">')
+# Search and sharing tags: absolute URLs, so link previews and crawlers resolve them from the portable copy too.
+page_url = site_url + 'python-zero-to-practice/index.html'
+page_title = 'Python 零基础实操教程（Python: Zero to Practice）'
+description = (f'Leon 的 Python 中文自学教程：{len(CHAPTERS)} 个单元、{len(EXAMPLES)} 个示例、{len(EXERCISES)} 道自学练习和 {len(PROJECTS)} 个完整项目。'
+               '写给零基础读者：从安装运行、变量、循环、函数，到文件、调试、类和数据处理，示例都能直接运行，练习有参考答案。')
+course_ld = json.dumps({'@context': 'https://schema.org', '@type': 'Course', 'name': 'Python 零基础实操教程', 'alternateName': 'Python: Zero to Practice',
+                        'description': description, 'url': page_url, 'inLanguage': 'zh-Hans', 'educationalLevel': 'Beginner', 'isAccessibleForFree': True,
+                        'provider': {'@type': 'Person', 'name': 'Leon Wang', 'url': site_url}, 'author': {'@type': 'Person', 'name': 'Leon Wang', 'url': site_url},
+                        'teaches': ['读懂并写出基础的 Python 程序', '处理文本、CSV 和 JSON 数据', '定位错误、调试并验证结果', f'独立完成 {len(PROJECTS)} 个综合项目']},
+                       ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+seo_tags = (f'<meta name="description" content="{ESC(description)}"><link rel="canonical" href="{page_url}">'
+            f'<meta property="og:type" content="website"><meta property="og:site_name" content="Leon Learn"><meta property="og:title" content="{ESC(page_title)}">'
+            f'<meta property="og:description" content="{ESC(description)}"><meta property="og:url" content="{page_url}">'
+            f'<meta property="og:image" content="{site_url}assets/og/learn.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
+            f'<meta property="og:locale" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{ESC(page_title)}">'
+            f'<meta name="twitter:description" content="{ESC(description)}"><meta name="twitter:image" content="{site_url}assets/og/learn.png">'
+            f'<script type="application/ld+json">{course_ld}</script>')
+page = page.replace('<title>Python 零基础实操教程</title>', f'<title>{ESC(page_title)} | Leon</title>{seo_tags}')
 page = page.replace('<main id="reading">', '<main id="reading">'+portal)
 page = page.replace('第一阶段 / CHAPTER', 'LEON / CHAPTER')
 page = page.replace(f'OFFLINE LEARNING KIT · v{VERSION}', f'LEON / PYTHON · ZERO TO PRACTICE · v{VERSION}')

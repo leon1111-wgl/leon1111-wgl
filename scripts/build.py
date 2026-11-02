@@ -3,6 +3,7 @@
 from pathlib import Path
 import html,json,re
 from build_paths import build_all
+import seo
 from teaching import run_notes,asset_version,glossary_html,teaching_html,teaching_markdown,reading_tools,export_examples
 ROOT=Path(__file__).resolve().parents[1]
 SITE=ROOT/'site'; CONTENT=ROOT/'content'
@@ -10,11 +11,11 @@ ORDER=['INFO1113','COMP2017','COMP2123','COMP2022','COMP3308']
 E=lambda x:html.escape(str(x),quote=True)
 def para(x):return ''.join('<p>'+E(p).replace('\n','<br>')+'</p>' for p in x.split('\n\n') if p)
 def badge(x):return f'<span class="pill">{E(x)}</span>'
-def shell(title,body,depth=0,description='Computer science, research and study notes by Leon Wang.',course=False):
+def shell(title,body,depth=0,description='Computer science, research and study notes by Leon Wang.',course=False,head=''):
  base='../'*depth
  gh=f'<a class="nav-github" href="{E(profile["github"])}">GitHub ↗</a>' if profile['github'] else ''
  return f'''<!doctype html>
-<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="{E(description)}"><meta name="theme-color" content="#090e17"><meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(description)}"><meta property="og:type" content="website"><title>{E(title)} | Leon</title><link rel="icon" href="{base}assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="{base}assets/style.css?v={asset_version("style.css")}"><script defer src="{base}assets/app.js?v={asset_version("app.js")}"></script></head><body><a class="skip" href="#main">Skip to content</a><header class="topbar"><div class="wrap"><a class="brand" href="{base}index.html" translate="no"><span class="monogram">LW</span> Leon<span style="color:var(--accent)">.</span></a><nav aria-label="Main navigation"><a href="{base}index.html#projects">Projects</a><a href="{base}learn/">Learning</a><a class="nav-research" href="{base}index.html#research">Research</a><a href="{base}index.html#about">About</a>{gh}<button class="theme-button" type="button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap">{body}<footer class="footer"><div><span class="watermark">Leon</span><br>Research, ideas & learning in public.</div><div>Original explanations · Computer science & AI<br><a href="{base}learn/">Open the learning hub ↗</a></div><span>© 2026 Leon Wang</span></footer></main></body></html>'''
+<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="{E(description)}"><meta name="theme-color" content="#090e17"><title>{E(title)} | Leon</title>{head}<link rel="icon" href="{base}assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="{base}assets/style.css?v={asset_version("style.css")}"><script defer src="{base}assets/app.js?v={asset_version("app.js")}"></script></head><body><a class="skip" href="#main">Skip to content</a><header class="topbar"><div class="wrap"><a class="brand" href="{base}index.html" translate="no"><span class="monogram">LW</span> Leon<span style="color:var(--accent)">.</span></a><nav aria-label="Main navigation"><a href="{base}index.html#projects">Projects</a><a href="{base}learn/">Learning</a><a class="nav-research" href="{base}index.html#research">Research</a><a href="{base}index.html#about">About</a>{gh}<button class="theme-button" type="button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap">{body}<footer class="footer"><div><span class="watermark">Leon</span><br>Research, ideas & learning in public.</div><div>Original explanations · Computer science & AI<br><a href="{base}learn/">Open the learning hub ↗</a></div><span>© 2026 Leon Wang</span></footer></main></body></html>'''
 def orbital():
  return '''<div class="orbital" aria-label="Diagram connecting research, systems and learning"><svg viewBox="0 0 460 365" role="img" aria-labelledby="orbitTitle"><title id="orbitTitle">Ideas connect across research, systems and learning</title><defs><radialGradient id="glow"><stop stop-color="#b8ee91" stop-opacity=".09"/><stop offset="1" stop-color="#b8ee91" stop-opacity="0"/></radialGradient></defs><circle cx="236" cy="178" r="177" fill="url(#glow)"/><circle class="orbit" cx="236" cy="178" r="155"/><circle class="orbit" cx="236" cy="178" r="118" stroke-dasharray="3 8"/><ellipse class="orbit" cx="236" cy="178" rx="181" ry="78" transform="rotate(-35 236 178)"/><ellipse class="orbit" cx="236" cy="178" rx="181" ry="78" transform="rotate(35 236 178)"/><path class="path" d="M117 79L358 100L367 245L150 297L117 79M117 79L367 245M358 100L150 297"/><circle class="dot" cx="117" cy="79" r="4"/><circle class="dot" cx="358" cy="100" r="4"/><circle class="dot" cx="367" cy="245" r="4"/><circle class="dot" cx="150" cy="297" r="4"/><circle class="core" cx="236" cy="178" r="52"/><text class="core-label" x="236" y="178" text-anchor="middle">LW</text><text class="core-sub" x="236" y="197" text-anchor="middle">CONNECT IDEAS</text><text x="55" y="61">MULTIMODAL AI</text><text x="335" y="80">SYSTEMS</text><text x="341" y="268">REASONING</text><text x="70" y="320">LEARNING</text><text x="231" y="31" font-size="8">01 / EXPLORE</text></svg><span class="figure-caption">RESEARCH × FOUNDATIONS × EXPLANATION</span></div>'''
 PROJECTS=[
@@ -39,6 +40,15 @@ def hub_panel():
 def live_line():
  n=sum(1 for p in PROJECTS if p['demo'])
  return 'Six projects, each with a live demo.' if n==len(PROJECTS) else f"Six projects, {['no','one','two','three','four','five'][n]} with live demos so far."
+def person_data():
+ """schema.org Person and WebSite for the homepage, from the facts in content/profile.json."""
+ schools={x['institution'] for x in profile['education']}
+ assert {'The University of Hong Kong','The University of Sydney'}<=schools
+ me={'@type':'Person','@id':seo.url('#leon'),'name':profile['name'],'url':seo.url(),'sameAs':[profile['github']],'description':profile['bio'],
+  'affiliation':{'@type':'CollegeOrUniversity','name':'The University of Hong Kong'},'alumniOf':{'@type':'CollegeOrUniversity','name':'The University of Sydney'},
+  'knowsAbout':['Spatial intelligence','Multimodal long-video understanding and grounding','Enterprise AI agent applications','Multimodal evaluation'],'knowsLanguage':['zh','en']}
+ site={'@type':'WebSite','name':'Leon Wang','url':seo.url(),'inLanguage':['en','zh-Hans'],'author':{'@id':seo.url('#leon')}}
+ return {'@context':'https://schema.org','@graph':[site,me]}
 def home(courses,guides):
  r=profile['research']
  ed=''.join(f'<li><time>{E(x["period"])}</time><h3>{E(x["institution"])}</h3><p>{E(x["degree"])}<br>{E(x["detail"])}</p></li>' for x in profile['education'])
@@ -48,7 +58,12 @@ def home(courses,guides):
 {projects}{hub_panel()}
 <section id="research" class="section"><div class="section-head"><div><span class="number">03 / SELECTED RESEARCH</span><h2>Answers should come with evidence.</h2></div></div><article class="research-panel"><div>{badge(r['venue'])}<h3>{E(r['title'])}</h3><p>{E(r['summary'])}</p><a class="text-link" href="{E(r['url'])}">Read the publication ↗</a></div><div class="research-side"><h4>My contribution</h4><p>{E(r['contribution'])}</p><p><span class="pill">Long video</span><span class="pill">Evaluation</span></p></div></article></section>
 <section id="about" class="section"><div class="section-head"><div><span class="number">04 / A LITTLE CONTEXT</span><h2>A background built across disciplines.</h2></div><p>I use stories, small examples, and careful definitions to make technical ideas easier to revisit.</p></div><div class="about-grid"><div><p class="eyebrow">EDUCATION</p><ul class="timeline">{ed}</ul><div class="skills">{''.join(f'<span>{E(s)}</span>' for s in profile['skills'])}</div><p>{E(profile['languages'])}</p></div><div><p class="eyebrow">EXPERIENCE</p><ul class="timeline">{exp}</ul><a class="text-link" href="mailto:{E(profile['email'])}">Get in touch ↗</a></div></div></section>'''
- (SITE/'index.html').write_text(shell('Leon Wang — AI Applications, Research & Learning',body,description='Applied AI projects, research and a bilingual learning hub by Leon Wang.'))
+ title='Leon Wang — AI Applications, Research & Learning'
+ count=['no','one','two','three','four','five','six','seven','eight','nine'][len(PROJECTS)]
+ demos=' with live demos' if all(p['demo'] for p in PROJECTS) else ''
+ description=f"Leon Wang, MSc student at HKU: {count} applied AI projects{demos} ({', '.join(p['tag'] for p in PROJECTS)}), AAAI 2025 research on long-video grounding, and a free bilingual coding and AI learning hub."
+ tags=seo.head('',title,description,'en',image=seo.OG_HOME,image_alt='Leon Wang: applied AI projects, research and a bilingual learning hub',data=person_data(),site_name='Leon Wang')
+ (SITE/'index.html').write_text(shell(title,body,description=description,head=tags))
 from build_courses import course
 def readme(courses,guides):
  from build_profile import build_profile

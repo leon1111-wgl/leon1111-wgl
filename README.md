@@ -9,6 +9,8 @@
   <a href="mailto:zetongw6@gmail.com">Contact</a>
 </p>
 
+<p align="center">HKU MSc student · AAAI 2025 paper on evidence-grounded long-video understanding · applied AI projects with live demos · a free bilingual coding and AI learning hub<br>港大硕士在读 · AAAI 2025 长视频证据定位论文 · 可在线体验的 AI 应用项目 · 免费中英双语编程与 AI 教程</p>
+
 ## Background
 
 <img src="site/assets/profile-background.svg" width="100%" alt="Experience, oldest first: AI Algorithm Intern at Shenzhen Beidou Applied Technology Research Institute (video anomaly event detection for China Resources property management); Intern at Hua Xia Bank, branch office (credit due-diligence assistant agent; client requirements); ongoing research at the Chinese Academy of Sciences, Beijing, and at Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences. Education: The University of Hong Kong, MSc (2026 –); The University of Sydney, Finance and Computer Science (Dalyell Scholar); Zhejiang University, short-term exchange. Research: spatial intelligence; multimodal long-video understanding and grounding; embodied AI (future); enterprise AI agent applications." />
@@ -23,15 +25,17 @@
 
 <a href="https://leon1111-wgl.github.io/leon1111-wgl/learn/"><img src="site/assets/profile-learn.svg" width="100%" alt="Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、356 份可运行代码。点击进入。" /></a>
 
+<sub>关键词 · Keywords：Python 零基础教程 · Java 面向对象 · C 语言与系统编程 · 算法与数据结构 · 计算理论 · 机器学习 · 深度学习 · 计算机视觉 · 多模态 · 中英双语 · free bilingual programming and AI tutorials with runnable code</sub>
+
 | | | |
 | :--- | :--- | :--- |
-| `INFO1110` | **Python 零基础实操**<br>19 个单元、105 个可运行示例、114 道练习、4 个小项目 | [课程页](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/python) |
-| `INFO1113` | **Java 面向对象编程**<br>23 章：对象、集合、泛型、异常、测试与应用设计 | [课程页](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/info1113)&nbsp;·&nbsp;[速查表](https://leon1111-wgl.github.io/leon1111-wgl/downloads/INFO1113-cheatsheet.pdf) |
-| `COMP2123` | **算法设计与分析**<br>26 章：图算法、贪心、分治与随机化 | [课程页](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2123)&nbsp;·&nbsp;[速查表](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2123-cheatsheet.pdf) |
-| `COMP2017` | **系统编程：C、进程与并发**<br>24 章、57 个独立程序，外加 3 个完整工程项目 | [课程页](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2017)&nbsp;·&nbsp;[速查表](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2017-cheatsheet.pdf) |
-| `COMP2022` | **计算模型：语言、机器与逻辑**<br>24 章：自动机、文法、可计算性与逻辑 | [课程页](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2022)&nbsp;·&nbsp;[速查表](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2022-cheatsheet.pdf) |
-| `COMP3308` | **人工智能：搜索、推理与学习**<br>24 章：搜索、博弈、神经网络、概率推理与聚类 | [课程页](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp3308)&nbsp;·&nbsp;[速查表](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP3308-cheatsheet.pdf) |
-| `AI` | **AI 学习路线**<br>入门 8 讲；机器学习、深度学习、计算机视觉、多模态各 16 讲 | [入门](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/start) · [ML](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/ml) · [DL](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/dl) · [CV](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/vision) · [多模态](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/multimodal) |
+| `INFO1110` | **[Python 零基础实操](https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html)**<br>19 个单元、105 个可运行示例、114 道练习、4 个小项目 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/python) |
+| `INFO1113` | **[Java 面向对象编程](https://leon1111-wgl.github.io/leon1111-wgl/courses/info1113.zh.html)**<br>23 章：对象、集合、泛型、异常、测试与应用设计 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/info1113)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/info1113.html)&nbsp;·&nbsp;[INFO1113 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/INFO1113-cheatsheet.pdf) |
+| `COMP2123` | **[算法设计与分析](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2123.zh.html)**<br>26 章：图算法、贪心、分治与随机化 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2123)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2123.html)&nbsp;·&nbsp;[COMP2123 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2123-cheatsheet.pdf) |
+| `COMP2017` | **[系统编程：C、进程与并发](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.zh.html)**<br>24 章、57 个独立程序，外加 3 个完整工程项目 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2017)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.html)&nbsp;·&nbsp;[COMP2017 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2017-cheatsheet.pdf) |
+| `COMP2022` | **[计算模型：语言、机器与逻辑](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2022.zh.html)**<br>24 章：自动机、文法、可计算性与逻辑 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2022)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2022.html)&nbsp;·&nbsp;[COMP2022 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2022-cheatsheet.pdf) |
+| `COMP3308` | **[人工智能：搜索、推理与学习](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp3308.zh.html)**<br>24 章：搜索、博弈、神经网络、概率推理与聚类 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp3308)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp3308.html)&nbsp;·&nbsp;[COMP3308 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP3308-cheatsheet.pdf) |
+| `AI` | **[AI 学习路线](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/route)**<br>入门 8 讲；机器学习、深度学习、计算机视觉、多模态各 16 讲 | [AI 入门 8 讲](https://leon1111-wgl.github.io/leon1111-wgl/ai/start.zh.html) · [机器学习](https://leon1111-wgl.github.io/leon1111-wgl/ai/ml.zh.html) · [深度学习](https://leon1111-wgl.github.io/leon1111-wgl/ai/dl.zh.html) · [计算机视觉](https://leon1111-wgl.github.io/leon1111-wgl/ai/vision.zh.html) · [多模态](https://leon1111-wgl.github.io/leon1111-wgl/ai/multimodal.zh.html) |
 
 <sub>[进入学习中心 ↗](https://leon1111-wgl.github.io/leon1111-wgl/learn/)&nbsp;·&nbsp;[学习路线](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/route)&nbsp;·&nbsp;[速查表合集 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/guoliang-cheatsheet-collection.pdf)</sub>
 

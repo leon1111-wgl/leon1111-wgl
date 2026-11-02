@@ -1,4 +1,5 @@
-/* Learning hub. Dark workspace theme, system fonts only. Colours are tokens on :root. */
+/* Learning hub. Dark workspace theme by default, a light theme shared with the reading pages
+   (data-theme on <html>), system fonts only. Colours are tokens on :root. */
 
 :root {
   color-scheme: dark;
@@ -11,7 +12,13 @@
   --text: #eceef2;
   --text-2: #b9bfca;
   --muted: #8d95a3;
-  --faint: #6b7280;
+  --faint: #7d8594;
+  --bar: rgb(11 13 18 / 90%);
+  --bar-solid: rgb(11 13 18 / 98%);
+  --float: rgb(14 14 14 / 82%);
+  --grid-line: rgb(255 255 255 / 4%);
+  --invert-bg: #fff;
+  --invert-text: #000;
   --brand: #4c9bff;
   --brand-strong: #1e6bff;
   --brand-soft: rgb(30 107 255 / 14%);
@@ -53,17 +60,17 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 .btn.lg { height: 46px; padding: 0 24px; font-size: 15px; }
 .btn.primary { background: var(--brand-strong); color: #fff; }
 .btn.primary:hover { background: #3a7fff; }
-.btn.light { background: #fff; color: #000; }
-.btn.light:hover { background: #e6e6e6; }
+.btn.light { background: var(--invert-bg); color: var(--invert-text); }
+.btn.light:hover { opacity: .88; }
 .btn.ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--line-2); }
-.btn.ghost:hover { border-color: #4a4a4a; background: var(--panel-3); }
+.btn.ghost:hover { border-color: var(--faint); background: var(--panel-3); }
 .btn.sm { height: 30px; padding: 0 12px; font-size: 12px; }
 .tag { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; border-radius: 6px; font-size: 11.5px; font-weight: 500; color: var(--text-2); background: var(--panel-3); white-space: nowrap; }
 .tag.accent { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .code { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .3px; color: var(--accent); }
 .segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); }
 .segmented button { height: 26px; padding: 0 11px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--muted); }
-.segmented button[aria-pressed="true"] { background: #fff; color: #000; }
+.segmented button[aria-pressed="true"] { background: var(--invert-bg); color: var(--invert-text); }
 .lang { display: inline-flex; align-items: center; gap: 6px; }
 .lang > svg.i { color: var(--muted); width: 15px; height: 15px; }
 .icon-tile { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel-2)); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
@@ -83,11 +90,11 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
   background: radial-gradient(ellipse 45% 40% at 80% 14%, rgb(30 107 255 / 20%), transparent 70%),
     radial-gradient(ellipse 35% 35% at 96% 60%, rgb(192 132 252 / 14%), transparent 70%),
     radial-gradient(ellipse 30% 30% at 12% 10%, rgb(45 212 191 / 9%), transparent 70%),
-    linear-gradient(90deg, rgb(255 255 255 / 4%) 1px, transparent 1px) 0 0 / 64px 64px,
-    linear-gradient(rgb(255 255 255 / 4%) 1px, transparent 1px) 0 0 / 64px 64px;
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 64px 64px,
+    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 64px 64px;
   -webkit-mask-image: linear-gradient(#000 0, #000 640px, transparent 1000px); mask-image: linear-gradient(#000 0, #000 640px, transparent 1000px); }
 .intro-page > * { position: relative; z-index: 1; }
-.intro-bar { position: fixed; z-index: 60; top: 12px; left: 16px; right: 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 54px; padding: 0 10px 0 16px; border-radius: 16px; background: rgb(14 14 14 / 82%); border: 1px solid var(--line-2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.intro-bar { position: fixed; z-index: 60; top: 12px; left: 16px; right: 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 54px; padding: 0 10px 0 16px; border-radius: 16px; background: var(--float); border: 1px solid var(--line-2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; letter-spacing: -.2px; white-space: nowrap; }
 .brand .mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--brand-strong); color: #fff; font: 700 12px/1 var(--mono); letter-spacing: .5px; }
 .brand small { font-size: 13px; font-weight: 500; color: var(--muted); }
@@ -100,7 +107,7 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 .hero { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 48px; align-items: center; max-width: 1240px; margin: 0 auto; padding: 150px 40px 72px; }
 .hero h1 { font-size: clamp(42px, 5.6vw, 76px); line-height: 1.12; font-weight: 800; letter-spacing: -1.5px; }
 :lang(zh-Hans) .hero h1 { letter-spacing: 1px; }
-.hero h1 .hl { display: inline-block; white-space: nowrap; margin-top: 10px; padding: 2px 18px 8px; border-radius: 16px; background: linear-gradient(100deg, #1e6bff, #6d5dfc 55%, #c084fc); box-shadow: 0 18px 50px -18px rgb(109 93 252 / 60%); }
+.hero h1 .hl { display: inline-block; color: #fff; white-space: nowrap; margin-top: 10px; padding: 2px 18px 8px; border-radius: 16px; background: linear-gradient(100deg, #1e6bff, #6d5dfc 55%, #c084fc); box-shadow: 0 18px 50px -18px rgb(109 93 252 / 60%); }
 .hero .lead { margin-top: 26px; max-width: 560px; font-size: 16.5px; line-height: 1.85; color: var(--text-2); }
 .hero .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 .skip-intro { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 12.5px; color: var(--muted); cursor: pointer; user-select: none; }
@@ -172,7 +179,7 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 .intro-end p { margin-top: 6px; color: var(--muted); }
 
 /* ---------------------------------------------------------------- workspace */
-.topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 28px; height: var(--topbar); padding: 0 24px; background: rgb(0 0 0 / 90%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 28px; height: var(--topbar); padding: 0 24px; background: var(--bar); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .main-nav { display: flex; align-self: stretch; gap: 4px; }
 .nav-item { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; font-size: 13.5px; color: var(--muted); transition: color .15s; }
 .nav-item:hover { color: var(--text); }
@@ -255,7 +262,7 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 .chapter .alt { display: block; margin-top: 1px; font-size: 12px; color: var(--muted); }
 .chapter .langs { display: flex; gap: 4px; }
 .chapter .langs a { padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; color: var(--muted); border: 1px solid var(--line-2); }
-.chapter .langs a:hover { color: #fff; border-color: var(--brand); background: var(--brand-soft); }
+.chapter .langs a:hover { color: var(--text); border-color: var(--brand); background: var(--brand-soft); }
 .chapter.current { background: var(--brand-soft); }
 .chapter.current .no { color: var(--brand); }
 
@@ -310,7 +317,10 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
   .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 120px; }
   .tracks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .detail-grid { grid-template-columns: minmax(0, 1fr); }
-  .side { position: static; }
+  /* on narrow screens the reading actions come before the long chapter list, the rest after it */
+  .side { display: contents; }
+  .side > :first-child { order: -1; }
+  .side > :not(:first-child) { order: 1; }
   .mine-grid { grid-template-columns: minmax(0, 1fr); }
   .how-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -333,9 +343,9 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 }
 @media (max-width: 760px) {
   /* a backdrop filter would make the top bar the containing block of the fixed tab bar */
-  .topbar { gap: 12px; padding: 0 16px; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(11 13 18 / 98%); }
+  .topbar { gap: 12px; padding: 0 16px; backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--bar-solid); }
   .topbar .brand small, .top-link { display: none; }
-  .main-nav { position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; height: 60px; padding: 0 6px env(safe-area-inset-bottom); justify-content: space-around; gap: 0; background: rgb(10 10 10 / 96%); border-top: 1px solid var(--line); backdrop-filter: blur(10px); }
+  .main-nav { position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; height: 60px; padding: 0 6px env(safe-area-inset-bottom); justify-content: space-around; gap: 0; background: var(--bar-solid); border-top: 1px solid var(--line); backdrop-filter: blur(10px); }
   .nav-item { flex: 1; flex-direction: column; justify-content: center; gap: 3px; padding: 0; font-size: 11px; }
   .nav-item.active::after { top: -1px; bottom: auto; left: 30%; right: 30%; }
   .nav-long { display: none; }
@@ -435,4 +445,78 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
   .map-caption .btn { display: none; }
   .stage-bar { flex-direction: column; gap: 10px; padding: 0 18px 18px; }
   .stage-bar span { flex: none !important; }
+}
+
+/* ---------------------------------------------------------------- search, route links, small controls */
+.icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 999px; color: var(--text-2); background: var(--panel-2); border: 1px solid var(--line); }
+.icon-btn:hover { color: var(--text); border-color: var(--line-2); }
+.icon-btn svg.i { width: 16px; height: 16px; }
+.skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; height: 36px; padding: 0 14px; border-radius: 8px; background: var(--brand-strong); color: #fff; font-size: 13px; font-weight: 600; transform: translateY(-160%); }
+.skip-link:focus { transform: none; }
+[tabindex="-1"]:focus { outline: none; }
+.search kbd { padding: 2px 6px; border-radius: 5px; font: 600 11px/1.3 var(--mono); color: var(--muted); border: 1px solid var(--line-2); }
+.search:focus-within kbd { display: none; }
+mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
+.hits { margin-top: 16px; }
+.hit-list { list-style: none; margin: 0; padding: 6px 0; }
+.hit-list a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 18px; }
+.hit-list a:hover { background: var(--panel-2); }
+.hit-list small { display: block; font-size: 12px; color: var(--muted); }
+.hit-list b { display: block; font-size: 14px; font-weight: 600; }
+.hit-list em { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.hit-list a > svg.i { color: var(--faint); }
+.hits-more { padding: 4px 18px 16px; font-size: 12.5px; color: var(--muted); }
+.progress-line.wide, .route-card .progress-line { width: 100%; margin-top: 10px; }
+.route-link { display: block; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); }
+.route-link:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+.route-link small { display: block; font-size: 12px; font-weight: 600; color: var(--accent); }
+.route-link b { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; }
+.peers { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12.5px; }
+.peers small { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.peers a { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--text-2); }
+.peers a:hover { border-color: var(--accent); color: var(--text); }
+.text-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--brand); }
+.text-link svg.i { width: 15px; height: 15px; }
+.route-card .tag { margin-left: 4px; vertical-align: 1px; }
+@media (max-width: 760px) {
+  .search kbd { display: none; }
+  .hit-list a { padding: 10px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
+
+/* ---------------------------------------------------------------- light theme */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6fa;
+  --panel: #fff;
+  --panel-2: #f3f5f9;
+  --panel-3: #e7eaf0;
+  --line: #e1e5ec;
+  --line-2: #cbd2dc;
+  --text: #11141b;
+  --text-2: #394150;
+  --muted: #586172;
+  --faint: #677080;
+  --brand: #1a5fe6;
+  --brand-soft: rgb(30 107 255 / 9%);
+  --bar: rgb(255 255 255 / 92%);
+  --bar-solid: rgb(255 255 255 / 98%);
+  --float: rgb(255 255 255 / 88%);
+  --grid-line: rgb(17 20 27 / 5%);
+  --invert-bg: #11141b;
+  --invert-text: #fff;
+}
+/* course colours are tuned for the dark theme; on white, text in a course colour is darkened to stay readable */
+:root[data-theme="light"] :is(.code, .tag.accent, .stage-head h3, .resume small, .resume svg.i, .icon-tile[style], .route-link small, .chapter.current .no) { color: color-mix(in srgb, var(--accent) 55%, #0d1017); }
+:root[data-theme="light"] .progress-line i { background: color-mix(in srgb, var(--accent) 75%, #0d1017); }
+:root[data-theme="light"] .star[aria-pressed="true"] { color: #b7791f; }
+:root[data-theme="light"] mark { background: #d6e4ff; }
+:root[data-theme="light"] .panel, :root[data-theme="light"] .faq details { box-shadow: 0 1px 2px rgb(17 20 27 / 4%); }
+/* the learning map stays a night map in both themes */
+:root[data-theme="light"] .map-card {
+  --panel: #12151c; --panel-2: #181c25; --panel-3: #222733; --line: #20242e; --line-2: #303644;
+  --text: #eceef2; --text-2: #b9bfca; --muted: #8d95a3; --faint: #7d8594; --brand: #4c9bff; --invert-bg: #fff; --invert-text: #000;
+  color: var(--text);
 }

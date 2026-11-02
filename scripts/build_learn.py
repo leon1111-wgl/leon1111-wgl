@@ -7,8 +7,10 @@ from pathlib import Path
 from html import escape as E
 import json
 import re
+from functools import lru_cache
 
 from palette import COURSE_COLORS
+import seo
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / 'site'
@@ -198,6 +200,38 @@ def catalogue():
             'collection': 'downloads/guoliang-cheatsheet-collection.pdf'}
 
 
+ROUTE_LABELS = {
+    'en': {'title': 'On the learning route', 'stop': 'Stop {k} of {n}', 'prev': 'Before this', 'next': 'Next',
+           'all': 'See the whole route', 'zh_only': 'in Chinese'},
+    'zh': {'title': '在学习路线上', 'stop': '第 {k} / {n} 站', 'prev': '上一站', 'next': '下一站',
+           'all': '查看完整路线', 'zh_only': '中文'},
+}
+
+
+@lru_cache(maxsize=None)
+def _catalogue():
+    return catalogue()
+
+
+def route_html(cid, lang):
+    """The end of a reading page: the courses before and after this one on the suggested route."""
+    data = _catalogue()
+    order = [x for r in data['route'] for x in r['courses']]
+    by = {c['id']: c for c in data['courses']}
+    lab = ROUTE_LABELS[lang]
+    k = order.index(cid)
+
+    def card(other, label):
+        edition = lang if lang in other['read'] else other['langs'][0]
+        note = f' <span class="lang-note">· {lab["zh_only"]}</span>' if edition != lang else ''
+        return (f'<a href="../{other["read"][edition]}" style="--c:{other["color"]}"><small>{label}</small>'
+                f'<b><span class="code-chip">{E(other["code"])}</span> {E(other["title"][lang])}{note}</b></a>')
+    cards = (card(by[order[k - 1]], lab['prev']) if k else '') + (card(by[order[k + 1]], lab['next']) if k + 1 < len(order) else '')
+    return (f'<nav class="route-next" aria-label="{lab["title"]}"><header><h2>{lab["title"]}</h2>'
+            f'<span>{lab["stop"].format(k=k + 1, n=len(order))}</span></header><div class="cards">{cards}</div>'
+            f'<a class="all" href="../learn/#/route">{lab["all"]} ↗</a></nav>')
+
+
 def version(name):
     from hashlib import sha256
     return sha256((SITE / 'learn' / name).read_bytes()).hexdigest()[:12]
@@ -208,18 +242,33 @@ def build():
     links = ''.join(f'<li><a href="../{E(c["read"]["zh"])}">{E(c["code"])} · {E(c["title"]["zh"])}</a></li>'
                     for c in data['courses'])
     payload = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+    title = 'Leon 学习中心 · 从零学编程：Python、Java、C、算法与 AI（中英双语）'
+    t = data['totals']
+    description = (f'从零开始的中英双语编程与 AI 教程：{t["courses"]} 门课程与学习路线、{t["chapters"]} 章、'
+                   f'{t["programs"]} 份可运行代码。Python、Java、C、算法、计算理论、机器学习、深度学习、计算机视觉与多模态。'
+                   '每章有故事、原理、公式、例子和代码。')
+    # the hub's catalogue for search engines: one entry per course, pointing at its static reading page
+    ld = {'@context': 'https://schema.org', '@graph': [
+        {'@type': 'CollectionPage', 'name': title, 'description': description, 'url': seo.url('learn/'),
+         'inLanguage': ['zh-Hans', 'en'], 'author': seo.AUTHOR},
+        {'@type': 'ItemList', 'name': 'Leon 学习中心课程目录 · Course catalogue', 'numberOfItems': len(data['courses']),
+         'itemListElement': [{'@type': 'ListItem', 'position': i, 'url': seo.url(c['read']['zh']),
+                              'name': f"{c['title']['zh']} · {c['title']['en']}"} for i, c in enumerate(data['courses'], 1)]}]}
+    tags = seo.head('learn/', title, description, 'zh', image=seo.OG_LEARN,
+                    image_alt='Leon 学习中心：学习地图上每门课是一座小屋，沿推荐顺序连成一条路', data=ld)
     page = f'''<!doctype html>
-<html lang="zh-Hans"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Leon 学习中心 · 中英双语编程与 AI 教程</title>
-<meta name="description" content="从零开始的中英双语编程与 AI 教程：Python、Java、C、算法、计算理论和人工智能。每章有故事、原理、公式、例子和可运行代码。">
-<meta name="theme-color" content="#000000"><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<html lang="zh-Hans" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{E(title)}</title>
+<meta name="description" content="{E(description)}">
+{tags}
+<script>try{{if(localStorage.getItem('guoliang-theme')==='light')document.documentElement.dataset.theme='light'}}catch(e){{}}</script>
+<meta name="theme-color" content="#0b0d12"><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="learn.css?v={version('learn.css')}">
 <script id="learn-data" type="application/json">{payload}</script>
 <script defer src="learn.js?v={version('learn.js')}"></script>
 </head><body><div id="app"><noscript><main class="noscript"><h1>Leon 学习中心</h1><p>请启用 JavaScript 使用课程目录。也可以直接打开：</p><ul>{links}</ul></main></noscript></div></body></html>
 '''
     (SITE / 'learn' / 'index.html').write_text(page)
-    t = data['totals']
     print(f"learn hub: {t['courses']} courses, {t['chapters']} chapters, {t['programs']} programs")
 
 

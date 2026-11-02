@@ -43,6 +43,15 @@
     setTheme(theme);
     try { localStorage.setItem('guoliang-theme', theme); } catch (_) {}
   });
+  // the "scroll sideways" hint only shows where a program is wider than its box
+  const fit = () => document.querySelectorAll('.code-example').forEach(example => {
+    const pre = example.querySelector('pre.code');
+    if (pre) example.classList.toggle('fits', pre.scrollWidth <= pre.clientWidth + 1);
+  });
+  fit();
+  let refit;
+  window.addEventListener('resize', () => { clearTimeout(refit); refit = setTimeout(fit, 200); });
+  document.addEventListener('click', event => { if (event.target.closest('[data-reading-size]')) requestAnimationFrame(fit); });
   const toc = document.querySelector('.toc details');
   if (toc && window.matchMedia('(max-width: 1000px)').matches) toc.open = false;
   document.querySelector('[data-print]')?.addEventListener('click', () => window.print());

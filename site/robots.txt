@@ -1,0 +1,6 @@
+# This site is a GitHub Pages project site under /leon1111-wgl/. Crawlers only read robots.txt at the
+# root of a host, so this copy just names the sitemap for tools that look here.
+User-agent: *
+Allow: /
+
+Sitemap: https://leon1111-wgl.github.io/leon1111-wgl/sitemap.xml

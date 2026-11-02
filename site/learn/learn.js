@@ -15,6 +15,10 @@
   const langKey = 'guoliang-language'; // shared with the reading pages
   let lang = (() => { try { return localStorage.getItem(langKey) === 'en' ? 'en' : 'zh'; } catch (_) { return 'zh'; } })();
   const setLang = (l) => { lang = l; try { localStorage.setItem(langKey, l); } catch (_) { /* private mode */ } };
+  const themeKey = 'guoliang-theme'; // shared with the reading pages and the homepage
+  let theme = (() => { try { return localStorage.getItem(themeKey) === 'light' ? 'light' : 'dark'; } catch (_) { return 'dark'; } })();
+  const setTheme = (next) => { theme = next; try { localStorage.setItem(themeKey, next); } catch (_) { /* private mode */ } };
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stars = () => store.get('leon-learn-stars', []);
   const recent = () => store.get('leon-learn-recent', []).filter((id) => BY_ID[id]);
   const progress = () => store.get('leon-learn-progress', { courses: {} });
@@ -49,15 +53,21 @@
         ['我完全没学过编程，从哪开始？', '从「Python 零基础实操」开始，第 0 单元会带你把第一段程序跑起来。之后读「AI 入门 8 讲」，补上向量、概率和梯度的直觉，再按学习路线往下走。'],
         ['中文版和英文版内容一样吗？', '五门课程和五条 AI 路线都有完整的中英文版本，章节一一对应，阅读时可以在右上角随时切换，会停在同一章。「Python 零基础实操」目前只有中文。'],
         ['需要安装什么？', 'Python 课程需要 Python 3.12 或更新版本；Java 课程需要 JDK 8 或更新版本；C 课程需要 gcc 或 clang。每门课开头都写了安装和运行步骤。'],
-        ['速查表怎么用？', '学完一门课后用来复习。网页版的每一条都能点回对应章节；PDF 版是一页纸，适合打印（英文）。'],
+        ['速查表怎么用？', '学完一门课后用来复习。AI 路线的复习页每一条都能点回对应章节；五门课程的速查表有网页版，PDF 版是一页纸，适合打印（英文）。'],
         ['我的进度保存在哪里？', '收藏、最近浏览和上次读到的位置只保存在你自己的浏览器里，不会上传。换电脑或清除浏览器数据后会消失。'],
         ['这些是官方课程吗？', '不是。课程编号只表示内容对应的课程方向。这些是独立整理的学习笔记，不是官方教材，也不包含作业或考试材料。'],
       ],
       endTitle: '准备好了就开始', endSub: '从第一章开始，或者直接挑一门感兴趣的课。',
       listSub: (n, ch) => `${n} 门课程与学习路线 · 共 ${ch} 章`,
-      all: '全部', search: '搜索课程或编号', colCourse: '课程', colChapters: '章节', colCode: '代码', colLang: '语言',
+      all: '全部', search: '搜索课程、章节或编号', colCourse: '课程',
+      chapterHits: '匹配的章节', hitCount: (n) => `${n} 个章节`, chapterNo: (n) => `第 ${n} 章`,
+      hitsMore: (n) => `只显示前 ${n} 个。换一个更具体的词可以缩小范围。`, noChapter: '没有章节标题包含这个词。',
+      status: (a, b) => `${a} 门课程、${b} 个章节匹配`,
+      onRoute: '在学习路线上', routeStop: (k, n) => `第 ${k} / ${n} 站`, prevCourse: '上一站', nextCourse: '下一站',
+      sameStage: (s) => `同在「${s}」阶段`, seeRoute: '查看完整路线', progressOf: (a, n) => `读到第 ${a} 章 · 共 ${n} 章`,
+      toLight: '切换到浅色主题', toDark: '切换到深色主题', skipMain: '跳到正文', colChapters: '章节', colCode: '代码', colLang: '语言',
       chaptersUnit: '章', programsUnit: '份', bilingual: '中英双语', zhOnly: '仅中文', both: '中 · EN',
-      read: '阅读', details: '详情', star: '收藏', unstar: '取消收藏', noMatch: '没有找到匹配的课程。',
+      read: '阅读', details: '详情', star: '收藏', unstar: '取消收藏', noMatch: '没有找到匹配的课程。', noCourseOnly: '没有课程名称匹配；标题里含这个词的章节在下面。',
       readTo: (n) => `读到第 ${n} 章`,
       facts: { chapters: '章节', programs: '可运行代码', problems: '推导例题', exercises: '练习', projects: '综合项目', language: '语言' },
       toc: '章节目录', chaptersCount: (n) => `${n} 章`,
@@ -66,7 +76,7 @@
       notesMd: '下载讲义（Markdown）', notesZip: '下载完整学习包（ZIP）',
       before: '开始前需要了解', outcomes: '学完你会',
       routeSub: '按这个顺序读，每一步都建立在上一步之上。已经会的部分可以跳过。', stage: '阶段',
-      sheetsSub: '学完一门课后用来复习。网页版的每一条都能点回对应章节。',
+      sheetsSub: '学完一门课后用来复习。AI 路线的复习页每一条都能点回对应章节；五门课程的速查表有网页版和一页 PDF。',
       collection: '五门课速查表合集', collectionNote: 'PDF · 5 页 · 英文 · 适合打印', download: '下载',
       reviewNote: '每章一条要点，点回原文', pythonSheet: '八周复习路线与综合自测',
       mineSub: '收藏、最近浏览和上次读到的位置，只保存在这个浏览器里。',
@@ -103,15 +113,21 @@
         ['I have never programmed. Where do I start?', 'Start with Python: Zero to Practice; unit 0 gets your first program running. Then read Start Here, eight short lessons on vectors, probability and gradients, and follow the learning route from there.'],
         ['Are the Chinese and English editions the same?', 'All five courses and five AI guides have complete Chinese and English editions with matching chapters. Switch at the top right while reading and you stay on the same chapter. The Python handbook is in Chinese only.'],
         ['What do I need to install?', 'Python 3.12 or newer for the Python material, JDK 8 or newer for Java, and gcc or clang for C. Each course opens with setup and run steps.'],
-        ['How do I use the cheatsheets?', 'Use them to review after a course. Every item on the web version links back to its chapter; the PDF fits on one printable page (English).'],
+        ['How do I use the cheatsheets?', 'Use them to review after a course. Each item in an AI guide review links back to its chapter; the five course sheets have a web version and a one-page printable PDF (English).'],
         ['Where is my progress saved?', 'Stars, recently viewed courses and your last reading position stay in your own browser. Nothing is uploaded. They disappear if you change computers or clear browser data.'],
         ['Are these official courses?', 'No. A course code only shows which subject the material follows. These are independent study notes, not official course material, and they contain no assignments or exams.'],
       ],
       endTitle: 'Ready when you are', endSub: 'Begin at chapter one, or pick any course that interests you.',
       listSub: (n, ch) => `${n} courses and guides · ${ch} chapters`,
-      all: 'All', search: 'Search by title or code', colCourse: 'Course', colChapters: 'Chapters', colCode: 'Code', colLang: 'Language',
+      all: 'All', search: 'Search courses, chapters or codes', colCourse: 'Course',
+      chapterHits: 'Matching chapters', hitCount: (n) => `${n} chapter${n === 1 ? '' : 's'}`, chapterNo: (n) => `Chapter ${n}`,
+      hitsMore: (n) => `Showing the first ${n}. A more specific word narrows the list.`, noChapter: 'No chapter title contains this word.',
+      status: (a, b) => `${a} course${a === 1 ? '' : 's'} and ${b} chapter${b === 1 ? '' : 's'} match`,
+      onRoute: 'On the learning route', routeStop: (k, n) => `Stop ${k} of ${n}`, prevCourse: 'Before this', nextCourse: 'Next',
+      sameStage: (s) => `Also in ${s}`, seeRoute: 'See the whole route', progressOf: (a, n) => `At chapter ${a} of ${n}`,
+      toLight: 'Switch to light theme', toDark: 'Switch to dark theme', skipMain: 'Skip to content', colChapters: 'Chapters', colCode: 'Code', colLang: 'Language',
       chaptersUnit: 'chapters', programsUnit: 'programs', bilingual: 'Chinese + English', zhOnly: 'Chinese only', both: '中 · EN',
-      read: 'Read', details: 'Details', star: 'Star', unstar: 'Remove star', noMatch: 'No course matches.',
+      read: 'Read', details: 'Details', star: 'Star', unstar: 'Remove star', noMatch: 'No course matches.', noCourseOnly: 'No course title matches; chapters whose titles contain it are listed below.',
       readTo: (n) => `At chapter ${n}`,
       facts: { chapters: 'Chapters', programs: 'Runnable programs', problems: 'Worked problems', exercises: 'Exercises', projects: 'Projects', language: 'Language' },
       toc: 'Chapters', chaptersCount: (n) => `${n} chapters`,
@@ -120,7 +136,7 @@
       notesMd: 'Download notes (Markdown)', notesZip: 'Download the learning kit (ZIP)',
       before: 'Before you start', outcomes: 'You will be able to',
       routeSub: 'Read in this order; each step builds on the one before. Skip whatever you already know.', stage: 'Stage',
-      sheetsSub: 'Use these to review after a course. Every item on the web version links back to its chapter.',
+      sheetsSub: 'Use these to review after a course. Each item in an AI guide review links back to its chapter; the five course sheets come as a web page and a one-page PDF.',
       collection: 'All five course cheatsheets', collectionNote: 'PDF · 5 pages · English · ready to print', download: 'Download',
       reviewNote: 'One key point per chapter, linked to the text', pythonSheet: 'Eight-week review route and self-tests',
       mineSub: 'Stars, recent courses and your last reading position, kept in this browser only.',
@@ -162,6 +178,8 @@
     check: '<circle cx="12" cy="12" r="8.5"/><path d="M8.2 12.2l2.6 2.6 5-5.3"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     play: '<path d="M8 5.5v13l10-6.5z"/>', pause: '<path d="M8.5 5.5v13M15.5 5.5v13"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+    moon: '<path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/>',
     story: '<path d="M5 5h14v10H9l-4 4z"/>', principle: '<circle cx="12" cy="10" r="5.5"/><path d="M10 19h4M10.5 15.5v3.5M13.5 15.5v3.5"/>',
     formula: '<path d="M5 6h7l-5 6 5 6H5M15 9l5 6M20 9l-5 6"/>', example: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h3M9.5 7.5v3M13 9h3M8 15.5l3-1.5M8 14l3 1.5M13 14.5h3M13 16h3"/>',
     code: '<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>', quiz: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.3 2.4c-.6.3-.9.8-.9 1.4v.5M12 16.8v.2"/>',
@@ -179,6 +197,7 @@
   /* ------------------------------------------------------------ pieces */
   const langToggle = () => `<div class="lang" role="group" aria-label="${t('lang')}">${icon('globe')}<div class="segmented">` +
     ['zh', 'en'].map((l) => `<button type="button" data-lang="${l}" aria-pressed="${lang === l}">${l === 'zh' ? '中文' : 'EN'}</button>`).join('') + '</div></div>';
+  const themeToggle = () => `<button type="button" class="icon-btn" data-theme-toggle aria-label="${theme === 'dark' ? t('toLight') : t('toDark')}">${icon(theme === 'dark' ? 'sun' : 'moon')}</button>`;
   const brand = (to) => `<a class="brand" href="${to}"><span class="mark">LW</span>${t('brand')}<small>${t('brandSub')}</small></a>`;
   const langTag = (c) => (c.langs.length > 1 ? `<span class="tag">${t('bilingual')}</span>` : `<span class="tag">${t('zhOnly')}</span>`);
   const levelTag = (c) => `<span class="tag accent">${esc(L(DATA.levels[c.level]))}</span>`;
@@ -202,7 +221,7 @@
         <nav class="pill-nav" aria-label="${t('navHome')}"><span class="slider" aria-hidden="true"></span>
           ${[['hero', 'navHome'], ['catalog', 'navCatalog'], ['how', 'navHow'], ['faq', 'navFaq']].map(([id, k]) => `<button type="button" data-scroll="${id}">${t(k)}</button>`).join('')}
         </nav>
-        <div class="intro-actions">${langToggle()}<a class="btn primary" href="${href.list}">${t('enter')}</a></div>
+        <div class="intro-actions">${themeToggle()}${langToggle()}<a class="btn primary" href="${href.list}">${t('enter')}</a></div>
       </header>
       <section class="hero" id="hero">
         <div>
@@ -244,7 +263,7 @@
     const card = app.querySelector('.how-card');
     const tabs = [...app.querySelectorAll('[data-step]')];
     let current = 0;
-    let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let playing = !still();
     const show = (i) => {
       current = i;
       tabs.forEach((b, j) => b.setAttribute('aria-selected', String(i === j)));
@@ -286,7 +305,7 @@
     };
     buttons.forEach((b) => b.addEventListener('click', () => {
       const target = document.getElementById(b.dataset.scroll);
-      window.scrollTo({ top: b.dataset.scroll === 'hero' ? 0 : target.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+      window.scrollTo({ top: b.dataset.scroll === 'hero' ? 0 : target.getBoundingClientRect().top + window.scrollY - 90, behavior: still() ? 'auto' : 'smooth' });
     }));
     mark('hero');
     const sections = buttons.map((b) => document.getElementById(b.dataset.scroll));
@@ -307,10 +326,10 @@
   function frame(active, body) {
     const lastCourse = recent()[0] || DATA.courses[0].id;
     const to = { list: href.list, detail: href.course(lastCourse), route: href.route, sheets: href.sheets, mine: href.mine };
-    return `<header class="topbar">${brand(href.intro)}
+    return `<button type="button" class="skip-link" data-skip>${t('skipMain')}</button><header class="topbar">${brand(href.intro)}
       <nav class="main-nav" aria-label="${t('brand')}">${NAV.map(([key, ic, long, short]) => `<a class="nav-item${active === key ? ' active' : ''}" href="${to[key]}"${active === key ? ' aria-current="page"' : ''}>${icon(ic)}<span class="nav-long">${t(long)}</span><span class="nav-short">${t(short)}</span></a>`).join('')}</nav>
-      <div class="top-actions"><a class="top-link" href="${SITE}index.html">${t('home')} ↗</a>${langToggle()}</div>
-    </header><main class="shell">${body}</main>${footer()}`;
+      <div class="top-actions"><a class="top-link" href="${SITE}index.html">${t('home')} ↗</a>${themeToggle()}${langToggle()}</div>
+    </header><main class="shell" id="main" tabindex="-1">${body}</main>${footer()}`;
   }
 
   /* ------------------------------------------------------------ list */
@@ -324,7 +343,7 @@
   function rowsHtml() {
     const s = stars();
     const list = DATA.courses.filter(matches);
-    if (!list.length) return `<tr><td colspan="6"><div class="empty">${t('noMatch')}</div></td></tr>`;
+    if (!list.length) return `<tr><td colspan="6"><div class="empty">${t(chapterHits().length ? 'noCourseOnly' : 'noMatch')}</div></td></tr>`;
     return list.map((c) => {
       const pr = courseProgress(c);
       const at = pr ? chapterIndex(c, pr.topic) : -1;
@@ -340,22 +359,47 @@
       </tr>`;
     }).join('');
   }
+  /* chapter titles in both languages are searched too; each hit opens that chapter directly */
+  const chapterHits = () => {
+    const q = ui.q.trim().toLowerCase();
+    if (!q) return [];
+    return DATA.courses.filter((c) => ui.filter === 'all' || c.track === ui.filter).flatMap((c) =>
+      c.chapters.map((ch, i) => ({ c, ch, i })).filter(({ ch }) => [ch.title.zh, ch.title.en].some((s) => String(s || '').toLowerCase().includes(q))));
+  };
+  const highlight = (s) => {
+    const text = String(s ?? ''); const q = ui.q.trim();
+    const at = q ? text.toLowerCase().indexOf(q.toLowerCase()) : -1;
+    return at < 0 ? esc(text) : `${esc(text.slice(0, at))}<mark>${esc(text.slice(at, at + q.length))}</mark>${esc(text.slice(at + q.length))}`;
+  };
+  function hitsHtml() {
+    if (!ui.q.trim()) return '';
+    const hits = chapterHits(); const shown = hits.slice(0, 40);
+    const list = shown.length ? `<ul class="hit-list">${shown.map(({ c, ch, i }) => `<li><a href="${readUrl(c, ch.id)}" style="--accent:${c.color}">${tile(c)}<span><small><span class="code">${esc(c.code)}</span> · ${t('chapterNo')(i + 1)}</small><b>${highlight(L(ch.title))}</b><em>${highlight(other(ch.title) || '')}</em></span>${icon('arrow')}</a></li>`).join('')}</ul>` +
+      (hits.length > shown.length ? `<p class="hits-more">${t('hitsMore')(shown.length)}</p>` : '') : `<div class="empty">${t('noChapter')}</div>`;
+    return `<section class="panel hits" aria-labelledby="hits-title"><div class="panel-head"><h2 id="hits-title">${t('chapterHits')}</h2><span class="muted">${t('hitCount')(hits.length)}</span></div>${list}</section>`;
+  }
   function listView() {
     const filters = [['all', t('all')], ...Object.keys(DATA.tracks).map((k) => [k, L(DATA.tracks[k])])];
     return frame('list', `<div class="page-head"><div><h1>${t('list')}</h1><p>${t('listSub')(DATA.totals.courses, DATA.totals.chapters)}</p></div></div>
       <section class="panel reveal">
-        <div class="toolbar"><div class="filters" role="group">${filters.map(([k, label]) => `<button type="button" data-filter="${k}" aria-pressed="${ui.filter === k}">${esc(label)}</button>`).join('')}</div>
-          <label class="search">${icon('find')}<span class="sr-only">${t('search')}</span><input type="search" data-q value="${esc(ui.q)}" placeholder="${t('search')}"></label></div>
+        <div class="toolbar"><div class="filters" role="group" aria-label="${t('stage')}">${filters.map(([k, label]) => `<button type="button" data-filter="${k}" aria-pressed="${ui.filter === k}">${esc(label)}</button>`).join('')}</div>
+          <label class="search">${icon('find')}<input type="search" data-q value="${esc(ui.q)}" placeholder="${t('search')}" aria-label="${t('search')}" enterkeyhint="search"><kbd aria-hidden="true">/</kbd></label></div>
+        <p class="sr-only" aria-live="polite" data-status></p>
         <table class="course-table"><thead><tr><th></th><th>${t('colCourse')}</th><th>${t('colChapters')}</th><th class="hide-sm">${t('colCode')}</th><th class="hide-sm">${t('colLang')}</th><th></th></tr></thead><tbody>${rowsHtml()}</tbody></table>
-      </section>`);
+      </section><div data-hits>${hitsHtml()}</div>`);
   }
   function wireList() {
+    const refresh = () => {
+      app.querySelector('tbody').innerHTML = rowsHtml();
+      app.querySelector('[data-hits]').innerHTML = hitsHtml();
+      app.querySelector('[data-status]').textContent = ui.q.trim() ? t('status')(DATA.courses.filter(matches).length, chapterHits().length) : '';
+    };
     app.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => {
       ui.filter = b.dataset.filter;
       app.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      app.querySelector('tbody').innerHTML = rowsHtml();
+      refresh();
     }));
-    app.querySelector('[data-q]').addEventListener('input', (e) => { ui.q = e.target.value; app.querySelector('tbody').innerHTML = rowsHtml(); });
+    app.querySelector('[data-q]').addEventListener('input', (e) => { ui.q = e.target.value; refresh(); });
   }
 
   /* chapters per stage, drawn as one segmented bar */
@@ -377,7 +421,6 @@
   const textWidth = (s, size) => [...s].reduce((w, ch) => w + (/[\u2E80-\uFFFF]/.test(ch) ? size : size * 0.58), 0);
   function mapSvg(here) {
     const road = smooth(ORDER.map((id) => BY_ID[id].map));
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const district = (track, d, x, y) => `<path class="district" d="${d}" style="--d:var(--t-${track})"/><text class="district-name" x="${x}" y="${y}" style="--d:var(--t-${track})">${esc(L(DATA.tracks[track]))}</text>`;
     const tree = (x, y, r = 6) => `<g class="tree"><circle cx="${x}" cy="${y}" r="${r}"/><circle cx="${x + r * 0.9}" cy="${y + 2}" r="${r * 0.75}"/></g>`;
     const houses = ORDER.map((id, i) => {
@@ -409,7 +452,7 @@
       ${[[40, 372], [58, 440], [150, 446], [258, 440], [52, 176], [232, 246], [44, 112], [230, 42], [612, 300], [520, 176]].map(([x, y]) => tree(x, y)).join('')}
       <g class="city">${[[588, 418, 14, 44], [604, 400, 12, 62], [618, 426, 12, 36], [312, 420, 10, 34], [324, 408, 12, 46]].map(([x, y, w, h]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5"/><rect class="lit" x="${x + 3}" y="${y + 6}" width="2.5" height="2.5"/><rect class="lit" x="${x + w - 5.5}" y="${y + 14}" width="2.5" height="2.5"/>`).join('')}</g>
       <path id="road" class="road-casing" d="${road}"/><path class="road" d="${road}"/><path class="road-line" d="${road}"/>
-      ${still ? '' : `<circle class="traveller" r="4.5"><animateMotion dur="16s" repeatCount="indefinite" rotate="auto"><mpath href="#road"/></animateMotion></circle>`}
+      ${still() ? '' : `<circle class="traveller" r="4.5"><animateMotion dur="16s" repeatCount="indefinite" rotate="auto"><mpath href="#road"/></animateMotion></circle>`}
       ${houses}
       <g class="here" transform="translate(${hx} ${hy - 40})" pointer-events="none"><circle class="pulse" r="9"/><path class="pin" d="M0 6c-5-6-8-9.5-8-13a8 8 0 0 1 16 0c0 3.5-3 7-8 13z"/><circle cx="0" cy="-7" r="3" fill="#0b0d12"/>
         <g transform="translate(14 -16)"><rect x="0" y="-11" width="${textWidth(t('youAreHere'), 11) + 14}" height="20" rx="10"/><text x="7" y="3">${t('youAreHere')}</text></g></g>
@@ -418,6 +461,19 @@
   }
 
   /* ------------------------------------------------------------ detail */
+  const progressBar = (at, c) => `<span class="progress-line wide" role="img" aria-label="${t('progressOf')(at + 1, c.chapters.length)}"><i style="width:${Math.round(((at + 1) / c.chapters.length) * 100)}%"></i></span>`;
+  // where the course sits on the suggested route: the stops before and after it, and the rest of its stage
+  function routePanel(c) {
+    const k = ORDER.indexOf(c.id);
+    if (k < 0) return '';
+    const stage = DATA.route.find((r) => r.courses.includes(c.id));
+    const link = (x, key) => (x ? `<a class="route-link" href="${href.course(x.id)}" style="--accent:${x.color}"><small>${t(key)}</small><b><span class="code">${esc(x.code)}</span> ${esc(L(x.title))}</b></a>` : '');
+    const peers = stage.courses.filter((id) => id !== c.id && id !== ORDER[k - 1] && id !== ORDER[k + 1]).map((id) => BY_ID[id]);
+    return `<section class="panel"><div class="panel-head"><h2>${t('onRoute')}</h2><span class="muted">${t('routeStop')(k + 1, ORDER.length)}</span></div><div class="panel-body">
+      ${link(BY_ID[ORDER[k - 1]], 'prevCourse')}${link(BY_ID[ORDER[k + 1]], 'nextCourse')}
+      ${peers.length ? `<p class="peers"><small>${esc(t('sameStage')(L(DATA.tracks[stage.track])))}</small>${peers.map((x) => `<a href="${href.course(x.id)}" style="--accent:${x.color}"><span class="code">${esc(x.code)}</span> ${esc(L(x.short))}</a>`).join('')}</p>` : ''}
+      <a class="text-link" href="${href.route}">${t('seeRoute')} ${icon('arrow')}</a></div></section>`;
+  }
   function detailView(id) {
     const c = BY_ID[id];
     if (!c) return notFoundView();
@@ -453,10 +509,11 @@
         <section class="panel reveal d1"><div class="panel-head"><h2>${t('toc')}</h2><span class="muted">${t('chaptersCount')(c.chapters.length)}</span></div>${stages}</section>
         <div class="side reveal d2">
           <section class="panel"><div class="panel-body">
-            ${at >= 0 ? `<div class="resume-mini"><small>${t('continueAt')}</small>${pad(at + 1)} · ${esc(pr.title)}</div><a class="btn primary" href="${SITE + esc(pr.url)}">${t('resumeBtn')} ${icon('arrow')}</a>` : ''}
+            ${at >= 0 ? `<div class="resume-mini"><small>${t('continueAt')}</small>${pad(at + 1)} · ${esc(pr.title)}${progressBar(at, c)}</div><a class="btn primary" href="${SITE + esc(pr.url)}">${t('resumeBtn')} ${icon('arrow')}</a>` : ''}
             <a class="btn ${at >= 0 ? 'ghost' : 'primary'}" href="${readUrl(c, c.chapters[0].id, rl)}">${t('startRead')} ${icon('arrow')}</a>
             ${c.read[otherL] ? `<a class="btn ghost" href="${readUrl(c, '', otherL)}" lang="${otherL}">${icon('globe')}${t('otherLang')}</a>` : `<p class="muted" style="font-size:12.5px;text-align:center">${t('otherLangOnly')}</p>`}
           </div></section>
+          ${routePanel(c)}
           ${sheet}
           <section class="panel"><div class="panel-head"><h2>${t('before')}</h2></div><div class="panel-body"><ul>${L(c.prerequisites).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></section>
           <section class="panel"><div class="panel-head"><h2>${t('outcomes')}</h2></div><div class="panel-body"><ul>${L(c.outcomes).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></section>
@@ -468,7 +525,11 @@
   function routeView() {
     const stages = DATA.route.map((r, i) => `<section class="route-stage reveal${i ? ` d${Math.min(i, 3)}` : ''}" data-track="${r.track}"><div class="route-rail"><b>${i + 1}</b></div><div class="route-body">
       <h2>${esc(L(DATA.tracks[r.track]))}</h2><p>${esc(L(r.note))}</p><div class="route-cards">` +
-      r.courses.map((id) => { const c = BY_ID[id]; return `<a class="panel route-card" href="${href.course(id)}" style="--accent:${c.color}">${tile(c)}<span><span class="code">${esc(c.code)}</span><b>${esc(L(c.title))}</b><small>${c.stats.chapters} ${t('chaptersUnit')} · ${c.langs.length > 1 ? t('bilingual') : t('zhOnly')}</small></span></a>`; }).join('') +
+      r.courses.map((id) => {
+        const c = BY_ID[id]; const pr = courseProgress(c); const at = pr ? chapterIndex(c, pr.topic) : -1;
+        const here = id === progress().latest ? `<span class="tag accent">${t('youAreHere')}</span>` : '';
+        return `<a class="panel route-card" href="${href.course(id)}" style="--accent:${c.color}">${tile(c)}<span><span class="code">${esc(c.code)}</span> ${here}<b>${esc(L(c.title))}</b><small>${at >= 0 ? t('progressOf')(at + 1, c.chapters.length) : `${c.stats.chapters} ${t('chaptersUnit')} · ${c.langs.length > 1 ? t('bilingual') : t('zhOnly')}`}</small>${at >= 0 ? progressBar(at, c) : ''}</span></a>`;
+      }).join('') +
       '</div></div></section>').join('');
     return frame('route', `<div class="page-head"><div><h1>${t('route')}</h1><p>${t('routeSub')}</p></div></div><div class="route">${stages}</div>`);
   }
@@ -514,11 +575,14 @@
   };
   const TITLES = { intro: () => `${t('brand')} · ${t('heroA')}`, list: () => t('list'), route: () => t('route'), sheets: () => t('sheets'), mine: () => t('mine') };
   let lastPage = '';
+  let focusSearch = false;
   function render() {
     timers.forEach(clearInterval); timers = [];
     if (observer) { observer(); observer = null; }
     const r = parse();
     document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0b0d12' : '#f4f6fa');
     const views = { intro: introView, list: listView, detail: () => detailView(r.id), route: routeView, sheets: sheetsView, mine: mineView, missing: notFoundView };
     app.innerHTML = views[r.page]();
     const name = r.page === 'detail' && BY_ID[r.id] ? `${BY_ID[r.id].code} · ${L(BY_ID[r.id].title)}` : (TITLES[r.page] || (() => t('brand')))();
@@ -526,13 +590,22 @@
     if (r.page === 'intro') wireIntro();
     if (r.page === 'list') wireList();
     const key = r.page + (r.id || '');
-    if (key !== lastPage) window.scrollTo(0, 0);
+    if (key !== lastPage) {
+      window.scrollTo(0, 0);
+      // after moving to another view, start keyboard and screen-reader users at its heading
+      const h = lastPage && app.querySelector('main h1, .hero h1');
+      if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+    }
     lastPage = key;
+    if (focusSearch) { focusSearch = false; app.querySelector('[data-q]')?.focus(); }
   }
 
   app.addEventListener('click', (e) => {
     const langBtn = e.target.closest('[data-lang]');
-    if (langBtn) { setLang(langBtn.dataset.lang); const y = window.scrollY; render(); window.scrollTo(0, y); return; }
+    const rerender = (selector) => { const y = window.scrollY; render(); window.scrollTo(0, y); app.querySelector(selector)?.focus(); };
+    if (langBtn) { setLang(langBtn.dataset.lang); rerender(`[data-lang="${lang}"]`); return; }
+    if (e.target.closest('[data-theme-toggle]')) { setTheme(theme === 'dark' ? 'light' : 'dark'); rerender('[data-theme-toggle]'); return; }
+    if (e.target.closest('[data-skip]')) { app.querySelector('main')?.focus(); return; }
     const starBtn = e.target.closest('[data-star]');
     if (starBtn) {
       const id = starBtn.dataset.star;
@@ -549,6 +622,13 @@
     }
   });
   window.addEventListener('hashchange', render);
+  // "/" jumps to the search box from anywhere in the workspace
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, [contenteditable]')) return;
+    e.preventDefault();
+    if (parse().page === 'list') app.querySelector('[data-q]')?.focus();
+    else { focusSearch = true; location.hash = href.list; }
+  });
   if (parse().page === 'intro' && store.get('leon-learn-skip-intro', false) && !location.hash) location.replace(href.list);
   render();
 })();
