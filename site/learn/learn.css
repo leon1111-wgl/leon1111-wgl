@@ -509,7 +509,7 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
   --invert-text: #fff;
 }
 /* course colours are tuned for the dark theme; on white, text in a course colour is darkened to stay readable */
-:root[data-theme="light"] :is(.code, .tag.accent, .stage-head h3, .resume small, .resume svg.i, .icon-tile[style], .route-link small, .chapter.current .no) { color: color-mix(in srgb, var(--accent) 55%, #0d1017); }
+:root[data-theme="light"] :is(.code, .tag.accent, .stage-head h3, .resume small, .resume svg.i, .icon-tile[style], .route-link small, .chapter.current .no) { color: color-mix(in srgb, var(--accent) 45%, #0d1017); }
 :root[data-theme="light"] .progress-line i { background: color-mix(in srgb, var(--accent) 75%, #0d1017); }
 :root[data-theme="light"] .star[aria-pressed="true"] { color: #b7791f; }
 :root[data-theme="light"] mark { background: #d6e4ff; }

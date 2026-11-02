@@ -5,6 +5,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 import json
 from teaching import local, paragraphs, code_html, asset_version
 from roadmaps import build_roadmap
+import seo
 ROOT=Path(__file__).resolve().parents[1]; SITE=ROOT/'site'
 
 def projects():
@@ -34,7 +35,9 @@ def lexer(path):
 def shell(p,lang,body):
     links=''.join(f'<a href="{page_name(p,l)}" data-language="{l}" lang="{l}"'+(' aria-current="page"' if l==lang else '')+f'>{name}</a>' for l,name in [('en','EN'),('zh','中文')])
     title=local(p['title'],lang);iso='zh-Hans' if lang=='zh' else 'en'
-    return f'''<!doctype html><html lang="{iso}" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)} | Leon</title><meta name="description" content="{E(local(p['summary'],lang))}"><link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css?v={asset_version('style.css')}"><script defer src="../assets/app.js?v={asset_version('app.js')}"></script></head><body class="field-guide project-guide"><a class="skip" href="#main">{L(lang,'Skip to content','跳到正文')}</a><header class="topbar"><div class="wrap"><a class="brand" href="../index.html"><span class="monogram">LW</span>Leon</a><nav><a href="../courses/comp2017{'.zh' if lang=='zh' else ''}.html#projects">COMP2017</a><div class="language-switch">{links}</div><button type="button" class="theme-button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap">{body}<footer class="footer"><span class="watermark">Leon</span><a href="../courses/comp2017{'.zh' if lang=='zh' else ''}.html#projects">{L(lang,'Back to the engineering path','返回工程学习路线')} ↑</a></footer></main></body></html>'''
+    path='projects/'+page_name(p,lang);summary=local(p['summary'],lang)
+    tags=seo.head(path,title,summary,lang,{l:'projects/'+page_name(p,l) for l in ('en','zh')},data=seo.course_data(title,summary,path,lang,kind='LearningResource'))
+    return f'''<!doctype html><html lang="{iso}" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)} | Leon</title><meta name="description" content="{E(summary)}">{tags}<link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css?v={asset_version('style.css')}"><script defer src="../assets/app.js?v={asset_version('app.js')}"></script></head><body class="field-guide project-guide"><a class="skip" href="#main">{L(lang,'Skip to content','跳到正文')}</a><header class="topbar"><div class="wrap"><a class="brand" href="../index.html"><span class="monogram">LW</span>Leon</a><nav><a href="../courses/comp2017{'.zh' if lang=='zh' else ''}.html#projects">COMP2017</a><div class="language-switch">{links}</div><button type="button" class="theme-button" data-theme-toggle aria-label="Switch to light theme">☼</button></nav></div></header><main id="main" class="wrap">{body}<footer class="footer"><span class="watermark">Leon</span><a href="../courses/comp2017{'.zh' if lang=='zh' else ''}.html#projects">{L(lang,'Back to the engineering path','返回工程学习路线')} ↑</a></footer></main></body></html>'''
 
 def archive(path,entries):
     with ZipFile(path,'w',ZIP_DEFLATED,compresslevel=9) as z:

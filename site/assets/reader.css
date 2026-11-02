@@ -106,7 +106,7 @@ body.reader:before { display: none; }
 
 /* each course reads in its own colour; darker in the light theme so text keeps its contrast */
 body.reader { --accent: var(--course, #4c9bff); }
-:root[data-theme=light] body.reader { --accent: color-mix(in srgb, var(--course, #1e6bff) 62%, #000); }
+:root[data-theme=light] body.reader { --accent: color-mix(in srgb, var(--course, #1e6bff) 50%, #000); }
 .reader .code-chip { background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .reader .toc a.is-current { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 
@@ -318,7 +318,7 @@ body.reader { --accent: var(--course, #4c9bff); }
 }
 
 /* the end of a reading page: the courses before and after this one on the suggested route */
-.route-next { margin: 64px 0 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+.route-next { display: block; margin: 64px 0 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
 .route-next header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; margin-bottom: 16px; }
 .route-next h2 { margin: 0; font-size: 20px; }
 .route-next header span { font-size: 14px; color: var(--muted); }
@@ -329,5 +329,5 @@ body.reader { --accent: var(--course, #4c9bff); }
 .route-next b { display: block; margin-top: 4px; font-size: 16px; line-height: 1.5; }
 .route-next .code-chip { margin-right: 6px; }
 .route-next .lang-note { font-weight: 400; font-size: 14px; color: var(--muted); }
-.route-next .all { display: inline-block; margin-top: 14px; font-size: 15px; color: var(--accent); }
+.route-next .all { display: inline-block; margin-top: 14px; font-size: 15px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 @media print { .route-next { display: none; } }

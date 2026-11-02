@@ -218,6 +218,7 @@ seo_tags = (f'<meta name="description" content="{ESC(description)}"><link rel="c
             f'<meta property="og:type" content="website"><meta property="og:site_name" content="Leon Learn"><meta property="og:title" content="{ESC(page_title)}">'
             f'<meta property="og:description" content="{ESC(description)}"><meta property="og:url" content="{page_url}">'
             f'<meta property="og:image" content="{site_url}assets/og/learn.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
+            '<meta property="og:image:alt" content="Leon 学习中心：学习地图上每门课是一座小屋，沿推荐顺序连成一条路">'
             f'<meta property="og:locale" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{ESC(page_title)}">'
             f'<meta name="twitter:description" content="{ESC(description)}"><meta name="twitter:image" content="{site_url}assets/og/learn.png">'
             f'<script type="application/ld+json">{course_ld}</script>')

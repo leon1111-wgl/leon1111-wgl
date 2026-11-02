@@ -216,7 +216,7 @@
       r.courses.map((id) => { const c = BY_ID[id]; return `<li><a href="${href.course(id)}" style="--accent:${c.color}"><span class="code">${esc(c.code)}</span><span>${esc(L(c.title))}</span></a></li>`; }).join('') + '</ul></article>').join('');
     const steps = t('howSteps');
     const faq = t('faq').map(([q, a]) => `<details><summary>${esc(q)}${icon('plus')}</summary><p>${esc(a)}</p></details>`).join('');
-    return `<div class="intro-page">
+    return `<div class="intro-page"><button type="button" class="skip-link" data-skip>${t('skipMain')}</button>
       <header class="intro-bar">${brand(href.intro)}
         <nav class="pill-nav" aria-label="${t('navHome')}"><span class="slider" aria-hidden="true"></span>
           ${[['hero', 'navHome'], ['catalog', 'navCatalog'], ['how', 'navHow'], ['faq', 'navFaq']].map(([id, k]) => `<button type="button" data-scroll="${id}">${t(k)}</button>`).join('')}
@@ -605,7 +605,11 @@
     const rerender = (selector) => { const y = window.scrollY; render(); window.scrollTo(0, y); app.querySelector(selector)?.focus(); };
     if (langBtn) { setLang(langBtn.dataset.lang); rerender(`[data-lang="${lang}"]`); return; }
     if (e.target.closest('[data-theme-toggle]')) { setTheme(theme === 'dark' ? 'light' : 'dark'); rerender('[data-theme-toggle]'); return; }
-    if (e.target.closest('[data-skip]')) { app.querySelector('main')?.focus(); return; }
+    if (e.target.closest('[data-skip]')) {
+      const target = app.querySelector('main') || app.querySelector('.hero h1');
+      target?.setAttribute('tabindex', '-1'); target?.focus();
+      return;
+    }
     const starBtn = e.target.closest('[data-star]');
     if (starBtn) {
       const id = starBtn.dataset.star;
