@@ -49,6 +49,7 @@
 | <img src="site/assets/icons/creditlens.svg" width="20" height="20" align="absmiddle" alt="" /> | **CreditLens** | 读财报和图表，核对关键数字，点一下就跳回原文出处 | [Demo](https://leon1111-wgl.github.io/creditlens/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/creditlens) |
 | <img src="site/assets/icons/estateguard.svg" width="20" height="20" align="absmiddle" alt="" /> | **EstateGuard** | 在浏览器里看小区巡检画面，找出违停、堆物等问题，再交给人工确认 | [Demo](https://leon1111-wgl.github.io/estateguard/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/estateguard) |
 | <img src="site/assets/icons/finscope.svg" width="20" height="20" align="absmiddle" alt="" /> | **FinScope** | 读美股公司的财报（SEC 文件），看利润有没有水分 | [Demo](https://leon1111-wgl.github.io/finscope/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/finscope) |
+| <img src="site/assets/icons/career-atlas.svg" width="20" height="20" align="absmiddle" alt="" /> | **Career Atlas** | 向野：把行业、专业和岗位画在一张地图上，官方统计自动更新，每个数字都能追到来源 | [Demo](https://leon1111-wgl.github.io/career-atlas/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/career-atlas) |
 
 `Python` `Java` `C` `LLM Agents` `RAG` `Multimodal Evaluation` `Distillation` `Quantization` · Mandarin, English (IELTS 7.5)
 

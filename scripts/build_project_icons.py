@@ -24,6 +24,9 @@ GLYPHS = {
     # an earnings line under a scope
     "finscope": f'<path {LINE} d="M6.5 23l5-5.5 4 2.5 5-7.5 5 3"/>'
                 f'<circle {MARK} cx="20.5" cy="12.5" r="4"/><path {MARK} d="M20.5 6.5v2M20.5 16.5v2M14.5 12.5h2M24.5 12.5h2"/>',
+    # a compass ring with its needle, and a dashed trail leading away from it
+    "career-atlas": f'<circle {LINE} cx="13" cy="13" r="6.5"/><path {LINE} d="M13 8.6l1.7 4.4-1.7 4.4-1.7-4.4zM13 4.2v1.6"/>'
+                    f'<path {MARK} stroke-dasharray="2.2 2.4" d="M17.6 18.2c1.6 2.6 3.6 4.3 7.4 4.8"/><circle cx="25.2" cy="23.1" r="1.4" fill="#b8ee91"/>',
 }
 
 

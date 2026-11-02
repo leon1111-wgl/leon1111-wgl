@@ -101,8 +101,8 @@ svg.orbit{position:absolute;right:-30px;top:80px;width:470px;height:470px;opacit
 h1{position:relative;margin-top:44px;font-size:70px;line-height:1.08;font-weight:800;letter-spacing:-1.5px}
 h1 span{color:#9faebe}
 p.sub{position:relative;margin-top:26px;font-size:24px;line-height:1.5;color:#c6d1dd;max-width:720px}
-.chips{position:absolute;left:72px;right:72px;bottom:96px;display:flex;flex-wrap:wrap;gap:12px}
-.chips span{display:inline-flex;align-items:center;gap:10px;height:42px;padding:0 18px;border-radius:999px;font-size:19px;font-weight:600;background:#111924;border:1px solid #273444}
+.chips{position:absolute;left:72px;right:72px;bottom:96px;display:flex;flex-wrap:wrap;gap:10px}
+.chips span{display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 15px;border-radius:999px;font-size:17.5px;font-weight:600;background:#111924;border:1px solid #273444}
 .chips i{width:11px;height:11px;border-radius:50%;background:var(--c)}
 .url{position:absolute;left:72px;bottom:46px;font-size:18px;color:#9faebe}'''
     orbit = ('<svg class="orbit" viewBox="0 0 460 460" fill="none"><circle cx="230" cy="230" r="200" stroke="#273444"/>'
@@ -167,6 +167,7 @@ STYLES = {
     'creditlens': dict(bg='#0b1026', ink='#e8eaf6', muted='#a3a9c9', accent='#ad9bff', line='#2a3260', panel='#131a3a', font='sans'),
     'estateguard': dict(bg='#121310', ink='#ecebe4', muted='#a9a79b', accent='#eea935', line='#2f2f28', panel='#1a1b17', font='sans'),
     'finscope': dict(bg='#0e1612', ink='#ede4cf', muted='#b3ab97', accent='#22c3d6', line='#26352d', panel='#13201a', font='serif'),
+    'career-atlas': dict(bg='#f6f4ee', ink='#1d2a3a', muted='#4f5b69', accent='#c0521d', text='#a3441a', line='#ddd8cb', panel='#ffffff', font='sans'),
 }
 
 
@@ -221,6 +222,21 @@ def motif(pid, s):
                 f'<path d="M280 236C300 200 330 170 380 150V240C350 250 310 246 280 236Z" fill="url(#hatch)" opacity=".8"/>'
                 f'<path d="M40 270C100 250 160 230 220 228S300 214 380 150" stroke="{ink}" stroke-width="2.5" stroke-dasharray="1 0"/>'
                 f'<path d="M40 360H380M40 364H380" stroke="#d9b45a" stroke-width="1.5"/></svg>')
+    if pid == 'career-atlas':  # contour islands on a graticule, dashed trails from "you are here" to three waypoints
+        grid = ''.join(f'<path d="M{x} 30V390" stroke="{line}"/>' for x in (110, 210, 310)) + ''.join(f'<path d="M20 {y}H400" stroke="{line}"/>' for y in (120, 210, 300))
+        refs = ''.join(f'<text x="{x}" y="24" font-size="13" fill="{muted}" font-family="ui-monospace,Menlo">{c}</text>' for x, c in ((58, 'A'), (156, 'B'), (256, 'C'), (352, 'D')))
+        isles = ''.join(f'<path d="{d}" fill="{f}" fill-opacity=".55" stroke="{ink}" stroke-opacity=".35"/>' for d, f in (
+            ('M60 80c40-30 110-20 130 20s-10 80-60 84-100-10-104-44 4-46 34-60z', '#cfd9c4'),
+            ('M82 98c26-16 70-10 82 14s-8 50-42 52-62-8-64-30 2-26 24-36z', '#b9c9ad'),
+            ('M240 200c50-26 130-12 140 40s-40 90-100 84-90-30-86-70 16-40 46-54z', '#e3d3bd'),
+            ('M268 222c30-14 76-6 82 24s-24 52-58 48-52-18-50-42 8-20 26-30z', '#d6c0a2'),
+            ('M50 270c30-20 90-16 100 18s-20 64-60 60-60-20-58-46 2-20 18-32z', '#cbd5e0')))
+        here = (f'<circle cx="110" cy="210" r="9" fill="{s["bg"]}" stroke="{ink}" stroke-width="3"/><circle cx="110" cy="210" r="3.5" fill="{ink}"/>'
+                + ''.join(f'<path d="M110 210{d}" stroke="{a}" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/><circle cx="{x}" cy="{y}" r="7" fill="{a}"/>'
+                          for d, x, y in (('C150 160 120 130 122 120', 122, 120), ('C180 220 250 250 300 252', 300, 252), ('C100 250 90 280 96 300', 96, 300))))
+        compass = (f'<g transform="translate(366 70)"><circle r="20" stroke="{ink}" stroke-opacity=".5"/><path d="M0 -15l5 15-5 15-5-15z" fill="{ink}" fill-opacity=".25"/>'
+                   f'<path d="M0 -15l5 15h-10z" fill="{a}"/></g>')
+        return (f'<svg viewBox="0 0 420 420" fill="none"><rect x="20" y="30" width="380" height="360" rx="10" fill="{panel}" stroke="{line}"/>{grid}{refs}{isles}{here}{compass}</svg>')
     return ''
 
 
@@ -228,14 +244,14 @@ def repo_card(p, w, h):
     s = STYLES[p['id']]
     serif = s['font'] == 'serif'
     css = f'''body{{background:{s["bg"]};color:{s["ink"]};position:relative;padding:64px 72px}}
-.eyebrow{{font-size:18px;letter-spacing:2.5px;color:{s["accent"]};text-transform:uppercase}}
+.eyebrow{{font-size:18px;letter-spacing:2.5px;color:{s.get("text", s["accent"])};text-transform:uppercase}}
 h1{{margin-top:22px;font-size:84px;line-height:1;font-weight:800;letter-spacing:-1.5px;{'font-family:Georgia,"Songti SC",serif;font-weight:700;' if serif else ''}}}
 p.en{{margin-top:26px;max-width:700px;font-size:30px;line-height:1.35;font-weight:600}}
 p.zh{{margin-top:16px;max-width:700px;font-size:24px;line-height:1.55;color:{s["muted"]}}}
 ul{{list-style:none;padding:0;margin-top:30px;display:flex;flex-wrap:wrap;gap:10px;max-width:720px}}
 li{{padding:8px 16px;border-radius:999px;font-size:18px;border:1px solid {s["line"]};background:{s["panel"]}}}
 .note{{position:absolute;left:72px;bottom:96px;max-width:720px;font-size:17px;line-height:1.5;color:{s["muted"]}}}
-.url{{position:absolute;left:72px;bottom:50px;font-size:19px;color:{s["accent"]}}}
+.url{{position:absolute;left:72px;bottom:50px;font-size:19px;color:{s.get("text", s["accent"])}}}
 .motif{{position:absolute;right:56px;top:110px;width:420px;height:420px}}
 .rule{{position:absolute;left:0;right:0;top:0;height:6px;background:{s["accent"]}}}'''
     body = (f'<div class="rule"></div><div class="eyebrow">Leon Wang · {E(p["tag"])}</div><h1>{E(p["name"])}</h1>'
