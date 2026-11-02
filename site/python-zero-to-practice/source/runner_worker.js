@@ -23,8 +23,11 @@ def load(name, source):
     return compile(source, name, 'exec')
 
 def report(error):
-    # 去掉运行器自己的那一层，只显示学习者代码里的位置
-    traceback.print_exception(type(error), error, error.__traceback__.tb_next, file=err)
+    # 去掉运行器自己的那几层，只显示学习者代码里的位置；语法错误只需要出错的那一行和箭头
+    if isinstance(error, SyntaxError):
+        traceback.print_exception(type(error), error, None, file=err)
+    else:
+        traceback.print_exception(type(error), error, error.__traceback__.tb_next, file=err)
 
 here = os.getcwd()
 os.chdir(tempfile.mkdtemp())

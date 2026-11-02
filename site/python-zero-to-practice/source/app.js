@@ -107,7 +107,7 @@ all('[data-lab]').forEach(lab => {
       if(step>0) content+=`<div class="object-row"><code>b</code><span>→</span><code>列表 ${step===3?'C':copy?'B':'A'} ${e(b)}</code></div>`;
       content+=`<p>${captions[step]}</p>`;
     } else {
-      const frames=[['定义函数','def add(a, b): return a + b','此时函数体尚未被这次调用执行。'],['调用与绑定','a = 2    b = 3','调用 add(2, 3)，给本次函数执行绑定参数。'],['计算表达式','a + b → 5','读取局部参数，进行加法。'],['返回给调用处','return 5','当前函数结束，把 5 交回调用表达式。'],['保存结果','answer = 5','调用表达式 add(2,3) 的结果交给 answer，外层程序继续。']];
+      const frames=[['定义函数','def add(a, b): return a + b','此时函数体尚未被这次调用执行。'],['调用与绑定','a = 2    b = 3','调用 add(2, 3)，给本次函数执行绑定参数。'],['计算表达式','a + b → 5','读取局部参数，进行加法。'],['返回给调用处','return 5','当前函数结束，把 5 交回调用表达式。'],['保存结果','result = 5','调用表达式 add(2,3) 的结果交给 result，外层程序继续。']];
       maximum=frames.length-1; const f=frames[step]; content=`<strong>${f[0]}</strong><div class="state-row"><code>${e(f[1])}</code></div><p>${f[2]}</p>`;
     }
     lab.querySelector('.lab-screen').innerHTML=content;

@@ -83,7 +83,14 @@
     let pending;
     let read = [];
     try { read = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}').courses?.[courseId]?.read || []; } catch (_) {}
-    const markRead = () => tocLinks.forEach((link, id) => link.classList.toggle('is-read', read.includes(id)));
+    const readLabel = chinese ? '（已读完）' : ' (read)';
+    const markRead = () => tocLinks.forEach((link, id) => {
+      const done = read.includes(id);
+      link.classList.toggle('is-read', done);
+      let note = link.querySelector('.sr-note');
+      if (done && !note) { note = document.createElement('span'); note.className = 'sr-note'; note.textContent = readLabel; link.append(note); }
+      if (!done && note) note.remove();
+    });
     markRead();
     const track = () => {
       let current = null;
@@ -98,6 +105,9 @@
       try {
         const saved = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}');
         saved.courses = saved.courses || {};
+        // another tab of the same course may have marked chapters meanwhile: keep both
+        read = [...new Set([...(saved.courses[courseId]?.read || []), ...read])];
+        markRead();
         saved.courses[courseId] = {
           read,
           topic: current.id,

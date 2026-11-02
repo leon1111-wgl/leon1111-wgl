@@ -8,3 +8,5 @@ output/previews/
 # Log files are intentional, tiny teaching fixtures.
 !projects/comp2017-log-analyzer/fixtures/*.log
 !site/project-code/comp2017-log-analyzer/fixtures/*.log
+# scratch archive that site/python-zero-to-practice/tools/package.py writes while checking; the download is site/downloads/
+site/Python-Zero-to-Practice.zip

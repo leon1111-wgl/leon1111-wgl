@@ -87,9 +87,10 @@ function explain(result, item, path) {
     const more = /EOFError/.test(result.stderr) ? '程序还想读取输入，但输入已经用完：本题提供的输入见上方。' : '先看错误信息最后一行，再找“你的代码.py”后面的行号。';
     return ['运行报错', 'error', more];
   }
-  if (result.status === 'tests') return ['额外测试未通过', 'error', '输出可能正确，但函数在其他输入下不对。看错误信息里的 assert：它写出了这次的输入和期望结果。'];
+  // 与 check_practice.py 相同的顺序：先比较输出，输出一致后才看额外测试
   const diff = firstDifference(item.output, result.stdout);
   if (diff) return ['输出不同', 'diff', `第 ${diff.line} 行不同（引号帮助看清空格）：预期 ${diff.expected}，实际 ${diff.actual}。请检查空格、大小写和多余的提示文字。`];
+  if (result.status === 'tests') return ['额外测试未通过', 'error', '输出正确，但函数在其他输入下不对。看错误信息里的 assert：它写出了这次的输入和期望结果。'];
   return null;
 }
 
@@ -97,7 +98,8 @@ async function execute(button, job, item, path, panel, success) {
   if (busy) { show(panel, '上一段代码还在运行', 'info', null, '请等它结束再试。'); return; }
   busy = true;
   const label = button.textContent;
-  button.disabled = true;
+  // 不禁用按钮：禁用会让键盘焦点掉回页面开头。用 aria-disabled 告知正在运行，busy 防止重复点击。
+  button.setAttribute('aria-disabled', 'true');
   button.textContent = booted ? '运行中…' : '正在加载 Python…';
   if (!booted) show(panel, '正在加载浏览器中的 Python', 'info', null, '只在第一次运行时下载，约 10 MB。之后每次运行几乎立即开始。');
   const result = await run(job, () => { button.textContent = '运行中…'; });
@@ -105,7 +107,7 @@ async function execute(button, job, item, path, panel, success) {
   if (problem) show(panel, problem[0], problem[1], result, problem[2]);
   else show(panel, success[0], 'pass', result, success[1]);
   button.textContent = label;
-  button.disabled = false;
+  button.removeAttribute('aria-disabled');
   busy = false;
 }
 

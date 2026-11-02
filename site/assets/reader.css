@@ -333,4 +333,5 @@ body.reader { --accent: var(--course, #4c9bff); }
 @media print { .route-next { display: none; } }
 
 /* chapters whose end the reader has reached */
-.reader .toc ol a.is-read::after { content: " ✓"; color: var(--accent); }
+.reader .toc ol a.is-read::after { content: " ✓" / ""; color: var(--accent); }
+.reader .sr-note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
