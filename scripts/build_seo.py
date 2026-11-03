@@ -161,7 +161,7 @@ p.subjects{position:relative;margin-top:10px;font-size:20px;color:#8d95a3}
 
 # One identity per project, from the design registry: background, ink, muted ink, accent, line, and a motif.
 STYLES = {
-    'loopdesk': dict(bg='#0b0d12', ink='#eceef2', muted='#8d95a3', accent='#4c9bff', line='#303644', panel='#12151c', font='sans'),
+    'loopdesk': dict(bg='#131016', ink='#f1ecf2', muted='#a99eab', accent='#f27ac8', line='#352c39', panel='#1b161f', font='sans'),
     'proofbi': dict(bg='#0f171a', ink='#e4efec', muted='#9db3ae', accent='#46c79c', line='#21343a', panel='#13201f', font='sans'),
     'adproof': dict(bg='#f4ece8', ink='#2b2520', muted='#6d625a', accent='#b93a22', line='#e2d3cb', panel='#fbf6f3', font='serif'),
     'creditlens': dict(bg='#0b1026', ink='#e8eaf6', muted='#a3a9c9', accent='#ad9bff', line='#2a3260', panel='#131a3a', font='sans'),
