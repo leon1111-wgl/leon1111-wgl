@@ -10,8 +10,8 @@ Each adopted item has a check that fails without it. Where I read only an abstra
 | --- | --- | --- | --- |
 | Spaced review with a modern scheduler (FSRS-6) | **Adopt** | Spaced practice and practice testing lead both major reviews of study techniques. FSRS is the open reference scheduler. | `scripts/verify_fsrs.py` compares every stability, difficulty and interval with py-fsrs 6.3.2 |
 | Attempt before seeing the answer | **Adopt** | Generating an answer first helps later learning, and rereading is among the weakest strategies. The audit found 509 answers printed beside their questions. | Answers fold by default; `scripts/test_study.mjs` asserts they start closed |
-| Read and trace before writing | **Adopt** | A controlled study of an explicit sequence (read semantics, write semantics, read templates, write templates) improved completion and post-test results. | Predict-the-output drills check against outputs from `scripts/verify_examples.py`; trace questions are checked by running an instrumented copy |
-| Marked practice with rubrics and timed mock papers | **Adopt** | Testing with feedback transfers better than rereading, and rubrics show a moderate effect on performance. | `scripts/validate_study.py`: rubric marks must add up, and every model answer must pass its tests |
+| Read and trace before writing | **Adopt** | A controlled study of an explicit sequence (read semantics, write semantics, read templates, write templates) improved completion and post-test results. | Predict-the-output drills check against outputs from `scripts/verify_examples.py`; trace tables must equal the output of an instrumented program (`scripts/verify_practice.py`) |
+| Marked practice with rubrics and timed mock papers | **Adopt** | Testing with feedback transfers better than rereading, and rubrics show a moderate effect on performance. | `scripts/validate_study.py` adds up rubric marks; `scripts/verify_practice.py` runs every model answer against its tests and checks those tests fail on a wrong answer |
 | C and Java running in the browser | **Adopt** xcc's wcc and TeaVM's javac | A free, self-hosted route exists: under 0.5 MB for C and about 7 MB for Java, with nothing sent to a server. | `scripts/verify_browser_runners.mjs` runs every example through the real runner; a Run button appears only on those that match |
 | A chapter at a time on phones | **Adopt** | One course page measured 424 screens at 375 px. Long unbroken pages lose the reader's place. | `scripts/test_study.mjs` asserts one visible chapter and no sideways scroll at 375 px |
 | Faded Parsons problems | **Skip for now** | Good evidence as a scaffold for writing, and students like them. But paper coding is the skill at stake here, and tracing plus rubric-marked writing already covers it. Worth revisiting. | n/a |
@@ -41,9 +41,9 @@ Learning steps are off: a forgotten card returns once in the same round and is t
 
 | Option | Size | Result on this site's programs | Decision |
 | --- | --- | --- | --- |
-| xcc's `wcc`, self-hosted as WebAssembly (MIT) | 0.46 MB uncompressed | 30+ of 57 C programs, each compiled and run in milliseconds; the rest use processes, threads, signals or sockets, which a browser cannot provide | **Adopted** |
+| xcc's `wcc`, self-hosted as WebAssembly (MIT) | 0.46 MB uncompressed | 50 of 77 C programs, each compiled and run in milliseconds. Most of the rest use processes, threads, signals or sockets, which a browser cannot provide; two need library parts this libc lacks | **Adopted** |
 | `@yowasp/clang` (ISC) | 105 MB | Not tested; too heavy for a Run button on a phone | Skipped |
-| teavm-javac, self-hosted (Apache-2.0, with OpenJDK javac under GPLv2+CE) | about 7 MB | 47 of 49 Java programs after building from the current source. The June 2025 public build got 43: `getMessage` was missing and bounds errors were uncatchable | **Adopted** |
+| teavm-javac, self-hosted (Apache-2.0, with OpenJDK javac under GPLv2+CE) | about 7 MB | 65 of 67 Java programs after building from the current source. The public playground build got 43 of the first 49: `getMessage` was missing and bounds errors were uncatchable | **Adopted** |
 | CheerpJ | Hosted runtime | A full JVM, and free for personal and educational use, but the runtime is only served by its vendor and it requires a much larger first load | Skipped; the best fallback if TeaVM's reduced library becomes a problem |
 | Remote judges (Judge0, Piston, Compiler Explorer) | None | Learners' code would leave the browser, and these depend on third-party rate limits | Skipped |
 

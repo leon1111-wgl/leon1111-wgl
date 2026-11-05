@@ -8,14 +8,14 @@ An independent read of the site at commit 611d4c9 as four people: someone who ha
 | 2 | Nothing built for writing code on paper; no blank traces or memory-diagram practice | paper, exam | Paper-coding route |
 | 3 | 131 worked problems, 378 guided answers, and every expected output printed beside the question | exam, paper, beginner | Answers fold; "show all" toggle |
 | 4 | "Every chapter follows the same six steps" true for 83 of 212 chapters | all | Claim corrected on the hub |
-| 5 | C and Java chapter 1 assume programming, despite "every course stands on its own" | beginner | Claim corrected; first-steps bridges |
+| 5 | C and Java chapter 1 assume programming, despite "every course stands on its own" | beginner | Claim corrected; first-steps guides linked from each course |
 | 6 | English beginners sent to a Chinese-only handbook | beginner | Route uses English lessons; bridge |
-| 7 | C and Java setup is a sentence, not steps | beginner, paper | Setup steps per OS |
+| 7 | C and Java setup is a sentence, not steps | beginner, paper | First-steps guides have setup per OS, a check command and common errors (not tried on real Windows machines) |
 | 8 | Code runs in the browser only in the handbook | beginner, exam, phone | Run buttons for Python, C and Java |
 | 9 | No revision list, no body search; "malloc" found nothing | exam, returning readers | Score-rate list; chapter keywords |
-| 10 | Chinese edition thinned in COMP2022, COMP2123, COMP3308 | beginner, exam (Chinese) | See `docs/CONTENT-NOTES.md` |
+| 10 | Chinese edition thinned in COMP2022, COMP2123, COMP3308 | beginner, exam (Chinese) | Open: new chapters and practice are full length; the older chapters still need retranslating |
 | 11 | Engineering stops at COMP2017's projects; no tool commands | engineer | Labs with captured output |
-| 12 | AI guide code is toy-scale; repeated filler in "how others use it" | engineer, beginner | Open |
+| 12 | AI guide code is toy-scale; repeated filler in "how others use it" | engineer, beginner | Partly: machine-learning labs with scikit-learn; the filler remains |
 | 13 | "Common mistakes" is one sentence, with no wrong-and-fixed pair | beginner, exam, paper | Mistakes on paper questions; find-the-bug |
 | 14 | No goal picker; reading orders conflict | all | Goal picker with routes |
 | 15 | One course measured 424 screens at 375 px | phone | One chapter at a time on phones |

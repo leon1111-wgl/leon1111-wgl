@@ -49,6 +49,7 @@ The supplied source PDFs and extraction audit remain outside this project. Do no
 
 - `site/learn/study.js` holds the goal routes, practice, mock papers, review queue and labs; `site/learn/fsrs.js` is the scheduler. Progress stays in `leon-learn-*` browser keys and can be backed up from My learning.
 - `scripts/build_study.py` writes `site/learn/data/<course>.json`: review cards, predict-the-output drills and worked problems derived from the lessons, plus authored questions from `content/practice/<course>.json`.
+- `scripts/build_bridges.py` writes the first-steps and by-hand guides in `site/bridges/` from `content/bridges/*.json`. Labs live in `content/labs/<id>/`; `scripts/verify_labs.py --write` in CI captures their output, and `scripts/fetch_lab_tools.sh` fetches the Java test tools. `content/card-exclude.json` lists review cards that make no sense away from their chapter.
 - `site/assets/run-ui.js` puts Run and Edit on a reading page's examples; `site/assets/runner/` holds the workers. A button appears only for examples listed in `content/browser-runnable.json`. After changing or adding programs, run `node scripts/verify_browser_runners.mjs --write` and rebuild. `site/assets/runner/NOTICE.txt` lists the third-party compilers and `.github/workflows/build-runtimes.yml` rebuilds them.
 - `scripts/validate_study.py`, `scripts/verify_fsrs.py`, `scripts/verify_browser_runners.mjs` and `scripts/test_study.mjs` run in CI before every deploy, with `scripts/verify_examples.py`. See `docs/FRONTIER_REVIEW.md` and `docs/TEACHING_AUDIT.md`.
 
