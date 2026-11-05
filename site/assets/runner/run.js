@@ -20,7 +20,13 @@ export function preload(language) {
 
 /* status: ok | error (runtime failure or non-zero exit) | compile | tests | timeout | unavailable
    timeoutMs counts from the moment the runtime is ready, so a slow first download is not called a hang. */
-export function run({ language, code, stdin = '', tests = '', timeoutMs = 8000, bootMs = 180000, onStatus }) {
+export async function run(job) {
+  const first = await attempt(job);
+  // Older engines can trap every few compilations in a reused Java compiler. A fresh worker recovers.
+  return first.status === 'unavailable' && job.language === 'java' ? attempt(job) : first;
+}
+
+function attempt({ language, code, stdin = '', tests = '', timeoutMs = 8000, bootMs = 180000, onStatus }) {
   return new Promise((resolve) => {
     const worker = workerFor(language);
     let timer;

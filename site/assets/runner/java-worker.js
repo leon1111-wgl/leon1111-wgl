@@ -42,15 +42,7 @@ self.onmessage = async ({ data }) => {
   try {
     if (data.kind === 'load') { await ready(); return; }
     self.postMessage({ kind: 'status', stage: 'compiling' });
-    let compiled;
-    try {
-      compiled = await compile(data);
-    } catch (_) {
-      // Some engines trap every few compilations when one instance is reused. A fresh instance recovers.
-      compiler = null;
-      compiled = await compile(data);
-    }
-    const { c, ok } = compiled;
+    const { c, ok } = await compile(data);
     if (!ok) {
       self.postMessage({ kind: 'result', status: 'compile', stdout: '', stderr: `${diagnostics.join('\n')}\n` });
       return;
