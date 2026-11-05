@@ -5,6 +5,9 @@ window.LeonStudyInit = (hub) => {
   const lang = () => hub.lang();
   const L = (o) => (o && typeof o === 'object' && !Array.isArray(o) ? (o[lang()] ?? o.zh ?? o.en) : o);
   const para = (s) => String(s ?? '').split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+  // lab text uses `code` and **bold**
+  const inline = (s) => esc(s).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*(\S(?:[^*\n]*\S)?)\*\*/g, '<b>$1</b>');
+  const rich = (s) => String(s ?? '').split('\n\n').map((p) => `<p>${inline(p).replace(/\n/g, '<br>')}</p>`).join('');
   const now = () => Date.now();
   const F = () => globalThis.LeonFSRS;
   const COURSE_IDS = ['python', 'info1113', 'comp2017', 'comp2123', 'comp2022', 'comp3308', 'start', 'ml', 'dl', 'vision', 'multimodal'];
@@ -213,7 +216,7 @@ window.LeonStudyInit = (hub) => {
         // the full handbook is in Chinese; the first-steps guide is the path in both languages, and goes further in Chinese
         const en = lang() === 'en';
         const guide = `${SITE}bridges/python-first-steps${en ? '' : '.zh'}.html`;
-        return { run: guide, values: en ? guide : handbook('c02'), flow: en ? guide : handbook('c04'), data: en ? guide : handbook('c07'), drill: `#/practice/python`, debug: en ? `${guide}#read-errors` : handbook('c13'), project: en ? null : handbook('c17'), next: '#/route' }[key];
+        return { run: `${guide}#first-program`, values: en ? `${guide}#values-names` : handbook('c02'), flow: en ? `${guide}#decisions` : handbook('c04'), data: en ? `${guide}#lists` : handbook('c07'), drill: '#/practice/python', debug: en ? `${guide}#read-errors` : handbook('c13'), project: en ? null : handbook('c17'), next: '#/route' }[key];
       },
       exam: (key) => ({ diagnose: firstPaper('diagnostic') ? `#/exam/${c}/${firstPaper('diagnostic').id}` : `#/practice/${c}`, weak: `#/practice/${c}`, review: '#/review', drill: `#/practice/${c}`, sheet: BY_ID[c].sheet ? SITE + BY_ID[c].sheet[BY_ID[c].sheet[lang()] ? lang() : 'zh'] : `#/practice/${c}`, mock: firstPaper('mock') ? `#/exam/${c}/${firstPaper('mock').id}` : `#/practice/${c}`, redo: `#/practice/${c}` }[key]),
       paper: (key) => ({ guide: `${SITE}bridges/${{ comp2017: 'paper-c', info1113: 'paper-java', python: 'paper-python', comp2123: 'paper-python' }[c]}${lang() === 'zh' ? '.zh' : ''}.html`, read: `#/practice/${c}?kind=predict`, trace: `#/practice/${c}?kind=trace`, memory: `#/practice/${c}?kind=memory`, write: `#/practice/${c}?kind=write`, mock: firstPaper('paper') ? `#/exam/${c}/${firstPaper('paper').id}` : `#/practice/${c}?kind=write` }[key]),
@@ -815,7 +818,7 @@ window.LeonStudyInit = (hub) => {
     }
     return withCourse(cid, 'practice', (data) => {
       const c = BY_ID[cid];
-      const cards = data.labs.map((lab) => `<a class="panel route-card" href="#/lab/${cid}/${lab.id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon('code')}</span><span><b>${esc(L(lab.title))}</b><small>${esc(L(lab.summary))}</small></span></a>`).join('');
+      const cards = data.labs.map((lab) => `<a class="panel route-card" href="#/lab/${cid}/${lab.id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon('code')}</span><span><b>${esc(L(lab.title))}</b><small>${inline(L(lab.summary))}</small></span></a>`).join('');
       return frame('practice', `${crumbs([t('labsTitle'), '#/labs'], [c.code])}<div class="page-head"><div><h1>${esc(L(c.title))}</h1><p>${t('labsSub')}</p></div></div><div class="route-cards">${cards}</div>`);
     });
   }
@@ -824,8 +827,8 @@ window.LeonStudyInit = (hub) => {
       const c = BY_ID[cid];
       const lab = data.labs.find((x) => x.id === id);
       if (!lab) return hub.notFound();
-      const steps = lab.steps.map((s) => `<li><h4>${esc(L(s.title))}</h4>${para(L(s.body))}${s.patch ? `<pre class="study-code"><del>${esc(s.patch.from)}</del>\n<ins>${esc(s.patch.to)}</ins></pre>` : ''}${s.command ? `<pre class="study-code">$ ${esc(s.command)}</pre>` : ''}${s.output ? `<h5>${t('labCaptured')}</h5><pre class="study-code output">${esc(s.output)}</pre>` : ''}</li>`).join('');
-      return frame('practice', `${crumbs([t('labsTitle'), '#/labs'], [c.code, `#/labs/${cid}`], [L(lab.title)])}<article class="panel q-panel lab" style="--accent:${c.color}"><header><div class="tags">${(lab.tools || []).map((x) => `<span class="tag">${esc(x)}</span>`).join('')}${lab.minutes ? `<span class="tag">${esc(t('minutes')(lab.minutes))}</span>` : ''}</div><h1>${esc(L(lab.title))}</h1></header><h4>${t('labScenario')}</h4>${para(L(lab.scenario))}${(lab.files || []).map((f) => `<h4>${esc(f.path)}</h4>${codeBlock(f.text)}`).join('')}<h4>${t('labSteps')}</h4><ol class="study-list lab-steps">${steps}</ol>${lab.review ? `<h4>${t('labReview')}</h4><ul class="study-list">${lab.review.map((x) => `<li>${esc(L(x))}</li>`).join('')}</ul>` : ''}${lab.tradeoffs ? `<h4>${t('labTrade')}</h4>${para(L(lab.tradeoffs))}` : ''}${lab.done ? `<h4>${t('labCheck')}</h4><ul class="study-list">${lab.done.map((x) => `<li>${esc(L(x))}</li>`).join('')}</ul>` : ''}</article>`);
+      const steps = lab.steps.map((s) => `<li><h4>${esc(L(s.title))}</h4>${rich(L(s.body))}${s.patch ? `<pre class="study-code"><del>${esc(s.patch.from)}</del>\n<ins>${esc(s.patch.to)}</ins></pre>` : ''}${s.command ? `<pre class="study-code">$ ${esc(s.command)}</pre>` : ''}${s.output ? `<h5>${t('labCaptured')}</h5><pre class="study-code output">${esc(s.output)}</pre>` : ''}</li>`).join('');
+      return frame('practice', `${crumbs([t('labsTitle'), '#/labs'], [c.code, `#/labs/${cid}`], [L(lab.title)])}<article class="panel q-panel lab" style="--accent:${c.color}"><header><div class="tags">${(lab.tools || []).map((x) => `<span class="tag">${esc(x)}</span>`).join('')}${lab.minutes ? `<span class="tag">${esc(t('minutes')(lab.minutes))}</span>` : ''}</div><h1>${esc(L(lab.title))}</h1></header><h4>${t('labScenario')}</h4>${rich(L(lab.scenario))}${(lab.files || []).map((f) => `<h4>${esc(f.path)}</h4>${codeBlock(f.text)}`).join('')}<h4>${t('labSteps')}</h4><ol class="study-list lab-steps">${steps}</ol>${lab.review ? `<h4>${t('labReview')}</h4><ul class="study-list">${lab.review.map((x) => `<li>${inline(L(x))}</li>`).join('')}</ul>` : ''}${lab.tradeoffs ? `<h4>${t('labTrade')}</h4>${rich(L(lab.tradeoffs))}` : ''}${lab.done ? `<h4>${t('labCheck')}</h4><ul class="study-list">${lab.done.map((x) => `<li>${inline(L(x))}</li>`).join('')}</ul>` : ''}</article>`);
     });
   }
 

@@ -17,8 +17,8 @@
    "answer": 0.25,
    "tolerance": 0.005,
    "solution": {
-    "en": "Parent entropy. p(Yes) = 7/12 and p(No) = 5/12.\nlog2(7/12) = 2.807 - 3.585 = -0.778 and log2(5/12) = 2.322 - 3.585 = -1.263.\nH = 0.583 x 0.778 + 0.417 x 1.263 = 0.454 + 0.526 = 0.980.\n\nChildren.\nPhone: 4 Yes of 6, so H(2/3) = 0.918.\nLaptop: 1 Yes of 4, so H(1/4) = 0.811.\nTablet: pure, so H = 0.\n\nWeighted child entropy = 6/12 x 0.918 + 4/12 x 0.811 + 2/12 x 0 = 0.459 + 0.270 = 0.729.\n\nInformation gain = 0.980 - 0.729 = 0.251. The exact value is 0.2503, so any answer within 0.005 is accepted.\n\nCalculator-free: log2 3 = 1.585, log2 5 = 2.322, log2 7 = 2.807, and log2 12 = 2 + log2 3 = 3.585. Three decimals are enough. The pure Tablet branch needs no calculation at all.",
-    "zh": "先算父节点的熵。p(Yes) = 7/12，p(No) = 5/12。\nlog2(7/12) = 2.807 - 3.585 = -0.778，log2(5/12) = 2.322 - 3.585 = -1.263。\nH = 0.583 x 0.778 + 0.417 x 1.263 = 0.454 + 0.526 = 0.980。\n\n再算各个子节点。\nPhone：6 位里有 4 位 Yes，熵为 H(2/3) = 0.918。\nLaptop：4 位里有 1 位 Yes，熵为 H(1/4) = 0.811。\nTablet：两位都是 Yes，节点是纯的，熵为 0。\n\n加权子节点熵 = 6/12 x 0.918 + 4/12 x 0.811 + 2/12 x 0 = 0.459 + 0.270 = 0.729。\n\n信息增益 = 0.980 - 0.729 = 0.251。精确值是 0.2503，所以误差在 0.005 以内的答案都算对。\n\n免计算器做法：记住 log2 3 = 1.585，log2 5 = 2.322，log2 7 = 2.807，log2 12 = 2 + log2 3 = 3.585。保留三位小数就够了。纯的 Tablet 分支不需要任何计算。"
+    "en": "Parent entropy. p(Yes) = 7/12 and p(No) = 5/12.\nlog2(7/12) = 2.807 - 3.585 = -0.778 and log2(5/12) = 2.322 - 3.585 = -1.263.\nH = 0.583 × 0.778 + 0.417 × 1.263 = 0.454 + 0.526 = 0.980.\n\nChildren.\nPhone: 4 Yes of 6, so H(2/3) = 0.918.\nLaptop: 1 Yes of 4, so H(1/4) = 0.811.\nTablet: pure, so H = 0.\n\nWeighted child entropy = 6/12 × 0.918 + 4/12 × 0.811 + 2/12 × 0 = 0.459 + 0.270 = 0.729.\n\nInformation gain = 0.980 - 0.729 = 0.251. The exact value is 0.2503, so any answer within 0.005 is accepted.\n\nCalculator-free: log2 3 = 1.585, log2 5 = 2.322, log2 7 = 2.807, and log2 12 = 2 + log2 3 = 3.585. Three decimals are enough. The pure Tablet branch needs no calculation at all.",
+    "zh": "先算父节点的熵。p(Yes) = 7/12，p(No) = 5/12。\nlog2(7/12) = 2.807 - 3.585 = -0.778，log2(5/12) = 2.322 - 3.585 = -1.263。\nH = 0.583 × 0.778 + 0.417 × 1.263 = 0.454 + 0.526 = 0.980。\n\n再算各个子节点。\nPhone：6 位里有 4 位 Yes，熵为 H(2/3) = 0.918。\nLaptop：4 位里有 1 位 Yes，熵为 H(1/4) = 0.811。\nTablet：两位都是 Yes，节点是纯的，熵为 0。\n\n加权子节点熵 = 6/12 × 0.918 + 4/12 × 0.811 + 2/12 × 0 = 0.459 + 0.270 = 0.729。\n\n信息增益 = 0.980 - 0.729 = 0.251。精确值是 0.2503，所以误差在 0.005 以内的答案都算对。\n\n免计算器做法：记住 log2 3 = 1.585，log2 5 = 2.322，log2 7 = 2.807，log2 12 = 2 + log2 3 = 3.585。保留三位小数就够了。纯的 Tablet 分支不需要任何计算。"
    },
    "verify_code": "from math import log2\n\n\ndef H(*counts):\n    n = sum(counts)\n    return -sum(c / n * log2(c / n) for c in counts if c)\n\n\ngroups = {'Phone': (4, 2), 'Laptop': (1, 3), 'Tablet': (2, 0)}\nassert sum(sum(g) for g in groups.values()) == 12\nbought = sum(g[0] for g in groups.values())\nparent = H(bought, 12 - bought)\nchild = sum(sum(g) / 12 * H(*g) for g in groups.values())\nprint(round(parent - child, 4))\n",
    "code": "Device   Customers   Bought   Did not buy\nPhone        6          4          2\nLaptop       4          1          3\nTablet       2          2          0"
@@ -33,14 +33,14 @@
    },
    "marks": 4,
    "prompt": {
-    "en": "A tree node holds 10 loan records: 6 were repaid and 4 defaulted. The attribute Region has three values.\n\nGain ratio = information gain / split information. Split information is the entropy of the branch sizes: -sum of (n_v / n) x log2(n_v / n), where n_v is the number of records in branch v. Use bits.\n\nWhat is the gain ratio of Region? Give the answer to 3 decimal places.",
-    "zh": "一个决策树节点里有 10 条贷款记录：6 条已还款，4 条违约。属性 Region 有三个取值。\n\n增益率 = 信息增益 / 分裂信息。分裂信息是各分支大小的熵：-Σ (n_v / n) x log2(n_v / n)，其中 n_v 是分支 v 中的记录数。请使用比特。\n\nRegion 的增益率是多少？答案保留 3 位小数。"
+    "en": "A tree node holds 10 loan records: 6 were repaid and 4 defaulted. The attribute Region has three values.\n\nGain ratio = information gain / split information. Split information is the entropy of the branch sizes: -sum of (n_v / n) × log2(n_v / n), where n_v is the number of records in branch v. Use bits.\n\nWhat is the gain ratio of Region? Give the answer to 3 decimal places.",
+    "zh": "一个决策树节点里有 10 条贷款记录：6 条已还款，4 条违约。属性 Region 有三个取值。\n\n增益率 = 信息增益 / 分裂信息。分裂信息是各分支大小的熵：-Σ (n_v / n) × log2(n_v / n)，其中 n_v 是分支 v 中的记录数。请使用比特。\n\nRegion 的增益率是多少？答案保留 3 位小数。"
    },
    "answer": 0.225,
    "tolerance": 0.005,
    "solution": {
-    "en": "Parent entropy: H(6/10) = H(0.4) = 0.971.\nNorth: 4 repaid, 1 default, H(1/5) = 0.722.\nSouth: 2 repaid, 1 default, H(1/3) = 0.918.\nEast: pure, H = 0.\nWeighted = 0.5 x 0.722 + 0.3 x 0.918 + 0.2 x 0 = 0.361 + 0.275 = 0.636.\nInformation gain = 0.971 - 0.636 = 0.335.\n\nSplit information uses the branch sizes 5, 3, 2 out of 10:\n-(0.5 log2 0.5 + 0.3 log2 0.3 + 0.2 log2 0.2)\n= 0.5 x 1 + 0.3 x 1.737 + 0.2 x 2.322 = 0.5 + 0.521 + 0.464 = 1.485.\n(log2(1/0.3) = log2 10 - log2 3 = 3.322 - 1.585 = 1.737.)\n\nGain ratio = 0.335 / 1.485 = 0.2252, so the answer is about 0.225.\n\nWhy this matters. An ID column with 10 different values has gain 0.971 and split information log2 10 = 3.322, so its gain ratio is 0.292. That is larger than Region. The gain ratio shrinks the advantage of many-valued attributes but does not remove it, so practical tree learners also ask for a minimum gain or a minimum branch size.\n\nCalculator-free: H(0.4) = 0.971, H(0.2) = 0.722, H(1/3) = 0.918, log2 3 = 1.585, log2 5 = 2.322. Round to 3 decimals; the tolerance is 0.005.",
-    "zh": "父节点的熵：H(6/10) = H(0.4) = 0.971。\nNorth：4 条还款、1 条违约，H(1/5) = 0.722。\nSouth：2 条还款、1 条违约，H(1/3) = 0.918。\nEast：两条都违约，节点是纯的，H = 0。\n加权熵 = 0.5 x 0.722 + 0.3 x 0.918 + 0.2 x 0 = 0.361 + 0.275 = 0.636。\n信息增益 = 0.971 - 0.636 = 0.335。\n\n分裂信息用 10 条记录里三个分支的大小 5、3、2：\n-(0.5 log2 0.5 + 0.3 log2 0.3 + 0.2 log2 0.2)\n= 0.5 x 1 + 0.3 x 1.737 + 0.2 x 2.322 = 0.5 + 0.521 + 0.464 = 1.485。\n（log2(1/0.3) = log2 10 - log2 3 = 3.322 - 1.585 = 1.737。）\n\n增益率 = 0.335 / 1.485 = 0.2252，所以答案约为 0.225。\n\n这道题的启示：一个有 10 个不同取值的 ID 列，信息增益是 0.971，分裂信息是 log2 10 = 3.322，增益率为 0.292，比 Region 还高。增益率削弱了多取值属性的优势，却没有消除它，所以实际的树学习算法还会要求最小增益或最小分支大小。\n\n免计算器做法：记住 H(0.4) = 0.971，H(0.2) = 0.722，H(1/3) = 0.918，log2 3 = 1.585，log2 5 = 2.322。中间结果保留 3 位小数，容差为 0.005。"
+    "en": "Parent entropy: H(6/10) = H(0.4) = 0.971.\nNorth: 4 repaid, 1 default, H(1/5) = 0.722.\nSouth: 2 repaid, 1 default, H(1/3) = 0.918.\nEast: pure, H = 0.\nWeighted = 0.5 × 0.722 + 0.3 × 0.918 + 0.2 × 0 = 0.361 + 0.275 = 0.636.\nInformation gain = 0.971 - 0.636 = 0.335.\n\nSplit information uses the branch sizes 5, 3, 2 out of 10:\n-(0.5 log2 0.5 + 0.3 log2 0.3 + 0.2 log2 0.2)\n= 0.5 × 1 + 0.3 × 1.737 + 0.2 × 2.322 = 0.5 + 0.521 + 0.464 = 1.485.\n(log2(1/0.3) = log2 10 - log2 3 = 3.322 - 1.585 = 1.737.)\n\nGain ratio = 0.335 / 1.485 = 0.2252, so the answer is about 0.225.\n\nWhy this matters. An ID column with 10 different values has gain 0.971 and split information log2 10 = 3.322, so its gain ratio is 0.292. That is larger than Region. The gain ratio shrinks the advantage of many-valued attributes but does not remove it, so practical tree learners also ask for a minimum gain or a minimum branch size.\n\nCalculator-free: H(0.4) = 0.971, H(0.2) = 0.722, H(1/3) = 0.918, log2 3 = 1.585, log2 5 = 2.322. Round to 3 decimals; the tolerance is 0.005.",
+    "zh": "父节点的熵：H(6/10) = H(0.4) = 0.971。\nNorth：4 条还款、1 条违约，H(1/5) = 0.722。\nSouth：2 条还款、1 条违约，H(1/3) = 0.918。\nEast：两条都违约，节点是纯的，H = 0。\n加权熵 = 0.5 × 0.722 + 0.3 × 0.918 + 0.2 × 0 = 0.361 + 0.275 = 0.636。\n信息增益 = 0.971 - 0.636 = 0.335。\n\n分裂信息用 10 条记录里三个分支的大小 5、3、2：\n-(0.5 log2 0.5 + 0.3 log2 0.3 + 0.2 log2 0.2)\n= 0.5 × 1 + 0.3 × 1.737 + 0.2 × 2.322 = 0.5 + 0.521 + 0.464 = 1.485。\n（log2(1/0.3) = log2 10 - log2 3 = 3.322 - 1.585 = 1.737。）\n\n增益率 = 0.335 / 1.485 = 0.2252，所以答案约为 0.225。\n\n这道题的启示：一个有 10 个不同取值的 ID 列，信息增益是 0.971，分裂信息是 log2 10 = 3.322，增益率为 0.292，比 Region 还高。增益率削弱了多取值属性的优势，却没有消除它，所以实际的树学习算法还会要求最小增益或最小分支大小。\n\n免计算器做法：记住 H(0.4) = 0.971，H(0.2) = 0.722，H(1/3) = 0.918，log2 3 = 1.585，log2 5 = 2.322。中间结果保留 3 位小数，容差为 0.005。"
    },
    "verify_code": "from math import log2\n\n\ndef H(*counts):\n    n = sum(counts)\n    return -sum(c / n * log2(c / n) for c in counts if c)\n\n\nbranches = {'North': (4, 1), 'South': (2, 1), 'East': (0, 2)}\nn = sum(sum(b) for b in branches.values())\nassert n == 10\nrepaid = sum(b[0] for b in branches.values())\ngain = H(repaid, n - repaid) - sum(sum(b) / n * H(*b) for b in branches.values())\nsplit = -sum(sum(b) / n * log2(sum(b) / n) for b in branches.values())\nprint(round(gain / split, 4))\n",
    "code": "Region   Records   Repaid   Defaulted\nNorth       5         4          1\nSouth       3         2          1\nEast        2         0          2"
@@ -61,8 +61,8 @@
    "answer": 0.348,
    "tolerance": 0.002,
    "solution": {
-    "en": "Class sizes: Busy = Yes on 4 days, Busy = No on 5 days. Priors are 4/9 and 5/9.\nWeather has 3 values and Event has 2 values.\n\nBusy = Yes: Rainy never occurred (0 of 4), Event = Yes occurred on 3 of 4.\nP(Rainy | Yes) = (0 + 1) / (4 + 3) = 1/7\nP(Event = Yes | Yes) = (3 + 1) / (4 + 2) = 2/3\nScore = 4/9 x 1/7 x 2/3 = 8/189 = 0.0423\n\nBusy = No: Rainy on 3 of 5, Event = Yes on 1 of 5.\nP(Rainy | No) = (3 + 1) / (5 + 3) = 1/2\nP(Event = Yes | No) = (1 + 1) / (5 + 2) = 2/7\nScore = 5/9 x 1/2 x 2/7 = 5/63 = 15/189 = 0.0794\n\nPosterior = 8 / (8 + 15) = 8/23 = 0.348.\n\nWithout smoothing the Yes score would be 0 because Rainy was never seen on a busy day, so the three busy days with an event could never count. Smoothing keeps that small but real evidence. Note that the denominator uses the number of attribute values (3 for Weather, 2 for Event), not the number of classes.\n\nCalculator-free: keep everything as fractions with the common denominator 189, then divide once at the end. The tolerance is 0.002.",
-    "zh": "类别样本数：Busy = Yes 有 4 天，Busy = No 有 5 天。先验分别是 4/9 和 5/9。\nWeather 有 3 个取值，Event 有 2 个取值。\n\nBusy = Yes：Rainy 一次也没出现（4 天里 0 天），Event = Yes 出现了 3 天。\nP(Rainy | Yes) = (0 + 1) / (4 + 3) = 1/7\nP(Event = Yes | Yes) = (3 + 1) / (4 + 2) = 2/3\n得分 = 4/9 x 1/7 x 2/3 = 8/189 = 0.0423\n\nBusy = No：Rainy 出现 3 天（共 5 天），Event = Yes 出现 1 天（共 5 天）。\nP(Rainy | No) = (3 + 1) / (5 + 3) = 1/2\nP(Event = Yes | No) = (1 + 1) / (5 + 2) = 2/7\n得分 = 5/9 x 1/2 x 2/7 = 5/63 = 15/189 = 0.0794\n\n后验 = 8 / (8 + 15) = 8/23 = 0.348。\n\n如果不平滑，Yes 的得分会变成 0，因为 Rainy 从没在繁忙的日子里出现过，那三个有活动的繁忙日子就永远不起作用。平滑保留了这份虽小却真实的证据。注意分母加的是该属性的取值个数（Weather 是 3，Event 是 2），不是类别个数。\n\n免计算器做法：全部写成分数，通分到 189，最后只做一次除法。容差为 0.002。"
+    "en": "Class sizes: Busy = Yes on 4 days, Busy = No on 5 days. Priors are 4/9 and 5/9.\nWeather has 3 values and Event has 2 values.\n\nBusy = Yes: Rainy never occurred (0 of 4), Event = Yes occurred on 3 of 4.\nP(Rainy | Yes) = (0 + 1) / (4 + 3) = 1/7\nP(Event = Yes | Yes) = (3 + 1) / (4 + 2) = 2/3\nScore = 4/9 × 1/7 × 2/3 = 8/189 = 0.0423\n\nBusy = No: Rainy on 3 of 5, Event = Yes on 1 of 5.\nP(Rainy | No) = (3 + 1) / (5 + 3) = 1/2\nP(Event = Yes | No) = (1 + 1) / (5 + 2) = 2/7\nScore = 5/9 × 1/2 × 2/7 = 5/63 = 15/189 = 0.0794\n\nPosterior = 8 / (8 + 15) = 8/23 = 0.348.\n\nWithout smoothing the Yes score would be 0 because Rainy was never seen on a busy day, so the three busy days with an event could never count. Smoothing keeps that small but real evidence. Note that the denominator uses the number of attribute values (3 for Weather, 2 for Event), not the number of classes.\n\nCalculator-free: keep everything as fractions with the common denominator 189, then divide once at the end. The tolerance is 0.002.",
+    "zh": "类别样本数：Busy = Yes 有 4 天，Busy = No 有 5 天。先验分别是 4/9 和 5/9。\nWeather 有 3 个取值，Event 有 2 个取值。\n\nBusy = Yes：Rainy 一次也没出现（4 天里 0 天），Event = Yes 出现了 3 天。\nP(Rainy | Yes) = (0 + 1) / (4 + 3) = 1/7\nP(Event = Yes | Yes) = (3 + 1) / (4 + 2) = 2/3\n得分 = 4/9 × 1/7 × 2/3 = 8/189 = 0.0423\n\nBusy = No：Rainy 出现 3 天（共 5 天），Event = Yes 出现 1 天（共 5 天）。\nP(Rainy | No) = (3 + 1) / (5 + 3) = 1/2\nP(Event = Yes | No) = (1 + 1) / (5 + 2) = 2/7\n得分 = 5/9 × 1/2 × 2/7 = 5/63 = 15/189 = 0.0794\n\n后验 = 8 / (8 + 15) = 8/23 = 0.348。\n\n如果不平滑，Yes 的得分会变成 0，因为 Rainy 从没在繁忙的日子里出现过，那三个有活动的繁忙日子就永远不起作用。平滑保留了这份虽小却真实的证据。注意分母加的是该属性的取值个数（Weather 是 3，Event 是 2），不是类别个数。\n\n免计算器做法：全部写成分数，通分到 189，最后只做一次除法。容差为 0.002。"
    },
    "verify_code": "rows = [\n    ('Sunny', 'Yes', 'Yes'), ('Sunny', 'Yes', 'Yes'), ('Cloudy', 'No', 'Yes'), ('Cloudy', 'Yes', 'Yes'),\n    ('Rainy', 'No', 'No'), ('Rainy', 'No', 'No'), ('Cloudy', 'No', 'No'), ('Rainy', 'Yes', 'No'), ('Sunny', 'No', 'No'),\n]\nquery = ('Rainy', 'Yes')\nvalues = [{'Sunny', 'Cloudy', 'Rainy'}, {'Yes', 'No'}]\nscore = {}\nfor cls in ('Yes', 'No'):\n    members = [r for r in rows if r[2] == cls]\n    s = len(members) / len(rows)\n    for j, v in enumerate(query):\n        count = sum(1 for r in members if r[j] == v)\n        s *= (count + 1) / (len(members) + len(values[j]))\n    score[cls] = s\nprint(round(score['Yes'] / (score['Yes'] + score['No']), 4))\n",
    "code": "Day   Weather   Event   Busy\n1     Sunny     Yes     Yes\n2     Sunny     Yes     Yes\n3     Cloudy    No      Yes\n4     Cloudy    Yes     Yes\n5     Rainy     No      No\n6     Rainy     No      No\n7     Cloudy    No      No\n8     Rainy     Yes     No\n9     Sunny     No      No"
@@ -109,8 +109,8 @@
    "answer": -1.5,
    "tolerance": 0.001,
    "solution": {
-    "en": "Example 1: z = 1 x 2 + (-1) x 1 + 0.5 = 1.5, so a = 1. Target is 0, so error t - a = -1.\nw = (1, -1) + 0.5 x (-1) x (2, 1) = (0, -1.5). b = 0.5 + 0.5 x (-1) = 0.\n\nExample 2: z = 0 x (-1) + (-1.5) x 1 + 0 = -1.5, so a = 0. Target is 1, so error = +1.\nw = (0, -1.5) + 0.5 x (+1) x (-1, 1) = (-0.5, -1). b = 0 + 0.5 = 0.5.\n\nExample 1 again: z = (-0.5) x 2 + (-1) x 1 + 0.5 = -1.5.\n\nSanity check: example 1 now gives a = 0, which matches its target, so the first update was not undone by the second. The score moved from +1.5 to -1.5, which is the intended direction.\n\nCalculator-free: all numbers are multiples of 0.5, so no approximation is needed.",
-    "zh": "样本 1：z = 1 x 2 + (-1) x 1 + 0.5 = 1.5，所以 a = 1。目标是 0，误差 t - a = -1。\nw = (1, -1) + 0.5 x (-1) x (2, 1) = (0, -1.5)。b = 0.5 + 0.5 x (-1) = 0。\n\n样本 2：z = 0 x (-1) + (-1.5) x 1 + 0 = -1.5，所以 a = 0。目标是 1，误差 = +1。\nw = (0, -1.5) + 0.5 x (+1) x (-1, 1) = (-0.5, -1)。b = 0 + 0.5 = 0.5。\n\n再算样本 1：z = (-0.5) x 2 + (-1) x 1 + 0.5 = -1.5。\n\n合理性检查：样本 1 现在输出 a = 0，与目标一致，说明第二次更新没有把第一次更新的效果抵消。得分从 +1.5 变成 -1.5，方向正是我们想要的。\n\n免计算器做法：所有数字都是 0.5 的倍数，不需要任何近似。"
+    "en": "Example 1: z = 1 × 2 + (-1) × 1 + 0.5 = 1.5, so a = 1. Target is 0, so error t - a = -1.\nw = (1, -1) + 0.5 × (-1) × (2, 1) = (0, -1.5). b = 0.5 + 0.5 × (-1) = 0.\n\nExample 2: z = 0 × (-1) + (-1.5) × 1 + 0 = -1.5, so a = 0. Target is 1, so error = +1.\nw = (0, -1.5) + 0.5 × (+1) × (-1, 1) = (-0.5, -1). b = 0 + 0.5 = 0.5.\n\nExample 1 again: z = (-0.5) × 2 + (-1) × 1 + 0.5 = -1.5.\n\nSanity check: example 1 now gives a = 0, which matches its target, so the first update was not undone by the second. The score moved from +1.5 to -1.5, which is the intended direction.\n\nCalculator-free: all numbers are multiples of 0.5, so no approximation is needed.",
+    "zh": "样本 1：z = 1 × 2 + (-1) × 1 + 0.5 = 1.5，所以 a = 1。目标是 0，误差 t - a = -1。\nw = (1, -1) + 0.5 × (-1) × (2, 1) = (0, -1.5)。b = 0.5 + 0.5 × (-1) = 0。\n\n样本 2：z = 0 × (-1) + (-1.5) × 1 + 0 = -1.5，所以 a = 0。目标是 1，误差 = +1。\nw = (0, -1.5) + 0.5 × (+1) × (-1, 1) = (-0.5, -1)。b = 0 + 0.5 = 0.5。\n\n再算样本 1：z = (-0.5) × 2 + (-1) × 1 + 0.5 = -1.5。\n\n合理性检查：样本 1 现在输出 a = 0，与目标一致，说明第二次更新没有把第一次更新的效果抵消。得分从 +1.5 变成 -1.5，方向正是我们想要的。\n\n免计算器做法：所有数字都是 0.5 的倍数，不需要任何近似。"
    },
    "verify_code": "w = [1.0, -1.0]\nb = 0.5\neta = 0.5\n\n\ndef score(x):\n    return w[0] * x[0] + w[1] * x[1] + b\n\n\nfor x, t in [((2, 1), 0), ((-1, 1), 1)]:\n    a = 1 if score(x) >= 0 else 0\n    e = t - a\n    w = [w[0] + eta * e * x[0], w[1] + eta * e * x[1]]\n    b = b + eta * e\nprint(score((2, 1)))\n"
   },
@@ -124,14 +124,14 @@
    },
    "marks": 6,
    "prompt": {
-    "en": "A tiny network has two inputs, one hidden unit and one output unit. Both units use the sigmoid s(z) = 1 / (1 + e^-z). The loss is L = 1/2 (a_out - t)^2.\n\nHidden unit: weights w1 = 1 and w2 = -0.5, bias 0.\nOutput unit: weight v = 2 from the hidden unit, bias c = -0.5.\n\nInput x = (1, 2), target t = 1, learning rate 0.5. Do one forward pass and one backward pass for this single example. Compute all gradients with the OLD weights, then update every weight.\n\nYou may use s(0) = 0.5 and s(0.5) = 0.6225.\n\nWhat is the new value of w2? Give the answer to 3 decimal places.",
-    "zh": "一个小网络有两个输入、一个隐藏单元和一个输出单元。两个单元都用 sigmoid：s(z) = 1 / (1 + e^-z)。损失为 L = 1/2 (a_out - t)^2。\n\n隐藏单元：权重 w1 = 1，w2 = -0.5，偏置 0。\n输出单元：来自隐藏单元的权重 v = 2，偏置 c = -0.5。\n\n输入 x = (1, 2)，目标 t = 1，学习率 0.5。对这一个样本做一次前向传播和一次反向传播。所有梯度都用旧权重计算，然后再更新每个权重。\n\n可以直接使用 s(0) = 0.5 和 s(0.5) = 0.6225。\n\nw2 更新后的新值是多少？答案保留 3 位小数。"
+    "en": "A tiny network has two inputs, one hidden unit and one output unit. Both units use the sigmoid σ(z) = 1 / (1 + e^-z). The loss is L = 1/2 (a_out - t)^2.\n\nHidden unit: weights w1 = 1 and w2 = -0.5, bias 0.\nOutput unit: weight v = 2 from the hidden unit, bias c = -0.5.\n\nInput x = (1, 2), target t = 1, learning rate 0.5. Do one forward pass and one backward pass for this single example. Compute all gradients with the OLD weights, then update every weight.\n\nYou may use σ(0) = 0.5 and σ(0.5) = 0.6225.\n\nWhat is the new value of w2? Give the answer to 3 decimal places.",
+    "zh": "一个小网络有两个输入、一个隐藏单元和一个输出单元。两个单元都用 sigmoid：σ(z) = 1 / (1 + e^-z)。损失为 L = 1/2 (a_out - t)^2。\n\n隐藏单元：权重 w1 = 1，w2 = -0.5，偏置 0。\n输出单元：来自隐藏单元的权重 v = 2，偏置 c = -0.5。\n\n输入 x = (1, 2)，目标 t = 1，学习率 0.5。对这一个样本做一次前向传播和一次反向传播。所有梯度都用旧权重计算，然后再更新每个权重。\n\n可以直接使用 σ(0) = 0.5 和 σ(0.5) = 0.6225。\n\nw2 更新后的新值是多少？答案保留 3 位小数。"
    },
    "answer": -0.456,
    "tolerance": 0.002,
    "solution": {
-    "en": "Forward pass.\nHidden: z_h = 1 x 1 + (-0.5) x 2 + 0 = 0, so a_h = s(0) = 0.5.\nOutput: z_o = 2 x 0.5 - 0.5 = 0.5, so a_o = s(0.5) = 0.6225.\n\nBackward pass.\nOutput delta: d_o = (a_o - t) x a_o (1 - a_o) = (0.6225 - 1) x 0.6225 x 0.3775 = -0.3775 x 0.2350 = -0.0887.\nHidden delta uses the OLD output weight v = 2: d_h = a_h (1 - a_h) x v x d_o = 0.25 x 2 x (-0.0887) = -0.0444.\n\nGradient for w2 is d_h x x2 = -0.0444 x 2 = -0.0887.\nNew w2 = w2 - 0.5 x gradient = -0.5 - 0.5 x (-0.0887) = -0.5 + 0.0444 = -0.4556.\n\nSo the answer is about -0.456.\n\nTwo things to check. First, the sign: the output is too low (0.6225 against target 1), so the hidden delta is negative, and the update pushes w2 up toward zero, which raises z_h and then a_o. Second, the hidden delta must use v = 2, not the updated v = 2 + 0.5 x 0.0887 x 0.5 = 2.022.\n\nCalculator-free: a(1 - a) for 0.6225 is 0.6225 x 0.3775 = 0.235. Keep 4 decimals in the deltas. The tolerance is 0.002.",
-    "zh": "前向传播。\n隐藏单元：z_h = 1 x 1 + (-0.5) x 2 + 0 = 0，所以 a_h = s(0) = 0.5。\n输出单元：z_o = 2 x 0.5 - 0.5 = 0.5，所以 a_o = s(0.5) = 0.6225。\n\n反向传播。\n输出层 delta：d_o = (a_o - t) x a_o (1 - a_o) = (0.6225 - 1) x 0.6225 x 0.3775 = -0.3775 x 0.2350 = -0.0887。\n隐藏层 delta 要用旧的输出权重 v = 2：d_h = a_h (1 - a_h) x v x d_o = 0.25 x 2 x (-0.0887) = -0.0444。\n\nw2 的梯度是 d_h x x2 = -0.0444 x 2 = -0.0887。\n新的 w2 = w2 - 0.5 x 梯度 = -0.5 - 0.5 x (-0.0887) = -0.5 + 0.0444 = -0.4556。\n\n所以答案约为 -0.456。\n\n两点检查：第一，符号。输出偏低（0.6225，目标是 1），所以隐藏层 delta 为负，更新把 w2 推向 0，从而提高 z_h，进而提高 a_o。第二，隐藏层 delta 必须用 v = 2，而不是更新后的 v = 2 + 0.5 x 0.0887 x 0.5 = 2.022。\n\n免计算器做法：0.6225 的 a(1 - a) 是 0.6225 x 0.3775 = 0.235。delta 保留 4 位小数。容差为 0.002。"
+    "en": "Forward pass.\nHidden: z_h = 1 × 1 + (-0.5) × 2 + 0 = 0, so a_h = σ(0) = 0.5.\nOutput: z_o = 2 × 0.5 - 0.5 = 0.5, so a_o = σ(0.5) = 0.6225.\n\nBackward pass.\nOutput delta: δ_o = (a_o - t) × a_o (1 - a_o) = (0.6225 - 1) × 0.6225 × 0.3775 = -0.3775 × 0.2350 = -0.0887.\nHidden delta uses the OLD output weight v = 2: δ_h = a_h (1 - a_h) × v × δ_o = 0.25 × 2 × (-0.0887) = -0.0444.\n\nGradient for w2 is δ_h × x2 = -0.0444 × 2 = -0.0887.\nNew w2 = w2 - 0.5 × gradient = -0.5 - 0.5 × (-0.0887) = -0.5 + 0.0444 = -0.4556.\n\nSo the answer is about -0.456.\n\nTwo things to check. First, the sign: the output is too low (0.6225 against target 1), so the hidden delta is negative, and the update pushes w2 up toward zero, which raises z_h and then a_o. Second, the hidden delta must use v = 2, not the updated v = 2 + 0.5 × 0.0887 × 0.5 = 2.022.\n\nCalculator-free: a(1 - a) for 0.6225 is 0.6225 × 0.3775 = 0.235. Keep 4 decimals in the deltas. The tolerance is 0.002.",
+    "zh": "前向传播。\n隐藏单元：z_h = 1 × 1 + (-0.5) × 2 + 0 = 0，所以 a_h = σ(0) = 0.5。\n输出单元：z_o = 2 × 0.5 - 0.5 = 0.5，所以 a_o = σ(0.5) = 0.6225。\n\n反向传播。\n输出层 delta：δ_o = (a_o - t) × a_o (1 - a_o) = (0.6225 - 1) × 0.6225 × 0.3775 = -0.3775 × 0.2350 = -0.0887。\n隐藏层 delta 要用旧的输出权重 v = 2：δ_h = a_h (1 - a_h) × v × δ_o = 0.25 × 2 × (-0.0887) = -0.0444。\n\nw2 的梯度是 δ_h × x2 = -0.0444 × 2 = -0.0887。\n新的 w2 = w2 - 0.5 × 梯度 = -0.5 - 0.5 × (-0.0887) = -0.5 + 0.0444 = -0.4556。\n\n所以答案约为 -0.456。\n\n两点检查：第一，符号。输出偏低（0.6225，目标是 1），所以隐藏层 delta 为负，更新把 w2 推向 0，从而提高 z_h，进而提高 a_o。第二，隐藏层 delta 必须用 v = 2，而不是更新后的 v = 2 + 0.5 × 0.0887 × 0.5 = 2.022。\n\n免计算器做法：0.6225 的 a(1 - a) 是 0.6225 × 0.3775 = 0.235。delta 保留 4 位小数。容差为 0.002。"
    },
    "verify_code": "from math import exp\n\n\ndef sig(z):\n    return 1 / (1 + exp(-z))\n\n\nx = (1.0, 2.0)\nt = 1.0\neta = 0.5\nw = [1.0, -0.5]\nbh = 0.0\nv = 2.0\nc = -0.5\nah = sig(w[0] * x[0] + w[1] * x[1] + bh)\nao = sig(v * ah + c)\ndo = (ao - t) * ao * (1 - ao)\ndh = ah * (1 - ah) * v * do\nprint(round(w[1] - eta * dh * x[1], 4))\n"
   },
@@ -151,8 +151,8 @@
    "answer": 0.583,
    "tolerance": 0.002,
    "solution": {
-    "en": "Read the Medium row and the Medium column.\nTP = 21 (true Medium, predicted Medium).\nFN = 8 + 6 = 14 (true Medium, predicted something else; the rest of the row).\nFP = 6 + 10 = 16 (predicted Medium, truly Low or High; the rest of the column).\n\nPrecision = 21 / (21 + 16) = 21/37 = 0.568.\nRecall = 21 / (21 + 14) = 21/35 = 0.600.\nF1 = 2TP / (2TP + FP + FN) = 42 / (42 + 16 + 14) = 42/72 = 0.5833.\n\nThe shortcut form needs only one division. Do not use the 30 and 18 on the other diagonal cells: they are true negatives for this class and F1 ignores them.\n\nCalculator-free: 42/72 = 7/12 = 0.583.",
-    "zh": "看 Medium 这一行和 Medium 这一列。\nTP = 21（真实是 Medium，预测也是 Medium）。\nFN = 8 + 6 = 14（真实是 Medium，却预测成别的；就是这一行的其余格子）。\nFP = 6 + 10 = 16（预测为 Medium，真实却是 Low 或 High；就是这一列的其余格子）。\n\n精确率 = 21 / (21 + 16) = 21/37 = 0.568。\n召回率 = 21 / (21 + 14) = 21/35 = 0.600。\nF1 = 2TP / (2TP + FP + FN) = 42 / (42 + 16 + 14) = 42/72 = 0.5833。\n\n用这个简写形式只需要做一次除法。不要用到另外两个对角线上的 30 和 18：对 Medium 这一类来说它们是真负例，而 F1 不使用真负例。\n\n免计算器做法：42/72 = 7/12 = 0.583。"
+    "en": "Read the Medium row and the Medium column.\nTP = 21 (true Medium, predicted Medium).\nFN = 8 + 6 = 14 (true Medium, predicted something else; the rest of the row).\nFP = 6 + 10 = 16 (predicted Medium, truly Low or High; the rest of the column).\n\nPrecision = 21 / (21 + 16) = 21/37 = 0.568.\nRecall = 21 / (21 + 14) = 21/35 = 0.600.\nF1 = 2TP / (2TP + FP + FN) = 42 / (42 + 16 + 14) = 42/72 = 0.5833.\n\nThe shortcut form needs only one division. Do not use the 30 and 18 on the diagonal: for the Medium class they are part of the true negatives, and F1 ignores true negatives.\n\nCalculator-free: 42/72 = 7/12 = 0.583.",
+    "zh": "看 Medium 这一行和 Medium 这一列。\nTP = 21（真实是 Medium，预测也是 Medium）。\nFN = 8 + 6 = 14（真实是 Medium，却预测成别的；就是这一行的其余格子）。\nFP = 6 + 10 = 16（预测为 Medium，真实却是 Low 或 High；就是这一列的其余格子）。\n\n精确率 = 21 / (21 + 16) = 21/37 = 0.568。\n召回率 = 21 / (21 + 14) = 21/35 = 0.600。\nF1 = 2TP / (2TP + FP + FN) = 42 / (42 + 16 + 14) = 42/72 = 0.5833。\n\n用这个简写形式只需要做一次除法。不要用到对角线上的 30 和 18：对 Medium 这一类来说，它们属于真负例，而 F1 不使用真负例。\n\n免计算器做法：42/72 = 7/12 = 0.583。"
    },
    "verify_code": "matrix = [[30, 6, 4], [8, 21, 6], [2, 10, 18]]\nassert sum(map(sum, matrix)) == 105\nk = 1\ntp = matrix[k][k]\nfn = sum(matrix[k]) - tp\nfp = sum(row[k] for row in matrix) - tp\nprint(round(2 * tp / (2 * tp + fp + fn), 4))\n",
    "code": "              Pred Low   Pred Medium   Pred High\nTrue Low         30           6            4\nTrue Medium       8          21            6\nTrue High         2          10           18"
@@ -215,8 +215,8 @@
    "answer": 0.476,
    "tolerance": 0.002,
    "solution": {
-    "en": "Bayes rule with the law of total probability.\nP(defective) = 0.5 x 0.02 + 0.3 x 0.04 + 0.2 x 0.10 = 0.010 + 0.012 + 0.020 = 0.042.\nP(Emma and defective) = 0.2 x 0.10 = 0.020.\nP(Emma | defective) = 0.020 / 0.042 = 10/21 = 0.476.\n\nEmma makes only 20% of the parts but 47.6% of the defects, because her defect rate is high. The posterior mixes the prior (how many parts) with the likelihood (how often each machine fails).\n\nCalculator-free: 0.020 / 0.042 = 20/42 = 10/21. Dividing 10 by 21 gives 0.476.",
-    "zh": "用贝叶斯公式和全概率公式。\nP(次品) = 0.5 x 0.02 + 0.3 x 0.04 + 0.2 x 0.10 = 0.010 + 0.012 + 0.020 = 0.042。\nP(Emma 且次品) = 0.2 x 0.10 = 0.020。\nP(Emma | 次品) = 0.020 / 0.042 = 10/21 = 0.476。\n\nEmma 只生产 20% 的零件，却造成 47.6% 的次品，因为她的次品率很高。后验概率把先验（各机器产量多少）和似然（各机器出次品的频率）合在一起。\n\n免计算器做法：0.020 / 0.042 = 20/42 = 10/21。10 除以 21 得 0.476。"
+    "en": "Bayes rule with the law of total probability.\nP(defective) = 0.5 × 0.02 + 0.3 × 0.04 + 0.2 × 0.10 = 0.010 + 0.012 + 0.020 = 0.042.\nP(Emma and defective) = 0.2 × 0.10 = 0.020.\nP(Emma | defective) = 0.020 / 0.042 = 10/21 = 0.476.\n\nEmma makes only 20% of the parts but 47.6% of the defects, because her defect rate is high. The posterior mixes the prior (how many parts) with the likelihood (how often each machine fails).\n\nCalculator-free: 0.020 / 0.042 = 20/42 = 10/21. Dividing 10 by 21 gives 0.476.",
+    "zh": "用贝叶斯公式和全概率公式。\nP(次品) = 0.5 × 0.02 + 0.3 × 0.04 + 0.2 × 0.10 = 0.010 + 0.012 + 0.020 = 0.042。\nP(Emma 且次品) = 0.2 × 0.10 = 0.020。\nP(Emma | 次品) = 0.020 / 0.042 = 10/21 = 0.476。\n\nEmma 只生产 20% 的零件，却造成 47.6% 的次品，因为她的次品率很高。后验概率把先验（各机器产量多少）和似然（各机器出次品的频率）合在一起。\n\n免计算器做法：0.020 / 0.042 = 20/42 = 10/21。10 除以 21 得 0.476。"
    },
    "verify_code": "share = {'Leon': 0.5, 'Mia': 0.3, 'Emma': 0.2}\nrate = {'Leon': 0.02, 'Mia': 0.04, 'Emma': 0.10}\np_def = sum(share[m] * rate[m] for m in share)\nprint(round(share['Emma'] * rate['Emma'] / p_def, 4))\n"
   },
@@ -230,14 +230,14 @@
    },
    "marks": 3,
    "prompt": {
-    "en": "AdaBoost has five training examples with current weights D = (0.05, 0.15, 0.25, 0.30, 0.25). They sum to 1.\n\nA weak classifier is wrong on examples 1 and 2 only, and right on examples 3, 4 and 5.\n\nLet e be its weighted error and a = 1/2 ln((1 - e) / e). Multiply the weight of a wrong example by e^a and the weight of a right example by e^-a. Then divide all weights by their sum so they add to 1.\n\nWhat is the new weight of example 2? Give the answer to 3 decimal places.",
-    "zh": "AdaBoost 有五个训练样本，当前权重为 D = (0.05, 0.15, 0.25, 0.30, 0.25)，总和为 1。\n\n一个弱分类器只在样本 1 和样本 2 上出错，在样本 3、4、5 上正确。\n\n设它的加权错误率为 e，a = 1/2 ln((1 - e) / e)。出错样本的权重乘以 e^a，答对样本的权重乘以 e^-a，然后把所有权重除以它们的总和，使总和为 1。\n\n样本 2 的新权重是多少？答案保留 3 位小数。"
+    "en": "AdaBoost has five training examples with current weights D = (0.05, 0.15, 0.25, 0.30, 0.25). They sum to 1.\n\nA weak classifier is wrong on examples 1 and 2 only, and right on examples 3, 4 and 5.\n\nLet ε be its weighted error and α = 1/2 ln((1 - ε) / ε). Multiply the weight of a wrong example by e^α and the weight of a right example by e^-α. Then divide all weights by their sum so they add to 1.\n\nWhat is the new weight of example 2? Give the answer to 3 decimal places.",
+    "zh": "AdaBoost 有五个训练样本，当前权重为 D = (0.05, 0.15, 0.25, 0.30, 0.25)，总和为 1。\n\n一个弱分类器只在样本 1 和样本 2 上出错，在样本 3、4、5 上正确。\n\n设它的加权错误率为 ε，α = 1/2 ln((1 - ε) / ε)。出错样本的权重乘以 e^α，答对样本的权重乘以 e^-α，然后把所有权重除以它们的总和，使总和为 1。\n\n样本 2 的新权重是多少？答案保留 3 位小数。"
    },
    "answer": 0.375,
    "tolerance": 0.002,
    "solution": {
-    "en": "Weighted error: e = 0.05 + 0.15 = 0.20.\na = 1/2 ln(0.8 / 0.2) = 1/2 ln 4 = ln 2 = 0.693.\nSo e^a = 2 and e^-a = 0.5. You can skip the logarithm: e^a = sqrt((1 - e) / e) = sqrt 4 = 2.\n\nUnnormalised weights:\nExample 1 (wrong): 0.05 x 2 = 0.10\nExample 2 (wrong): 0.15 x 2 = 0.30\nExample 3 (right): 0.25 x 0.5 = 0.125\nExample 4 (right): 0.30 x 0.5 = 0.15\nExample 5 (right): 0.25 x 0.5 = 0.125\nSum = 0.80. (This always equals 2 sqrt(e (1 - e)) = 2 x 0.4 = 0.8.)\n\nNew weight of example 2 = 0.30 / 0.80 = 0.375.\n\nCheck: the new weights are 0.125, 0.375, 0.156, 0.1875, 0.156. The two wrong examples now hold 0.5 in total, up from 0.2, and the right ones hold 0.5. That is how AdaBoost makes the next learner face a task where the previous one was no better than a coin flip.\n\nCalculator-free: use e^a = sqrt((1 - e) / e) = 2, so no logarithm or exponential is needed.",
-    "zh": "加权错误率：e = 0.05 + 0.15 = 0.20。\na = 1/2 ln(0.8 / 0.2) = 1/2 ln 4 = ln 2 = 0.693。\n所以 e^a = 2，e^-a = 0.5。其实可以跳过对数：e^a = sqrt((1 - e) / e) = sqrt 4 = 2。\n\n未归一化的权重：\n样本 1（错）：0.05 x 2 = 0.10\n样本 2（错）：0.15 x 2 = 0.30\n样本 3（对）：0.25 x 0.5 = 0.125\n样本 4（对）：0.30 x 0.5 = 0.15\n样本 5（对）：0.25 x 0.5 = 0.125\n总和 = 0.80。（这个总和总是等于 2 sqrt(e (1 - e)) = 2 x 0.4 = 0.8。）\n\n样本 2 的新权重 = 0.30 / 0.80 = 0.375。\n\n检查：新权重是 0.125、0.375、0.156、0.1875、0.156。两个出错样本的权重总和从 0.2 升到 0.5，答对的样本合计也是 0.5。这就是 AdaBoost 的做法：让下一个学习器面对的任务里，上一个学习器的表现只相当于抛硬币。\n\n免计算器做法：用 e^a = sqrt((1 - e) / e) = 2，既不需要对数也不需要指数。"
+    "en": "Weighted error: ε = 0.05 + 0.15 = 0.20.\nα = 1/2 ln(0.8 / 0.2) = 1/2 ln 4 = ln 2 = 0.693.\nSo e^α = 2 and e^-α = 0.5. You can skip the logarithm: e^α = sqrt((1 - ε) / ε) = sqrt 4 = 2.\n\nUnnormalised weights:\nExample 1 (wrong): 0.05 × 2 = 0.10\nExample 2 (wrong): 0.15 × 2 = 0.30\nExample 3 (right): 0.25 × 0.5 = 0.125\nExample 4 (right): 0.30 × 0.5 = 0.15\nExample 5 (right): 0.25 × 0.5 = 0.125\nSum = 0.80. (This always equals 2 sqrt(ε (1 - ε)) = 2 × 0.4 = 0.8.)\n\nNew weight of example 2 = 0.30 / 0.80 = 0.375.\n\nCheck: the new weights are 0.125, 0.375, 0.156, 0.1875, 0.156. The two wrong examples now hold 0.5 in total, up from 0.2, and the right ones hold 0.5. That is how AdaBoost makes the next learner face a task where the previous one was no better than a coin flip.\n\nCalculator-free: use e^α = sqrt((1 - ε) / ε) = 2, so no logarithm or exponential is needed.",
+    "zh": "加权错误率：ε = 0.05 + 0.15 = 0.20。\nα = 1/2 ln(0.8 / 0.2) = 1/2 ln 4 = ln 2 = 0.693。\n所以 e^α = 2，e^-α = 0.5。其实可以跳过对数：e^α = sqrt((1 - ε) / ε) = sqrt 4 = 2。\n\n未归一化的权重：\n样本 1（错）：0.05 × 2 = 0.10\n样本 2（错）：0.15 × 2 = 0.30\n样本 3（对）：0.25 × 0.5 = 0.125\n样本 4（对）：0.30 × 0.5 = 0.15\n样本 5（对）：0.25 × 0.5 = 0.125\n总和 = 0.80。（这个总和总是等于 2 sqrt(ε (1 - ε)) = 2 × 0.4 = 0.8。）\n\n样本 2 的新权重 = 0.30 / 0.80 = 0.375。\n\n检查：新权重是 0.125、0.375、0.156、0.1875、0.156。两个出错样本的权重总和从 0.2 升到 0.5，答对的样本合计也是 0.5。这就是 AdaBoost 的做法：让下一个学习器面对的任务里，上一个学习器的表现只相当于抛硬币。\n\n免计算器做法：用 e^α = sqrt((1 - ε) / ε) = 2，既不需要对数也不需要指数。"
    },
    "verify_code": "from math import exp, log\n\nD = [0.05, 0.15, 0.25, 0.30, 0.25]\nwrong = {0, 1}\ne = sum(D[i] for i in wrong)\na = 0.5 * log((1 - e) / e)\nnew = [D[i] * (exp(a) if i in wrong else exp(-a)) for i in range(5)]\ntotal = sum(new)\nprint(round(new[1] / total, 4))\n"
   },
@@ -257,8 +257,8 @@
    "answer": 3.8,
    "tolerance": 0.01,
    "solution": {
-    "en": "Work from the leaves up.\nMove a: MIN nodes give min(8, 3) = 3 and min(5, 9) = 5. Chance value = 0.6 x 3 + 0.4 x 5 = 1.8 + 2.0 = 3.8.\nMove b: MIN nodes give min(2, 12) = 2 and min(6, 4) = 4. Chance value = 0.3 x 2 + 0.7 x 4 = 0.6 + 2.8 = 3.4.\nMove c: MIN nodes give min(7, 1) = 1 and min(10, 6) = 6. Chance value = 0.5 x 1 + 0.5 x 6 = 3.5.\n\nMAX takes the largest: max(3.8, 3.4, 3.5) = 3.8, by move a.\n\nCommon slips: taking the larger leaf under MIN, using the average of the two leaves instead of the minimum, or taking the maximum over the chance outcomes. At a chance node the value is the probability-weighted average of the child values.\n\nCalculator-free: the arithmetic is exact with one decimal place.",
-    "zh": "从叶子往上算。\n走法 a：MIN 节点分别得 min(8, 3) = 3 和 min(5, 9) = 5。机会节点的值 = 0.6 x 3 + 0.4 x 5 = 1.8 + 2.0 = 3.8。\n走法 b：MIN 节点分别得 min(2, 12) = 2 和 min(6, 4) = 4。机会节点的值 = 0.3 x 2 + 0.7 x 4 = 0.6 + 2.8 = 3.4。\n走法 c：MIN 节点分别得 min(7, 1) = 1 和 min(10, 6) = 6。机会节点的值 = 0.5 x 1 + 0.5 x 6 = 3.5。\n\nMAX 取最大值：max(3.8, 3.4, 3.5) = 3.8，选走法 a。\n\n常见的错误：在 MIN 节点取了较大的叶子；用两个叶子的平均数代替最小值；在机会节点上取最大值。机会节点的值是各子节点值按概率加权的平均。\n\n免计算器做法：算术只涉及一位小数，结果是精确的。"
+    "en": "Work from the leaves up.\nMove a: MIN nodes give min(8, 3) = 3 and min(5, 9) = 5. Chance value = 0.6 × 3 + 0.4 × 5 = 1.8 + 2.0 = 3.8.\nMove b: MIN nodes give min(2, 12) = 2 and min(6, 4) = 4. Chance value = 0.3 × 2 + 0.7 × 4 = 0.6 + 2.8 = 3.4.\nMove c: MIN nodes give min(7, 1) = 1 and min(10, 6) = 6. Chance value = 0.5 × 1 + 0.5 × 6 = 3.5.\n\nMAX takes the largest: max(3.8, 3.4, 3.5) = 3.8, by move a.\n\nCommon slips: taking the larger leaf under MIN, using the average of the two leaves instead of the minimum, or taking the maximum over the chance outcomes. At a chance node the value is the probability-weighted average of the child values.\n\nCalculator-free: the arithmetic is exact with one decimal place.",
+    "zh": "从叶子往上算。\n走法 a：MIN 节点分别得 min(8, 3) = 3 和 min(5, 9) = 5。机会节点的值 = 0.6 × 3 + 0.4 × 5 = 1.8 + 2.0 = 3.8。\n走法 b：MIN 节点分别得 min(2, 12) = 2 和 min(6, 4) = 4。机会节点的值 = 0.3 × 2 + 0.7 × 4 = 0.6 + 2.8 = 3.4。\n走法 c：MIN 节点分别得 min(7, 1) = 1 和 min(10, 6) = 6。机会节点的值 = 0.5 × 1 + 0.5 × 6 = 3.5。\n\nMAX 取最大值：max(3.8, 3.4, 3.5) = 3.8，选走法 a。\n\n常见的错误：在 MIN 节点取了较大的叶子；用两个叶子的平均数代替最小值；在机会节点上取最大值。机会节点的值是各子节点值按概率加权的平均。\n\n免计算器做法：算术只涉及一位小数，结果是精确的。"
    },
    "verify_code": "tree = {\n    'a': [(0.6, [8, 3]), (0.4, [5, 9])],\n    'b': [(0.3, [2, 12]), (0.7, [6, 4])],\n    'c': [(0.5, [7, 1]), (0.5, [10, 6])],\n}\nvalues = {m: sum(p * min(leaves) for p, leaves in outcomes) for m, outcomes in tree.items()}\nprint(round(max(values.values()), 4))\n",
    "code": "Root (MAX), three moves:\n  a -> chance:  0.6 -> MIN [8, 3]    0.4 -> MIN [5, 9]\n  b -> chance:  0.3 -> MIN [2, 12]   0.7 -> MIN [6, 4]\n  c -> chance:  0.5 -> MIN [7, 1]    0.5 -> MIN [10, 6]"
@@ -279,8 +279,8 @@
    "answer": 0.73,
    "tolerance": 0.002,
    "solution": {
-    "en": "The joint factorises as P(F) P(A) P(S | F, A) P(V | F). The evidence is S = true and V = true, and A is hidden.\n\nF = true:\nsum over A of P(A) P(S | F, A) = 0.3 x 0.9 + 0.7 x 0.7 = 0.27 + 0.49 = 0.76.\nScore = P(F) x P(V | F) x 0.76 = 0.1 x 0.8 x 0.76 = 0.0608.\n\nF = false:\nsum over A of P(A) P(S | not F, A) = 0.3 x 0.6 + 0.7 x 0.1 = 0.18 + 0.07 = 0.25.\nScore = 0.9 x 0.1 x 0.25 = 0.0225.\n\nNormalise: P(F | S, V) = 0.0608 / (0.0608 + 0.0225) = 0.0608 / 0.0833 = 0.730.\n\nNote that V depends only on F, so P(V | F) goes outside the sum over A. Pulling it out saves work, and every factor that does not mention A can be moved out of the sum. The prior P(F) = 0.1 was low, but two symptoms that fit Flu well raise it to 73%.\n\nCalculator-free: the products are exact in four decimals. 0.0608 / 0.0833 = 0.7299.",
-    "zh": "联合分布分解为 P(F) P(A) P(S | F, A) P(V | F)。证据是 S = true 和 V = true，A 是隐藏变量。\n\nF = true：\n对 A 求和 P(A) P(S | F, A) = 0.3 x 0.9 + 0.7 x 0.7 = 0.27 + 0.49 = 0.76。\n得分 = P(F) x P(V | F) x 0.76 = 0.1 x 0.8 x 0.76 = 0.0608。\n\nF = false：\n对 A 求和 P(A) P(S | 非 F, A) = 0.3 x 0.6 + 0.7 x 0.1 = 0.18 + 0.07 = 0.25。\n得分 = 0.9 x 0.1 x 0.25 = 0.0225。\n\n归一化：P(F | S, V) = 0.0608 / (0.0608 + 0.0225) = 0.0608 / 0.0833 = 0.730。\n\n注意 V 只依赖 F，所以 P(V | F) 可以提到对 A 的求和之外。任何不含 A 的因子都可以提出求和号，这样能省工作量。先验 P(F) = 0.1 很低，但两个与 Flu 很吻合的症状把它抬高到了 73%。\n\n免计算器做法：乘积保留 4 位小数就是精确的。0.0608 / 0.0833 = 0.7299。"
+    "en": "The joint factorises as P(F) P(A) P(S | F, A) P(V | F). The evidence is S = true and V = true, and A is hidden.\n\nF = true:\nsum over A of P(A) P(S | F, A) = 0.3 × 0.9 + 0.7 × 0.7 = 0.27 + 0.49 = 0.76.\nScore = P(F) × P(V | F) × 0.76 = 0.1 × 0.8 × 0.76 = 0.0608.\n\nF = false:\nsum over A of P(A) P(S | not F, A) = 0.3 × 0.6 + 0.7 × 0.1 = 0.18 + 0.07 = 0.25.\nScore = 0.9 × 0.1 × 0.25 = 0.0225.\n\nNormalise: P(F | S, V) = 0.0608 / (0.0608 + 0.0225) = 0.0608 / 0.0833 = 0.730.\n\nNote that V depends only on F, so P(V | F) goes outside the sum over A. Pulling it out saves work, and every factor that does not mention A can be moved out of the sum. The prior P(F) = 0.1 was low, but two symptoms that fit Flu well raise it to 73%.\n\nCalculator-free: the products are exact in four decimals. 0.0608 / 0.0833 = 0.7299.",
+    "zh": "联合分布分解为 P(F) P(A) P(S | F, A) P(V | F)。证据是 S = true 和 V = true，A 是隐藏变量。\n\nF = true：\n对 A 求和 P(A) P(S | F, A) = 0.3 × 0.9 + 0.7 × 0.7 = 0.27 + 0.49 = 0.76。\n得分 = P(F) × P(V | F) × 0.76 = 0.1 × 0.8 × 0.76 = 0.0608。\n\nF = false：\n对 A 求和 P(A) P(S | 非 F, A) = 0.3 × 0.6 + 0.7 × 0.1 = 0.18 + 0.07 = 0.25。\n得分 = 0.9 × 0.1 × 0.25 = 0.0225。\n\n归一化：P(F | S, V) = 0.0608 / (0.0608 + 0.0225) = 0.0608 / 0.0833 = 0.730。\n\n注意 V 只依赖 F，所以 P(V | F) 可以提到对 A 的求和之外。任何不含 A 的因子都可以提出求和号，这样能省工作量。先验 P(F) = 0.1 很低，但两个与 Flu 很吻合的症状把它抬高到了 73%。\n\n免计算器做法：乘积保留 4 位小数就是精确的。0.0608 / 0.0833 = 0.7299。"
    },
    "verify_code": "pF, pA = 0.1, 0.3\npS = {(True, True): 0.9, (True, False): 0.7, (False, True): 0.6, (False, False): 0.1}\npV = {True: 0.8, False: 0.1}\n\n\ndef joint_score(f):\n    total = 0.0\n    for a in (True, False):\n        total += (pF if f else 1 - pF) * (pA if a else 1 - pA) * pS[(f, a)] * pV[f]\n    return total\n\n\nyes, no = joint_score(True), joint_score(False)\nprint(round(yes / (yes + no), 4))\n",
    "code": "P(F = true) = 0.1            P(A = true) = 0.3\n\nP(V = true | F = true)  = 0.8\nP(V = true | F = false) = 0.1\n\nF      A      P(S = true | F, A)\ntrue   true        0.9\ntrue   false       0.7\nfalse  true        0.6\nfalse  false       0.1"
@@ -295,8 +295,8 @@
    },
    "marks": 4,
    "prompt": {
-    "en": "A one-dimensional data set is split into three clusters: A = {1, 3}, B = {6, 8, 10} and C = {14, 18}.\n\nUse these definitions.\n- The representative of a cluster is its mean.\n- S_r is the average distance of the members of cluster r to its mean.\n- M_rs is the distance between the means of clusters r and s.\n- DB = (1/k) x the sum over r of the maximum over s != r of (S_r + S_s) / M_rs.\n\nWhat is the Davies-Bouldin index? Give the answer to 3 decimal places.",
-    "zh": "一个一维数据集被分成三个簇：A = {1, 3}，B = {6, 8, 10}，C = {14, 18}。\n\n使用以下定义。\n- 每个簇的代表点是它的均值。\n- S_r 是簇 r 的成员到其均值的平均距离。\n- M_rs 是簇 r 与簇 s 均值之间的距离。\n- DB = (1/k) x 对所有 r 求和，每项取 s != r 时 (S_r + S_s) / M_rs 的最大值。\n\nDavies-Bouldin 指数是多少？答案保留 3 位小数。"
+    "en": "A one-dimensional data set is split into three clusters: A = {1, 3}, B = {6, 8, 10} and C = {14, 18}.\n\nUse these definitions.\n- The representative of a cluster is its mean.\n- S_r is the average distance of the members of cluster r to its mean.\n- M_rs is the distance between the means of clusters r and s.\n- DB = (1/k) × the sum over r of the maximum over s != r of (S_r + S_s) / M_rs.\n\nWhat is the Davies-Bouldin index? Give the answer to 3 decimal places.",
+    "zh": "一个一维数据集被分成三个簇：A = {1, 3}，B = {6, 8, 10}，C = {14, 18}。\n\n使用以下定义。\n- 每个簇的代表点是它的均值。\n- S_r 是簇 r 的成员到其均值的平均距离。\n- M_rs 是簇 r 与簇 s 均值之间的距离。\n- DB = (1/k) × 对所有 r 求和，每项取 s != r 时 (S_r + S_s) / M_rs 的最大值。\n\nDavies-Bouldin 指数是多少？答案保留 3 位小数。"
    },
    "answer": 0.407,
    "tolerance": 0.002,
@@ -322,7 +322,7 @@
    "answer": 0.167,
    "tolerance": 0.001,
    "solution": {
-    "en": "Count the errors of each attribute (errors = group size - majority count).\n\nSky: Clear has 1 Yes, 3 No: 1 error. Cloud has 3 Yes, 0 No: 0. Rain has 3 Yes, 1 No: 1. ? has 1 Yes: 0. Total 2 errors.\nTemp: Hot has 1 Yes, 2 No: 1 error. Mild has 4 Yes, 1 No: 1. Cool has 3 Yes, 1 No: 1. Total 3 errors.\nWind: Calm has 4 Yes, 2 No: 2 errors. Windy has 4 Yes, 2 No: 2. Total 4 errors.\n\nThe best attribute is Sky with 2 errors. Error rate = 2/12 = 0.167.\n\nThe rule is: Clear -> No, Cloud -> Yes, Rain -> Yes, ? -> Yes. Treating the missing value as its own value is one simple policy; the single record with ? is predicted correctly only because it forms its own group, so be careful: a group of one always scores 0 errors, which flatters attributes with many rare values.\n\nCalculator-free: 2/12 = 1/6 = 0.167.",
+    "en": "Count the errors of each attribute (errors = group size - majority count).\n\nSky: Clear has 1 Yes, 3 No: 1 error. Cloud has 3 Yes, 0 No: 0. Rain has 3 Yes, 1 No: 1. ? has 1 Yes: 0. Total 2 errors.\nTemp: Hot has 1 Yes, 2 No: 1 error. Mild has 4 Yes, 1 No: 1. Cool has 3 Yes, 1 No: 1. Total 3 errors.\nWind: Calm has 4 Yes, 2 No: 2 errors. Windy has 4 Yes, 2 No: 2. Total 4 errors.\n\nThe best attribute is Sky with 2 errors. Error rate = 2/12 = 0.167.\n\nThe rule is: Clear -> No, Cloud -> Yes, Rain -> Yes, ? -> Yes. Treating the missing value as its own value is one simple policy. The single record with ? is predicted correctly only because it forms its own group. A group of one always scores 0 errors, which flatters attributes with many rare values.\n\nCalculator-free: 2/12 = 1/6 = 0.167.",
     "zh": "数出每个属性的错误数（错误数 = 分组大小 - 多数类个数）。\n\nSky：Clear 有 1 个 Yes、3 个 No，错 1；Cloud 有 3 个 Yes、0 个 No，错 0；Rain 有 3 个 Yes、1 个 No，错 1；? 有 1 个 Yes，错 0。合计 2 个错误。\nTemp：Hot 有 1 个 Yes、2 个 No，错 1；Mild 有 4 个 Yes、1 个 No，错 1；Cool 有 3 个 Yes、1 个 No，错 1。合计 3 个错误。\nWind：Calm 有 4 个 Yes、2 个 No，错 2；Windy 有 4 个 Yes、2 个 No，错 2。合计 4 个错误。\n\n最佳属性是 Sky，错 2 个。错误率 = 2/12 = 0.167。\n\n规则是：Clear -> No，Cloud -> Yes，Rain -> Yes，? -> Yes。把缺失值当作独立取值只是一种简单的处理办法。那条带 ? 的记录之所以被预测对，只是因为它自己成了一组，要小心：只有一条记录的分组永远是 0 个错误，这会让取值很多且很稀有的属性占便宜。\n\n免计算器做法：2/12 = 1/6 = 0.167。"
    },
    "verify_code": "from collections import Counter, defaultdict\n\nrows = [\n    ('Clear', 'Hot', 'Calm', 'No'), ('Clear', 'Hot', 'Windy', 'No'), ('Cloud', 'Hot', 'Calm', 'Yes'),\n    ('Rain', 'Mild', 'Calm', 'Yes'), ('Rain', 'Cool', 'Calm', 'Yes'), ('Rain', 'Cool', 'Windy', 'No'),\n    ('Cloud', 'Cool', 'Windy', 'Yes'), ('Clear', 'Mild', 'Calm', 'No'), ('?', 'Cool', 'Calm', 'Yes'),\n    ('Rain', 'Mild', 'Windy', 'Yes'), ('Cloud', 'Mild', 'Windy', 'Yes'), ('Clear', 'Mild', 'Windy', 'Yes'),\n]\nerrors = []\nfor j in range(3):\n    groups = defaultdict(Counter)\n    for r in rows:\n        groups[r[j]][r[3]] += 1\n    for g in groups.values():\n        assert list(g.values()).count(max(g.values())) == 1 or len(g) == 1\n    errors.append(sum(sum(g.values()) - max(g.values()) for g in groups.values()))\nassert errors.count(min(errors)) == 1\nprint(round(min(errors) / len(rows), 4))\n",
@@ -338,18 +338,2050 @@
    },
    "marks": 3,
    "prompt": {
-    "en": "A network reads 32 x 32 colour images (3 channels). Its layers are:\n1. Convolution: 8 filters of size 5 x 5, stride 1, no padding, each filter spans all input channels, plus one bias per filter.\n2. Max pooling 2 x 2, stride 2 (no parameters).\n3. Convolution: 16 filters of size 3 x 3, stride 1, padding 1, plus one bias per filter.\n4. Max pooling 2 x 2, stride 2.\n5. Flatten, then a fully connected layer to 10 outputs with one bias per output.\n\nHow many trainable parameters does the whole network have?",
-    "zh": "一个网络读取 32 x 32 的彩色图像（3 个通道）。各层依次为：\n1. 卷积层：8 个 5 x 5 的滤波器，步幅 1，无填充，每个滤波器覆盖所有输入通道，每个滤波器一个偏置。\n2. 2 x 2 最大池化，步幅 2（没有参数）。\n3. 卷积层：16 个 3 x 3 的滤波器，步幅 1，填充 1，每个滤波器一个偏置。\n4. 2 x 2 最大池化，步幅 2。\n5. 展平，然后接一个全连接层，输出 10 个值，每个输出一个偏置。\n\n整个网络共有多少个可训练参数？"
+    "en": "A network reads 32 × 32 colour images (3 channels). Its layers are:\n1. Convolution: 8 filters of size 5 × 5, stride 1, no padding, each filter spans all input channels, plus one bias per filter.\n2. Max pooling 2 × 2, stride 2 (no parameters).\n3. Convolution: 16 filters of size 3 × 3, stride 1, padding 1, plus one bias per filter.\n4. Max pooling 2 × 2, stride 2.\n5. Flatten, then a fully connected layer to 10 outputs with one bias per output.\n\nHow many trainable parameters does the whole network have? Give an exact whole number.",
+    "zh": "一个网络读取 32 × 32 的彩色图像（3 个通道）。各层依次为：\n1. 卷积层：8 个 5 × 5 的滤波器，步幅 1，无填充，每个滤波器覆盖所有输入通道，每个滤波器一个偏置。\n2. 2 × 2 最大池化，步幅 2（没有参数）。\n3. 卷积层：16 个 3 × 3 的滤波器，步幅 1，填充 1，每个滤波器一个偏置。\n4. 2 × 2 最大池化，步幅 2。\n5. 展平，然后接一个全连接层，输出 10 个值，每个输出一个偏置。\n\n整个网络共有多少个可训练参数？请给出精确的整数。"
    },
    "answer": 9626,
    "tolerance": 0,
    "solution": {
-    "en": "Track the size with output = floor((W + 2P - K) / S) + 1.\n\nLayer 1: (32 + 0 - 5) / 1 + 1 = 28, so 28 x 28 x 8. Parameters = 5 x 5 x 3 x 8 + 8 = 600 + 8 = 608.\nPooling: 14 x 14 x 8.\nLayer 3: (14 + 2 - 3) / 1 + 1 = 14, so 14 x 14 x 16. Parameters = 3 x 3 x 8 x 16 + 16 = 1152 + 16 = 1168. The depth of each filter is 8, the number of channels coming in, not 3.\nPooling: 7 x 7 x 16 = 784 values.\nLayer 5: 784 x 10 + 10 = 7850.\n\nTotal = 608 + 1168 + 7850 = 9626.\n\nThe last layer holds 82% of all parameters even though it is a single layer, while the two convolutions share each filter across every position. A fully connected first layer on this 32 x 32 x 3 input with just 8 outputs would already need 3072 x 8 + 8 = 24,584 parameters.\n\nCalculator-free: every product is small enough to do by hand. An exact integer is required.",
-    "zh": "用 输出 = floor((W + 2P - K) / S) + 1 跟踪尺寸。\n\n第 1 层：(32 + 0 - 5) / 1 + 1 = 28，所以输出是 28 x 28 x 8。参数 = 5 x 5 x 3 x 8 + 8 = 600 + 8 = 608。\n池化后：14 x 14 x 8。\n第 3 层：(14 + 2 - 3) / 1 + 1 = 14，所以输出是 14 x 14 x 16。参数 = 3 x 3 x 8 x 16 + 16 = 1152 + 16 = 1168。每个滤波器的深度是 8（输入的通道数），不是 3。\n池化后：7 x 7 x 16 = 784 个值。\n第 5 层：784 x 10 + 10 = 7850。\n\n总计 = 608 + 1168 + 7850 = 9626。\n\n最后一个全连接层占了全部参数的 82%，而两个卷积层的每个滤波器在所有位置共享。对这个 32 x 32 x 3 的输入，如果第一层就用全连接层，哪怕只有 8 个输出，也需要 3072 x 8 + 8 = 24,584 个参数。\n\n免计算器做法：每个乘积都小到可以手算。答案必须是精确的整数。"
+    "en": "Track the size with output = floor((W + 2P - K) / S) + 1.\n\nLayer 1: (32 + 0 - 5) / 1 + 1 = 28, so 28 × 28 × 8. Parameters = 5 × 5 × 3 × 8 + 8 = 600 + 8 = 608.\nPooling: 14 × 14 × 8.\nLayer 3: (14 + 2 - 3) / 1 + 1 = 14, so 14 × 14 × 16. Parameters = 3 × 3 × 8 × 16 + 16 = 1152 + 16 = 1168. The depth of each filter is 8, the number of channels coming in, not 3.\nPooling: 7 × 7 × 16 = 784 values.\nLayer 5: 784 × 10 + 10 = 7850.\n\nTotal = 608 + 1168 + 7850 = 9626.\n\nThe last layer holds 82% of all parameters even though it is a single layer, while the two convolutions share each filter across every position. A fully connected first layer on this 32 × 32 × 3 input with just 8 outputs would already need 3072 × 8 + 8 = 24,584 parameters.\n\nCalculator-free: every product is small enough to do by hand. An exact integer is required.",
+    "zh": "用 输出 = floor((W + 2P - K) / S) + 1 跟踪尺寸。\n\n第 1 层：(32 + 0 - 5) / 1 + 1 = 28，所以输出是 28 × 28 × 8。参数 = 5 × 5 × 3 × 8 + 8 = 600 + 8 = 608。\n池化后：14 × 14 × 8。\n第 3 层：(14 + 2 - 3) / 1 + 1 = 14，所以输出是 14 × 14 × 16。参数 = 3 × 3 × 8 × 16 + 16 = 1152 + 16 = 1168。每个滤波器的深度是 8（输入的通道数），不是 3。\n池化后：7 × 7 × 16 = 784 个值。\n第 5 层：784 × 10 + 10 = 7850。\n\n总计 = 608 + 1168 + 7850 = 9626。\n\n最后一个全连接层占了全部参数的 82%，而两个卷积层的每个滤波器在所有位置共享。对这个 32 × 32 × 3 的输入，如果第一层就用全连接层，哪怕只有 8 个输出，也需要 3072 × 8 + 8 = 24,584 个参数。\n\n免计算器做法：每个乘积都小到可以手算。答案必须是精确的整数。"
    },
    "verify_code": "def out(w, k, s, p):\n    return (w + 2 * p - k) // s + 1\n\n\nw = out(32, 5, 1, 0)\np1 = 5 * 5 * 3 * 8 + 8\nw //= 2\nw = out(w, 3, 1, 1)\np2 = 3 * 3 * 8 * 16 + 8 * 0 + 16\nw //= 2\np3 = w * w * 16 * 10 + 10\nprint(p1 + p2 + p3)\n"
+  },
+  {
+   "id": "ucs-frontier-table",
+   "kind": "trace",
+   "topic": "search-models",
+   "title": {
+    "en": "Uniform-cost search: frontier table",
+    "zh": "一致代价搜索：前沿表"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Leon plans a delivery from S to G on one-way roads. The cost of each road is in the table. (The h values are for the later A* and greedy questions; ignore them here.)\n\nRun uniform-cost search as a graph search.\n- The frontier holds each node once, with the cheapest g found so far. Always remove the node with the smallest g. If two nodes tie, remove the one that comes first in the alphabet.\n- A node that has been removed is never added again.\n- If you find a cheaper route to a node that is already in the frontier, replace its entry.\n- Test for the goal when a node is removed. Do not add the successors of G.\n\nEach row is one removal. Fill in the node removed, its g, and the frontier after you add its successors. Write the frontier as NODE:g pairs in the order they would be removed, separated by single spaces, for example \"A:2 B:5\". Write none if the frontier is empty.",
+    "zh": "Leon 在单行道上规划从 S 到 G 的送货路线。每条路的费用在表里。（h 值留给后面的 A* 与贪心题使用，这里忽略。）\n\n请用图搜索方式运行一致代价搜索。\n- 前沿中每个节点只出现一次，记录目前找到的最小 g。每次移出 g 最小的节点；如果并列，移出字母顺序靠前的那个。\n- 已经移出的节点不会再被加入。\n- 如果找到了去往前沿中某个节点的更便宜路线，就替换它的记录。\n- 在节点被移出时才检查是否为目标。不要加入 G 的后继。\n\n每一行是一次移出。请填写被移出的节点、它的 g，以及加入其后继之后的前沿。前沿写成「节点:g」的形式，按它们将被移出的先后顺序排列，用单个空格隔开，例如 \"A:2 B:5\"。前沿为空时写 none。"
+   },
+   "code": "One-way roads (cost)       Estimated cost h to G\nS -> D  4                  S 5    A 3\nS -> E  3                  B 1    C 1\nS -> F  3                  D 6    E 2\nD -> A  3                  F 3    G 0\nE -> B  6\nE -> C  3\nE -> D  5\nF -> B  2\nA -> G  5\nB -> G  2\nC -> G  1",
+   "columns": {
+    "en": [
+     "Step",
+     "Node removed",
+     "g of that node",
+     "Frontier after (NODE:g)"
+    ],
+    "zh": [
+     "步骤",
+     "移出的节点",
+     "该节点的 g",
+     "之后的前沿（节点:g）"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "S",
+     "0",
+     "E:3 F:3 D:4"
+    ],
+    [
+     "2",
+     "E",
+     "3",
+     "F:3 D:4 C:6 B:9"
+    ],
+    [
+     "3",
+     "F",
+     "3",
+     "D:4 B:5 C:6"
+    ],
+    [
+     "4",
+     "D",
+     "4",
+     "B:5 C:6 A:7"
+    ],
+    [
+     "5",
+     "B",
+     "5",
+     "C:6 A:7 G:7"
+    ],
+    [
+     "6",
+     "C",
+     "6",
+     "A:7 G:7"
+    ],
+    [
+     "7",
+     "A",
+     "7",
+     "G:7"
+    ],
+    [
+     "8",
+     "G",
+     "7",
+     "none"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2"
+   ],
+   "solution": {
+    "en": "Result: the route is S -> F -> B -> G with cost 7, found after removing all 8 nodes.\n\nPoints to notice.\n- Step 2: E gives B a route of cost 9, and step 3 (F) replaces it with the cheaper route of cost 5. The entry B:9 becomes B:5.\n- Step 6: C offers G at cost 7, which is not cheaper than the entry G:7, so nothing changes.\n- Step 7: A and G tie at 7, and the alphabet puts A first. A is a wasted expansion. A different tie rule would save one row but never change the cost.\n- UCS only looks at the cost so far (g). It ignores the goal's direction, so it expands every node whose cost so far is below the best goal cost (and some that tie with it). It is complete and optimal when step costs are positive.\n\nCompare with the next two questions on the same graph: greedy best-first removes 4 nodes and returns a route of cost 11; A* removes 6 nodes and returns the route of cost 7.",
+    "zh": "结果：路线是 S -> F -> B -> G，费用 7，要移出全部 8 个节点后才找到。\n\n要注意的地方：\n- 第 2 步：E 给 B 提供了一条费用 9 的路线，第 3 步（F）用更便宜的费用 5 替换了它。B:9 变成 B:5。\n- 第 6 步：C 给 G 提供费用 7 的路线，并不比现有的 G:7 更便宜，所以没有变化。\n- 第 7 步：A 与 G 在 7 上并列，按字母顺序 A 先出。A 是一次多余的展开。换一种并列规则可以少一行，但不会改变费用。\n- 一致代价搜索只看已付出的代价 g，不管目标在哪个方向，所以所有比最优目标费用更便宜的节点它都会展开。步长代价为正时，它完备且最优。\n\n把这道题和后面两道同一张图上的题对比：贪心最佳优先搜索只移出 4 个节点，却得到费用 11 的路线；A* 移出 6 个节点，得到费用 7 的路线。"
+   },
+   "verify_language": "python",
+   "verify_code": "edges = {'S': [('D', 4), ('E', 3), ('F', 3)], 'D': [('A', 3)], 'E': [('B', 6), ('C', 3), ('D', 5)],\n         'F': [('B', 2)], 'A': [('G', 5)], 'B': [('G', 2)], 'C': [('G', 1)]}\nh = {'S': 5, 'A': 3, 'B': 1, 'C': 1, 'D': 6, 'E': 2, 'F': 3, 'G': 0}\nmode = 'ucs'\n\n\ndef prio(n, g):\n    return {'ucs': g, 'greedy': h[n], 'astar': g + h[n]}[mode]\n\n\nfrontier = {'S': 0}\nparent = {}\ndone = set()\nstep = 0\nwhile frontier:\n    n = min(frontier, key=lambda x: (prio(x, frontier[x]), x))\n    g = frontier.pop(n)\n    step += 1\n    done.add(n)\n    if n != 'G':\n        for m, c in edges.get(n, []):\n            if m in done:\n                continue\n            if m not in frontier or (mode != 'greedy' and g + c < frontier[m]):\n                frontier[m] = g + c\n                parent[m] = n\n    left = ' '.join(f'{x}:{prio(x, frontier[x])}' for x in sorted(frontier, key=lambda x: (prio(x, frontier[x]), x))) or 'none'\n    print('\\t'.join([str(step), n, str(prio(n, g)), left]))\n    if n == 'G':\n        break\npath = ['G']\nwhile path[-1] != 'S':\n    path.append(parent[path[-1]])\nassert ''.join(reversed(path)) == 'SFBG' and g == 7 and step == 8\n"
+  },
+  {
+   "id": "greedy-frontier-table",
+   "kind": "trace",
+   "topic": "astar-heuristics",
+   "title": {
+    "en": "Greedy best-first search: frontier table",
+    "zh": "贪心最佳优先搜索：前沿表"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "Use the same one-way roads as before. Now run greedy best-first search as a graph search: the priority is only h, the estimated cost to G.\n\n- The frontier holds each node once. Always remove the node with the smallest h. If two nodes tie, remove the one that comes first in the alphabet.\n- A node that is already in the frontier or already removed is not added again.\n- Test for the goal when a node is removed. Do not add the successors of G.\n\nFill in the node removed, its h, and the frontier after you add its successors. Write the frontier as NODE:h pairs in the order they would be removed, separated by single spaces. Write none if it is empty.",
+    "zh": "沿用前面那张单行道图。现在用图搜索方式运行贪心最佳优先搜索：优先级只看 h，即到 G 的估计代价。\n\n- 前沿中每个节点只出现一次。每次移出 h 最小的节点；如果并列，移出字母顺序靠前的那个。\n- 已经在前沿中或已经移出的节点不再加入。\n- 在节点被移出时才检查是否为目标。不要加入 G 的后继。\n\n请填写被移出的节点、它的 h，以及加入其后继之后的前沿。前沿写成「节点:h」的形式，按它们将被移出的先后顺序排列，用单个空格隔开。前沿为空时写 none。"
+   },
+   "code": "One-way roads (cost)       Estimated cost h to G\nS -> D  4                  S 5    A 3\nS -> E  3                  B 1    C 1\nS -> F  3                  D 6    E 2\nD -> A  3                  F 3    G 0\nE -> B  6\nE -> C  3\nE -> D  5\nF -> B  2\nA -> G  5\nB -> G  2\nC -> G  1",
+   "columns": {
+    "en": [
+     "Step",
+     "Node removed",
+     "h of that node",
+     "Frontier after (NODE:h)"
+    ],
+    "zh": [
+     "步骤",
+     "移出的节点",
+     "该节点的 h",
+     "之后的前沿（节点:h）"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "S",
+     "5",
+     "E:2 F:3 D:6"
+    ],
+    [
+     "2",
+     "E",
+     "2",
+     "B:1 C:1 F:3 D:6"
+    ],
+    [
+     "3",
+     "B",
+     "1",
+     "G:0 C:1 F:3 D:6"
+    ],
+    [
+     "4",
+     "G",
+     "0",
+     "C:1 F:3 D:6"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2"
+   ],
+   "solution": {
+    "en": "Result: the route is S -> E -> B -> G with cost 3 + 6 + 2 = 11. The best route costs 7 (S -> F -> B -> G), so greedy search is not optimal.\n\nWhy it went wrong.\n- At step 1, E has the smallest h (2), so greedy goes to E. The road S -> E is cheap, but the greedy rule does not look at that.\n- At step 2, B has h = 1 and ties with C. The alphabet picks B, but the road E -> B costs 6. The route through F reaches B for only 5 in total (3 + 2), and greedy never compares the two because it never looks at g.\n- It removed only 4 nodes, the smallest search effort of the three methods, and the price is a route that is 4 more expensive.\n\nGreedy best-first search is fast when h is good, but it is neither optimal nor complete in general (it can loop on a tree search without a visited set). A* repairs this by adding g to h.",
+    "zh": "结果：路线是 S -> E -> B -> G，费用 3 + 6 + 2 = 11。最优路线费用是 7（S -> F -> B -> G），所以贪心搜索不是最优的。\n\n错在哪里：\n- 第 1 步，E 的 h 最小（2），贪心走向 E。道路 S -> E 本来很便宜，但贪心规则并不看这个。\n- 第 2 步，B 的 h = 1，与 C 并列，按字母顺序选了 B，但道路 E -> B 要 6。经过 F 到达 B 总共只要 5（3 + 2），贪心从不比较这两条路线，因为它根本不看 g。\n- 它只移出了 4 个节点，是三种方法里搜索量最小的，代价是路线贵了 4。\n\nh 好的时候，贪心最佳优先搜索很快，但一般情况下它既不最优，也不完备（树搜索时没有已访问集合会陷入循环）。A* 通过把 g 加到 h 上来修正这个问题。"
+   },
+   "verify_language": "python",
+   "verify_code": "edges = {'S': [('D', 4), ('E', 3), ('F', 3)], 'D': [('A', 3)], 'E': [('B', 6), ('C', 3), ('D', 5)],\n         'F': [('B', 2)], 'A': [('G', 5)], 'B': [('G', 2)], 'C': [('G', 1)]}\nh = {'S': 5, 'A': 3, 'B': 1, 'C': 1, 'D': 6, 'E': 2, 'F': 3, 'G': 0}\nmode = 'greedy'\n\n\ndef prio(n, g):\n    return {'ucs': g, 'greedy': h[n], 'astar': g + h[n]}[mode]\n\n\nfrontier = {'S': 0}\nparent = {}\ndone = set()\nstep = 0\nwhile frontier:\n    n = min(frontier, key=lambda x: (prio(x, frontier[x]), x))\n    g = frontier.pop(n)\n    step += 1\n    done.add(n)\n    if n != 'G':\n        for m, c in edges.get(n, []):\n            if m in done:\n                continue\n            if m not in frontier or (mode != 'greedy' and g + c < frontier[m]):\n                frontier[m] = g + c\n                parent[m] = n\n    left = ' '.join(f'{x}:{prio(x, frontier[x])}' for x in sorted(frontier, key=lambda x: (prio(x, frontier[x]), x))) or 'none'\n    print('\\t'.join([str(step), n, str(prio(n, g)), left]))\n    if n == 'G':\n        break\npath = ['G']\nwhile path[-1] != 'S':\n    path.append(parent[path[-1]])\nassert ''.join(reversed(path)) == 'SEBG' and g == 11 and step == 4\n"
+  },
+  {
+   "id": "astar-frontier-table",
+   "kind": "trace",
+   "topic": "astar-heuristics",
+   "title": {
+    "en": "A* search: frontier table",
+    "zh": "A* 搜索：前沿表"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Use the same one-way roads and the same h values. Now run A* as a graph search: the priority is f = g + h.\n\n- The frontier holds each node once, with the cheapest g found so far and f = g + h. Always remove the node with the smallest f. If two nodes tie, remove the one that comes first in the alphabet.\n- A node that has been removed is never added again.\n- If you find a cheaper route to a node that is already in the frontier, replace its entry.\n- Test for the goal when a node is removed. Do not add the successors of G.\n\nFill in the node removed, its f, and the frontier after you add its successors. Write the frontier as NODE:f pairs in the order they would be removed, separated by single spaces. Write none if it is empty.",
+    "zh": "沿用同一张单行道图和同样的 h 值。现在用图搜索方式运行 A*：优先级为 f = g + h。\n\n- 前沿中每个节点只出现一次，记录目前找到的最小 g，并有 f = g + h。每次移出 f 最小的节点；如果并列，移出字母顺序靠前的那个。\n- 已经移出的节点不会再被加入。\n- 如果找到了去往前沿中某个节点的更便宜路线，就替换它的记录。\n- 在节点被移出时才检查是否为目标。不要加入 G 的后继。\n\n请填写被移出的节点、它的 f，以及加入其后继之后的前沿。前沿写成「节点:f」的形式，按它们将被移出的先后顺序排列，用单个空格隔开。前沿为空时写 none。"
+   },
+   "code": "One-way roads (cost)       Estimated cost h to G\nS -> D  4                  S 5    A 3\nS -> E  3                  B 1    C 1\nS -> F  3                  D 6    E 2\nD -> A  3                  F 3    G 0\nE -> B  6\nE -> C  3\nE -> D  5\nF -> B  2\nA -> G  5\nB -> G  2\nC -> G  1",
+   "columns": {
+    "en": [
+     "Step",
+     "Node removed",
+     "f of that node",
+     "Frontier after (NODE:f)"
+    ],
+    "zh": [
+     "步骤",
+     "移出的节点",
+     "该节点的 f",
+     "之后的前沿（节点:f）"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "S",
+     "5",
+     "E:5 F:6 D:10"
+    ],
+    [
+     "2",
+     "E",
+     "5",
+     "F:6 C:7 B:10 D:10"
+    ],
+    [
+     "3",
+     "F",
+     "6",
+     "B:6 C:7 D:10"
+    ],
+    [
+     "4",
+     "B",
+     "6",
+     "C:7 G:7 D:10"
+    ],
+    [
+     "5",
+     "C",
+     "7",
+     "G:7 D:10"
+    ],
+    [
+     "6",
+     "G",
+     "7",
+     "D:10"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2"
+   ],
+   "solution": {
+    "en": "Result: the route is S -> F -> B -> G with cost 7, which is optimal. Only 6 nodes were removed. A and D were never expanded.\n\nPoints to notice.\n- Step 2: via E, B costs g = 9 and f = 10. Step 3 (F) finds g = 5 and f = 6, so B:10 is replaced by B:6.\n- Step 5: C and G tie at f = 7, and the alphabet puts C first. C offers G with g = 7 again, which is not cheaper.\n- At step 6, G is removed with f = 7 while D is still waiting with f = 10. Since h is admissible, every f is a lower bound on the cost through that node. D cannot lead to a route cheaper than 7, so it is safe to stop.\n- This h is also consistent: for every road, h(n) <= cost + h(next). That is why f never decreases along a route here, and why closing a node after its first expansion is safe.\n\nComparison on this graph. UCS: 8 nodes removed, cost 7. Greedy: 4 nodes, cost 11. A*: 6 nodes, cost 7. A* matches UCS on quality and uses fewer expansions because h steers it away from A and D.",
+    "zh": "结果：路线是 S -> F -> B -> G，费用 7，是最优的。只移出了 6 个节点，A 和 D 从未被展开。\n\n要注意的地方：\n- 第 2 步：经过 E 到 B，g = 9、f = 10。第 3 步（F）发现 g = 5、f = 6，所以 B:10 被 B:6 替换。\n- 第 5 步：C 与 G 的 f 都是 7 而并列，按字母顺序 C 先出。C 提供的去 G 的 g 仍是 7，并不更便宜。\n- 第 6 步，G 以 f = 7 被移出，而 D 还在前沿里等着，f = 10。因为 h 是可采纳的，每个 f 都是经过该节点的费用下界，D 不可能通向比 7 更便宜的路线，所以可以放心停止。\n- 这个 h 还是一致的：对每条路都有 h(n) <= 路费 + h(下一个节点)。所以这里 f 沿路线不会下降，节点第一次展开后就关闭也是安全的。\n\n这张图上的三种方法对比：一致代价搜索移出 8 个节点，费用 7；贪心移出 4 个节点，费用 11；A* 移出 6 个节点，费用 7。A* 的路线质量与一致代价搜索相同，展开更少，因为 h 引导它绕开了 A 和 D。"
+   },
+   "verify_language": "python",
+   "verify_code": "edges = {'S': [('D', 4), ('E', 3), ('F', 3)], 'D': [('A', 3)], 'E': [('B', 6), ('C', 3), ('D', 5)],\n         'F': [('B', 2)], 'A': [('G', 5)], 'B': [('G', 2)], 'C': [('G', 1)]}\nh = {'S': 5, 'A': 3, 'B': 1, 'C': 1, 'D': 6, 'E': 2, 'F': 3, 'G': 0}\nmode = 'astar'\n\n\ndef prio(n, g):\n    return {'ucs': g, 'greedy': h[n], 'astar': g + h[n]}[mode]\n\n\nfrontier = {'S': 0}\nparent = {}\ndone = set()\nstep = 0\nwhile frontier:\n    n = min(frontier, key=lambda x: (prio(x, frontier[x]), x))\n    g = frontier.pop(n)\n    step += 1\n    done.add(n)\n    if n != 'G':\n        for m, c in edges.get(n, []):\n            if m in done:\n                continue\n            if m not in frontier or (mode != 'greedy' and g + c < frontier[m]):\n                frontier[m] = g + c\n                parent[m] = n\n    left = ' '.join(f'{x}:{prio(x, frontier[x])}' for x in sorted(frontier, key=lambda x: (prio(x, frontier[x]), x))) or 'none'\n    print('\\t'.join([str(step), n, str(prio(n, g)), left]))\n    if n == 'G':\n        break\npath = ['G']\nwhile path[-1] != 'S':\n    path.append(parent[path[-1]])\nassert ''.join(reversed(path)) == 'SFBG' and g == 7 and step == 6\n"
+  },
+  {
+   "id": "alpha-beta-bounds",
+   "kind": "trace",
+   "topic": "minimax-pruning",
+   "title": {
+    "en": "Alpha-beta pruning: bounds and cuts",
+    "zh": "α–β 剪枝：界与剪枝"
+   },
+   "marks": 7,
+   "prompt": {
+    "en": "Run alpha-beta pruning on the tree below. Visit children from left to right. Start the root with alpha = -inf and beta = inf.\n\nRules.\n- A node passes its current alpha and beta to each child it visits.\n- MAX node: after a child returns v, set best = max(best, v). If best >= beta, cut: stop at once and return best. Otherwise set alpha = max(alpha, best).\n- MIN node: after a child returns v, set best = min(best, v). If best <= alpha, cut: stop at once and return best. Otherwise set beta = min(beta, best).\n- When a node cuts, return the best value found so far. Do not clamp it to alpha or beta.\n\nEach row is a non-leaf node that you visit, in the order you first reach it. Fill in alpha and beta as the node is entered, the value it returns, and the number of leaves skipped because this node cut. Write -inf and inf for the infinities. Nodes that are cut off entirely do not get a row.",
+    "zh": "在下面的树上运行 α–β 剪枝。从左到右访问子节点。根节点开始时 alpha = -inf，beta = inf。\n\n规则：\n- 节点把自己当前的 alpha 和 beta 传给它访问的每个子节点。\n- MAX 节点：子节点返回 v 后，令 best = max(best, v)。如果 best >= beta，就剪枝：立即停止并返回 best；否则令 alpha = max(alpha, best)。\n- MIN 节点：子节点返回 v 后，令 best = min(best, v)。如果 best <= alpha，就剪枝：立即停止并返回 best；否则令 beta = min(beta, best)。\n- 节点剪枝时，返回目前找到的 best，不要把它截到 alpha 或 beta 上。\n\n每一行是你访问到的一个非叶子节点，按第一次到达的顺序排列。请填写进入节点时的 alpha 和 beta、它返回的值，以及因为该节点剪枝而被跳过的叶子数。无穷用 -inf 和 inf 表示。被整棵剪掉的节点没有对应的行。"
+   },
+   "code": "A (MAX)\n  B (MIN)\n    E (MAX): 3, 15\n    F (MAX): 16, 1, 19\n  C (MIN)\n    G (MAX): 8, 18\n    H (MAX): 20, 6\n  D (MIN)\n    I (MAX): 11, 17\n    J (MAX): 21, 9, 14",
+   "columns": {
+    "en": [
+     "Node",
+     "alpha on entry",
+     "beta on entry",
+     "Value returned",
+     "Leaves skipped"
+    ],
+    "zh": [
+     "节点",
+     "进入时的 alpha",
+     "进入时的 beta",
+     "返回的值",
+     "跳过的叶子数"
+    ]
+   },
+   "rows": [
+    [
+     "A",
+     "-inf",
+     "inf",
+     "18",
+     "0"
+    ],
+    [
+     "B",
+     "-inf",
+     "inf",
+     "15",
+     "0"
+    ],
+    [
+     "E",
+     "-inf",
+     "inf",
+     "15",
+     "0"
+    ],
+    [
+     "F",
+     "-inf",
+     "15",
+     "16",
+     "2"
+    ],
+    [
+     "C",
+     "15",
+     "inf",
+     "18",
+     "0"
+    ],
+    [
+     "G",
+     "15",
+     "inf",
+     "18",
+     "0"
+    ],
+    [
+     "H",
+     "15",
+     "18",
+     "20",
+     "1"
+    ],
+    [
+     "D",
+     "18",
+     "inf",
+     "17",
+     "3"
+    ],
+    [
+     "I",
+     "18",
+     "inf",
+     "17",
+     "0"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2"
+   ],
+   "solution": {
+    "en": "The root value is 18, reached by moving to C. Six of the 14 leaves are never examined.\n\nFollow the bounds.\n- E returns 15, so B has beta = 15 for its next child.\n- F meets its first leaf 16. A MAX node with a value >= beta = 15 cannot help: MIN at B already has a 15 available. Cut, skip 2 leaves, return 16. B returns min(15, 16) = 15, so the root gets alpha = 15.\n- C starts with alpha = 15. G returns 18, so C has beta = 18. H meets 20 >= 18: cut, skip 1 leaf, return 20. C returns min(18, 20) = 18, so the root alpha becomes 18.\n- D starts with alpha = 18. I returns 17. A MIN node whose value 17 <= alpha = 18 cannot beat what MAX already has at the root. Cut, skip all 3 leaves of J, return 17.\n- Root = max(15, 18, 17) = 18.\n\nNotice the returned values 16, 20 and 17 are not the true minimax values of F, H and D. They only need to be on the correct side of the bound, so the root value is still exact. Plain minimax also gives 18 here. How much is pruned depends on the order of the children: if good moves are tried first, more is cut.\n\nCalculator-free: no arithmetic beyond comparing integers.",
+    "zh": "根节点的值是 18，对应走向 C。14 个叶子里有 6 个根本没有被检查。\n\n沿着界一步步看：\n- E 返回 15，所以 B 在访问下一个子节点时 beta = 15。\n- F 遇到第一个叶子 16。MAX 节点的值 >= beta = 15 就没有帮助了：B 处的 MIN 已经有 15 可选。剪枝，跳过 2 个叶子，返回 16。B 返回 min(15, 16) = 15，于是根节点得到 alpha = 15。\n- C 开始时 alpha = 15。G 返回 18，所以 C 的 beta = 18。H 遇到 20 >= 18：剪枝，跳过 1 个叶子，返回 20。C 返回 min(18, 20) = 18，于是根节点的 alpha 变成 18。\n- D 开始时 alpha = 18。I 返回 17。MIN 节点的值 17 <= alpha = 18，不可能胜过根处 MAX 已有的值。剪枝，跳过 J 的全部 3 个叶子，返回 17。\n- 根 = max(15, 18, 17) = 18。\n\n注意返回的 16、20、17 并不是 F、H、D 真正的极小极大值。它们只需要落在界的正确一侧，所以根的值仍然精确。普通极小极大在这里同样得到 18。剪掉多少取决于子节点的顺序：好的走法先试，被剪掉的就更多。\n\n免计算器做法：只需要比较整数大小，没有别的运算。"
+   },
+   "verify_language": "python",
+   "verify_code": "from math import inf\n\n\ndef leaves(node):\n    return 1 if isinstance(node, int) else sum(leaves(k) for k in node[2])\n\n\ndef fmt(x):\n    return '-inf' if x == -inf else 'inf' if x == inf else str(x)\n\n\ntree = ('A', 'max', [('B', 'min', [('E', 'max', [3, 15]), ('F', 'max', [16, 1, 19])]),\n                     ('C', 'min', [('G', 'max', [8, 18]), ('H', 'max', [20, 6])]),\n                     ('D', 'min', [('I', 'max', [11, 17]), ('J', 'max', [21, 9, 14])])])\nrows = []\n\n\ndef ab(node, alpha, beta):\n    if isinstance(node, int):\n        return node\n    name, kind, kids = node\n    row = [name, fmt(alpha), fmt(beta), None, '0']\n    rows.append(row)\n    best = -inf if kind == 'max' else inf\n    for i, kid in enumerate(kids):\n        v = ab(kid, alpha, beta)\n        if kind == 'max':\n            best = max(best, v)\n            if best >= beta:\n                row[4] = str(sum(leaves(x) for x in kids[i + 1:]))\n                break\n            alpha = max(alpha, best)\n        else:\n            best = min(best, v)\n            if best <= alpha:\n                row[4] = str(sum(leaves(x) for x in kids[i + 1:]))\n                break\n            beta = min(beta, best)\n    row[3] = str(best)\n    return best\n\n\ndef minimax(node):\n    if isinstance(node, int):\n        return node\n    vals = [minimax(k) for k in node[2]]\n    return max(vals) if node[1] == 'max' else min(vals)\n\n\nroot = ab(tree, -inf, inf)\nassert root == minimax(tree) == 18\nassert sum(int(r[4]) for r in rows) == 6 and leaves(tree) == 14\nfor r in rows:\n    print('\\t'.join(r))\n"
+  },
+  {
+   "id": "kmeans-iterations",
+   "kind": "trace",
+   "topic": "kmeans",
+   "title": {
+    "en": "k-means: assignments and centroids per iteration",
+    "zh": "k-means：每轮的分配与质心"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Run k-means with k = 2 and Euclidean distance on six points. Start with centroid 1 at P1 and centroid 2 at P4.\n\nIn each iteration, first assign every point to its nearest centroid, then move each centroid to the mean of the points assigned to it. Stop when the assignment is the same as in the previous iteration. No ties occur.\n\nWrite the assignment as six digits, one for each of P1 to P6, in order. For example, 112212 would put P1, P2, P4 and P5 in cluster 1 and P3 and P6 in cluster 2. Write each centroid as x,y with no spaces and no trailing zeros: for example 4.5,4 and not 4.50,4.0.\n\nFor the last column, write yes if this iteration's assignment equals the previous one, otherwise no.",
+    "zh": "对六个点运行 k = 2、欧氏距离的 k-means。初始时质心 1 在 P1，质心 2 在 P4。\n\n每一轮先把每个点分给最近的质心，再把每个质心移到分给它的点的均值。当分配与上一轮相同时停止。不会出现并列。\n\n分配写成六位数字，依次对应 P1 到 P6。例如 112212 表示 P1、P2、P4、P5 在簇 1，P3、P6 在簇 2。每个质心写成 x,y，中间没有空格，末尾不带多余的 0：例如写 4.5,4，而不是 4.50,4.0。\n\n最后一列：如果本轮的分配与上一轮相同，写 yes，否则写 no。"
+   },
+   "code": "P1 (0, 8)   P2 (8, 6)   P3 (3, 9)\nP4 (3, 7)   P5 (1, 3)   P6 (6, 0)\n\nStart: centroid 1 = P1 = (0, 8), centroid 2 = P4 = (3, 7)",
+   "columns": {
+    "en": [
+     "Iteration",
+     "Assignment P1-P6",
+     "New centroid 1",
+     "New centroid 2",
+     "Same as previous?"
+    ],
+    "zh": [
+     "轮次",
+     "P1 到 P6 的分配",
+     "新质心 1",
+     "新质心 2",
+     "与上一轮相同？"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "122222",
+     "0,8",
+     "4.2,5",
+     "no"
+    ],
+    [
+     "2",
+     "121222",
+     "1.5,8.5",
+     "4.5,4",
+     "no"
+    ],
+    [
+     "3",
+     "121122",
+     "2,8",
+     "5,3",
+     "no"
+    ],
+    [
+     "4",
+     "121122",
+     "2,8",
+     "5,3",
+     "yes"
+    ]
+   ],
+   "given": [
+    "0,4"
+   ],
+   "solution": {
+    "en": "Iteration 1. With centroids (0, 8) and (3, 7), only P1 is nearer to centroid 1. Squared distances for P3: 10 to centroid 1 and 4 to centroid 2, so P3 goes to cluster 2. Assignment 122222. New centroid 2 is the mean of the five points P2, P3, P4, P5 and P6: x = (8 + 3 + 3 + 1 + 6) / 5 = 4.2 and y = (6 + 9 + 7 + 3 + 0) / 5 = 5. Centroid 1 = (0, 8).\n\nIteration 2. Centroids (0, 8) and (4.2, 5). P3: squared distance 10 to the first and 17.44 to the second, so P3 moves to cluster 1. Assignment 121222. New centroid 1 = mean of P1 and P3 = (1.5, 8.5). New centroid 2 = mean of P2, P4, P5, P6 = (4.5, 4).\n\nIteration 3. Centroids (1.5, 8.5) and (4.5, 4). P4: squared distance 4.5 to the first and 11.25 to the second, so P4 moves to cluster 1. Assignment 121122. New centroids: P1, P3, P4 give (2, 8); P2, P5, P6 give (5, 3).\n\nIteration 4. No point moves, so the algorithm has converged.\n\nNotice that P4 was the starting centroid of cluster 2 but ends up in cluster 1. Centroids are means, not data points, and they can move far from where they started. The objective never increases from one iteration to the next.",
+    "zh": "第 1 轮。质心为 (0, 8) 和 (3, 7) 时，只有 P1 离质心 1 更近。以 P3 为例，到质心 1 的距离平方是 10，到质心 2 的是 4，所以 P3 归簇 2。分配为 122222。新质心 2 是 P2、P3、P4、P5、P6 五个点的均值（P4 也在里面）：x = (8 + 3 + 3 + 1 + 6) / 5 = 4.2，y = (6 + 9 + 7 + 3 + 0) / 5 = 5。质心 1 = (0, 8)。\n\n第 2 轮。质心为 (0, 8) 和 (4.2, 5)。P3：到第一个的距离平方是 10，到第二个的是 17.44，所以 P3 转入簇 1。分配为 121222。新质心 1 = P1 和 P3 的均值 = (1.5, 8.5)。新质心 2 = P2、P4、P5、P6 的均值 = (4.5, 4)。\n\n第 3 轮。质心为 (1.5, 8.5) 和 (4.5, 4)。P4：到第一个的距离平方是 4.5，到第二个的是 11.25，所以 P4 转入簇 1。分配为 121122。新质心：P1、P3、P4 得 (2, 8)；P2、P5、P6 得 (5, 3)。\n\n第 4 轮。没有点移动，算法收敛。\n\n注意 P4 一开始是簇 2 的质心，最后却落在簇 1 里。质心是均值，不是数据点，可能离出发位置很远。目标函数在相邻两轮之间不会增加。"
+   },
+   "verify_language": "python",
+   "verify_code": "from fractions import Fraction as F\n\npts = [(0, 8), (8, 6), (3, 9), (3, 7), (1, 3), (6, 0)]\ncent = [(F(0), F(8)), (F(3), F(7))]\nprev = None\nit = 0\n\n\ndef fmt(c):\n    return ','.join(f'{float(v):g}' for v in c)\n\n\nwhile True:\n    it += 1\n    d = [[(p[0] - c[0]) ** 2 + (p[1] - c[1]) ** 2 for c in cent] for p in pts]\n    assert all(len(set(r)) == 2 for r in d)\n    assign = [r.index(min(r)) + 1 for r in d]\n    new = []\n    for k in (1, 2):\n        mem = [p for p, a in zip(pts, assign) if a == k]\n        new.append((F(sum(p[0] for p in mem), len(mem)), F(sum(p[1] for p in mem), len(mem))))\n    same = assign == prev\n    print('\\t'.join([str(it), ''.join(map(str, assign)), fmt(new[0]), fmt(new[1]), 'yes' if same else 'no']))\n    if same:\n        break\n    prev, cent = assign, new\n"
+  },
+  {
+   "id": "perceptron-epochs",
+   "kind": "trace",
+   "topic": "perceptron",
+   "title": {
+    "en": "Perceptron: epochs until it converges",
+    "zh": "感知机：训练到收敛的各个 epoch"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "A perceptron has inputs x1 and x2. It outputs a = 1 if z = w1 x1 + w2 x2 + b >= 0, otherwise a = 0.\n\nStart with w1 = 0, w2 = 0, b = 0. The learning rate is 1: after each example, w_i <- w_i + (t - a) x_i and b <- b + (t - a).\n\nPresent the four examples below in the order shown, one after another. One pass over all four is an epoch. Keep going until a whole epoch makes no change. In row 2.3, for example, the 2 means epoch 2 and the 3 means example 3.\n\nFill in z (computed with the weights before the update), the output a, and the weights after the example.",
+    "zh": "一个感知机有输入 x1 和 x2。当 z = w1 x1 + w2 x2 + b >= 0 时输出 a = 1，否则输出 a = 0。\n\n初始值 w1 = 0，w2 = 0，b = 0。学习率为 1：每个样本之后，w_i <- w_i + (t - a) x_i，b <- b + (t - a)。\n\n按下面给出的顺序依次输入四个样本，把四个样本全部过一遍称为一个 epoch。一直训练到整个 epoch 都没有任何改动为止。例如第 2.3 行，2 表示第 2 个 epoch，3 表示第 3 个样本。\n\n请填写 z（用更新前的权重计算）、输出 a，以及该样本之后的权重。"
+   },
+   "code": "Example   x1   x2   target t\n1         -1   -2      1\n2          2   -3      0\n3          3    1      0\n4         -1    1      0",
+   "columns": {
+    "en": [
+     "Step",
+     "x1,x2",
+     "Target",
+     "z (before update)",
+     "Output a",
+     "w1 after",
+     "w2 after",
+     "b after"
+    ],
+    "zh": [
+     "步骤",
+     "x1,x2",
+     "目标",
+     "z（更新前）",
+     "输出 a",
+     "更新后 w1",
+     "更新后 w2",
+     "更新后 b"
+    ]
+   },
+   "rows": [
+    [
+     "1.1",
+     "-1,-2",
+     "1",
+     "0",
+     "1",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "1.2",
+     "2,-3",
+     "0",
+     "0",
+     "1",
+     "-2",
+     "3",
+     "-1"
+    ],
+    [
+     "1.3",
+     "3,1",
+     "0",
+     "-4",
+     "0",
+     "-2",
+     "3",
+     "-1"
+    ],
+    [
+     "1.4",
+     "-1,1",
+     "0",
+     "4",
+     "1",
+     "-1",
+     "2",
+     "-2"
+    ],
+    [
+     "2.1",
+     "-1,-2",
+     "1",
+     "-5",
+     "0",
+     "-2",
+     "0",
+     "-1"
+    ],
+    [
+     "2.2",
+     "2,-3",
+     "0",
+     "-5",
+     "0",
+     "-2",
+     "0",
+     "-1"
+    ],
+    [
+     "2.3",
+     "3,1",
+     "0",
+     "-7",
+     "0",
+     "-2",
+     "0",
+     "-1"
+    ],
+    [
+     "2.4",
+     "-1,1",
+     "0",
+     "1",
+     "1",
+     "-1",
+     "-1",
+     "-2"
+    ],
+    [
+     "3.1",
+     "-1,-2",
+     "1",
+     "1",
+     "1",
+     "-1",
+     "-1",
+     "-2"
+    ],
+    [
+     "3.2",
+     "2,-3",
+     "0",
+     "-1",
+     "0",
+     "-1",
+     "-1",
+     "-2"
+    ],
+    [
+     "3.3",
+     "3,1",
+     "0",
+     "-6",
+     "0",
+     "-1",
+     "-1",
+     "-2"
+    ],
+    [
+     "3.4",
+     "-1,1",
+     "0",
+     "-2",
+     "0",
+     "-1",
+     "-1",
+     "-2"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2",
+    "1,1",
+    "1,2",
+    "2,1",
+    "2,2",
+    "3,1",
+    "3,2",
+    "4,1",
+    "4,2",
+    "5,1",
+    "5,2",
+    "6,1",
+    "6,2",
+    "7,1",
+    "7,2",
+    "8,1",
+    "8,2",
+    "9,1",
+    "9,2",
+    "10,1",
+    "10,2",
+    "11,1",
+    "11,2"
+   ],
+   "solution": {
+    "en": "Updates happen only on mistakes: rows 1.2, 1.4, 2.1 and 2.4. In epoch 3 every example is classified correctly, so training stops. The final weights are w = (-1, -1) and b = -2.\n\nWalk through the first rows.\n1.1: z = 0, and z >= 0 gives a = 1. The target is 1, so there is no error and nothing changes.\n1.2: z = 0 gives a = 1 but the target is 0. Error = -1, so w = (0, 0) + (-1) × (2, -3) = (-2, 3) and b = -1.\n1.3: z = -2 × 3 + 3 × 1 - 1 = -4, so a = 0, which is correct.\n1.4: z = -2 × (-1) + 3 × 1 - 1 = 4, a = 1, target 0. Error -1: w = (-2, 3) - (-1, 1) = (-1, 2) and b = -2.\n2.1: z = 1 - 4 - 2 = -5, a = 0, target 1. Error +1: w = (-1, 2) + (-1, -2) = (-2, 0) and b = -1.\n\nThe final boundary is -x1 - x2 - 2 = 0, which is the line x1 + x2 = -2. All four examples lie on the correct side. Because the data are linearly separable, the perceptron rule is guaranteed to stop after a finite number of mistakes. The z = 0 case at the start counts as a = 1 because the rule uses z >= 0.",
+    "zh": "只有出错时才更新：第 1.2、1.4、2.1 和 2.4 行。在第 3 个 epoch 里，每个样本都分类正确，训练停止。最终权重 w = (-1, -1)，b = -2。\n\n把前几行走一遍：\n1.1：z = 0，z >= 0 所以 a = 1。目标是 1，没有错误，什么都不变。\n1.2：z = 0 得 a = 1，但目标是 0。误差 = -1，所以 w = (0, 0) + (-1) × (2, -3) = (-2, 3)，b = -1。\n1.3：z = -2 × 3 + 3 × 1 - 1 = -4，所以 a = 0，正确。\n1.4：z = -2 × (-1) + 3 × 1 - 1 = 4，a = 1，目标 0。误差 -1：w = (-2, 3) - (-1, 1) = (-1, 2)，b = -2。\n2.1：z = 1 - 4 - 2 = -5，a = 0，目标 1。误差 +1：w = (-1, 2) + (-1, -2) = (-2, 0)，b = -1。\n\n最终的边界是 -x1 - x2 - 2 = 0，即直线 x1 + x2 = -2。四个样本都在正确的一侧。因为数据线性可分，感知机规则保证在有限次错误之后停止。开头 z = 0 的情形记作 a = 1，因为规则用的是 z >= 0。"
+   },
+   "verify_language": "python",
+   "verify_code": "data = [((-1, -2), 1), ((2, -3), 0), ((3, 1), 0), ((-1, 1), 0)]\nw = [0, 0]\nb = 0\nepoch = 0\nwhile True:\n    epoch += 1\n    changed = False\n    for i, (x, t) in enumerate(data, 1):\n        z = w[0] * x[0] + w[1] * x[1] + b\n        a = 1 if z >= 0 else 0\n        e = t - a\n        if e:\n            changed = True\n            w = [w[0] + e * x[0], w[1] + e * x[1]]\n            b += e\n        print('\\t'.join([f'{epoch}.{i}', f'{x[0]},{x[1]}', str(t), str(z), str(a), str(w[0]), str(w[1]), str(b)]))\n    if not changed:\n        break\n"
+  },
+  {
+   "id": "tree-attribute-choice",
+   "kind": "trace",
+   "topic": "decision-tree-information",
+   "title": {
+    "en": "Decision tree: which attribute to split on",
+    "zh": "决策树：该选哪个属性划分"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Leon recorded whether 12 deliveries were late, with three facts about each: Route (Hwy or City), Weather (Clear, Rain or Fog) and Load (Light or Heavy). 6 deliveries were late and 6 were not.\n\nUse information gain to pick the root attribute. Then, in the one branch that is not pure, pick the next attribute from those that remain.\n\nEntropy values you may use: H(1/2) = 1.00, H(1/3) = 0.92, H(1/4) = 0.81, H(2/7) = 0.86. Round to 2 decimals. The entropy of the root is 1.00 and the entropy of the Hwy branch (2 late of 8) is 0.81.\n\nFor each candidate split, fill in the weighted entropy after the split, the information gain, and yes if it is the split chosen at that level, otherwise no. In the first column, L1 means a split at the root and L2 means a split inside the Hwy branch.",
+    "zh": "Leon 记录了 12 次送货是否晚到，并记下每次送货的三个信息：Route（Hwy 或 City）、Weather（Clear、Rain 或 Fog）和 Load（Light 或 Heavy）。其中 6 次晚到，6 次没有晚到。\n\n用信息增益选根节点属性。然后在唯一一个不纯的分支里，从剩下的属性中选下一个属性。\n\n可以使用的熵值：H(1/2) = 1.00，H(1/3) = 0.92，H(1/4) = 0.81，H(2/7) = 0.86。结果取 2 位小数。根节点的熵是 1.00，Hwy 分支（8 次里有 2 次晚到）的熵是 0.81。\n\n对每个候选划分，填写划分后的加权熵、信息增益，以及它是否为该层选中的划分（是写 yes，否写 no）。第一列中，L1 表示在根节点处的划分，L2 表示在 Hwy 分支内部的划分。"
+   },
+   "code": "#   Route  Weather  Load   Late\n1   Hwy    Rain     Light  No\n2   City   Clear    Heavy  Yes\n3   Hwy    Fog      Light  No\n4   Hwy    Fog      Heavy  Yes\n5   City   Rain     Light  Yes\n6   Hwy    Clear    Heavy  Yes\n7   City   Rain     Heavy  Yes\n8   Hwy    Rain     Heavy  No\n9   City   Clear    Light  Yes\n10  Hwy    Rain     Light  No\n11  Hwy    Rain     Heavy  No\n12  Hwy    Rain     Light  No",
+   "columns": {
+    "en": [
+     "Candidate split",
+     "Entropy after split",
+     "Information gain",
+     "Chosen?"
+    ],
+    "zh": [
+     "候选划分",
+     "划分后的熵",
+     "信息增益",
+     "是否选中"
+    ]
+   },
+   "rows": [
+    [
+     "L1 Route",
+     "0.54",
+     "0.46",
+     "yes"
+    ],
+    [
+     "L1 Weather",
+     "0.67",
+     "0.33",
+     "no"
+    ],
+    [
+     "L1 Load",
+     "0.92",
+     "0.08",
+     "no"
+    ],
+    [
+     "L2 Weather",
+     "0.25",
+     "0.56",
+     "yes"
+    ],
+    [
+     "L2 Load",
+     "0.50",
+     "0.31",
+     "no"
+    ]
+   ],
+   "given": [],
+   "solution": {
+    "en": "Root (entropy 1.00).\nRoute: City has 4 records, all late (entropy 0). Hwy has 8 records with 2 late (H(1/4) = 0.81). Weighted = 8/12 × 0.81 = 0.54. Gain = 1.00 - 0.54 = 0.46.\nWeather: Clear has 3 records, all late (0). Fog has 2 records, 1 late (1.00). Rain has 7 records, 2 late (H(2/7) = 0.86). Weighted = 2/12 × 1.00 + 7/12 × 0.86 = 0.17 + 0.50 = 0.67. Gain = 0.33.\nLoad: Light has 6 records with 2 late (0.92). Heavy has 6 records with 4 late (0.92). Weighted = 0.92. Gain = 0.08.\nRoute has the largest gain, so it is the root. The City branch is pure, so the Hwy branch (8 records, entropy 0.81) is the only one to split further.\n\nHwy branch (entropy 0.81).\nWeather: Clear has 1 record, late (0). Fog has 2 records, 1 late (1.00). Rain has 5 records, none late (0). Weighted = 2/8 × 1.00 = 0.25. Gain = 0.81 - 0.25 = 0.56.\nLoad: Light has 4 records, none late (0). Heavy has 4 records, 2 late (1.00). Weighted = 4/8 × 1.00 = 0.50. Gain = 0.31.\nWeather wins, so the tree is Route -> (City: late) / (Hwy: split on Weather). Clear -> late and Rain -> not late are pure, and only Fog (1 late, 1 not) still needs a split on Load.\n\nNotice that Load is the weakest attribute at the root (gain 0.08), even though it is exactly the question that finishes the small Fog group. Information gain depends on the node you are splitting, so it must be recomputed in every branch.\n\nCalculator-free: the five entropies above come from the table, so only multiplication by fractions is needed. The 2-decimal answers are the same whether you use the table or exact logarithms.",
+    "zh": "根节点（熵 1.00）。\nRoute：City 有 4 条记录，全部晚到（熵 0）。Hwy 有 8 条记录，其中 2 条晚到（H(1/4) = 0.81）。加权熵 = 8/12 × 0.81 = 0.54。增益 = 1.00 - 0.54 = 0.46。\nWeather：Clear 有 3 条记录，全部晚到（0）。Fog 有 2 条记录，1 条晚到（1.00）。Rain 有 7 条记录，2 条晚到（H(2/7) = 0.86）。加权熵 = 2/12 × 1.00 + 7/12 × 0.86 = 0.17 + 0.50 = 0.67。增益 = 0.33。\nLoad：Light 有 6 条记录，2 条晚到（0.92）。Heavy 有 6 条记录，4 条晚到（0.92）。加权熵 = 0.92。增益 = 0.08。\nRoute 的增益最大，所以它是根节点。City 分支是纯的，因此只有 Hwy 分支（8 条记录，熵 0.81）需要继续划分。\n\nHwy 分支（熵 0.81）。\nWeather：Clear 有 1 条记录，晚到（0）。Fog 有 2 条记录，1 条晚到（1.00）。Rain 有 5 条记录，没有晚到（0）。加权熵 = 2/8 × 1.00 = 0.25。增益 = 0.81 - 0.25 = 0.56。\nLoad：Light 有 4 条记录，没有晚到（0）。Heavy 有 4 条记录，2 条晚到（1.00）。加权熵 = 4/8 × 1.00 = 0.50。增益 = 0.31。\nWeather 胜出，所以树是 Route -> （City：晚到）/（Hwy：按 Weather 划分）。Clear -> 晚到、Rain -> 不晚到都是纯的，只有 Fog（1 条晚到、1 条没有）还需要按 Load 再划分。\n\n注意，Load 在根节点处是最弱的属性（增益 0.08），尽管恰好是它能把 Fog 这一小组分干净。信息增益取决于你正在划分的那个节点，所以每个分支都要重新计算。\n\n免计算器做法：上面的五个熵都来自给定的表，所以只需要做分数乘法。用表里的值或用精确对数，两位小数的结果是一样的。"
+   },
+   "verify_language": "python",
+   "verify_code": "from fractions import Fraction as F\nfrom math import log2\n\nrows = [\n    ('Hwy', 'Rain', 'Light', 0), ('City', 'Clear', 'Heavy', 1), ('Hwy', 'Fog', 'Light', 0), ('Hwy', 'Fog', 'Heavy', 1),\n    ('City', 'Rain', 'Light', 1), ('Hwy', 'Clear', 'Heavy', 1), ('City', 'Rain', 'Heavy', 1), ('Hwy', 'Rain', 'Heavy', 0),\n    ('City', 'Clear', 'Light', 1), ('Hwy', 'Rain', 'Light', 0), ('Hwy', 'Rain', 'Heavy', 0), ('Hwy', 'Rain', 'Light', 0),\n]\nTABLE = {F(0): 0.0, F(1, 2): 1.0, F(1, 3): 0.92, F(1, 4): 0.81, F(2, 7): 0.86}\n\n\ndef H(rs, table):\n    n = len(rs)\n    late = sum(r[3] for r in rs)\n    p = min(F(late, n), 1 - F(late, n))\n    if table:\n        return TABLE[p]\n    return 0.0 if p == 0 else -float(p) * log2(p) - (1 - float(p)) * log2(1 - p)\n\n\ndef split(rs, col, table):\n    groups = {}\n    for r in rs:\n        groups.setdefault(r[col], []).append(r)\n    after = sum(len(g) / len(rs) * H(g, table) for g in groups.values())\n    return after, H(rs, table) - after\n\n\ndef line(label, rs, col, best):\n    exact, table = split(rs, col, False), split(rs, col, True)\n    assert [round(v, 2) for v in exact] == [round(v, 2) for v in table], label\n    assert all(abs(v * 100 - round(v * 100)) < 0.3 for v in exact + table), label\n    print('\\t'.join([label, f'{exact[0]:.2f}', f'{exact[1]:.2f}', 'yes' if col == best else 'no']))\n\n\nnames = ['Route', 'Weather', 'Load']\ngains = [split(rows, c, False)[1] for c in range(3)]\nroot = gains.index(max(gains))\nassert root == 0\nfor c in range(3):\n    line('L1 ' + names[c], rows, c, root)\nbranch = [r for r in rows if r[0] == 'Hwy']\nassert len({r[3] for r in [r for r in rows if r[0] == 'City']}) == 1\nbg = [split(branch, c, False)[1] for c in (1, 2)]\nbest = 1 + bg.index(max(bg))\nfor c in (1, 2):\n    line('L2 ' + names[c], branch, c, best)\n"
+  },
+  {
+   "id": "linkage-single-vs-complete",
+   "kind": "trace",
+   "topic": "clustering-comparisons",
+   "title": {
+    "en": "Single link versus complete link",
+    "zh": "单链接与完全链接的合并过程"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Six points lie on a line at A = 1, B = 8, C = 12, D = 13, E = 16 and F = 24. The distance between two points is the absolute difference of their positions.\n\nRun agglomerative clustering twice, once with single link (the distance between two clusters is the smallest distance between a member of each) and once with complete link (the largest such distance). At each step merge the two clusters with the smallest linkage distance. No ties occur.\n\nWrite a cluster as its letters in alphabetical order (for example CD). Write a merge as the two clusters in alphabetical order joined by +, for example CD+E. Fill in what is merged at each step and the linkage distance at which it is merged.",
+    "zh": "六个点在一条直线上，位置为 A = 1，B = 8，C = 12，D = 13，E = 16，F = 24。两点之间的距离是位置之差的绝对值。\n\n运行两次凝聚聚类：一次用单链接（两个簇之间的距离取两簇成员间的最小距离），一次用完全链接（取最大距离）。每一步合并链接距离最小的两个簇。不会出现并列。\n\n簇用它的字母按字母顺序表示（例如 CD）。合并写成两个簇按字母顺序用 + 连接，例如 CD+E。请填写每一步合并了哪两个簇，以及合并时的链接距离。"
+   },
+   "code": "Positions:  A=1   B=8   C=12   D=13   E=16   F=24",
+   "columns": {
+    "en": [
+     "Merge number",
+     "Single link: merged",
+     "Single link: distance",
+     "Complete link: merged",
+     "Complete link: distance"
+    ],
+    "zh": [
+     "第几次合并",
+     "单链接：合并的簇",
+     "单链接：距离",
+     "完全链接：合并的簇",
+     "完全链接：距离"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "C+D",
+     "1",
+     "C+D",
+     "1"
+    ],
+    [
+     "2",
+     "CD+E",
+     "3",
+     "CD+E",
+     "4"
+    ],
+    [
+     "3",
+     "B+CDE",
+     "4",
+     "A+B",
+     "7"
+    ],
+    [
+     "4",
+     "A+BCDE",
+     "7",
+     "CDE+F",
+     "12"
+    ],
+    [
+     "5",
+     "ABCDE+F",
+     "8",
+     "AB+CDEF",
+     "23"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4"
+   ],
+   "solution": {
+    "en": "Both methods start with C+D at distance 1. They split at step 2 and give different trees.\n\nSingle link keeps absorbing the nearest point into one growing group (chaining). CD+E merges at 3 (13 to 16), then B joins at 4 (8 to 12), then A at 7 (1 to 8), then F at 8 (16 to 24). Each merge uses only the closest pair, so a long thin cluster forms. The merge heights 1, 3, 4, 7, 8 rise slowly.\n\nComplete link prices a merge by the farthest pair. CD+E costs 4 (12 to 16). After that, joining B to CDE would cost 8 (8 to 16), but A+B costs only 7, so it goes first. Then CDE+F costs 12 (12 to 24) and the last merge costs 23 (1 to 24). It builds compact groups: {A, B} and {C, D, E, F} before the final merge.\n\nNow cut each dendrogram to get two clusters. Single link gives {A, B, C, D, E} and {F} (cut between heights 7 and 8). Complete link gives {A, B} and {C, D, E, F} (cut between 12 and 23). The same data produce different groupings, so the linkage is a modelling choice.\n\nCalculator-free: only subtraction of positions is needed.",
+    "zh": "两种方法都先以距离 1 合并 C+D。从第 2 步起它们分道扬镳，得到不同的树。\n\n单链接不断把最近的点吸进一个越来越大的组（链式效应）：CD+E 在 3（13 到 16），然后 B 在 4 加入（8 到 12），接着 A 在 7 加入（1 到 8），最后 F 在 8 加入（16 到 24）。每次合并只看最近的一对，所以形成了细长的簇。合并高度 1、3、4、7、8 升得很慢。\n\n完全链接按最远的一对来定合并代价。CD+E 的代价是 4（12 到 16）。之后，把 B 并入 CDE 要 8（8 到 16），而 A+B 只要 7，所以先合并 A+B。然后 CDE+F 的代价是 12（12 到 24），最后一次合并是 23（1 到 24）。它构造出紧凑的组：最后合并之前先有 {A, B} 和 {C, D, E, F}。\n\n如果把两棵树状图切成两个簇：单链接得到 {A, B, C, D, E} 和 {F}（切在高度 7 与 8 之间），完全链接得到 {A, B} 和 {C, D, E, F}（切在 12 与 23 之间）。同样的数据得出不同的分组，所以链接方式是一个建模选择。\n\n免计算器做法：只需要对位置做减法。"
+   },
+   "verify_language": "python",
+   "verify_code": "import itertools\n\npos = {'A': 1, 'B': 8, 'C': 12, 'D': 13, 'E': 16, 'F': 24}\n\n\ndef run(agg):\n    clusters = {k: [k] for k in pos}\n    out = []\n    while len(clusters) > 1:\n        cands = []\n        for a, b in itertools.combinations(sorted(clusters), 2):\n            d = agg(abs(pos[x] - pos[y]) for x in clusters[a] for y in clusters[b])\n            cands.append((d, a, b))\n        cands.sort()\n        assert len(cands) == 1 or cands[0][0] != cands[1][0]\n        d, a, b = cands[0]\n        out.append((f'{a}+{b}', d))\n        merged = ''.join(sorted(clusters[a] + clusters[b]))\n        del clusters[a], clusters[b]\n        clusters[merged] = list(merged)\n    return out\n\n\nsingle, complete = run(min), run(max)\nfor i in range(5):\n    print('\\t'.join([str(i + 1), single[i][0], str(single[i][1]), complete[i][0], str(complete[i][1])]))\n"
+  },
+  {
+   "id": "threshold-clustering",
+   "kind": "trace",
+   "topic": "clustering-comparisons",
+   "title": {
+    "en": "Nearest-neighbour threshold clustering",
+    "zh": "最近邻阈值聚类"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "Eight points arrive one at a time in the order P1 to P8. Cluster them with the nearest-neighbour threshold method, using Manhattan distance |dx| + |dy| and threshold T = 3.\n\nRules.\n- P1 starts cluster 1.\n- For each later point, find the nearest EARLIER point. No ties occur.\n- If that distance is at most T, the point joins the cluster of that nearest earlier point. Otherwise it starts a new cluster with the next number.\n- Clusters are never merged later.\n\nFill in the nearest earlier point (P1, P2, and so on), the distance to it, and the cluster number of the new point.",
+    "zh": "八个点按 P1 到 P8 的顺序一个接一个到来。用最近邻阈值法对它们聚类，距离采用曼哈顿距离 |dx| + |dy|，阈值 T = 3。\n\n规则：\n- P1 建立簇 1。\n- 对之后的每个点，找出离它最近的更早的点。不会出现并列。\n- 如果这个距离不超过 T，该点就加入这个最近的更早点所在的簇；否则它建立一个新簇，编号取下一个数。\n- 簇之后永远不会合并。\n\n请填写最近的更早的点（P1、P2 等）、到它的距离，以及这个新点所属的簇号。"
+   },
+   "code": "P1 (5, 5)   P2 (7, 6)   P3 (3, 0)   P4 (1, 1)\nP5 (0, 0)   P6 (3, 3)   P7 (4, 8)   P8 (7, 8)",
+   "columns": {
+    "en": [
+     "Point",
+     "Nearest earlier point",
+     "Distance",
+     "Cluster"
+    ],
+    "zh": [
+     "点",
+     "最近的更早的点",
+     "距离",
+     "簇号"
+    ]
+   },
+   "rows": [
+    [
+     "P1",
+     "-",
+     "-",
+     "1"
+    ],
+    [
+     "P2",
+     "P1",
+     "3",
+     "1"
+    ],
+    [
+     "P3",
+     "P1",
+     "7",
+     "2"
+    ],
+    [
+     "P4",
+     "P3",
+     "3",
+     "2"
+    ],
+    [
+     "P5",
+     "P4",
+     "2",
+     "2"
+    ],
+    [
+     "P6",
+     "P3",
+     "3",
+     "2"
+    ],
+    [
+     "P7",
+     "P1",
+     "4",
+     "3"
+    ],
+    [
+     "P8",
+     "P2",
+     "2",
+     "1"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3"
+   ],
+   "solution": {
+    "en": "The result is three clusters: {P1, P2, P8}, {P3, P4, P5, P6} and {P7}.\n\nPoints to notice.\n- P3 is 7 from P1, which is more than T, so it starts cluster 2.\n- P4, P5 and P6 each join through their nearest earlier point, which is already in cluster 2. This gives chaining: P5 (0, 0) and P6 (3, 3) are 6 apart, twice the threshold, yet they share a cluster because each is linked through a chain of close neighbours (P5 - P4 - P3 - P6).\n- P7 is 4 from its nearest earlier point P1, so it starts cluster 3.\n- P8 is 2 from P2 (cluster 1) and also 3 from P7 (cluster 3). Both are within T. The rule uses the nearest, so P8 joins cluster 1. Clusters 1 and 3 are never merged, even though P7 and P8 are within the threshold of each other. The outcome depends on the order in which the points arrive.\n\nThis method needs one pass and no choice of k, but it needs T, and a different arrival order can give a different answer.\n\nCalculator-free: only absolute differences of coordinates are needed.",
+    "zh": "结果是三个簇：{P1, P2, P8}、{P3, P4, P5, P6} 和 {P7}。\n\n要注意的地方：\n- P3 到 P1 的距离是 7，超过 T，所以它建立簇 2。\n- P4、P5、P6 各自通过自己最近的更早点加入，而那个点已经在簇 2 里。这会产生链式效应：P5 (0, 0) 与 P6 (3, 3) 相距 6，是阈值的两倍，却在同一个簇里，因为它们通过一串近邻连在一起（P5 - P4 - P3 - P6）。\n- P7 到最近的更早点 P1 的距离是 4，所以它建立簇 3。\n- P8 到 P2（簇 1）的距离是 2，到 P7（簇 3）的距离是 3，两者都在 T 之内。规则用最近的那个，所以 P8 加入簇 1。簇 1 和簇 3 永远不会合并，尽管 P7 和 P8 彼此也在阈值之内。结果取决于点到来的顺序。\n\n这个方法只需扫描一遍，也不用事先选 k，但需要选 T，并且不同的到来顺序可能得到不同的答案。\n\n免计算器做法：只需要对坐标做绝对值之差。"
+   },
+   "verify_language": "python",
+   "verify_code": "pts = [(5, 5), (7, 6), (3, 0), (1, 1), (0, 0), (3, 3), (4, 8), (7, 8)]\nT = 3\nlabel = []\nfor i, p in enumerate(pts):\n    if i == 0:\n        label.append(1)\n        print('\\t'.join(['P1', '-', '-', '1']))\n        continue\n    d = [abs(p[0] - q[0]) + abs(p[1] - q[1]) for q in pts[:i]]\n    assert d.count(min(d)) == 1\n    j = d.index(min(d))\n    if d[j] <= T:\n        label.append(label[j])\n    else:\n        label.append(max(label) + 1)\n    print('\\t'.join([f'P{i + 1}', f'P{j + 1}', str(d[j]), str(label[-1])]))\nassert label == [1, 1, 2, 2, 2, 2, 3, 1]\n"
+  },
+  {
+   "id": "mcq-closing-needs-consistency",
+   "kind": "mcq",
+   "topic": "astar-heuristics",
+   "title": {
+    "en": "Closing states in graph-search A*",
+    "zh": "图搜索 A* 中关闭状态"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Mia's graph-search A* closes a state the first time it expands it and never looks at that state again. All step costs are positive and her heuristic h is admissible.\n\nWhich extra property of h makes this safe, so that the first expansion of each state is always along a cheapest route to it?",
+    "zh": "Mia 的图搜索 A* 在第一次展开某个状态后就把它关闭，之后不再理会这个状态。所有步长代价都是正数，她的启发式 h 是可采纳的。\n\nh 还需要具备哪个额外性质，才能保证每个状态第一次被展开时，走的一定是到达它的最便宜路线？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "h is consistent: h(n) <= cost(n, n') + h(n') for every road n -> n', and h(goal) = 0.",
+      "zh": "h 是一致的：对每条路 n -> n' 都有 h(n) <= cost(n, n') + h(n')，并且 h(目标) = 0。"
+     },
+     "why": {
+      "en": "Consistency makes f = g + h never decrease along a route. So when a state is expanded, no cheaper route to it can still be waiting in the frontier, and closing it is safe.",
+      "zh": "一致性使 f = g + h 沿路线不会下降。因此状态被展开时，前沿里不可能还藏着到达它的更便宜路线，关闭它是安全的。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "h is admissible and never equals 0 except at goals.",
+      "zh": "h 是可采纳的，并且除了目标之外 h 从不为 0。"
+     },
+     "why": {
+      "en": "Admissible is what she already has. An admissible but inconsistent h can expand a state along an expensive route first. If that state is then closed, the cheaper route is thrown away. The solution gives a four-node example.",
+      "zh": "可采纳是她已经具备的性质。可采纳但不一致的 h 可能先沿着昂贵的路线展开某个状态；如果这时把它关闭，更便宜的路线就被丢掉了。解答里有一个四节点的例子。"
+     }
+    },
+    {
+     "text": {
+      "en": "All step costs are whole numbers.",
+      "zh": "所有步长代价都是整数。"
+     },
+     "why": {
+      "en": "Whole numbers do not change the order of expansion and do not rule out an inconsistent h. The problem lies in the heuristic, not in the arithmetic.",
+      "zh": "整数不会改变展开顺序，也不能排除不一致的 h。问题出在启发式上，而不是算术上。"
+     }
+    },
+    {
+     "text": {
+      "en": "h overestimates the cost for at least one state, because that pushes the search harder toward the goal.",
+      "zh": "h 至少对一个状态高估了代价，因为这会让搜索更有力地朝目标推进。"
+     },
+     "why": {
+      "en": "Overestimating breaks admissibility. Then A* can return a route that is not optimal even if nothing is ever closed.",
+      "zh": "高估会破坏可采纳性。这样即使从不关闭状态，A* 也可能返回非最优的路线。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "A four-node counterexample. Roads: S -> A cost 1, S -> B cost 4, A -> B cost 1, B -> G cost 5. Heuristic: h(S) = 0, h(A) = 4, h(B) = 0, h(G) = 0.\n\nThe true costs to G are 6 from A and 5 from B, so h is admissible. But h(A) = 4 > 1 + h(B) = 1, so it is not consistent.\n\nA* expands S, then B (f = 4 + 0 = 4) before A (f = 1 + 4 = 5). If B is closed at once, the later route S -> A -> B (cost 2 to B) is dropped, and A* returns S -> B -> G with cost 9. The optimum is S -> A -> B -> G with cost 7. If B is reopened when the cheaper route appears, A* returns 7.",
+    "zh": "一个四节点的反例。道路：S -> A 费用 1，S -> B 费用 4，A -> B 费用 1，B -> G 费用 5。启发式：h(S) = 0，h(A) = 4，h(B) = 0，h(G) = 0。\n\n到 G 的真实代价是：从 A 出发 6，从 B 出发 5，所以 h 是可采纳的。但 h(A) = 4 > 1 + h(B) = 1，所以它不一致。\n\nA* 先展开 S，然后先展开 B（f = 4 + 0 = 4），再展开 A（f = 1 + 4 = 5）。如果 B 一展开就被关闭，之后的路线 S -> A -> B（到 B 的代价是 2）就会被丢弃，A* 返回费用为 9 的 S -> B -> G。最优解是费用 7 的 S -> A -> B -> G。如果更便宜的路线出现时重新打开 B，A* 就会返回 7。"
+   },
+   "verify_language": "python",
+   "verify_code": "edges = {'S': [('A', 1), ('B', 4)], 'A': [('B', 1)], 'B': [('G', 5)]}\nh = {'S': 0, 'A': 4, 'B': 0, 'G': 0}\n\n\ndef astar(reopen):\n    frontier = {'S': 0}\n    closed = {}\n    while frontier:\n        n = min(frontier, key=lambda x: (frontier[x] + h[x], x))\n        g = frontier.pop(n)\n        if n == 'G':\n            return g\n        closed[n] = g\n        for m, c in edges.get(n, []):\n            if m in closed and not (reopen and g + c < closed[m]):\n                continue\n            if m in closed:\n                del closed[m]\n            if m not in frontier or g + c < frontier[m]:\n                frontier[m] = g + c\n\n\nprint('closed', astar(False), 'reopen', astar(True))\n",
+   "verify_output": "closed 9 reopen 7"
+  },
+  {
+   "id": "mcq-dominance-expansions",
+   "kind": "mcq",
+   "topic": "astar-heuristics",
+   "title": {
+    "en": "Dominating heuristics",
+    "zh": "占优的启发式"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Both h1 and h2 are admissible and consistent. For every state, h2(n) >= h1(n), and h2(n) > h1(n) for some states. A* runs on the same problem once with h1 and once with h2.\n\nWhich statement is correct?",
+    "zh": "h1 和 h2 都是可采纳且一致的。对每个状态都有 h2(n) >= h1(n)，并且对某些状态 h2(n) > h1(n)。A* 在同一个问题上分别用 h1 和 h2 各运行一次。\n\n下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Every state expanded by A* with h2 is also expanded by A* with h1 (apart from ties). So h2 never expands more states.",
+      "zh": "用 h2 的 A* 展开的每个状态，用 h1 的 A* 也会展开（并列情形除外）。所以 h2 不会展开更多的状态。"
+     },
+     "why": {
+      "en": "A* expands every state with f(n) < C*, where C* is the optimal cost. Since h2 >= h1, f2 >= f1, so the states with f2 < C* are a subset of the states with f1 < C*.",
+      "zh": "A* 会展开每个 f(n) < C* 的状态，C* 是最优代价。由于 h2 >= h1，所以 f2 >= f1，f2 < C* 的状态集合是 f1 < C* 的状态集合的子集。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "A* with h2 always finishes sooner in seconds.",
+      "zh": "用 h2 的 A* 总是在更短的时间内结束。"
+     },
+     "why": {
+      "en": "Fewer expansions do not guarantee less time. If h2 costs much more to compute per state, the total time can be longer. A better heuristic must be paid for.",
+      "zh": "展开得少并不保证用时少。如果 h2 对每个状态的计算代价高得多，总时间可能更长。更好的启发式也要付出代价。"
+     }
+    },
+    {
+     "text": {
+      "en": "A* with h2 may return a more expensive route, because larger estimates are less safe.",
+      "zh": "用 h2 的 A* 可能返回更昂贵的路线，因为更大的估计更不安全。"
+     },
+     "why": {
+      "en": "Both heuristics are admissible, so both runs return an optimal route. Larger admissible estimates are still lower bounds.",
+      "zh": "两个启发式都是可采纳的，所以两次运行都返回最优路线。更大的可采纳估计仍然是下界。"
+     }
+    },
+    {
+     "text": {
+      "en": "A* with h2 expands exactly the same states as with h1, since both are admissible.",
+      "zh": "用 h2 的 A* 与用 h1 的 A* 展开的状态完全相同，因为两者都是可采纳的。"
+     },
+     "why": {
+      "en": "Admissibility only guarantees optimality. A strictly larger h2 raises f for some states above C*, and those states are no longer expanded.",
+      "zh": "可采纳性只保证最优。严格更大的 h2 会使某些状态的 f 超过 C*，这些状态就不再被展开。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "In a graph search with a consistent h, A* expands every state whose f(n) = g*(n) + h(n) is below the optimal cost C*, and may expand some with f(n) = C* depending on ties. Raising h can only raise f. So the set of states with f < C* can only shrink. We say h2 dominates h1.\n\nThe max of two admissible heuristics, max(h1, h2), is also admissible and dominates both, so combining heuristics this way is free in terms of correctness. Their sum is generally not admissible.",
+    "zh": "在使用一致 h 的图搜索中，A* 会展开每个 f(n) = g*(n) + h(n) 低于最优代价 C* 的状态，并且可能因并列而展开一些 f(n) = C* 的状态。提高 h 只会提高 f，所以 f < C* 的状态集合只会变小。我们说 h2 占优于 h1。\n\n两个可采纳启发式的最大值 max(h1, h2) 仍然是可采纳的，并且占优于这两者，所以这样组合启发式在正确性上是没有代价的。而它们的和一般来说不是可采纳的。"
+   }
+  },
+  {
+   "id": "mcq-search-completeness",
+   "kind": "mcq",
+   "topic": "search-models",
+   "title": {
+    "en": "Complete and optimal: which search?",
+    "zh": "哪种搜索既完备又最优"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "A road map has finitely many cities. Roads can form cycles. Every road costs between 1 and 9. A route exists from the start city to the goal city.\n\nWhich statement is correct?",
+    "zh": "一张路线图上有有限个城市，道路可能形成环。每条路的费用在 1 到 9 之间。从起点城市到目标城市存在一条路线。\n\n下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Breadth-first search always returns a cheapest route, because it finds the route with the fewest roads.",
+      "zh": "广度优先搜索总是返回最便宜的路线，因为它找到的是经过道路最少的路线。"
+     },
+     "why": {
+      "en": "Fewest roads is not the same as lowest cost when costs differ. A route with two roads costing 9 each (18) loses to a route with four roads costing 1 each (4).",
+      "zh": "当费用不同时，道路最少不等于费用最低。两条路各 9（共 18）的路线，比四条路各 1（共 4）的路线更贵。"
+     }
+    },
+    {
+     "text": {
+      "en": "Uniform-cost search is complete and optimal here, because every road costs at least 1.",
+      "zh": "一致代价搜索在这里是完备且最优的，因为每条路至少花费 1。"
+     },
+     "why": {
+      "en": "Costs bounded below by a positive number mean the cost g grows without limit along any endless path, so UCS cannot be trapped. And removing the smallest g first, with the goal test at removal, returns a cheapest route.",
+      "zh": "费用有一个正的下界，意味着沿任何无尽路径 g 都会无限增长，所以一致代价搜索不会被困住。同时，先移出最小的 g 并在移出时检查目标，会返回最便宜的路线。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Depth-first search with no record of visited states is complete, because the map is finite.",
+      "zh": "不记录已访问状态的深度优先搜索是完备的，因为地图是有限的。"
+     },
+     "why": {
+      "en": "On a finite map with a cycle, depth-first search can go around the cycle forever. Finite size helps only if repeated states are detected.",
+      "zh": "地图有限但存在环时，深度优先搜索可能绕着环无限走下去。只有检测重复状态，有限性才有帮助。"
+     }
+    },
+    {
+     "text": {
+      "en": "Iterative deepening search always returns a cheapest route, because it uses depth-first memory.",
+      "zh": "迭代加深搜索总是返回最便宜的路线，因为它只占用深度优先所需的内存。"
+     },
+     "why": {
+      "en": "Iterative deepening finds a shallowest goal, which is the fewest-roads route. With unequal costs this is not always the cheapest.",
+      "zh": "迭代加深找到的是最浅的目标，也就是道路最少的路线。费用不等时，它不一定最便宜。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-local-search-claims",
+   "kind": "mcq",
+   "topic": "local-search",
+   "title": {
+    "en": "Hill climbing, annealing and beams",
+    "zh": "爬山、模拟退火与束搜索"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Which statement about local search is correct?",
+    "zh": "关于局部搜索，下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Simulated annealing accepts a worse neighbour with probability e^(-Δ / T), so when T becomes very small it behaves almost like hill climbing.",
+      "zh": "模拟退火以概率 e^(-Δ / T) 接受较差的邻居，所以当 T 变得非常小时，它的行为几乎等同于爬山法。"
+     },
+     "why": {
+      "en": "Δ is how much worse the neighbour is. For a small T the exponent is very negative and the probability is close to 0, so only improvements are accepted. For a large T almost every move is accepted.",
+      "zh": "Δ 是邻居比当前状态差多少。T 很小时指数是很大的负数，概率接近 0，于是只接受改进。T 很大时几乎所有移动都会被接受。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "A local beam search with k states is the same as running k independent hill-climbing searches side by side.",
+      "zh": "含 k 个状态的局部束搜索等同于并排运行 k 个独立的爬山搜索。"
+     },
+     "why": {
+      "en": "The successors of all k states are pooled and the best k overall are kept. One strong state can crowd out the others, so the searches are not independent.",
+      "zh": "束搜索把 k 个状态的所有后继放在一起，保留整体最好的 k 个。一个很强的状态可以挤掉其他状态，所以这些搜索并不独立。"
+     }
+    },
+    {
+     "text": {
+      "en": "Random-restart hill climbing is guaranteed to find the global optimum after a finite number of restarts.",
+      "zh": "随机重启爬山法保证在有限次重启后找到全局最优解。"
+     },
+     "why": {
+      "en": "If each run succeeds with probability p > 0, the chance of at least one success after r restarts is 1 - (1 - p)^r. That approaches 1 but is never exactly 1 for any finite r.",
+      "zh": "如果每次运行成功的概率为 p > 0，那么 r 次重启后至少成功一次的概率是 1 - (1 - p)^r。它趋近于 1，但对任何有限的 r 都不会恰好等于 1。"
+     }
+    },
+    {
+     "text": {
+      "en": "Hill climbing cannot be stuck on a plateau, because it always accepts a neighbour that has the same value.",
+      "zh": "爬山法不会卡在平台上，因为它总是接受取值相同的邻居。"
+     },
+     "why": {
+      "en": "Basic hill climbing moves only to a strictly better neighbour, so it stops on a plateau. Allowing a limited number of sideways moves is a separate modification.",
+      "zh": "基本的爬山法只移动到严格更好的邻居，所以会停在平台上。允许有限次横向移动是另外一种改进。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-overfit-diagnosis",
+   "kind": "mcq",
+   "topic": "tree-generalization",
+   "title": {
+    "en": "Diagnosing an overfitted tree",
+    "zh": "诊断过拟合的决策树"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Jack grows a decision tree on 200 records without any limit. It reaches 100% training accuracy but only 71% accuracy in 5-fold cross-validation. A second tree, limited to depth 3, has 86% training accuracy and 80% cross-validation accuracy.\n\nWhich statement fits best?",
+    "zh": "Jack 在 200 条记录上不加任何限制地生成了一棵决策树。它的训练准确率是 100%，但 5 折交叉验证准确率只有 71%。第二棵树限制了深度为 3，训练准确率 86%，交叉验证准确率 80%。\n\n下面哪个说法最恰当？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The deep tree is overfitting: it has memorised noise. Limit the depth or the leaf size, or prune, and choose the setting by validation.",
+      "zh": "深树出现了过拟合：它记住了噪声。应该限制深度或叶子大小，或者做剪枝，并用验证来选择设置。"
+     },
+     "why": {
+      "en": "A large gap between training and validation accuracy is the sign of overfitting. The shallower tree gives up some training accuracy and gains 9 points on unseen data.",
+      "zh": "训练与验证准确率之间的差距很大，是过拟合的标志。较浅的树放弃了一部分训练准确率，在未见数据上提高了 9 个百分点。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "The shallow tree is underfitting because its training accuracy is lower, so Jack should deepen it until training accuracy reaches 100%.",
+      "zh": "浅树欠拟合了，因为它的训练准确率更低，所以 Jack 应该把它加深，直到训练准确率达到 100%。"
+     },
+     "why": {
+      "en": "Training accuracy of 100% is what produced the problem. Underfitting would show low accuracy on both training and validation data, but the shallow tree does better on validation.",
+      "zh": "训练准确率 100% 恰恰是问题的来源。欠拟合应该表现为训练和验证准确率都低，而浅树在验证上表现更好。"
+     }
+    },
+    {
+     "text": {
+      "en": "Jack should keep the tree with the higher training accuracy, because training data resemble the data it will see.",
+      "zh": "Jack 应该保留训练准确率更高的那棵树，因为训练数据与它将遇到的数据相似。"
+     },
+     "why": {
+      "en": "Training accuracy measures memory, not generalisation. The tree has seen those exact records.",
+      "zh": "训练准确率衡量的是记忆而不是泛化。这棵树见过的正是那些记录。"
+     }
+    },
+    {
+     "text": {
+      "en": "Jack should now compare both trees on the final test set and keep the better one.",
+      "zh": "Jack 现在应该在最终测试集上比较两棵树，并保留更好的那棵。"
+     },
+     "why": {
+      "en": "He already has validation evidence. Using the test set to choose a model turns it into part of training and makes the final estimate optimistic.",
+      "zh": "他已经有了验证证据。用测试集来挑选模型，会让它变成训练过程的一部分，使最终的估计偏乐观。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-cross-validation-selection",
+   "kind": "mcq",
+   "topic": "evaluation-design",
+   "title": {
+    "en": "Choosing k with cross-validation",
+    "zh": "用交叉验证选择 k"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Emma uses 5-fold cross-validation on 100 records to choose k for a k-nearest-neighbour classifier from {1, 3, 5, 7, 9}.\n\nWhich statement is correct?",
+    "zh": "Emma 在 100 条记录上用 5 折交叉验证，从 {1, 3, 5, 7, 9} 中为 k 近邻分类器选择 k。\n\n下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Each record is in a validation fold exactly once. For each k she averages the 5 fold scores and picks the best average. To report how good the chosen model is, she still needs fresh data or a nested cross-validation.",
+      "zh": "每条记录恰好出现在一个验证折里一次。对每个 k，她把 5 个折的分数取平均，并选择平均分最高的 k。要报告所选模型有多好，她仍然需要全新的数据或嵌套交叉验证。"
+     },
+     "why": {
+      "en": "The best of five averages is partly luck, so it is an optimistic estimate. The choice of k has used the validation scores.",
+      "zh": "五个平均分中最高的那个有一部分是运气，所以是偏乐观的估计。k 的选择已经用到了验证分数。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "The best cross-validation score is an unbiased estimate of future accuracy, because every record was used for testing.",
+      "zh": "最高的交叉验证分数是对未来准确率的无偏估计，因为每条记录都被用来测试过。"
+     },
+     "why": {
+      "en": "Picking the maximum over several candidates creates selection bias. Every record being tested once does not remove it.",
+      "zh": "在多个候选中取最大值会带来选择偏差。每条记录测试过一次并不能消除这种偏差。"
+     }
+    },
+    {
+     "text": {
+      "en": "The five training sets are independent, so an ordinary paired t-test on the five fold scores is exact.",
+      "zh": "五个训练集相互独立，所以对五个折分数做普通的配对 t 检验是精确的。"
+     },
+     "why": {
+      "en": "Two training sets share about three quarters of their records, so the fold scores are correlated. A naive t interval is usually too confident.",
+      "zh": "任意两个训练集大约共享四分之三的记录，所以各折分数是相关的。直接套用 t 区间通常过于自信。"
+     }
+    },
+    {
+     "text": {
+      "en": "Stratified folds guarantee that records from the same person never appear in both training and validation folds.",
+      "zh": "分层折叠保证同一个人的记录不会同时出现在训练折和验证折里。"
+     },
+     "why": {
+      "en": "Stratification keeps class proportions similar. It says nothing about related records. Grouped splitting is needed for that.",
+      "zh": "分层只是让各折类别比例相近，与相关记录无关。要避免这种泄漏，需要按组划分。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-noise-dimensions",
+   "kind": "mcq",
+   "topic": "learning-neighbors",
+   "title": {
+    "en": "Many irrelevant features and k-NN",
+    "zh": "大量无关特征与 k 近邻"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "A 3-nearest-neighbour classifier with Euclidean distance works well using 4 informative features. Leon adds 400 more features that are pure random noise on the same scale. The number of records stays the same.\n\nWhat is the most likely effect?",
+    "zh": "一个使用欧氏距离的 3 近邻分类器，用 4 个有信息的特征时效果很好。Leon 又加入了 400 个尺度相同的纯随机噪声特征，记录数不变。\n\n最可能出现什么效果？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Accuracy falls: the noise features dominate the distances, so nearest neighbours are no longer similar in the informative features. Feature selection or weighting, or many more records, would help.",
+      "zh": "准确率下降：噪声特征主导了距离，最近邻在有信息的特征上不再相似。做特征选择或加权，或者增加大量记录，会有帮助。"
+     },
+     "why": {
+      "en": "Each noise feature adds a random amount to every squared distance. With 400 of them the small differences in the 4 useful features are drowned out. This is one face of the curse of dimensionality.",
+      "zh": "每个噪声特征都会给每个距离平方加上一个随机量。有 400 个时，4 个有用特征里的细小差别被淹没。这是维数灾难的一种表现。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Accuracy rises, because k-NN has more information to compare.",
+      "zh": "准确率上升，因为 k 近邻有了更多可比较的信息。"
+     },
+     "why": {
+      "en": "The extra columns carry no information about the class. More columns are only helpful if they are informative.",
+      "zh": "多出来的列不携带任何类别信息。只有列本身有信息时，多加列才有帮助。"
+     }
+    },
+    {
+     "text": {
+      "en": "Only the prediction time grows. The neighbours stay the same because the noise is random.",
+      "zh": "只有预测时间变长。邻居不变，因为噪声是随机的。"
+     },
+     "why": {
+      "en": "Random does not mean harmless. The noise changes every distance, so different records become the nearest ones.",
+      "zh": "随机不等于无害。噪声会改变每一个距离，于是被选为最近邻的记录会不同。"
+     }
+    },
+    {
+     "text": {
+      "en": "Min-max scaling to [0, 1] makes the noise features harmless.",
+      "zh": "把特征用最小最大值缩放到 [0, 1] 就能让噪声特征变得无害。"
+     },
+     "why": {
+      "en": "Scaling puts all columns on the same range, which gives the noise the same weight as the useful features. It does not remove the noise.",
+      "zh": "缩放把所有列放到同一个范围里，噪声因此和有用特征拥有相同的权重。它并不能去掉噪声。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "A quick simulation (100 training and 100 test records, 4 informative features, 400 noise features) shows the accuracy falling sharply once the noise columns are included. The exact numbers depend on the random draw, but the direction is robust.",
+    "zh": "一个简单的模拟（100 条训练记录、100 条测试记录，4 个有信息的特征，400 个噪声特征）表明，一旦加入噪声列，准确率就会明显下降。具体数值取决于随机抽样，但方向是稳定的。"
+   },
+   "verify_language": "python",
+   "verify_code": "import random\n\nr = random.Random(1)\n\n\ndef make(m):\n    X, y = [], []\n    for i in range(m):\n        c = i % 2\n        X.append([r.gauss(c * 1.5, 1) for _ in range(4)] + [r.gauss(0, 1) for _ in range(400)])\n        y.append(c)\n    return X, y\n\n\nXtr, ytr = make(100)\nXte, yte = make(100)\n\n\ndef accuracy(dims):\n    ok = 0\n    for x, t in zip(Xte, yte):\n        near = sorted((sum((x[j] - z[j]) ** 2 for j in range(dims)), lab) for z, lab in zip(Xtr, ytr))[:3]\n        ok += (sum(lab for _, lab in near) >= 2) == (t == 1)\n    return ok / len(Xte)\n\n\nclean, noisy = accuracy(4), accuracy(404)\nprint('accuracy falls by more than 0.2:', clean - noisy > 0.2)\n",
+   "verify_output": "accuracy falls by more than 0.2: True"
+  },
+  {
+   "id": "mcq-svm-rbf-overfit",
+   "kind": "mcq",
+   "topic": "support-vector-machines",
+   "title": {
+    "en": "A narrow kernel and a large C",
+    "zh": "过窄的核与过大的 C"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "An SVM with an RBF kernel reaches 100% training accuracy but only 62% validation accuracy. The kernel is very narrow (gamma is very large) and C is very large.\n\nWhich change is most likely to help?",
+    "zh": "一个使用 RBF 核的 SVM，训练准确率达到 100%，验证准确率却只有 62%。核非常窄（gamma 非常大），C 也非常大。\n\n下面哪个改动最可能有帮助？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Lower gamma and lower C (a wider kernel and a softer margin), and choose both by validation.",
+      "zh": "降低 gamma 和 C（更宽的核、更软的间隔），并用验证来选择两者。"
+     },
+     "why": {
+      "en": "A narrow kernel lets each training point build its own small island, and a huge C punishes every margin violation. Together they memorise the training set. Wider and softer is the cure for overfitting here.",
+      "zh": "很窄的核让每个训练点自成一个小岛，很大的 C 则严厉惩罚每一次间隔违反。两者合在一起就是记住了训练集。这里应该用更宽、更软的设置来对付过拟合。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Raise C further, so no training point is ever inside the margin.",
+      "zh": "把 C 调得更大，使任何训练点都不会落在间隔内。"
+     },
+     "why": {
+      "en": "Raising C pushes the model even closer to the training data. That is the direction that created the gap.",
+      "zh": "提高 C 会让模型更贴近训练数据，而这正是造成差距的方向。"
+     }
+    },
+    {
+     "text": {
+      "en": "Raise gamma, so each training point gets a sharper region of its own.",
+      "zh": "提高 gamma，使每个训练点拥有更尖锐的专属区域。"
+     },
+     "why": {
+      "en": "A larger gamma narrows the kernel even more and makes the boundary more wiggly around single points.",
+      "zh": "更大的 gamma 会让核更窄，决策边界围绕单个点更加曲折。"
+     }
+    },
+    {
+     "text": {
+      "en": "Replace the kernel by any similarity function that gives a higher training score, since a kernel only has to be symmetric.",
+      "zh": "换成任何能得到更高训练得分的相似度函数，因为核只要求对称。"
+     },
+     "why": {
+      "en": "A valid kernel must give a positive semi-definite Gram matrix for every finite set of points. Symmetry alone is not enough.",
+      "zh": "有效的核必须对任意有限点集都给出半正定的 Gram 矩阵，仅仅对称是不够的。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-bagging-vs-boosting",
+   "kind": "mcq",
+   "topic": "ensemble-learning",
+   "title": {
+    "en": "Bagging versus boosting",
+    "zh": "装袋与提升"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Which statement correctly contrasts bagging with AdaBoost?",
+    "zh": "下面哪个说法正确地对比了装袋与 AdaBoost？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Bagging trains each model independently on a bootstrap sample and averages them, which mainly reduces variance. AdaBoost trains models one after another and gives more weight to examples that earlier models got wrong, which mainly reduces bias and can chase noisy labels.",
+      "zh": "装袋让每个模型在自助样本上独立训练，再把它们取平均，主要作用是降低方差。AdaBoost 依次训练模型，对之前模型做错的样本加大权重，主要作用是降低偏差，也可能去追逐有噪声的标签。"
+     },
+     "why": {
+      "en": "Bagging is parallel and works well with unstable learners such as deep trees. Boosting is sequential and works with weak learners. Wrong labels keep getting heavier weights, which is why noisy labels hurt boosting.",
+      "zh": "装袋可以并行，适合深树这类不稳定的学习器。提升是串行的，适合弱学习器。错误的标签会不断获得更高的权重，所以噪声标签对提升的危害更大。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Bagging trains models in turn and reweights the mistakes. AdaBoost trains on independent bootstrap samples.",
+      "zh": "装袋依次训练模型并对错误重新加权，AdaBoost 则在独立的自助样本上训练。"
+     },
+     "why": {
+      "en": "This swaps the two methods. Reweighting the mistakes is the defining step of boosting.",
+      "zh": "这把两种方法说反了。对错误重新加权正是提升的特征步骤。"
+     }
+    },
+    {
+     "text": {
+      "en": "Both give every model an equal vote and every training example an equal weight in every round.",
+      "zh": "两者都让每个模型拥有相同的投票权，每一轮中每个训练样本拥有相同的权重。"
+     },
+     "why": {
+      "en": "AdaBoost changes example weights each round and weights each model's vote by its accuracy. Only bagging uses equal votes.",
+      "zh": "AdaBoost 每轮都会改变样本权重，并按准确率给每个模型的投票加权。只有装袋才使用相同的投票权。"
+     }
+    },
+    {
+     "text": {
+      "en": "Bagging needs weak learners that are only slightly better than guessing. AdaBoost works best with deep, unstable learners.",
+      "zh": "装袋需要仅比随机猜测略好的弱学习器，AdaBoost 则最适合深而不稳定的学习器。"
+     },
+     "why": {
+      "en": "This is reversed. Averaging many unstable deep trees is what bagging does well, and boosting is built on weak learners.",
+      "zh": "这是反的。对许多不稳定的深树取平均正是装袋擅长的，而提升的基础是弱学习器。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-explaining-away",
+   "kind": "mcq",
+   "topic": "bayesian-networks",
+   "title": {
+    "en": "Independence in a small network",
+    "zh": "小型网络中的独立性"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "A Bayesian network has four true/false variables: Rain (R) and Sprinkler (S) have no parents, Wet grass (W) has parents R and S, and Slippery path (L) has the parent W.\n\nWhich statement is correct?",
+    "zh": "一个贝叶斯网络有四个真/假变量：Rain（R）和 Sprinkler（S）没有父节点，Wet grass（W）的父节点是 R 和 S，Slippery path（L）的父节点是 W。\n\n下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "R and S are independent when nothing is observed, but they become dependent once W is observed (and also once only L is observed).",
+      "zh": "没有任何观测时 R 和 S 相互独立，但一旦观测到 W（或者只观测到 L），它们就变得相关。"
+     },
+     "why": {
+      "en": "W is a collider on the path R -> W <- S. A collider blocks the path until it or one of its descendants is observed. Seeing wet grass and then learning it rained makes the sprinkler less likely (explaining away).",
+      "zh": "W 是路径 R -> W <- S 上的汇合节点（碰撞点）。汇合节点会阻断路径，直到它或它的后代被观测到。看到草地湿了，又得知下过雨，洒水器开过的可能性就降低了（解释消除）。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "R and S are dependent when nothing is observed because they share a child. Observing W makes them independent.",
+      "zh": "没有观测时 R 和 S 相关，因为它们有共同的孩子；观测 W 会使它们独立。"
+     },
+     "why": {
+      "en": "This reverses the collider rule. A shared child does not link its parents until the child (or a descendant) is observed.",
+      "zh": "这把汇合节点的规则说反了。共同的孩子在它（或它的后代）被观测之前，并不会把父节点联系起来。"
+     }
+    },
+    {
+     "text": {
+      "en": "R and L are independent when nothing is observed, because the arrow from W to L carries no information about R.",
+      "zh": "没有观测时 R 和 L 独立，因为从 W 指向 L 的箭头不携带关于 R 的信息。"
+     },
+     "why": {
+      "en": "R -> W -> L is an open chain when W is unobserved. Rain makes wet grass likely, and wet grass makes a slippery path likely.",
+      "zh": "W 未被观测时，R -> W -> L 是一条畅通的链。下雨使草地湿的可能性变大，草地湿又使路滑的可能性变大。"
+     }
+    },
+    {
+     "text": {
+      "en": "Given W, R and L are still dependent, because R is an ancestor of L.",
+      "zh": "已知 W 时，R 和 L 仍然相关，因为 R 是 L 的祖先。"
+     },
+     "why": {
+      "en": "Observing W blocks the chain R -> W -> L. Given W, L depends only on W, so L is independent of R.",
+      "zh": "观测 W 会阻断链 R -> W -> L。已知 W 时，L 只依赖于 W，所以 L 与 R 独立。"
+     }
+    }
+   ],
+   "code": "R -> W <- S\nW -> L",
+   "solution": {
+    "en": "The Markov blanket of R is its parents (none), its child W, and the child's other parent S: {W, S}. Given its blanket, R is independent of L and of every other variable.",
+    "zh": "R 的马尔可夫毯由它的父节点（无）、它的孩子 W，以及孩子的另一个父节点 S 组成：{W, S}。已知这个毯，R 与 L 以及所有其他变量都独立。"
+   },
+   "verify_language": "python",
+   "verify_code": "from itertools import product\n\npR, pS = 0.3, 0.4\npW = {(1, 1): 0.95, (1, 0): 0.8, (0, 1): 0.7, (0, 0): 0.05}\npL = {1: 0.9, 0: 0.1}\n\n\ndef joint(r, s, w, l):\n    p = (pR if r else 1 - pR) * (pS if s else 1 - pS)\n    p *= pW[(r, s)] if w else 1 - pW[(r, s)]\n    return p * (pL[w] if l else 1 - pL[w])\n\n\ndef prob(**fixed):\n    total = 0.0\n    for r, s, w, l in product((0, 1), repeat=4):\n        values = {'r': r, 's': s, 'w': w, 'l': l}\n        if all(values[k] == v for k, v in fixed.items()):\n            total += joint(r, s, w, l)\n    return total\n\n\ndef independent(a, b, given=None):\n    given = given or {}\n    pg = prob(**given)\n    return abs(prob(**{a: 1, b: 1}, **given) / pg - prob(**{a: 1}, **given) / pg * prob(**{b: 1}, **given) / pg) < 1e-9\n\n\nprint('R,S independent, nothing observed:', independent('r', 's'))\nprint('R,S independent, W observed:', independent('r', 's', {'w': 1}))\nprint('R,S independent, only L observed:', independent('r', 's', {'l': 1}))\nprint('R,L independent, nothing observed:', independent('r', 'l'))\nprint('R,L independent, W observed:', independent('r', 'l', {'w': 1}))\n",
+   "verify_output": "R,S independent, nothing observed: True\nR,S independent, W observed: False\nR,S independent, only L observed: False\nR,L independent, nothing observed: False\nR,L independent, W observed: True"
+  },
+  {
+   "id": "mcq-same-starting-weights",
+   "kind": "mcq",
+   "topic": "neural-training",
+   "title": {
+    "en": "Equal starting weights",
+    "zh": "起始权重全部相同"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Noah builds a network with 2 inputs, 3 sigmoid hidden units and 1 output unit. He sets every hidden-layer weight to 0.5 and every output weight to 0.5 (all biases 0), then trains with gradient descent.\n\nWhat happens?",
+    "zh": "Noah 搭建了一个网络：2 个输入、3 个 sigmoid 隐藏单元、1 个输出单元。他把隐藏层的每个权重都设为 0.5，输出层的每个权重也都设为 0.5（所有偏置为 0），然后用梯度下降训练。\n\n会发生什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The three hidden units always receive identical gradients, so they stay identical. The hidden layer acts like a single unit. Small random starting weights break the symmetry.",
+      "zh": "三个隐藏单元每次得到的梯度都完全相同，所以它们始终保持相同。隐藏层的作用就像一个单元。较小的随机初始权重可以打破这种对称。"
+     },
+     "why": {
+      "en": "Each hidden unit has the same inputs, the same weights and the same output weight, so the update for each is the same. Training can still reduce the loss, but the extra units never specialise.",
+      "zh": "每个隐藏单元的输入、权重和输出权重都相同，所以对它们的更新也相同。训练仍然可以降低损失，但多出来的单元永远不会分工。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Training works as usual, because gradient descent will pull the three units apart after a few steps.",
+      "zh": "训练与平时一样进行，因为梯度下降几步之后就会把三个单元拉开。"
+     },
+     "why": {
+      "en": "Gradient descent moves each weight by its own gradient. Identical gradients move identical weights by the same amount, so the units never separate.",
+      "zh": "梯度下降按每个权重自己的梯度移动它。相同的梯度会让相同的权重移动同样的量，所以这些单元永远不会分开。"
+     }
+    },
+    {
+     "text": {
+      "en": "Nothing can be learned, because every gradient is exactly zero.",
+      "zh": "什么也学不到，因为所有梯度都恰好为零。"
+     },
+     "why": {
+      "en": "The gradients are not zero. They are equal across the hidden units. The loss does fall, but the network keeps only one hidden unit's worth of capacity.",
+      "zh": "梯度并不为零，只是各隐藏单元的梯度相等。损失确实会下降，但网络始终只有一个隐藏单元的表达能力。"
+     }
+    },
+    {
+     "text": {
+      "en": "A larger learning rate breaks the symmetry.",
+      "zh": "更大的学习率可以打破对称。"
+     },
+     "why": {
+      "en": "A larger step multiplies identical gradients by a larger number. The units are still identical.",
+      "zh": "更大的步长只是把相同的梯度乘以更大的数，这些单元仍然相同。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "from math import exp\n\n\ndef sig(z):\n    return 1 / (1 + exp(-z))\n\n\ndata = [((1.0, 0.0), 1.0), ((0.0, 1.0), 0.0), ((1.0, 1.0), 1.0)]\nW = [[0.5, 0.5] for _ in range(3)]\nB = [0.0] * 3\nV = [0.5] * 3\nc = 0.0\n\n\ndef run(x):\n    h = [sig(W[j][0] * x[0] + W[j][1] * x[1] + B[j]) for j in range(3)]\n    return h, sig(sum(V[j] * h[j] for j in range(3)) + c)\n\n\ndef loss():\n    return sum((run(x)[1] - t) ** 2 for x, t in data)\n\n\nstart = loss()\nfor _ in range(500):\n    for x, t in data:\n        h, a = run(x)\n        do = (a - t) * a * (1 - a)\n        dh = [h[j] * (1 - h[j]) * V[j] * do for j in range(3)]\n        for j in range(3):\n            V[j] -= 0.5 * do * h[j]\n            W[j][0] -= 0.5 * dh[j] * x[0]\n            W[j][1] -= 0.5 * dh[j] * x[1]\n            B[j] -= 0.5 * dh[j]\n        c -= 0.5 * do\nprint('hidden units still identical:', all(abs(W[j][k] - W[0][k]) < 1e-12 for j in range(3) for k in range(2)))\nprint('loss fell:', loss() < start)\n",
+   "verify_output": "hidden units still identical: True\nloss fell: True"
+  },
+  {
+   "id": "mcq-autoencoder-bottleneck",
+   "kind": "mcq",
+   "topic": "autoencoders",
+   "title": {
+    "en": "What an autoencoder learns",
+    "zh": "自动编码器学到什么"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Which statement about autoencoders is correct?",
+    "zh": "关于自动编码器，下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "It is trained to reproduce its own input, so it needs no class labels. A narrow hidden layer (a bottleneck) forces it to keep only the main structure of the data.",
+      "zh": "它被训练去重建自己的输入，所以不需要类别标签。狭窄的隐藏层（瓶颈）迫使它只保留数据的主要结构。"
+     },
+     "why": {
+      "en": "The loss compares the output with the input. With fewer hidden units than inputs, the code must compress, and compression picks out the regularities.",
+      "zh": "损失比较的是输出与输入。隐藏单元比输入少时，编码必须压缩，而压缩会提炼出数据中的规律。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "A hidden layer much wider than the input always gives better features.",
+      "zh": "隐藏层比输入宽得多，总能得到更好的特征。"
+     },
+     "why": {
+      "en": "With enough room the network can simply copy the input, which gives perfect reconstruction and no useful features. Sparsity or noise must then be added.",
+      "zh": "空间足够时网络可以直接复制输入，重建完美，却没有任何有用的特征。这时必须加上稀疏性约束或噪声。"
+     }
+    },
+    {
+     "text": {
+      "en": "A denoising autoencoder is trained to reproduce the corrupted input from the corrupted input.",
+      "zh": "去噪自动编码器被训练成用损坏的输入重建损坏的输入。"
+     },
+     "why": {
+      "en": "The input is corrupted, but the target is the clean original. That is why it learns to remove noise.",
+      "zh": "输入是被损坏的，但目标是干净的原始数据，因此它才会学会去除噪声。"
+     }
+    },
+    {
+     "text": {
+      "en": "A large reconstruction error proves that an input is an anomaly.",
+      "zh": "很大的重建误差就证明这个输入是异常。"
+     },
+     "why": {
+      "en": "It may point to novelty, but it must be checked. A harmless change can reconstruct badly, and a strange input can reconstruct well.",
+      "zh": "它可能提示输入是新颖的，但必须另外验证。无害的变化也可能重建得很差，而陌生的输入也可能重建得很好。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mcq-genetic-mutation",
+   "kind": "mcq",
+   "topic": "stochastic-optimization",
+   "title": {
+    "en": "Mutation, elitism and selection",
+    "zh": "变异、精英保留与选择"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Which statement about genetic algorithms is correct?",
+    "zh": "关于遗传算法，下面哪个说法是正确的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "If every individual has the same value in some position, crossover can never change that position. Only mutation can bring in a new value, so a small amount of mutation keeps the search from getting stuck.",
+      "zh": "如果每个个体在某个位置上的取值都相同，交叉永远无法改变这个位置。只有变异能带来新的取值，所以少量变异能避免搜索卡住。"
+     },
+     "why": {
+      "en": "Crossover only recombines values that already exist in the population. Diversity that has been lost can come back only through mutation.",
+      "zh": "交叉只是重新组合种群中已经存在的取值。已经丢失的多样性只能通过变异找回来。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Elitism (copying the best individual unchanged into the next generation) guarantees that the global optimum is found.",
+      "zh": "精英保留（把最好的个体原样复制到下一代）保证能找到全局最优解。"
+     },
+     "why": {
+      "en": "Elitism only makes sure the best solution found so far is not lost. It does not guarantee that a better one will ever be found.",
+      "zh": "精英保留只保证到目前为止找到的最好解不会丢失，并不保证将来一定能找到更好的解。"
+     }
+    },
+    {
+     "text": {
+      "en": "A higher mutation rate is always better, because it explores more.",
+      "zh": "变异率越高越好，因为这样探索得更多。"
+     },
+     "why": {
+      "en": "With very high mutation, offspring have little in common with their parents and the search becomes random. Good solutions are destroyed as fast as they are found.",
+      "zh": "变异率极高时，后代与父代几乎没有共同点，搜索变成随机搜索。好的解刚被找到就被破坏了。"
+     }
+    },
+    {
+     "text": {
+      "en": "Fitness-proportional selection always picks the fittest individual.",
+      "zh": "按适应度比例选择总是选出适应度最高的个体。"
+     },
+     "why": {
+      "en": "Each individual is chosen with probability proportional to its fitness. Weaker individuals are chosen too, which keeps some diversity.",
+      "zh": "每个个体被选中的概率与其适应度成正比。较弱的个体也会被选中，这样可以保留一些多样性。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "short-choose-method-clinic",
+   "kind": "short",
+   "topic": "naive-bayes",
+   "title": {
+    "en": "Choose a method and defend it",
+    "zh": "选择一种方法并说明理由"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "A small clinic wants to predict whether a patient will miss an appointment. It has 60 past appointments. Each one has 10 attributes, all nominal (for example weekday, reminder sent, room). About 15% of the attribute values are missing, scattered at random. Staff want a probability they can read, not only a yes/no answer. New appointments arrive every day, and the model must be updated in seconds, without a long training run.\n\nChoose ONE method from: 1R, naive Bayes, k-nearest neighbours, a decision tree.\n- Justify your choice with at least three facts from the description.\n- Say why you reject at least two of the other methods.\n- Say how you will handle zero counts and how you will test the model.",
+    "zh": "一家小诊所想预测病人是否会错过预约。它有 60 条过去的预约记录，每条有 10 个属性，全部是名义属性（例如星期几、是否发了提醒、诊室）。约 15% 的属性值缺失，随机分散。工作人员想要一个看得懂的概率，而不只是「是/否」的答案。新的预约每天都会出现，模型必须在几秒内更新，不能依赖一次很长的训练。\n\n请从以下方法中选出一种：1R、朴素贝叶斯、k 近邻、决策树。\n- 至少用描述中的三个事实来论证你的选择。\n- 说明你为什么否定至少两种其他方法。\n- 说明你如何处理零计数，以及如何测试这个模型。"
+   },
+   "solution": {
+    "en": "Choice: naive Bayes.\n\nWhy it fits.\n- Readable probabilities: it computes a score for each class. Normalising the scores gives P(miss | attributes). The values can be poorly calibrated because the attributes are not truly independent, so check them on validation data.\n- Nominal attributes: it works with counts directly and needs no distance.\n- Missing values: leave out any attribute whose value is missing. The other likelihoods still multiply, so no imputation is needed.\n- Daily updates: the model is only a set of counts. A new appointment adds 1 to a few counts, so there is no retraining.\n- Only 60 records: it estimates one small table per attribute, far fewer parameters than a tree, so it has low variance.\n\nWhy not the others.\n- k-NN: there is no natural distance for nominal attributes with missing values. It keeps all records and compares at prediction time. A vote among a few neighbours gives only coarse fractions.\n- Decision tree: with 60 records the splits quickly reach tiny groups, so the tree is unstable and its leaf probabilities rest on a handful of cases. Missing values need an extra policy.\n- 1R: simple and an excellent baseline, but it uses one attribute only. Keep it as the baseline to beat.\n\nZero counts. Use add-one (Laplace) smoothing: (count + 1) / (class size + number of values of the attribute). Otherwise a single value never seen with one class sets its whole score to 0.\n\nTesting. Use stratified cross-validation and compare with the majority-class and 1R baselines. Missed appointments are probably the minority, so report precision and recall, not only accuracy. Do not tune on the data you report on.\n\nA different choice can be defended only if the answer also meets the needs for probabilities, missing values and quick updates, and that is hard with the other methods.",
+    "zh": "选择：朴素贝叶斯。\n\n为什么合适：\n- 可读的概率：它为每个类别计算一个得分，把得分归一化就得到 P(错过 | 属性)。由于属性并非真正独立，这些值的校准可能不好，所以要在验证数据上检查。\n- 名义属性：它直接用计数，不需要距离。\n- 缺失值：把值缺失的属性略去即可，其余似然照常相乘，不需要填补。\n- 每天更新：模型只是一组计数。一条新预约只需给几个计数加 1，不需要重新训练。\n- 只有 60 条记录：它为每个属性只估计一张小表，参数比决策树少得多，所以方差低。\n\n为什么不选其他方法：\n- k 近邻：名义属性加缺失值没有自然的距离定义；它保存所有记录，在预测时才比较；几个邻居投票只能给出很粗的比例。\n- 决策树：只有 60 条记录，划分很快就到了很小的分组，树不稳定，叶子上的概率只基于寥寥几个案例；缺失值还需要额外的处理策略。\n- 1R：简单，是很好的基线，但它只用一个属性。应把它作为需要超越的基线。\n\n零计数：使用加一（拉普拉斯）平滑：(计数 + 1) / (类别样本数 + 该属性的取值个数)。否则某个值只要从未和某一类同时出现过，那一类的整个得分就变成 0。\n\n测试：使用分层交叉验证，并与多数类基线和 1R 基线比较。错过预约很可能是少数类，所以要报告精确率和召回率，而不只是准确率。不要在用来报告结果的数据上调参。\n\n换一种选择，只有在回答同时满足概率、缺失值和快速更新这三项需求时才站得住脚，而其他方法很难做到这一点。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Chooses naive Bayes (the need for probabilities, missing values and fast updates all point to it).",
+      "zh": "选择朴素贝叶斯（对概率、缺失值和快速更新的需求都指向它）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Links at least three facts from the description to properties of the method (for example probabilities, counts for nominal attributes, skipping missing values, count updates, few parameters for 60 records).",
+      "zh": "至少把描述中的三个事实与方法的性质联系起来（例如：概率、用计数处理名义属性、略去缺失值、计数更新、60 条记录只需很少的参数）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Rejects at least two other methods, each with a reason tied to the facts (for example k-NN has no natural distance for nominal and missing values; a tree is unstable with 60 records; 1R uses one attribute).",
+      "zh": "否定至少两种其他方法，且每个理由都与描述中的事实相联系（例如：k 近邻对名义且缺失的值没有自然距离；决策树在 60 条记录上不稳定；1R 只用一个属性）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Handles zero counts with add-one (Laplace) smoothing and says why (a zero kills the whole product).",
+      "zh": "用加一（拉普拉斯）平滑处理零计数，并说明原因（一个零会让整个乘积变成零）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives a test plan: stratified cross-validation against majority-class or 1R baselines, with precision and recall as well as accuracy, and no tuning on the reported data.",
+      "zh": "给出测试方案：分层交叉验证，与多数类或 1R 基线比较，除准确率外还报告精确率和召回率，并且不在报告结果的数据上调参。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Choosing a method because it is \"simple\" or \"popular\" without linking it to any fact in the description.",
+     "zh": "仅因为方法「简单」或「流行」就选择它，而没有联系描述中的任何事实。"
+    },
+    {
+     "en": "Forgetting that one zero count wipes out a whole class score unless it is smoothed.",
+     "zh": "忘记一个零计数会抹掉整个类别的得分，除非做平滑。"
+    },
+    {
+     "en": "Judging the model by training accuracy on 60 records.",
+     "zh": "用 60 条记录上的训练准确率来评价模型。"
+    }
+   ]
+  },
+  {
+   "id": "short-cost-vs-accuracy",
+   "kind": "short",
+   "topic": "classification-metrics",
+   "title": {
+    "en": "Read a confusion matrix against error costs",
+    "zh": "结合错误代价阅读混淆矩阵"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "A clinic screens 1,000 patients. 50 of them truly have the condition. Two screening models give these counts.\n\nA missed case (FN) costs 20 units. A false alarm (FP) costs 1 unit. Correct decisions cost 0.\n\n(a) Find the accuracy and the total cost of each model, and of a lazy model that always answers \"healthy\".\n(b) Which model do you recommend? Explain why accuracy ranks them differently.\n(c) With the false-alarm cost kept at 1, at what cost per missed case would your recommendation change?",
+    "zh": "一家诊所筛查了 1,000 名病人，其中 50 人真的患有该疾病。两个筛查模型给出如下计数。\n\n漏诊一例（FN）代价 20 个单位，一次误报（FP）代价 1 个单位，判断正确的代价为 0。\n\n(a) 求每个模型的准确率和总代价，以及一个总是回答「健康」的偷懒模型的准确率和总代价。\n(b) 你推荐哪个模型？解释为什么按准确率排序会不同。\n(c) 在误报代价保持为 1 的情况下，漏诊一例的代价是多少时，你的推荐会改变？"
+   },
+   "solution": {
+    "en": "(a) Accuracy = (TP + TN) / 1000.\nModel P: (40 + 920) / 1000 = 96.0%. Cost = 30 × 1 + 10 × 20 = 230.\nModel Q: (30 + 940) / 1000 = 97.0%. Cost = 10 × 1 + 20 × 20 = 410.\nAlways \"healthy\": 950 correct = 95.0%. Cost = 50 × 20 = 1000.\n\n(b) Recommend model P. It costs 230 against 410, even though Q has the higher accuracy. Accuracy counts every mistake as equal and is dominated by the 950 healthy patients, so even the lazy model scores 95%. The expensive mistake is the missed case, and P finds 40 of 50 (recall 0.80) while Q finds 30 of 50 (recall 0.60). Q is more precise (0.75 against 0.57), but precision matters less when a missed case is 20 times worse than a false alarm.\n\n(c) P costs 30 + 10c and Q costs 10 + 20c, where c is the cost of a missed case. They are equal when 30 + 10c = 10 + 20c, so c = 2. If a missed case costs less than 2 false alarms, Q is cheaper and the recommendation changes. At c = 20 it is far from that point, so P is a safe choice. In practice, the costs and the decision threshold should be chosen on validation data.",
+    "zh": "(a) 准确率 = (TP + TN) / 1000。\n模型 P：(40 + 920) / 1000 = 96.0%。代价 = 30 × 1 + 10 × 20 = 230。\n模型 Q：(30 + 940) / 1000 = 97.0%。代价 = 10 × 1 + 20 × 20 = 410。\n总是回答「健康」：950 个正确 = 95.0%。代价 = 50 × 20 = 1000。\n\n(b) 推荐模型 P。它的代价是 230，而 Q 是 410，尽管 Q 的准确率更高。准确率把每种错误都算作一样，并且被 950 名健康病人主导，所以连偷懒模型都能得 95%。代价高的错误是漏诊，P 找出了 50 人中的 40 人（召回率 0.80），Q 只找出 30 人（召回率 0.60）。Q 的精确率更高（0.75 对 0.57），但当漏诊的代价是误报的 20 倍时，精确率就没那么重要了。\n\n(c) P 的代价是 30 + 10c，Q 的代价是 10 + 20c，其中 c 是漏诊一例的代价。当 30 + 10c = 10 + 20c 时两者相等，所以 c = 2。如果漏诊一例的代价低于 2 次误报，Q 更便宜，推荐就会改变。c = 20 离这个点很远，所以 P 是稳妥的选择。实际中，代价和决策阈值应该在验证数据上确定。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Accuracy is 96.0% for P, 97.0% for Q and 95.0% for the always-healthy model.",
+      "zh": "准确率：P 为 96.0%，Q 为 97.0%，总是回答「健康」的模型为 95.0%。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Costs are 230 for P (30 × 1 + 10 × 20), 410 for Q (10 × 1 + 20 × 20) and 1000 for the always-healthy model.",
+      "zh": "代价：P 为 230（30 × 1 + 10 × 20），Q 为 410（10 × 1 + 20 × 20），总是回答「健康」的模型为 1000。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Recommends P because of its lower cost, although Q has the higher accuracy.",
+      "zh": "因为 P 的代价更低而推荐 P，尽管 Q 的准确率更高。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains why accuracy misleads: it weighs all mistakes equally and is dominated by the healthy majority. The costly error is the miss, which P reduces (recall 0.80 against 0.60).",
+      "zh": "解释准确率为何有误导性：它对所有错误一视同仁，并被健康的多数主导。代价高的错误是漏诊，P 降低了漏诊（召回率 0.80 对 0.60）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Finds the break-even from 30 + 10c = 10 + 20c, giving c = 2, and says Q is better only if a missed case costs less than 2 false alarms.",
+      "zh": "由 30 + 10c = 10 + 20c 得到平衡点 c = 2，并指出只有当漏诊一例的代价低于 2 次误报时，Q 才更好。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Choosing the model with the higher accuracy without looking at the cost of each kind of error.",
+     "zh": "只选准确率更高的模型，而不看每一类错误的代价。"
+    },
+    {
+     "en": "Reading rows and columns the wrong way round, so FP and FN are swapped.",
+     "zh": "把混淆矩阵的行与列读反，导致 FP 和 FN 互换。"
+    },
+    {
+     "en": "Reporting precision only, which ignores the missed cases.",
+     "zh": "只报告精确率，忽略了漏诊的病例。"
+    }
+   ],
+   "code": "            TP   FN   FP   TN\nModel P     40   10   30   920\nModel Q     30   20   10   940",
+   "verify_language": "python",
+   "verify_code": "models = {'P': (40, 10, 30, 920), 'Q': (30, 20, 10, 940)}\nfor name, (tp, fn, fp, tn) in models.items():\n    assert tp + fn + fp + tn == 1000 and tp + fn == 50\n    print(f'{name} accuracy={(tp + tn) / 1000:.3f} cost={fp * 1 + fn * 20} recall={tp / (tp + fn):.3f} precision={tp / (tp + fp):.3f}')\nprint(f'lazy accuracy={950 / 1000:.3f} cost={50 * 20}')\nprint('break-even cost per miss:', (30 - 10) / (20 - 10))\n",
+   "verify_output": "P accuracy=0.960 cost=230 recall=0.800 precision=0.571\nQ accuracy=0.970 cost=410 recall=0.600 precision=0.750\nlazy accuracy=0.950 cost=1000\nbreak-even cost per miss: 2.0"
+  },
+  {
+   "id": "short-validation-leaks",
+   "kind": "short",
+   "topic": "evaluation-design",
+   "title": {
+    "en": "Find the leaks in a validation setup",
+    "zh": "找出验证流程中的信息泄漏"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "Mia has 200 patients. Each has 5,000 gene measurements and a label (ill or healthy). She does the following.\n1. Scale every gene to mean 0 and variance 1, using all 200 patients.\n2. Keep the 20 genes most correlated with the label, using all 200 patients.\n3. Run 10-fold cross-validation with k-nearest neighbours for k = 1, 3, 5, 7, 9 on those 20 genes.\n4. Report the best cross-validation accuracy (k = 5: 94%) as the accuracy to expect on new patients.\n\nLater she finds that 40 patients appear twice (two visits), and that the folds were drawn at random by row.\n\nName every leak or bias in this procedure, say why each makes the number too good, and describe a corrected procedure.",
+    "zh": "Mia 有 200 名病人，每人有 5,000 个基因测量值和一个标签（患病或健康）。她这样做：\n1. 用全部 200 名病人，把每个基因缩放到均值 0、方差 1。\n2. 用全部 200 名病人，保留与标签相关性最高的 20 个基因。\n3. 在这 20 个基因上，对 k = 1, 3, 5, 7, 9 做 10 折交叉验证的 k 近邻。\n4. 把最好的交叉验证准确率（k = 5：94%）作为新病人上应预期的准确率报告。\n\n后来她发现有 40 名病人出现了两次（两次就诊），并且折是按行随机划分的。\n\n请指出这个流程中的每一处泄漏或偏差，说明各自为什么使结果偏好，并描述修正后的流程。"
+   },
+   "solution": {
+    "en": "Leaks and biases.\n1. Gene selection used all labels. This is the main leak. With 5,000 genes and only 200 patients, some genes correlate with the label by chance. Choosing them with the validation patients' labels in view makes the validation folds look easy. On pure noise, this kind of procedure can still report accuracy far above 50%.\n2. Scaling used all patients. A smaller leak of the same kind: the mean and variance were computed with the validation rows included. It uses no labels, but the model has still seen the validation features.\n3. Repeated patients across folds. A patient with two visits can have one visit in training and one in validation. The model can recognise the person rather than the illness.\n4. Picking the best k and reporting its score. The best of five scores is partly luck, and the same data chose k and judged it, so 94% is optimistic.\n\nCorrected procedure.\n- Set aside a final test set of patients first, and never touch it until the end.\n- Split by patient (group folds), so all visits of one person stay on one side.\n- Inside every training fold, fit the scaler, select the genes and fit the model using only that fold's training patients, then apply them to the validation patients. Choose k with an inner loop (nested cross-validation) or a separate validation set.\n- Report the score once, on the untouched test patients (or the outer-loop average of nested CV).\n\nA small simulation on random labels, with the selection done on all data or inside each fold, shows the size of the first leak.",
+    "zh": "泄漏与偏差：\n1. 基因选择用了所有标签。这是最主要的泄漏。5,000 个基因而只有 200 名病人，总有一些基因碰巧与标签相关。在能看到验证病人标签的情况下挑选基因，会让验证折显得很容易。即使数据只是纯噪声，这类流程也可能报告出远高于 50% 的准确率。\n2. 缩放用了全部病人。这是同类的较小泄漏：均值和方差把验证行也算了进去。它没有用到标签，但模型仍然见过验证数据的特征。\n3. 同一个病人出现在不同的折里。有两次就诊的病人，可能一次在训练折、一次在验证折。模型可以认出这个人，而不是认出这种疾病。\n4. 挑出最好的 k 并报告它的分数。五个分数中的最高值有一部分是运气，而且同一批数据既用来选 k，又用来评价它，所以 94% 偏乐观。\n\n修正后的流程：\n- 先留出一个最终测试集（按病人留出），到最后才使用。\n- 按病人分组划分折（分组折叠），同一个人的所有就诊都留在同一边。\n- 在每个训练折内部，只用该折的训练病人拟合缩放器、选择基因并训练模型，再把它们应用到验证病人上。用内层循环（嵌套交叉验证）或另外的验证集来选择 k。\n- 只在未动过的测试病人上报告一次分数（或报告嵌套交叉验证外层循环的平均值）。\n\n用随机标签做一个小模拟，分别在全部数据上和在每一折内部做基因选择，就能看出第一种泄漏的大小。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names gene selection on all patients as the main leak: validation labels influenced which genes were kept, and with 5,000 genes some correlate with the label by chance.",
+      "zh": "指出在全部病人上选基因是主要泄漏：验证病人的标签影响了保留哪些基因，而 5,000 个基因里总有一些碰巧与标签相关。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names scaling fitted on all patients, validation rows included, as a smaller leak of the same kind.",
+      "zh": "指出用全部病人（包含验证行）拟合缩放是同类的较小泄漏。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names the repeated patients across random folds and fixes it with folds grouped by patient.",
+      "zh": "指出同一病人出现在随机划分的不同折里，并用按病人分组的折来修正。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names selection bias from picking the best k and reporting the same score, and fixes it with nested cross-validation or a separate untouched test set.",
+      "zh": "指出挑选最好的 k 并报告同一个分数会带来选择偏差，并用嵌套交叉验证或另外一个未动过的测试集来修正。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives a corrected order: split first, then fit scaling, gene selection and the model inside each training fold only, and report once on untouched data.",
+      "zh": "给出修正后的顺序：先划分，然后只在每个训练折内部拟合缩放、基因选择和模型，并只在未动过的数据上报告一次。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Saying \"use more folds\" as the fix. The number of folds does not remove a leak.",
+     "zh": "把「增加折数」当作修正办法。折数再多也消除不了泄漏。"
+    },
+    {
+     "en": "Treating scaling as harmless because it uses no labels. It still lets validation rows influence the training step.",
+     "zh": "认为缩放不使用标签所以无害。它仍然让验证行影响了训练步骤。"
+    },
+    {
+     "en": "Mentioning only the duplicated patients and missing the feature-selection leak.",
+     "zh": "只提到重复的病人，而漏掉特征选择的泄漏。"
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "import random\n\nr = random.Random(2)\nn, p, top = 100, 2000, 10\nX = [[r.gauss(0, 1) for _ in range(p)] for _ in range(n)]\ny = [r.randint(0, 1) for _ in range(n)]\n\n\ndef select(idx):\n    ys = [y[i] for i in idx]\n    my = sum(ys) / len(ys)\n    scores = []\n    for j in range(p):\n        col = [X[i][j] for i in idx]\n        mc = sum(col) / len(col)\n        scores.append((abs(sum((a - mc) * (b - my) for a, b in zip(col, ys))), j))\n    scores.sort(reverse=True)\n    return [j for _, j in scores[:top]]\n\n\ndef correct(train, test, feats):\n    ok = 0\n    for i in test:\n        near = sorted((sum((X[i][j] - X[t][j]) ** 2 for j in feats), y[t]) for t in train)[:3]\n        ok += (sum(lab for _, lab in near) >= 2) == (y[i] == 1)\n    return ok\n\n\nfolds = [list(range(f, n, 10)) for f in range(10)]\nleaky_feats = select(list(range(n)))\nleaky = honest = 0\nfor f in folds:\n    train = [i for i in range(n) if i not in f]\n    leaky += correct(train, f, leaky_feats)\n    honest += correct(train, f, select(train))\nprint('labels are random noise')\nprint('selection on all data gives CV accuracy above 0.7:', leaky / n > 0.7)\nprint('selection inside each fold gives CV accuracy below 0.6:', honest / n < 0.6)\n",
+   "verify_output": "labels are random noise\nselection on all data gives CV accuracy above 0.7: True\nselection inside each fold gives CV accuracy below 0.6: True"
+  },
+  {
+   "id": "short-inadmissible-overestimate",
+   "kind": "short",
+   "topic": "astar-heuristics",
+   "title": {
+    "en": "Why this heuristic is not admissible",
+    "zh": "为什么这个启发式不可采纳"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "One-way roads: S -> A costs 1, A -> G costs 3, S -> B costs 2, B -> G costs 3. The heuristic is h(S) = 3, h(A) = 6, h(B) = 3, h(G) = 0.\n\n(a) Show that h is not admissible and say for which node.\n(b) Run A* as a tree search (priority f = g + h; test the goal when a node is removed). List the nodes in the order they are removed, with their f values.\n(c) What route does A* return? Is it optimal?\n(d) In two sentences, explain why the overestimate caused this.\n(e) What is the largest value of h(A) that keeps h admissible, and what does A* do then?",
+    "zh": "单行道：S -> A 费用 1，A -> G 费用 3，S -> B 费用 2，B -> G 费用 3。启发式为 h(S) = 3，h(A) = 6，h(B) = 3，h(G) = 0。\n\n(a) 证明 h 不是可采纳的，并指出是哪个节点。\n(b) 以树搜索的方式运行 A*（优先级 f = g + h；节点被移出时才检查目标）。按移出的先后顺序列出节点及其 f 值。\n(c) A* 返回哪条路线？它是最优的吗？\n(d) 用两句话解释为什么高估导致了这个结果。\n(e) 保持 h 可采纳时，h(A) 最大能取多少？此时 A* 的行为是什么？"
+   },
+   "solution": {
+    "en": "(a) The true cheapest cost to G is h*(A) = 3, h*(B) = 3 and h*(S) = 4 (through A). The estimates h(S) = 3 and h(B) = 3 are fine, but h(A) = 6 > h*(A) = 3. Node A is the one that overestimates, so h is not admissible.\n\n(b) Remove S (f = 0 + 3 = 3). Add A with g = 1, f = 1 + 6 = 7, and B with g = 2, f = 2 + 3 = 5. Remove B (f = 5), the smaller one. Add G with g = 5, f = 5. Now G (f = 5) beats A (f = 7), so remove G. Order: S (3), B (5), G (5).\n\n(c) A* returns S -> B -> G with cost 5. It is not optimal: S -> A -> G costs 1 + 3 = 4.\n\n(d) A* trusts f as a lower bound on the cost of any route through a node. Here f(A) = 7 overstates the true cost 4 of the route through A, so the better branch looks worse than the goal found through B, and A* stops before looking at it.\n\n(e) h(A) must be at most h*(A) = 3. With h(A) = 3, f(A) = 1 + 3 = 4, which is below f(B) = 5, so A is removed second. Then G is reached with g = 4, f = 4, and it is removed before B. A* returns S -> A -> G with the optimal cost 4.",
+    "zh": "(a) 到 G 的真实最小代价是：h*(A) = 3，h*(B) = 3，h*(S) = 4（经过 A）。估计 h(S) = 3 和 h(B) = 3 没问题，但 h(A) = 6 > h*(A) = 3。节点 A 高估了，所以 h 不是可采纳的。\n\n(b) 移出 S（f = 0 + 3 = 3）。加入 A：g = 1，f = 1 + 6 = 7；加入 B：g = 2，f = 2 + 3 = 5。移出 f 较小的 B（f = 5）。加入 G：g = 5，f = 5。此时 G（f = 5）比 A（f = 7）更小，于是移出 G。顺序：S (3)、B (5)、G (5)。\n\n(c) A* 返回 S -> B -> G，费用 5。它不是最优的：S -> A -> G 的费用是 1 + 3 = 4。\n\n(d) A* 相信 f 是经过某个节点的任何路线的代价下界。这里 f(A) = 7 高估了经过 A 的路线的真实代价 4，于是更好的分支看起来比经过 B 找到的目标还差，A* 在检查它之前就停了。\n\n(e) h(A) 最大不能超过 h*(A) = 3。取 h(A) = 3 时，f(A) = 1 + 3 = 4，小于 f(B) = 5，所以 A 第二个被移出。然后到达 G：g = 4，f = 4，它先于 B 被移出。A* 返回 S -> A -> G，费用 4，是最优的。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Identifies node A: h(A) = 6 is larger than its true remaining cost 3.",
+      "zh": "指出节点 A：h(A) = 6 大于它真实的剩余代价 3。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Computes f(A) = 7 and f(B) = 5 and gives the removal order S, B, G (G removed with f = 5).",
+      "zh": "算出 f(A) = 7 和 f(B) = 5，并给出移出顺序 S、B、G（G 以 f = 5 被移出）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "States that A* returns S -> B -> G with cost 5, which is not optimal because S -> A -> G costs 4.",
+      "zh": "指出 A* 返回费用为 5 的 S -> B -> G，它不是最优的，因为 S -> A -> G 的费用是 4。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains that f(A) = 7 overstates the cost of every route through A, so the better branch was never expanded; A* is optimal only when f is a lower bound.",
+      "zh": "解释 f(A) = 7 高估了所有经过 A 的路线的代价，所以更好的分支从未被展开；只有当 f 是下界时 A* 才是最优的。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives h(A) <= 3 and shows that with h(A) = 3 the node A is removed before B (f = 4 < 5) and the cost 4 route is returned.",
+      "zh": "给出 h(A) <= 3，并说明 h(A) = 3 时节点 A 先于 B 被移出（f = 4 < 5），返回费用为 4 的路线。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Checking admissibility on h(S) or h(B) only, and not on every node.",
+     "zh": "只检查 h(S) 或 h(B) 的可采纳性，而没有检查每一个节点。"
+    },
+    {
+     "en": "Testing for the goal when a node is added to the frontier instead of when it is removed.",
+     "zh": "在节点加入前沿时就检查目标，而不是在节点被移出时检查。"
+    },
+    {
+     "en": "Believing that A* is optimal for any heuristic that \"points toward the goal\".",
+     "zh": "以为只要启发式「指向目标」，A* 就是最优的。"
+    }
+   ],
+   "code": "S -> A  1      h(S) = 3\nA -> G  3      h(A) = 6\nS -> B  2      h(B) = 3\nB -> G  3      h(G) = 0",
+   "verify_language": "python",
+   "verify_code": "edges = {'S': [('A', 1), ('B', 2)], 'A': [('G', 3)], 'B': [('G', 3)]}\n\n\ndef astar_tree(h):\n    frontier = [(0, 'S', ['S'])]\n    removed = []\n    while frontier:\n        frontier.sort(key=lambda e: (e[0] + h[e[1]], e[1]))\n        g, n, path = frontier.pop(0)\n        removed.append(f'{n}({g + h[n]})')\n        if n == 'G':\n            return ' '.join(removed), ''.join(path), g\n        for m, c in edges.get(n, []):\n            frontier.append((g + c, m, path + [m]))\n\n\nfor a in (6, 3):\n    print('h(A) =', a, astar_tree({'S': 3, 'A': a, 'B': 3, 'G': 0}))\n",
+   "verify_output": "h(A) = 6 ('S(3) B(5) G(5)', 'SBG', 5)\nh(A) = 3 ('S(3) A(4) G(4)', 'SAG', 4)"
+  },
+  {
+   "id": "short-svm-tiny-margin",
+   "kind": "short",
+   "topic": "support-vector-machines",
+   "title": {
+    "en": "Margin geometry on four points",
+    "zh": "四个点上的间隔几何"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Four training points lie in the plane.\nPositive class (y = +1): (2, 2) and (3, 3).\nNegative class (y = -1): (0, 0) and (-1, 1).\n\nFind the hard-margin linear SVM: the line w . x + b = 0 with the widest empty strip, where y (w . x + b) >= 1 for every point.\n\n(a) Find w and b. Hint: the widest strip is set by the closest pair of points from opposite classes, and w points along the line joining them.\n(b) What is the margin width 2 / ||w||?\n(c) Which points are support vectors?\n(d) What does the model predict for (1, 2)? Is that point inside the margin strip?\n(e) What changes if the point (3, 3) is deleted? What changes if (0, 0) is deleted?",
+    "zh": "平面上有四个训练点。\n正类（y = +1）：(2, 2) 和 (3, 3)。\n负类（y = -1）：(0, 0) 和 (-1, 1)。\n\n求硬间隔线性 SVM：即空白带最宽的直线 w . x + b = 0，要求每个点都满足 y (w . x + b) >= 1。\n\n(a) 求 w 和 b。提示：最宽的带由相距最近的一对异类点决定，w 沿着连接它们的直线方向。\n(b) 间隔宽度 2 / ||w|| 是多少？\n(c) 哪些点是支持向量？\n(d) 模型对 (1, 2) 的预测是什么？这个点在间隔带内吗？\n(e) 删去点 (3, 3) 会怎样？删去点 (0, 0) 会怎样？"
+   },
+   "solution": {
+    "en": "(a) The closest pair of opposite points is (2, 2) and (0, 0), at distance sqrt 8 = 2.83. The other negative point (-1, 1) is farther from (2, 2), and (3, 3) is farther from (0, 0). So w points along d = (2, 2) - (0, 0) = (2, 2).\nIf x+ and x- sit exactly on the two margin lines, w . x+ + b = 1 and w . x- + b = -1, so w . (x+ - x-) = 2. With w parallel to d, w = 2 d / ||d||^2 = 2 (2, 2) / 8 = (0.5, 0.5). Then b = 1 - w . (2, 2) = 1 - 2 = -1.\nCheck: (2, 2) gives 0.5 × 4 - 1 = 1. (0, 0) gives -1, so y f = 1. (-1, 1) gives -0.5 + 0.5 - 1 = -1, so y f = 1. (3, 3) gives 3 - 1 = 2, so y f = 2 (comfortably outside).\n\n(b) ||w|| = sqrt(0.25 + 0.25) = 0.707, so the width is 2 / 0.707 = 2.83. It equals the distance between (2, 2) and (0, 0), as it should.\n\n(c) Support vectors are the points with y f = 1: (2, 2), (0, 0) and also (-1, 1), which lies exactly on the negative margin line. (3, 3) is not a support vector.\n\n(d) f(1, 2) = 0.5 + 1 - 1 = 0.5 > 0, so the prediction is positive. Since |f| < 1, the point lies inside the margin strip. That is allowed for a new point; the margin conditions are only demanded of the training data.\n\n(e) Deleting (3, 3) changes nothing: it is not a support vector, and the same w and b still satisfy all the constraints with the same widest strip.\nDeleting (0, 0) changes the solution. Now the closest opposite pair is (2, 2) and (-1, 1), with d = (3, 1) and ||d||^2 = 10. So w = 2 (3, 1) / 10 = (0.6, 0.2) and b = 1 - w . (2, 2) = -0.6. Check (3, 3): 1.8 + 0.6 - 0.6 = 1.8 >= 1. The width is 2 / sqrt 0.4 = 3.16, wider than before. The boundary rotates, because (0, 0) was a support vector.",
+    "zh": "(a) 最近的一对异类点是 (2, 2) 和 (0, 0)，距离 sqrt 8 = 2.83。另一个负类点 (-1, 1) 离 (2, 2) 更远，(3, 3) 离 (0, 0) 更远。所以 w 沿着 d = (2, 2) - (0, 0) = (2, 2) 的方向。\n如果 x+ 和 x- 恰好在两条间隔线上，则 w . x+ + b = 1，w . x- + b = -1，所以 w . (x+ - x-) = 2。w 与 d 平行，因此 w = 2 d / ||d||^2 = 2 (2, 2) / 8 = (0.5, 0.5)。再由 b = 1 - w . (2, 2) = 1 - 2 = -1。\n检查：(2, 2) 得 0.5 × 4 - 1 = 1。(0, 0) 得 -1，所以 y f = 1。(-1, 1) 得 -0.5 + 0.5 - 1 = -1，所以 y f = 1。(3, 3) 得 3 - 1 = 2，所以 y f = 2（远在间隔之外）。\n\n(b) ||w|| = sqrt(0.25 + 0.25) = 0.707，所以宽度是 2 / 0.707 = 2.83，等于 (2, 2) 与 (0, 0) 之间的距离，这正是应有的结果。\n\n(c) 支持向量是 y f = 1 的点：(2, 2)、(0, 0)，以及恰好落在负类间隔线上的 (-1, 1)。(3, 3) 不是支持向量。\n\n(d) f(1, 2) = 0.5 + 1 - 1 = 0.5 > 0，所以预测为正类。因为 |f| < 1，这个点位于间隔带内。对新点来说这是允许的，间隔条件只要求训练数据满足。\n\n(e) 删去 (3, 3) 什么都不变：它不是支持向量，同样的 w 和 b 仍然满足所有约束，最宽的带也不变。\n删去 (0, 0) 会改变解。此时最近的异类点对是 (2, 2) 和 (-1, 1)，d = (3, 1)，||d||^2 = 10。所以 w = 2 (3, 1) / 10 = (0.6, 0.2)，b = 1 - w . (2, 2) = -0.6。检查 (3, 3)：1.8 + 0.6 - 0.6 = 1.8 >= 1。宽度是 2 / sqrt 0.4 = 3.16，比之前更宽。边界发生了旋转，因为 (0, 0) 原本是支持向量。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Finds the closest opposite-class pair, (2, 2) and (0, 0), and takes w along the line joining them (direction (1, 1)).",
+      "zh": "找出最近的异类点对 (2, 2) 和 (0, 0)，并让 w 沿着连接它们的直线方向（方向 (1, 1)）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gets w = (0.5, 0.5) and b = -1 and checks y (w . x + b) = 1 at the support vectors.",
+      "zh": "得到 w = (0.5, 0.5) 和 b = -1，并在支持向量上检验 y (w . x + b) = 1。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives the margin width 2 / ||w|| = 2.83 (not 1 / ||w||).",
+      "zh": "给出间隔宽度 2 / ||w|| = 2.83（而不是 1 / ||w||）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Lists the support vectors (2, 2), (0, 0) and (-1, 1), and says (3, 3) is not one because y f = 2.",
+      "zh": "列出支持向量 (2, 2)、(0, 0) 和 (-1, 1)，并说明 (3, 3) 不是，因为它的 y f = 2。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Predicts positive for (1, 2) with f = 0.5 and notes that it lies inside the margin strip.",
+      "zh": "预测 (1, 2) 为正类，f = 0.5，并指出它位于间隔带内。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Says deleting (3, 3) changes nothing, and deleting the support vector (0, 0) changes the boundary (to w = (0.6, 0.2), b = -0.6, with a wider margin).",
+      "zh": "指出删去 (3, 3) 没有影响，而删去支持向量 (0, 0) 会改变边界（变为 w = (0.6, 0.2)，b = -0.6，间隔更宽）。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Using (3, 3) as a support vector because it is positive and far from the negatives.",
+     "zh": "因为 (3, 3) 是正类且离负类很远，就把它当作支持向量。"
+    },
+    {
+     "en": "Stopping at the closest pair and missing that (-1, 1) also lies exactly on the margin line.",
+     "zh": "只考虑最近的一对点，没发现 (-1, 1) 也恰好在间隔线上。"
+    },
+    {
+     "en": "Writing the margin width as 1 / ||w||, which is only the distance from the line to one margin line.",
+     "zh": "把间隔宽度写成 1 / ||w||，这只是直线到一条间隔线的距离。"
+    }
+   ],
+   "code": "Positive (+1): (2, 2), (3, 3)\nNegative (-1): (0, 0), (-1, 1)",
+   "verify_language": "python",
+   "verify_code": "from math import cos, radians, sin\n\n\ndef solve(pos, neg):\n    best = (-1.0, None, 0.0)\n    for k in range(36000):\n        t = radians(k / 100)\n        u = (cos(t), sin(t))\n        lo = min(u[0] * x + u[1] * y for x, y in pos)\n        hi = max(u[0] * x + u[1] * y for x, y in neg)\n        if lo - hi > best[0]:\n            best = (lo - hi, u, (lo + hi) / 2)\n    gap, u, c = best\n    return gap, (2 * u[0] / gap, 2 * u[1] / gap), -2 * c / gap\n\n\npos = [(2, 2), (3, 3)]\nneg = [(0, 0), (-1, 1)]\ngap, w, b = solve(pos, neg)\nprint(f'width={gap:.2f} w=({w[0]:.2f}, {w[1]:.2f}) b={b:.2f}')\nfor p, y in [(p, 1) for p in pos] + [(p, -1) for p in neg]:\n    print(p, 'y*f =', round(y * (w[0] * p[0] + w[1] * p[1] + b), 2))\nprint('f(1, 2) =', round(w[0] + 2 * w[1] + b, 2))\ngap, w, b = solve([(2, 2)], neg)\nprint(f'without (3,3): width={gap:.2f} w=({w[0]:.2f}, {w[1]:.2f}) b={b:.2f}')\ngap, w, b = solve(pos, [(-1, 1)])\nprint(f'without (0,0): width={gap:.2f} w=({w[0]:.2f}, {w[1]:.2f}) b={b:.2f}')\n",
+   "verify_output": "width=2.83 w=(0.50, 0.50) b=-1.00\n(2, 2) y*f = 1.0\n(3, 3) y*f = 2.0\n(0, 0) y*f = 1.0\n(-1, 1) y*f = 1.0\nf(1, 2) = 0.5\nwithout (3,3): width=2.83 w=(0.50, 0.50) b=-1.00\nwithout (0,0): width=3.16 w=(0.60, 0.20) b=-0.60"
   }
  ],
- "papers": [],
+ "papers": [
+  {
+   "id": "diag-a",
+   "type": "diagnostic",
+   "minutes": 20,
+   "questions": [
+    "mcq-closing-needs-consistency",
+    "expectiminimax-three-moves",
+    "mcq-cross-validation-selection",
+    "f1-medium-class",
+    "mcq-bagging-vs-boosting",
+    "perceptron-two-updates",
+    "mcq-explaining-away",
+    "bayes-three-machines"
+   ],
+   "title": {
+    "en": "Diagnostic: four stages in 20 minutes",
+    "zh": "诊断卷：用 20 分钟检查四个阶段"
+   },
+   "note": {
+    "en": "An original 20-minute check across the four stages of the course: search and games, learning from labelled examples, neural models and margins, and probability and clustering. It is practice written for this site and is not a guide to the format or content of any real exam.\n\nMarks: 20. Use pen and paper and no calculator. Every question marks itself. Afterwards, see which stage lost marks and go back to those chapters.\n\nCalculator-free working that is acceptable, in your answers and in the model solutions:\n- Logs: log2 2 = 1, log2 3 = 1.585, log2 5 = 2.322, log2 7 = 2.807, log2 10 = 3.322. For a quotient, subtract: log2(5/12) = 2.322 - 3.585.\n- Two-class entropy: H(1/2) = 1.000, H(1/3) = 0.918, H(1/4) = 0.811, H(1/5) = 0.722, H(2/7) = 0.863, H(2/5) = 0.971.\n- Square roots to 3 decimals (sqrt 2 = 1.414, sqrt 5 = 2.236), and sigmoid values only when the question gives them to you.\n- Keep at least 3 decimals, or exact fractions, in the middle of a calculation and round only at the end. A fraction such as 8/23 is a fine last step. The stated tolerance covers this kind of rounding.\n- Not acceptable: dropping smoothing, rounding a probability to one decimal, or choosing between two close distances by eye.\nPython is for checking your work at home, not for the paper.",
+    "zh": "这是一份原创的 20 分钟检查卷，覆盖课程的四个阶段：搜索与博弈、从带标签样本中学习、神经模型与间隔、概率与聚类。它是为本站编写的练习，不是任何真实考试的格式或内容指南。\n\n总分：20 分。用笔和纸作答，不用计算器。每道题都会自动评分。做完后看看哪个阶段丢分最多，再回到对应的章节复习。\n\n可以接受的免计算器做法（你的答案和参考解答里都可以这样做）：\n- 对数：log2 2 = 1，log2 3 = 1.585，log2 5 = 2.322，log2 7 = 2.807，log2 10 = 3.322。商的对数用减法：log2(5/12) = 2.322 - 3.585。\n- 两类熵：H(1/2) = 1.000，H(1/3) = 0.918，H(1/4) = 0.811，H(1/5) = 0.722，H(2/7) = 0.863，H(2/5) = 0.971。\n- 平方根取 3 位小数（sqrt 2 = 1.414，sqrt 5 = 2.236）；sigmoid 的值只在题目给出时才可以使用。\n- 计算过程中至少保留 3 位小数，或者保留精确分数，到最后才取舍。像 8/23 这样的分数作为最后一步也可以。题目给出的容差已经包含了这类舍入。\n- 不可接受：省略平滑、把概率舍入到一位小数，或者在两个距离很接近时凭目测选择。\nPython 只用来在家检查你的作业，不带进考场练习。"
+   }
+  },
+  {
+   "id": "mock-a",
+   "type": "mock",
+   "minutes": 90,
+   "questions": [
+    "mcq-search-completeness",
+    "mcq-local-search-claims",
+    "mcq-dominance-expansions",
+    "astar-frontier-table",
+    "alpha-beta-bounds",
+    "short-inadmissible-overestimate",
+    "mcq-overfit-diagnosis",
+    "mcq-noise-dimensions",
+    "info-gain-device",
+    "nb-rainy-event",
+    "knn-mixed-scaled",
+    "tree-attribute-choice",
+    "paired-t-five-splits",
+    "short-validation-leaks",
+    "mcq-svm-rbf-overfit",
+    "backprop-one-step",
+    "short-svm-tiny-margin",
+    "bn-flu-enumeration",
+    "davies-bouldin-three",
+    "kmeans-iterations"
+   ],
+   "title": {
+    "en": "Mock paper A: 90 minutes, mixed questions",
+    "zh": "模拟卷 A：90 分钟，混合题型"
+   },
+   "note": {
+    "en": "An original practice paper written for this site. It is not a guide to the format, length or content of any real exam. The questions follow the four stages of the course in order.\n\nTime: 90 minutes. Marks: 85. Use pen and paper and no calculator. Multiple-choice, calculation and trace questions mark themselves; mark the short answers against their rubrics. The trace tables are the slowest part, so leave about 35 minutes for them.\n\nCalculator-free working that is acceptable, in your answers and in the model solutions:\n- Logs: log2 2 = 1, log2 3 = 1.585, log2 5 = 2.322, log2 7 = 2.807, log2 10 = 3.322. For a quotient, subtract: log2(5/12) = 2.322 - 3.585.\n- Two-class entropy: H(1/2) = 1.000, H(1/3) = 0.918, H(1/4) = 0.811, H(1/5) = 0.722, H(2/7) = 0.863, H(2/5) = 0.971.\n- Square roots to 3 decimals (sqrt 2 = 1.414, sqrt 5 = 2.236), and sigmoid values only when the question gives them to you.\n- Keep at least 3 decimals, or exact fractions, in the middle of a calculation and round only at the end. A fraction such as 8/23 is a fine last step. The stated tolerance covers this kind of rounding.\n- Not acceptable: dropping smoothing, rounding a probability to one decimal, or choosing between two close distances by eye.\nPython is for checking your work at home, not for the paper.",
+    "zh": "这是为本站编写的原创练习卷，不是任何真实考试的格式、长度或内容指南。题目按课程的四个阶段依次排列。\n\n时间：90 分钟。总分：85 分。用笔和纸作答，不用计算器。选择题、计算题和跟踪表会自动评分，简答题请对照评分标准自己打分。跟踪表最耗时间，大约要留出 35 分钟。\n\n可以接受的免计算器做法（你的答案和参考解答里都可以这样做）：\n- 对数：log2 2 = 1，log2 3 = 1.585，log2 5 = 2.322，log2 7 = 2.807，log2 10 = 3.322。商的对数用减法：log2(5/12) = 2.322 - 3.585。\n- 两类熵：H(1/2) = 1.000，H(1/3) = 0.918，H(1/4) = 0.811，H(1/5) = 0.722，H(2/7) = 0.863，H(2/5) = 0.971。\n- 平方根取 3 位小数（sqrt 2 = 1.414，sqrt 5 = 2.236）；sigmoid 的值只在题目给出时才可以使用。\n- 计算过程中至少保留 3 位小数，或者保留精确分数，到最后才取舍。像 8/23 这样的分数作为最后一步也可以。题目给出的容差已经包含了这类舍入。\n- 不可接受：省略平滑、把概率舍入到一位小数，或者在两个距离很接近时凭目测选择。\nPython 只用来在家检查你的作业，不带进考场练习。"
+   }
+  }
+ ],
  "labs": []
 }

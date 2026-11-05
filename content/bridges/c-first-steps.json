@@ -1,0 +1,1471 @@
+{
+ "id": "c-first-steps",
+ "course": "comp2017",
+ "kind": "first-steps",
+ "title": {
+  "en": "C first steps: from your first program to pointers",
+  "zh": "C 语言入门：从第一个程序到指针"
+ },
+ "summary": {
+  "en": "Eight short lessons for someone who has never programmed: write and run a first program, print values, use variables, decisions and loops, functions, arrays and strings, pointers, and read compiler messages. Every example also runs on this page.",
+  "zh": "写给从没编过程序的人的八节短课：写出并运行第一个程序，打印数值，学会变量、判断与循环、函数、数组与字符串、指针，并读懂编译器的提示。每个例子都能直接在本页运行。"
+ },
+ "needs": [
+  {
+   "en": "No programming experience. If you have never written code, start at lesson 1. This guide assumes nothing.",
+   "zh": "不需要任何编程经验。如果你从没写过代码，就从第 1 课开始，本篇不假设你已经懂什么。"
+  },
+  {
+   "en": "School arithmetic: adding, multiplying, dividing, and remainders (7 divided by 2 is 3, remainder 1).",
+   "zh": "中小学算术：加、乘、除，以及余数（7 除以 2 等于 3，余 1）。"
+  },
+  {
+   "en": "Knowing what a file and a folder are. The few terminal commands you need are taught in lesson 1.",
+   "zh": "知道文件和文件夹是什么。需要用到的几条终端命令会在第 1 课教。"
+  },
+  {
+   "en": "About 30 minutes per lesson. Type the examples yourself. Reading them is not enough.",
+   "zh": "每课大约 30 分钟。请亲手输入例子，只读是不够的。"
+  },
+  {
+   "en": "Nothing installed to begin. Every example has a Run button on this page. Set up a real compiler (next section) when you want to work on your own computer.",
+   "zh": "开始时不需要安装任何东西：每个例子在本页都有“运行”按钮。想在自己的电脑上练习时，再按下一节安装真正的编译器。"
+  }
+ ],
+ "setup": {
+  "intro": {
+   "en": "You do not need to install anything to start. Each example below has a Run button that compiles and runs the C program inside your browser. Use it for the first lessons.\n\nYou will still want a real compiler on your own computer. A compiler is a program that turns your C text into a program the computer can run. There are two reasons. First, the course you move on to compiles programs from a terminal, so you need the habit. Second, C in the browser does not catch memory errors. A program that reads or writes outside the memory it owns can run on this page and print a normal-looking answer, even though it is wrong. A real compiler with sanitizers (lesson 8) stops such a program and tells you the line. Installing one takes about ten minutes.\n\nPick your system, follow the steps, then run the check command. A terminal is a window where you type commands and press Return to run them.",
+   "zh": "开始学习不需要安装任何东西。下面每个例子都有“运行”按钮，会在浏览器里编译并运行这段 C 程序。前几课可以直接用它。\n\n不过，你最终还是需要在自己的电脑上装一个真正的编译器。编译器是把你写的 C 文字变成电脑能运行的程序的工具。原因有两个。第一，你接下来要学的课程是在终端里编译程序的，所以要养成这个习惯。第二，浏览器里的 C 发现不了内存错误。一个读写了自己无权访问的内存的程序，在本页照样能运行，还可能打印出看起来正常的结果，其实它是错的。真正的编译器配上 sanitizer（运行时检查工具，第 8 课会讲）会让这种程序当场停下，并告诉你出错的那一行。安装大约需要十分钟。\n\n选择你的系统，按步骤操作，然后运行检查命令。终端是一个窗口：你在里面输入命令，按回车键运行。"
+  },
+  "systems": [
+   {
+    "name": {
+     "en": "macOS",
+     "zh": "macOS"
+    },
+    "steps": [
+     {
+      "en": "Open the Terminal app. Press Command and Space together, type Terminal, and press Return.",
+      "zh": "打开“终端”应用：同时按下 Command 和空格键，输入 Terminal，按回车键。"
+     },
+     {
+      "en": "Type this line and press Return:\nxcode-select --install",
+      "zh": "输入下面这一行，按回车键：\nxcode-select --install"
+     },
+     {
+      "en": "A window asks to install the command line developer tools. Click Install and agree to the licence. Choose Install, not Get Xcode: you do not need the full Xcode app. The download takes several minutes. If the terminal says the tools are already installed, you already have them.",
+      "zh": "会弹出一个窗口，询问是否安装命令行开发者工具。点“安装”，并同意许可协议。选“安装”，不要选“获取 Xcode”：你不需要完整的 Xcode。下载需要几分钟。如果终端提示这些工具已经安装，说明你已经有了。"
+     },
+     {
+      "en": "When it finishes, close the Terminal window and open a new one. Then run the check command below.",
+      "zh": "安装结束后，关闭终端窗口，再重新打开一个，然后运行下面的检查命令。"
+     }
+    ],
+    "verify": "cc --version",
+    "expect": {
+     "en": "Several lines. The first starts with Apple clang version and a number. A line starting with Target names your chip, such as arm64-apple-darwin or x86_64-apple-darwin. The numbers differ between computers.",
+     "zh": "会出现几行文字。第一行以 Apple clang version 和一个版本号开头。以 Target 开头的一行写着你的芯片，例如 arm64-apple-darwin 或 x86_64-apple-darwin。不同电脑上的数字不同。"
+    }
+   },
+   {
+    "name": {
+     "en": "Linux (Ubuntu, Debian and similar)",
+     "zh": "Linux（Ubuntu、Debian 及类似系统）"
+    },
+    "steps": [
+     {
+      "en": "Open a terminal. On many desktops the shortcut is Ctrl, Alt and T together.",
+      "zh": "打开终端。在很多桌面系统里，快捷键是同时按 Ctrl、Alt 和 T。"
+     },
+     {
+      "en": "Refresh the list of available software. Type this and press Return:\nsudo apt update\nsudo means \"run as administrator\". It asks for your password and shows nothing while you type. That is normal.",
+      "zh": "更新可安装软件的列表。输入下面这一行，按回车键：\nsudo apt update\nsudo 的意思是“以管理员身份运行”。它会要求输入密码，而且输入时屏幕上什么都不显示，这是正常的。"
+     },
+     {
+      "en": "Install the compiler and the tools around it:\nsudo apt install build-essential\nAnswer Y if it asks whether to continue. The package build-essential brings gcc, the standard C library and the make tool.",
+      "zh": "安装编译器和配套工具：\nsudo apt install build-essential\n如果它问是否继续，输入 Y。build-essential 这个软件包会带来 gcc、标准 C 库和 make 工具。"
+     },
+     {
+      "en": "On Fedora, use this line instead:\nsudo dnf install gcc make",
+      "zh": "如果你用的是 Fedora，请改用这一行：\nsudo dnf install gcc make"
+     }
+    ],
+    "verify": "cc --version",
+    "expect": {
+     "en": "A few lines. The first names the compiler and a version number, for example cc (Ubuntu 13.2.0-23ubuntu4) 13.2.0. Yours will differ.",
+     "zh": "会出现几行文字。第一行写着编译器的名字和版本号，例如 cc (Ubuntu 13.2.0-23ubuntu4) 13.2.0。你的版本号会不一样。"
+    }
+   },
+   {
+    "name": {
+     "en": "Windows (through WSL)",
+     "zh": "Windows（通过 WSL）"
+    },
+    "steps": [
+     {
+      "en": "WSL means Windows Subsystem for Linux. It gives you a real Linux terminal inside Windows, and the Linux steps then work unchanged. You need Windows 10 version 2004 or newer, or Windows 11.",
+      "zh": "WSL 是 Windows Subsystem for Linux（适用于 Linux 的 Windows 子系统）的缩写。它在 Windows 里给你一个真正的 Linux 终端，之后按 Linux 的步骤操作即可。你需要 Windows 10 2004 或更新的版本，或 Windows 11。"
+     },
+     {
+      "en": "Click Start, type PowerShell, right-click Windows PowerShell and choose Run as administrator.",
+      "zh": "点开始菜单，输入 PowerShell，右键点“Windows PowerShell”，选择“以管理员身份运行”。"
+     },
+     {
+      "en": "Type this and press Enter:\nwsl --install\nThis installs WSL and Ubuntu, the default Linux system. If it only prints a list of options, WSL is already installed. Run this instead:\nwsl --install -d Ubuntu",
+      "zh": "输入下面这一行，按回车键：\nwsl --install\n它会安装 WSL 和默认的 Linux 系统 Ubuntu。如果它只打印出一串选项，说明 WSL 已经装好了，请改为运行：\nwsl --install -d Ubuntu"
+     },
+     {
+      "en": "Restart the computer when it asks you to.",
+      "zh": "提示重启时，重启电脑。"
+     },
+     {
+      "en": "After the restart, an Ubuntu window opens by itself. If it does not, open Start, type Ubuntu and open it. The first start takes a few minutes. It then asks you to choose a username and a password. The password shows nothing while you type.",
+      "zh": "重启后，Ubuntu 窗口会自己打开。如果没有，就打开开始菜单，输入 Ubuntu 并打开。第一次启动需要几分钟，之后它会让你设置用户名和密码。输入密码时屏幕上不显示任何内容。"
+     },
+     {
+      "en": "In the Ubuntu window, follow the Linux steps: sudo apt update, then sudo apt install build-essential.",
+      "zh": "在 Ubuntu 窗口里，按 Linux 的步骤操作：先运行 sudo apt update，再运行 sudo apt install build-essential。"
+     },
+     {
+      "en": "From now on, do all your C work in the Ubuntu window, not in PowerShell. The folder where Ubuntu starts is fine to work in.",
+      "zh": "从现在起，所有 C 语言的操作都在 Ubuntu 窗口里做，不要在 PowerShell 里做。Ubuntu 启动时所在的文件夹就可以直接用。"
+     }
+    ],
+    "verify": "cc --version",
+    "expect": {
+     "en": "Run it in the Ubuntu window. You should see the same kind of output as on Linux: a first line with cc, Ubuntu and a version number.",
+     "zh": "请在 Ubuntu 窗口里运行。你应该看到和 Linux 上同样的输出：第一行里有 cc、Ubuntu 和版本号。"
+    }
+   }
+  ],
+  "errors": [
+   {
+    "symptom": "implicit declaration of function 'printf'",
+    "fix": {
+     "en": "The compiler met a function name it was never told about. Almost always you forgot the line #include <stdio.h> at the top of the file, because printf is described there. Other causes are a misspelled function name, or calling your own function before it is defined (lesson 5 shows the fix).\n\nOn a Mac the same mistake reads: call to undeclared library function 'printf'. Older versions of gcc print only a warning here and build the program anyway, which then behaves strangely. Treat it as an error either way.",
+     "zh": "编译器遇到了一个没有人告诉过它的函数名。几乎总是因为你忘了在文件开头写 #include <stdio.h>，printf 的说明就在这个头文件里。其他原因有：函数名拼错了，或者在定义自己的函数之前就调用它（第 5 课会讲解决办法）。\n\n在 Mac 上，同样的错误显示为：call to undeclared library function 'printf'。旧版本的 gcc 在这里只给出警告，仍然生成程序，而这个程序的行为会很奇怪。无论哪种情况，都把它当作错误来处理。"
+    }
+   },
+   {
+    "symptom": "undefined reference to `main'",
+    "fix": {
+     "en": "The compiler read your file but found no function named main. A C program always starts in main, so without it there is nothing to run. Check the spelling: man, Main and mian are different names. Check that you are compiling the file you meant. Check that main was not placed inside the braces of another function.\n\nOn a Mac the same problem reads: Undefined symbols for architecture arm64, followed by \"_main\".",
+     "zh": "编译器读了你的文件，但没有找到名叫 main 的函数。C 程序总是从 main 开始运行，没有它就无处可运行。请检查拼写：man、Main 和 mian 是不同的名字。请确认编译的是你想编译的那个文件。还要确认 main 没有被写进另一个函数的花括号里。\n\n在 Mac 上，同样的问题显示为：Undefined symbols for architecture arm64，后面跟着 \"_main\"。"
+    }
+   },
+   {
+    "symptom": "command not found",
+    "fix": {
+     "en": "The terminal could not find a program with that name. There are three common causes.\n\nOne: you typed hello when you meant ./hello. The terminal does not look in the current folder unless you put ./ in front of the name. Two: the compiler is not installed, so cc is unknown. Repeat the setup steps for your system. Three: you installed it a moment ago. Close the terminal window and open a new one.\n\nThe full message looks like zsh: command not found: cc on a Mac, and bash: cc: command not found on Linux. On Windows, if you see \"cc is not recognized as the name of a cmdlet\", you are in PowerShell. Open the Ubuntu window instead.",
+     "zh": "终端找不到这个名字的程序。常见原因有三个。\n\n一：你想运行 ./hello，却输入了 hello。终端不会自动到当前文件夹里找程序，除非你在名字前面写上 ./。二：编译器没有装好，所以不认识 cc。请重新做一遍你所用系统的安装步骤。三：你刚装好。请关掉终端窗口，重新打开一个。\n\n完整的提示在 Mac 上类似 zsh: command not found: cc，在 Linux 上类似 bash: cc: command not found。在 Windows 上，如果你看到 \"cc is not recognized as the name of a cmdlet\"，说明你在 PowerShell 里。请改用 Ubuntu 窗口。"
+    }
+   },
+   {
+    "symptom": "Segmentation fault",
+    "fix": {
+     "en": "The program touched a memory address that does not belong to it, and the system stopped it. Typical causes are a pointer that points nowhere (lesson 7), an array index outside the array (lesson 6), and a missing & before a variable in scanf.\n\nThe message is Segmentation fault (core dumped) on Linux and zsh: segmentation fault on a Mac. Some systems say Bus error instead. Treat it the same way.\n\nTo find the line, compile with -g -fsanitize=address,undefined and run the program again. The sanitizer prints the file and line number (lesson 8).",
+     "zh": "程序访问了不属于它的内存地址，被系统终止了。典型原因有：指针指向了无效的地方（第 7 课），数组下标超出了数组范围（第 6 课），以及在 scanf 里忘了变量前面的 &。\n\n在 Linux 上提示是 Segmentation fault (core dumped)，在 Mac 上是 zsh: segmentation fault。有些系统显示的是 Bus error，处理方法相同。\n\n要找到出错的那一行，用 -g -fsanitize=address,undefined 重新编译，再运行一次。sanitizer 会打印出文件名和行号（第 8 课）。"
+    }
+   },
+   {
+    "symptom": "No such file or directory",
+    "fix": {
+     "en": "The file name or the folder is not what you think. Type this to see which folder you are in:\npwd\nType this to list the files in it:\nls\nIf your file is not in the list, use cd to move to the right folder. Check the spelling and the .c ending too.",
+     "zh": "文件名或文件夹和你以为的不一样。输入下面这条命令，看看你现在在哪个文件夹：\npwd\n再输入这条，列出这个文件夹里的文件：\nls\n如果列表里没有你的文件，就用 cd 切换到正确的文件夹。还要检查文件名拼写和 .c 结尾。"
+    }
+   }
+  ]
+ },
+ "lessons": [
+  {
+   "id": "first-program",
+   "title": {
+    "en": "Source, compile, run: your first program",
+    "zh": "源代码、编译、运行：第一个程序"
+   },
+   "goal": {
+    "en": "After this you can write a small C program, compile it, run it, and say what source, compile and run each mean.",
+    "zh": "学完这课，你能写出一个小的 C 程序，编译并运行它，并说清楚源代码、编译和运行各是什么意思。"
+   },
+   "plain": {
+    "en": "A computer follows instructions. A programming language is a way to write instructions so that people can read them. C is one such language. It is old, small and fast, and many operating systems are written in it.\n\nGetting a C program to work has three steps, and each has a name.\n\nSource code is the text you write. You save it in a plain text file whose name ends in .c, for example hello.c. The computer cannot follow this text directly.\n\nTo compile is to translate the source code into machine code, the numbers a processor can follow. The tool that does the translating is the compiler. It reads hello.c and writes a new file, the executable, which is a file the computer can run. While compiling, the compiler also checks your text and stops if it finds a serious mistake.\n\nTo run is to ask the computer to carry out the executable. The program prints its output and then stops.\n\nYou repeat the cycle many times: edit the source, compile, run. If you change the source but forget to compile, you run the old program.\n\nEvery C program starts in a function called main. A function is a named group of instructions. The first line of the example, the one with #include, brings in the description of printf, the function that prints text. The curly brackets { } mark where main begins and ends. Each instruction inside is a statement, and a statement ends with a semicolon.\n\nOn your own computer you do this in a terminal. Four commands are enough for now. To see which folder you are in, type:\npwd\nTo list the files in the folder, type:\nls\nTo make a new folder called c-practice, type:\nmkdir c-practice\nTo move into that folder, type:\ncd c-practice\n\nPress Return after each command. Now create the file with nano, an editor that runs inside the terminal:\nnano hello.c\nType the program, press Ctrl and O together and then Return to save, and press Ctrl and X to leave. Any plain text editor works as well. Do not use a word processor, because it adds hidden formatting. Then compile and run:\ncc -std=c11 -Wall -Wextra hello.c -o hello\n./hello\n\nHere cc is the compiler. hello.c is the source. The part -o hello means \"name the executable hello\". Take care here: the name after -o is the file the compiler creates, and it replaces any file with that name. Never write your .c file there. The options -Wall and -Wextra ask the compiler to point out suspicious code, and lesson 8 explains them. The text ./hello means \"the program called hello in this folder\". If the compile line prints nothing, it worked.\n\nYou can also press the Run button on the example below. It does the compile and run steps for you inside the page.",
+    "zh": "电脑会按指令办事。编程语言是让人能读懂的写指令的方式。C 就是其中一种。它历史悠久、小巧而且很快，很多操作系统都是用它写的。\n\n让一个 C 程序跑起来有三步，每一步都有名字。\n\n源代码是你写的文字。你把它保存在一个纯文本文件里，文件名以 .c 结尾，例如 hello.c。电脑不能直接照着这段文字去做。\n\n编译是把源代码翻译成机器码，也就是处理器能执行的数字。负责翻译的工具叫编译器。它读入 hello.c，写出一个新文件，这个文件叫可执行文件，是电脑可以运行的文件。编译时，编译器还会检查你的文字，发现严重的错误就会停下来。\n\n运行是让电脑去执行这个可执行文件。程序打印出结果，然后结束。\n\n这个循环你会重复很多次：修改源代码，编译，运行。如果你改了源代码却忘了编译，运行的就还是旧程序。\n\n每个 C 程序都从一个叫 main 的函数开始。函数是一组有名字的指令。下面例子的第一行是 #include，它引入 printf 的说明，printf 是用来打印文字的函数。花括号 { } 标出 main 从哪里开始、到哪里结束。里面每一条指令叫语句，语句以分号结尾。\n\n在自己的电脑上，你要在终端里做这些事。现在只需要四条命令。想看看你现在在哪个文件夹，输入：\npwd\n想列出这个文件夹里的文件，输入：\nls\n想新建一个叫 c-practice 的文件夹，输入：\nmkdir c-practice\n想进入这个文件夹，输入：\ncd c-practice\n\n每条命令输入后按回车键。接着用 nano 创建文件，nano 是在终端里运行的编辑器：\nnano hello.c\n输入程序，同时按 Ctrl 和 O 再按回车键来保存，同时按 Ctrl 和 X 退出。任何纯文本编辑器都可以用。不要用文字处理软件，因为它会加入看不见的格式。然后编译并运行：\ncc -std=c11 -Wall -Wextra hello.c -o hello\n./hello\n\n这里 cc 是编译器，hello.c 是源代码，-o hello 的意思是“把可执行文件命名为 hello”。请特别小心：-o 后面的名字是编译器要创建的文件，同名文件会被它覆盖。千万不要把你的 .c 文件写在那里。选项 -Wall 和 -Wextra 让编译器指出可疑的代码，第 8 课会解释。./hello 的意思是“当前文件夹里叫 hello 的程序”。如果编译这一行没有打印任何东西，就说明成功了。\n\n你也可以直接点下面例子的“运行”按钮，它会在页面里帮你完成编译和运行。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "source code",
+      "zh": "源代码"
+     },
+     "meaning": {
+      "en": "The text of a program, saved in a file such as hello.c.",
+      "zh": "程序的文字形式，保存在 hello.c 这样的文件里。"
+     }
+    },
+    {
+     "term": {
+      "en": "compiler",
+      "zh": "编译器"
+     },
+     "meaning": {
+      "en": "A program that translates source code into an executable and reports mistakes it finds.",
+      "zh": "把源代码翻译成可执行文件，并报告它发现的错误的程序。"
+     }
+    },
+    {
+     "term": {
+      "en": "executable",
+      "zh": "可执行文件"
+     },
+     "meaning": {
+      "en": "The file the compiler writes. The computer can run it directly.",
+      "zh": "编译器写出的文件，电脑可以直接运行它。"
+     }
+    },
+    {
+     "term": {
+      "en": "terminal",
+      "zh": "终端"
+     },
+     "meaning": {
+      "en": "A window where you type commands and read the answers.",
+      "zh": "一个窗口，你在里面输入命令并阅读结果。"
+     }
+    },
+    {
+     "term": {
+      "en": "function",
+      "zh": "函数"
+     },
+     "meaning": {
+      "en": "A named group of instructions. Every C program starts in the function main.",
+      "zh": "一组有名字的指令。每个 C 程序都从函数 main 开始。"
+     }
+    },
+    {
+     "term": {
+      "en": "statement",
+      "zh": "语句"
+     },
+     "meaning": {
+      "en": "One instruction. In C it ends with a semicolon.",
+      "zh": "一条指令。在 C 里以分号结尾。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "// hello.c: my first program\n#include <stdio.h>\n\nint main(void) {\n    printf(\"Hello, Leon!\\n\");\n    printf(\"This program ran.\\n\");\n    return 0;\n}\n",
+    "output": "Hello, Leon!\nThis program ran.\n",
+    "walk": {
+     "en": [
+      "The first line starts with //. Everything after // on a line is a comment: a note for people that the compiler ignores.",
+      "#include <stdio.h> brings in the description of printf. The name stdio stands for standard input and output. Without this line the compiler does not know what printf is.",
+      "int main(void) begins the function main. The word int says that main hands back a whole number when it ends. The word void says that main takes nothing in.",
+      "The { opens the body of main and the matching } closes it. Everything between them belongs to main.",
+      "printf(\"Hello, Leon!\\n\"); prints the text between the quote marks. The two characters \\n stand for \"start a new line\". The semicolon ends the statement.",
+      "The second printf prints a second line. Statements run from top to bottom, one after another.",
+      "return 0; ends main. The 0 tells the system that the program succeeded."
+     ],
+     "zh": [
+      "第一行以 // 开头。一行里 // 后面的内容都是注释：写给人看的说明，编译器会忽略它。",
+      "#include <stdio.h> 引入 printf 的说明。stdio 是 standard input and output（标准输入输出）的缩写。没有这一行，编译器就不知道 printf 是什么。",
+      "int main(void) 是函数 main 的开头。单词 int 表示 main 结束时会交回一个整数。单词 void 表示 main 不接收任何东西。",
+      "{ 打开 main 的函数体，与它配对的 } 把函数体关上。两者之间的内容都属于 main。",
+      "printf(\"Hello, Leon!\\n\"); 打印引号之间的文字。两个字符 \\n 表示“换到新的一行”。分号结束这条语句。",
+      "第二条 printf 打印第二行。语句从上到下，一条接一条地执行。",
+      "return 0; 结束 main。0 告诉系统程序运行成功。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "printf(\"Hello, Leon!\\n\")\nreturn 0;",
+     "why": {
+      "en": "There is no semicolon at the end of the printf line. The compiler stops with an error such as: expected ';' after expression. Some compilers, gcc among them, can report it on the next line, because that is where they notice the statement did not end.",
+      "zh": "printf 这一行末尾没有分号。编译器会报错停下，提示类似：expected ';' after expression。有些编译器（包括 gcc）可能把错误报在下一行，因为它们是在那里才发现这条语句没有结束。"
+     },
+     "right": "printf(\"Hello, Leon!\\n\");\nreturn 0;"
+    },
+    {
+     "wrong": "hello",
+     "why": {
+      "en": "The terminal answers command not found. It does not look in the current folder unless you tell it to. Put ./ in front of the name.",
+      "zh": "终端回答 command not found（找不到命令）。除非你指明，否则它不会去当前文件夹里找。要在名字前面加上 ./。"
+     },
+     "right": "./hello"
+    },
+    {
+     "wrong": "printf(\"Hello, Leon!\");",
+     "why": {
+      "en": "Without \\n the text stays on the same line, and the terminal prompt appears right after it: Hello, Leon!$ and then your cursor. Add \\n at the end of the text.",
+      "zh": "没有 \\n，文字就不会换行，终端的提示符会紧挨着它出现：Hello, Leon!$，光标跟在后面。请在文字末尾加上 \\n。"
+     },
+     "right": "printf(\"Hello, Leon!\\n\");"
+    },
+    {
+     "wrong": "(edit hello.c, save it)\n./hello",
+     "why": {
+      "en": "You changed the source but ran the old executable. The output does not change until you compile again. Compile first, and run only if the compile worked.",
+      "zh": "你改了源代码，却运行了旧的可执行文件。不重新编译，输出就不会变。先编译，编译成功后再运行。"
+     },
+     "right": "cc -std=c11 -Wall -Wextra hello.c -o hello && ./hello"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Write a program that prints your name on the first line and the words Welcome to C on the second line.",
+      "zh": "写一个程序：第一行打印你的名字，第二行打印 Welcome to C。"
+     },
+     "a": {
+      "en": "One answer, with the name Mia:\n\n#include <stdio.h>\n\nint main(void) {\n    printf(\"Mia\\n\");\n    printf(\"Welcome to C\\n\");\n    return 0;\n}\n\nEach \\n ends a line. Without the first \\n, both pieces of text would sit on one line.",
+      "zh": "一个答案，名字用 Mia：\n\n#include <stdio.h>\n\nint main(void) {\n    printf(\"Mia\\n\");\n    printf(\"Welcome to C\\n\");\n    return 0;\n}\n\n每个 \\n 结束一行。没有第一个 \\n 的话，两段文字会挤在同一行。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output of printf(\"A\"); printf(\"B\\n\"); printf(\"C\\n\");",
+      "zh": "预测输出：printf(\"A\"); printf(\"B\\n\"); printf(\"C\\n\");"
+     },
+     "a": {
+      "en": "Two lines. The first is AB, because the first printf has no \\n and the second continues on the same line. The second line is C.",
+      "zh": "两行。第一行是 AB，因为第一条 printf 没有 \\n，第二条接在同一行后面。第二行是 C。"
+     }
+    },
+    {
+     "q": {
+      "en": "The compiler says: implicit declaration of function 'printf'. Which line is missing from the program, and where does it go?",
+      "zh": "编译器提示：implicit declaration of function 'printf'。程序缺了哪一行？应该放在哪里？"
+     },
+     "a": {
+      "en": "The line #include <stdio.h>. It goes at the top of the file, before main, because printf is described in that header.",
+      "zh": "缺的是 #include <stdio.h> 这一行。它放在文件开头、main 之前，因为 printf 的说明就在这个头文件里。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "printf-formats",
+   "title": {
+    "en": "printf and format specifiers: printing values",
+    "zh": "printf 与格式说明符：打印数值"
+   },
+   "goal": {
+    "en": "After this you can print numbers, letters and text with printf, and pick the right specifier for each.",
+    "zh": "学完这课，你能用 printf 打印数字、字母和文字，并为每种值选对格式说明符。"
+   },
+   "plain": {
+    "en": "printf prints text. The first thing you give it is the format string, a piece of text in double quotes. Most of it is printed as written. But a percent sign followed by a letter is a placeholder, called a format specifier. printf replaces each placeholder with the next value you list after the format string, in order.\n\nFor example, this line prints Leon is 20 years old:\nprintf(\"Leon is %d years old\\n\", 20);\nThe %d is the placeholder for a whole number. The 20 is the value that fills it. The values after the format string are called arguments.\n\nThese specifiers cover most needs:\n%d a whole number (type int)\n%f a number with a decimal point (type double). Writing %.2f shows exactly two digits after the point.\n%c one character, such as A\n%s a string, which is text such as Mia\n%x a whole number in hexadecimal, which is base 16 with the digits 0 to 9 and a to f. The number 255 prints as ff.\n%zu a size, the kind of number that sizeof produces (lesson 3)\n%% a percent sign itself\n\nYou can put a width between the % and the letter. %5d pads the number with spaces to at least 5 characters, and %-5d does the same but keeps the number at the left.\n\nThe specifier must match the value. printf cannot check the type of a value. It trusts you. If you write %d and pass a number with a decimal point, the output is nonsense, and only the compiler's warnings (lesson 8) can catch it. The number of placeholders must also equal the number of values.\n\nSpecial characters inside the quotes start with a backslash. This is called an escape sequence. \\n is a new line, \\t is a tab, \\\" is a quote mark and \\\\ is a backslash.\n\nDouble quotes make text. Single quotes make one character: 'A' is the letter A and \"A\" is a piece of text. Lesson 3 and lesson 6 return to this.",
+    "zh": "printf 用来打印文字。你给它的第一样东西是格式字符串，也就是双引号里的一段文字。其中大部分内容会按原样打印。但是百分号后面跟一个字母，是一个占位符，叫格式说明符。printf 会按顺序，把每个占位符换成格式字符串后面列出的下一个值。\n\n例如，下面这行会打印 Leon is 20 years old：\nprintf(\"Leon is %d years old\\n\", 20);\n其中 %d 是整数的占位符，20 是填进去的值。格式字符串后面的这些值叫实参。\n\n下面这些说明符能满足大部分需求：\n%d 整数（类型 int）\n%f 带小数点的数（类型 double）。写成 %.2f 会精确显示小数点后两位。\n%c 一个字符，例如 A\n%s 字符串，也就是 Mia 这样的文字\n%x 十六进制的整数。十六进制是 16 进制，数字用 0 到 9 和 a 到 f。数字 255 会打印成 ff。\n%zu 一个大小，也就是 sizeof 产生的那种数（第 3 课）\n%% 百分号本身\n\n你可以在 % 和字母之间加一个宽度。%5d 会用空格把数字补到至少 5 个字符宽，%-5d 效果相同，但数字靠左。\n\n说明符必须与值匹配。printf 无法检查值的类型，它只会相信你。如果你写了 %d，却传入带小数的数，输出就是无意义的结果，只有编译器的警告（第 8 课）才能发现。占位符的个数也必须等于值的个数。\n\n引号里的特殊字符以反斜杠开头，这叫转义序列。\\n 是换行，\\t 是制表符，\\\" 是引号本身，\\\\ 是反斜杠本身。\n\n双引号表示文字。单引号表示一个字符：'A' 是字母 A，而 \"A\" 是一段文字。第 3 课和第 6 课还会回到这一点。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "format string",
+      "zh": "格式字符串"
+     },
+     "meaning": {
+      "en": "The first argument of printf. It holds the text and the placeholders.",
+      "zh": "printf 的第一个实参，里面有文字和占位符。"
+     }
+    },
+    {
+     "term": {
+      "en": "format specifier",
+      "zh": "格式说明符"
+     },
+     "meaning": {
+      "en": "A placeholder that starts with %, such as %d or %.2f.",
+      "zh": "以 % 开头的占位符，例如 %d 或 %.2f。"
+     }
+    },
+    {
+     "term": {
+      "en": "argument",
+      "zh": "实参"
+     },
+     "meaning": {
+      "en": "A value you hand to a function, here the values after the format string.",
+      "zh": "交给函数的一个值，这里指格式字符串后面的那些值。"
+     }
+    },
+    {
+     "term": {
+      "en": "escape sequence",
+      "zh": "转义序列"
+     },
+     "meaning": {
+      "en": "A backslash and a letter that stand for one special character, such as \\n for a new line.",
+      "zh": "反斜杠加一个字母，代表一个特殊字符，例如 \\n 代表换行。"
+     }
+    },
+    {
+     "term": {
+      "en": "hexadecimal",
+      "zh": "十六进制"
+     },
+     "meaning": {
+      "en": "Counting in base 16. After 9 come a, b, c, d, e, f, so 255 is ff.",
+      "zh": "用 16 进制计数。9 之后依次是 a、b、c、d、e、f，所以 255 写作 ff。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\nint main(void) {\n    int apples = 3;\n    double price = 2.5;\n    char grade = 'A';\n\n    printf(\"Leon bought %d apples.\\n\", apples);\n    printf(\"Each costs %.2f, so the total is %.2f.\\n\", price, apples * price);\n    printf(\"Grade: %c\\n\", grade);\n    printf(\"Name: %s\\n\", \"Mia\");\n    printf(\"Hex: %x, character code: %d\\n\", 255, grade);\n    printf(\"Padded: [%5d] [%-5d]\\n\", 42, 42);\n    printf(\"Ratio: 50%%\\n\");\n    printf(\"A quote \\\" and a backslash \\\\\\n\");\n    return 0;\n}\n",
+    "output": "Leon bought 3 apples.\nEach costs 2.50, so the total is 7.50.\nGrade: A\nName: Mia\nHex: ff, character code: 65\nPadded: [   42] [42   ]\nRatio: 50%\nA quote \" and a backslash \\\n",
+    "walk": {
+     "en": [
+      "Three variables are declared first. A variable holds a value (lesson 3 explains them). Here apples holds 3, price holds 2.5 and grade holds the letter A.",
+      "%d is filled by apples, so the line reads Leon bought 3 apples.",
+      "%.2f appears twice. The first takes price and prints 2.50. The second takes apples * price, which is worked out first (3 times 2.5 is 7.5) and prints as 7.50.",
+      "%c prints the single character A. %s prints the text Mia without its quote marks.",
+      "255 in hexadecimal is ff. The second value, grade, is printed with %d, so you see 65: the number the computer uses to store the letter A.",
+      "%5d puts 42 in a field 5 characters wide, with spaces on the left. %-5d puts the spaces on the right. The square brackets make the width visible.",
+      "%% prints one percent sign. Inside the text, \\\" prints a quote mark and \\\\ prints one backslash."
+     ],
+     "zh": [
+      "先声明三个变量。变量用来存放一个值（第 3 课会详细讲）。这里 apples 存 3，price 存 2.5，grade 存字母 A。",
+      "%d 由 apples 填上，所以这一行是 Leon bought 3 apples.",
+      "%.2f 出现了两次。第一个取 price，打印 2.50。第二个取 apples * price，这个式子先被算出来（3 乘 2.5 等于 7.5），打印成 7.50。",
+      "%c 打印单个字符 A。%s 打印文字 Mia，不带引号。",
+      "255 的十六进制是 ff。第二个值 grade 用 %d 打印，所以你看到的是 65：电脑用这个数字来存字母 A。",
+      "%5d 把 42 放在 5 个字符宽的位置里，空格补在左边。%-5d 把空格补在右边。方括号让宽度看得见。",
+      "%% 打印一个百分号。在文字里，\\\" 打印一个引号，\\\\ 打印一个反斜杠。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "printf(\"%d\\n\", 2.5);",
+     "why": {
+      "en": "%d expects a whole number, but 2.5 has a decimal point. The output is nonsense and changes from machine to machine. With -Wall the compiler warns: format specifies type 'int' but the argument has type 'double' [-Wformat]. gcc words it as: format '%d' expects argument of type 'int', but argument 2 has type 'double'.",
+      "zh": "%d 需要整数，而 2.5 带小数点。输出是无意义的结果，而且不同机器上不一样。加上 -Wall，编译器会警告：format specifies type 'int' but the argument has type 'double' [-Wformat]。gcc 的说法是：format '%d' expects argument of type 'int', but argument 2 has type 'double'。"
+     },
+     "right": "printf(\"%f\\n\", 2.5);"
+    },
+    {
+     "wrong": "printf(\"%d and %d\\n\", 7);",
+     "why": {
+      "en": "There are two placeholders but only one value. The second %d prints whatever happens to be lying around. The compiler warns: more '%' conversions than data arguments.",
+      "zh": "有两个占位符，却只有一个值。第二个 %d 会打印碰巧留在那里的任何内容。编译器会警告：more '%' conversions than data arguments。"
+     },
+     "right": "printf(\"%d and %d\\n\", 7, 8);"
+    },
+    {
+     "wrong": "printf('Hello\\n');",
+     "why": {
+      "en": "Single quotes are for one character. Text needs double quotes. The compiler refuses this line or warns about it, and the program cannot print the text.",
+      "zh": "单引号只用于一个字符。文字必须用双引号。编译器会拒绝这一行，或者对它发出警告，程序也无法打印出这段文字。"
+     },
+     "right": "printf(\"Hello\\n\");"
+    },
+    {
+     "wrong": "printf(\"Sale: 50% off\\n\");",
+     "why": {
+      "en": "A lone % starts a placeholder. Here \"% o\" is read as a specifier that wants a value, so the output is broken. To print a percent sign, write it twice.",
+      "zh": "单独一个 % 会被当作占位符的开头。这里的 \"% o\" 被读成一个需要值的说明符，所以输出是坏的。要打印百分号，就写两个。"
+     },
+     "right": "printf(\"Sale: 50%% off\\n\");"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Write one printf that prints Iris scored 93.5% : take the name from %s, show the score with one digit after the point, and print a real percent sign at the end.",
+      "zh": "写一条 printf，打印 Iris scored 93.5% ：名字用 %s 取，分数保留一位小数，末尾要真的打印出百分号。"
+     },
+     "a": {
+      "en": "printf(\"%s scored %.1f%%\\n\", \"Iris\", 93.5);\n\n%s takes \"Iris\", %.1f takes 93.5 and prints 93.5, and %% prints the percent sign.",
+      "zh": "printf(\"%s scored %.1f%%\\n\", \"Iris\", 93.5);\n\n%s 取 \"Iris\"，%.1f 取 93.5 并打印 93.5，%% 打印百分号。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output of printf(\"[%4d][%-4d][%c]\\n\", 7, 7, 66); The letter B has the code 66.",
+      "zh": "预测输出：printf(\"[%4d][%-4d][%c]\\n\", 7, 7, 66); 字母 B 的编码是 66。"
+     },
+     "a": {
+      "en": "[   7][7   ][B]. The first field is 4 wide with the 7 at the right. The second has the 7 at the left. %c turns the code 66 into the character B.",
+      "zh": "[   7][7   ][B]。第一个字段宽 4，7 靠右。第二个字段里 7 靠左。%c 把编码 66 变成字符 B。"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix this line so it prints Total: 4.75 :\nprintf(\"Total: %d\\n\", 4.75);",
+      "zh": "修改下面这行，让它打印出 Total: 4.75 ：\nprintf(\"Total: %d\\n\", 4.75);"
+     },
+     "a": {
+      "en": "Use %f for a number with a decimal point: printf(\"Total: %.2f\\n\", 4.75); The .2 asks for two digits after the point.",
+      "zh": "带小数点的数要用 %f：printf(\"Total: %.2f\\n\", 4.75); 其中 .2 表示小数点后保留两位。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "variables-types",
+   "title": {
+    "en": "Variables, types and sizes",
+    "zh": "变量、类型与大小"
+   },
+   "goal": {
+    "en": "After this you can declare variables, choose between int, double and char, read a simple arithmetic expression, and find how many bytes a type takes.",
+    "zh": "学完这课，你能声明变量，在 int、double 和 char 中选择合适的类型，读懂简单的算术表达式，并查出一个类型占几个字节。"
+   },
+   "plain": {
+    "en": "A variable is a named box in the computer's memory that holds one value. You make one by declaring it: write the type, then the name, then usually a starting value.\nint count = 7;\n\nThe type says what kind of value fits in the box and how big the box is. You need three types for now. An int is a whole number such as -3, 0 or 42. A double is a number with a decimal point, such as 3.14. A char is one character, such as 'A', written in single quotes.\n\nThe sign = means assign. It works out the right side and stores the result in the box on the left. It is not the equals of mathematics. The statement count = count + 1 means \"take the value in count, add one, and store it back\". The statement count += 2 is a short way to write count = count + 2.\n\nAlways give a variable a starting value. A box that you never filled holds leftover bits, and reading it gives unpredictable results.\n\nAn expression is a piece of code that works out to a value, such as 2 + 3 * 4. To read one, find which part is worked out first. Brackets come first. Then come *, / and % (multiply, divide, remainder), and then + and -. Operators of the same level go from left to right. So 2 + 3 * 4 is 14, and (2 + 3) * 4 is 20. When you are unsure, add brackets.\n\nThere are two traps. First, dividing an int by an int gives an int, and the fraction is thrown away. So 7 / 2 is 3. The % operator gives the remainder, so 7 % 2 is 1. If you want 3.5, make one side a double, as in 7 / 2.0. Second, an int has a limited range, roughly minus 2 billion to plus 2 billion. The header limits.h provides INT_MAX, the largest int. Going past it is undefined behaviour, which means the language makes no promise at all about what happens.\n\nMemory is counted in bytes. A bit is a single 0 or 1, and a byte is a group of bits, 8 on ordinary computers. The operator sizeof gives the number of bytes that a type or variable takes. On ordinary computers a char takes 1, an int takes 4 and a double takes 8. The constant CHAR_BIT, from limits.h, is the number of bits in a byte.\n\nA char is stored as a small number: 'A' is 65. That is why 'A' + 1 is 66, the code of 'B'.",
+    "zh": "变量是电脑内存里一个有名字的盒子，里面放一个值。你通过声明来创建变量：先写类型，再写名字，通常还要写一个初始值。\nint count = 7;\n\n类型说明盒子里能放哪种值，以及盒子有多大。现在你需要三种类型。int 是整数，例如 -3、0 或 42。double 是带小数点的数，例如 3.14。char 是一个字符，例如 'A'，用单引号写。\n\n符号 = 的意思是赋值。它先算出右边，再把结果存进左边的盒子里。它不是数学里的“等于”。语句 count = count + 1 的意思是“取出 count 里的值，加一，再存回去”。语句 count += 2 是 count = count + 2 的简写。\n\n变量一定要给初始值。一个从没被填过的盒子里是遗留的位，读取它会得到不可预测的结果。\n\n表达式是一段能算出一个值的代码，例如 2 + 3 * 4。读表达式时，先找出哪一部分最先被计算。括号最先。然后是 *、/ 和 %（乘、除、取余），再然后是 + 和 -。同一级的运算符从左到右算。所以 2 + 3 * 4 是 14，而 (2 + 3) * 4 是 20。拿不准时，就加括号。\n\n有两个陷阱。第一，int 除以 int 得到 int，小数部分会被丢掉。所以 7 / 2 是 3。% 运算符给出余数，所以 7 % 2 是 1。如果你想要 3.5，就让其中一边是 double，写成 7 / 2.0。第二，int 的范围有限，大约是负 20 亿到正 20 亿。头文件 limits.h 提供 INT_MAX，也就是最大的 int。超过它属于未定义行为，意思是语言对会发生什么完全不作保证。\n\n内存以字节为单位计算。位是单个的 0 或 1，字节是一组位，在普通电脑上是 8 位。运算符 sizeof 给出一个类型或变量占多少字节。在普通电脑上，char 占 1，int 占 4，double 占 8。limits.h 里的常量 CHAR_BIT 就是一个字节有多少位。\n\nchar 是以一个小整数的形式保存的：'A' 是 65。所以 'A' + 1 是 66，也就是 'B' 的编码。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "variable",
+      "zh": "变量"
+     },
+     "meaning": {
+      "en": "A named box in memory that holds one value of one type.",
+      "zh": "内存里一个有名字的盒子，存放一个某种类型的值。"
+     }
+    },
+    {
+     "term": {
+      "en": "declaration",
+      "zh": "声明"
+     },
+     "meaning": {
+      "en": "The line that creates a variable: type, name and usually a starting value.",
+      "zh": "创建变量的那一行：类型、名字，通常还有初始值。"
+     }
+    },
+    {
+     "term": {
+      "en": "assignment",
+      "zh": "赋值"
+     },
+     "meaning": {
+      "en": "Storing a value in a variable with =. The right side is worked out first.",
+      "zh": "用 = 把一个值存进变量。先计算右边。"
+     }
+    },
+    {
+     "term": {
+      "en": "expression",
+      "zh": "表达式"
+     },
+     "meaning": {
+      "en": "A piece of code that works out to a value, such as 2 + 3 * 4.",
+      "zh": "能算出一个值的一段代码，例如 2 + 3 * 4。"
+     }
+    },
+    {
+     "term": {
+      "en": "byte",
+      "zh": "字节"
+     },
+     "meaning": {
+      "en": "The unit memory is counted in. It holds CHAR_BIT bits, 8 on ordinary computers.",
+      "zh": "内存计量的单位。它含有 CHAR_BIT 个位，在普通电脑上是 8 位。"
+     }
+    },
+    {
+     "term": {
+      "en": "undefined behaviour",
+      "zh": "未定义行为"
+     },
+     "meaning": {
+      "en": "Code for which the language promises nothing. The program may crash, print nonsense or seem to work.",
+      "zh": "语言对其结果不作任何保证的代码。程序可能崩溃、打印无意义的内容，或者看起来正常。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n#include <limits.h>\n\nint main(void) {\n    int count = 7;\n    double ratio = 7.0 / 2;\n    char letter = 'A';\n\n    printf(\"count = %d, ratio = %.1f\\n\", count, ratio);\n    printf(\"7 / 2 = %d, 7 %% 2 = %d, 7 / 2.0 = %.1f\\n\", 7 / 2, 7 % 2, 7 / 2.0);\n    printf(\"2 + 3 * 4 = %d, (2 + 3) * 4 = %d\\n\", 2 + 3 * 4, (2 + 3) * 4);\n\n    count = count + 1;\n    count += 2;\n    printf(\"count is now %d\\n\", count);\n\n    printf(\"letter %c has code %d, and letter + 1 is %c\\n\", letter, letter, letter + 1);\n    printf(\"sizes: char %zu, int %zu, double %zu\\n\", sizeof(char), sizeof(int), sizeof(double));\n    printf(\"bits in a byte: %d, largest int: %d\\n\", CHAR_BIT, INT_MAX);\n    return 0;\n}\n",
+    "output": "count = 7, ratio = 3.5\n7 / 2 = 3, 7 % 2 = 1, 7 / 2.0 = 3.5\n2 + 3 * 4 = 14, (2 + 3) * 4 = 20\ncount is now 10\nletter A has code 65, and letter + 1 is B\nsizes: char 1, int 4, double 8\nbits in a byte: 8, largest int: 2147483647\n",
+    "walk": {
+     "en": [
+      "Three variables are declared with starting values. 7.0 / 2 has a double on its left, so the division keeps the fraction and ratio holds 3.5.",
+      "7 / 2 divides two ints and gives 3. 7 % 2 is the remainder, 1. 7 / 2.0 has a double on the right, so the answer is 3.5. In the text, %% prints a percent sign.",
+      "Multiplication goes before addition, so 2 + 3 * 4 is 2 + 12, which is 14. The brackets in (2 + 3) * 4 force the addition first, giving 20.",
+      "count = count + 1 changes 7 to 8. count += 2 changes 8 to 10.",
+      "letter is printed twice: %c shows the character A and %d shows its code, 65. The expression letter + 1 is the number 66, and %c shows it as B.",
+      "sizeof(char), sizeof(int) and sizeof(double) give 1, 4 and 8. They are printed with %zu, the specifier for sizes.",
+      "CHAR_BIT is the number of bits in a byte. INT_MAX is the largest value an int can hold on this computer. Both come from limits.h."
+     ],
+     "zh": [
+      "声明了三个带初始值的变量。7.0 / 2 的左边是 double，所以除法保留小数，ratio 里存的是 3.5。",
+      "7 / 2 是两个 int 相除，结果是 3。7 % 2 是余数 1。7 / 2.0 的右边是 double，所以结果是 3.5。文字里的 %% 打印一个百分号。",
+      "乘法先于加法，所以 2 + 3 * 4 是 2 + 12，等于 14。(2 + 3) * 4 里的括号强制先做加法，得到 20。",
+      "count = count + 1 把 7 变成 8。count += 2 把 8 变成 10。",
+      "letter 被打印了两次：%c 显示字符 A，%d 显示它的编码 65。表达式 letter + 1 是数字 66，%c 把它显示成 B。",
+      "sizeof(char)、sizeof(int) 和 sizeof(double) 分别给出 1、4 和 8。它们用 %zu 打印，这是用于大小的说明符。",
+      "CHAR_BIT 是一个字节的位数。INT_MAX 是在这台电脑上 int 能存放的最大值。两者都来自 limits.h。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "double half = 1 / 2;",
+     "why": {
+      "en": "Both sides of / are ints, so the division runs as integer division first and gives 0. Only then is 0 stored as 0.0. Putting the answer in a double does not help. Make one side a double before the division.",
+      "zh": "/ 的两边都是 int，所以先按整数除法计算，得到 0，然后才把 0 存成 0.0。把结果放进 double 变量并没有用。要在除法之前，让其中一边变成 double。"
+     },
+     "right": "double half = 1 / 2.0;"
+    },
+    {
+     "wrong": "int total;\ntotal = total + 5;",
+     "why": {
+      "en": "total was never given a value, so the 5 is added to leftover bits. The result is unpredictable. The compiler warns only if you ask it to: with -Wall, clang says variable 'total' is uninitialized when used here. gcc may show this warning only when you also add -O1.",
+      "zh": "total 从来没有被赋过值，所以 5 加在了遗留的位上，结果不可预测。只有你要求，编译器才会警告：加上 -Wall，clang 会提示 variable 'total' is uninitialized when used here。gcc 可能还要再加上 -O1 才会显示这条警告。"
+     },
+     "right": "int total = 0;\ntotal = total + 5;"
+    },
+    {
+     "wrong": "char letter = \"A\";",
+     "why": {
+      "en": "Double quotes make text, which is a row of characters, not one character. The compiler complains about converting a pointer to a char. A single character uses single quotes.",
+      "zh": "双引号表示文字，那是一排字符，而不是一个字符。编译器会抱怨把指针转换成 char。单个字符要用单引号。"
+     },
+     "right": "char letter = 'A';"
+    },
+    {
+     "wrong": "int big = 2147483647;\nbig = big + 1;",
+     "why": {
+      "en": "2147483647 is INT_MAX on ordinary computers. Adding 1 goes past the range, which is undefined behaviour. You may see -2147483648, or anything else. Check before you add, or use a wider type.",
+      "zh": "在普通电脑上，2147483647 就是 INT_MAX。再加 1 就超出了范围，属于未定义行为。你可能看到 -2147483648，也可能看到别的任何结果。要在加之前检查，或者换用更宽的类型。"
+     },
+     "right": "int big = 2147483647;\nif (big < INT_MAX) {\n    big = big + 1;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output of int a = 17; printf(\"%d %d %.1f\\n\", a / 5, a % 5, a / 5.0);",
+      "zh": "预测输出：int a = 17; printf(\"%d %d %.1f\\n\", a / 5, a % 5, a / 5.0);"
+     },
+     "a": {
+      "en": "3 2 3.4. Dividing ints gives 3, the remainder of 17 divided by 5 is 2, and 17 divided by 5.0 is 3.4.",
+      "zh": "3 2 3.4。int 相除得 3，17 除以 5 的余数是 2，17 除以 5.0 是 3.4。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a program body that declares a double price set to 4.5 and an int qty set to 3, then prints the total with two digits after the point.",
+      "zh": "写出一段程序主体：声明 double 变量 price 初值为 4.5，int 变量 qty 初值为 3，然后打印总价，保留两位小数。"
+     },
+     "a": {
+      "en": "double price = 4.5;\nint qty = 3;\nprintf(\"Total: %.2f\\n\", price * qty);\n\nIt prints Total: 13.50. The int qty is turned into a double for the multiplication.",
+      "zh": "double price = 4.5;\nint qty = 3;\nprintf(\"Total: %.2f\\n\", price * qty);\n\n它打印 Total: 13.50。做乘法时，int 类型的 qty 会被转换成 double。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output of printf(\"%c %zu\\n\", 'A' + 2, sizeof(int) * 3);",
+      "zh": "预测输出：printf(\"%c %zu\\n\", 'A' + 2, sizeof(int) * 3);"
+     },
+     "a": {
+      "en": "C 12. 'A' + 2 is the number 67, which %c shows as C. sizeof(int) is 4, and 4 times 3 is 12.",
+      "zh": "C 12。'A' + 2 是数字 67，%c 把它显示成 C。sizeof(int) 是 4，4 乘 3 是 12。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "control-flow",
+   "title": {
+    "en": "Decisions and repetition: if and loops",
+    "zh": "判断与重复：if 和循环"
+   },
+   "goal": {
+    "en": "After this you can make a program choose with if, repeat work with for and while, and read the conditions that control them.",
+    "zh": "学完这课，你能用 if 让程序做选择，用 for 和 while 重复工作，并读懂控制它们的条件。"
+   },
+   "plain": {
+    "en": "A program normally runs its statements from top to bottom. The statements if and the loops change that order.\n\nA condition is an expression that is either true or false. C has no separate true and false for conditions: the number 0 means false, and any other number means true. The comparison operators work out to 1 for true and 0 for false. They are < (less than), <= (less than or equal), > (greater than), >= (greater than or equal), == (equal to) and != (not equal to). Take care: == compares two values, while a single = stores a value.\n\nYou combine conditions with && (and: both must be true), || (or: at least one must be true) and ! (not). Both && and || stop early. If the left side already decides the answer, the right side is not looked at. This is called short-circuit evaluation.\n\nThe statement if runs a block only when its condition is true. A block is a group of statements inside curly brackets. You can add else for the other case, and else if for more cases.\n\nA loop repeats a block. A while loop checks its condition first and repeats as long as it is true. A for loop puts three parts in its brackets: a setup, a condition and a step.\nfor (int i = 0; i < 3; i++)\nThis means: start i at 0, keep going while i is less than 3, and after each pass add 1 to i. The expression i++ means i = i + 1. So the block runs with i equal to 0, 1 and 2, which is three times. Counting from 0 is normal in C. Each run through the block is an iteration.\n\nA loop needs something that eventually makes its condition false. If nothing does, it never ends. Press Ctrl and C together in the terminal to stop it. The statement break leaves a loop at once. The statement continue skips to the next iteration.\n\nUse curly brackets around every block, even when it holds one statement. It prevents a whole class of mistakes.",
+    "zh": "程序通常按从上到下的顺序执行语句。if 语句和循环语句会改变这个顺序。\n\n条件是一个要么真要么假的表达式。C 里的条件没有单独的“真”和“假”：数字 0 表示假，任何其他数字都表示真。比较运算符的结果，真是 1，假是 0。它们是 <（小于）、<=（小于或等于）、>（大于）、>=（大于或等于）、==（等于）和 !=（不等于）。请注意：== 是比较两个值，而单独一个 = 是存入一个值。\n\n条件可以用 &&（并且：两边都为真）、||（或者：至少一边为真）和 !（非）组合起来。&& 和 || 都会提前停止：如果左边已经能决定答案，右边就不会被检查。这叫短路求值。\n\nif 语句只在条件为真时才运行一个代码块。代码块是花括号里的一组语句。你可以用 else 处理另一种情况，用 else if 处理更多情况。\n\n循环会重复一个代码块。while 循环先检查条件，只要条件为真就一直重复。for 循环的括号里有三个部分：初始设置、条件和步进。\nfor (int i = 0; i < 3; i++)\n它的意思是：让 i 从 0 开始，只要 i 小于 3 就继续，每轮结束后把 i 加 1。表达式 i++ 的意思是 i = i + 1。所以代码块在 i 等于 0、1 和 2 时各运行一次，一共三次。在 C 里从 0 开始计数是常态。代码块每运行一遍叫一次迭代。\n\n循环里必须有某个因素最终让条件变成假。如果没有，它就永远不会结束。这时在终端里同时按 Ctrl 和 C 来停止它。break 语句立即离开循环。continue 语句跳到下一次迭代。\n\n每个代码块都要用花括号括起来，即使里面只有一条语句。这样能避免一整类错误。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "condition",
+      "zh": "条件"
+     },
+     "meaning": {
+      "en": "An expression used as a yes or no question. 0 means no, anything else means yes.",
+      "zh": "被当作是非题来用的表达式。0 表示否，其他数表示是。"
+     }
+    },
+    {
+     "term": {
+      "en": "block",
+      "zh": "代码块"
+     },
+     "meaning": {
+      "en": "A group of statements inside curly brackets.",
+      "zh": "花括号里的一组语句。"
+     }
+    },
+    {
+     "term": {
+      "en": "loop",
+      "zh": "循环"
+     },
+     "meaning": {
+      "en": "A statement that repeats a block while a condition holds.",
+      "zh": "在条件成立时重复执行代码块的语句。"
+     }
+    },
+    {
+     "term": {
+      "en": "iteration",
+      "zh": "迭代"
+     },
+     "meaning": {
+      "en": "One run through the body of a loop.",
+      "zh": "循环体运行的一遍。"
+     }
+    },
+    {
+     "term": {
+      "en": "short-circuit evaluation",
+      "zh": "短路求值"
+     },
+     "meaning": {
+      "en": "&& and || skip their right side when the left side already decides the answer.",
+      "zh": "当左边已经能决定答案时，&& 和 || 会跳过右边。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\nint main(void) {\n    int total = 0;\n    for (int i = 1; i <= 6; i++) {\n        if (i % 2 == 0) {\n            total += i;\n            printf(\"%d is even, total is %d\\n\", i, total);\n        } else {\n            printf(\"%d is odd, skipped\\n\", i);\n        }\n    }\n\n    int coins = 1;\n    int days = 0;\n    while (coins < 100) {\n        coins = coins * 2;\n        days++;\n    }\n    printf(\"coins reach %d after %d days\\n\", coins, days);\n\n    int age = 17;\n    if (age >= 13 && age < 20) {\n        printf(\"age %d is a teenager\\n\", age);\n    }\n    return 0;\n}\n",
+    "output": "1 is odd, skipped\n2 is even, total is 2\n3 is odd, skipped\n4 is even, total is 6\n5 is odd, skipped\n6 is even, total is 12\ncoins reach 128 after 7 days\nage 17 is a teenager\n",
+    "walk": {
+     "en": [
+      "The for loop sets i to 1, keeps going while i <= 6, and adds 1 to i after each pass. The block therefore runs six times.",
+      "i % 2 is the remainder after dividing by 2. When it equals 0, the number is even. The condition uses == to compare.",
+      "For even numbers the if branch adds i to total and prints it: 2, then 2 + 4 = 6, then 6 + 6 = 12. For odd numbers the else branch prints a message.",
+      "The while loop checks coins < 100 before every pass. Each pass doubles coins and adds 1 to days. The values are 2, 4, 8, 16, 32, 64 and 128, which is seven passes. After the seventh the condition is false and the loop ends.",
+      "The last if uses && to combine two comparisons. Both must be true: 17 is at least 13 and also less than 20, so the message is printed."
+     ],
+     "zh": [
+      "for 循环先让 i 等于 1，只要 i <= 6 就继续，每轮结束后给 i 加 1。所以代码块运行六次。",
+      "i % 2 是除以 2 的余数。余数等于 0，这个数就是偶数。条件里用 == 来比较。",
+      "遇到偶数，if 分支把 i 加进 total 并打印出来：先是 2，然后 2 + 4 = 6，再然后 6 + 6 = 12。遇到奇数，else 分支打印一条信息。",
+      "while 循环在每一轮之前检查 coins < 100。每一轮把 coins 翻倍，并给 days 加 1。值依次是 2、4、8、16、32、64 和 128，一共七轮。第七轮之后条件为假，循环结束。",
+      "最后的 if 用 && 把两个比较组合起来，两个都必须为真：17 不小于 13，同时也小于 20，所以信息被打印出来。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "int x = 3;\nif (x = 5) {\n    printf(\"five\\n\");\n}",
+     "why": {
+      "en": "A single = assigns. This stores 5 in x, and the value of the condition is 5, which counts as true. So the block always runs, and x is damaged. With -Wall the compiler warns: using the result of an assignment as a condition without parentheses. Use == to compare.",
+      "zh": "单个 = 是赋值。这里把 5 存进 x，条件的值是 5，算作真。所以这个代码块总会运行，而且 x 被改坏了。加上 -Wall，编译器会警告：using the result of an assignment as a condition without parentheses。要比较，就用 ==。"
+     },
+     "right": "if (x == 5) {\n    printf(\"five\\n\");\n}"
+    },
+    {
+     "wrong": "for (int i = 0; i < 3; i++);\n{\n    printf(\"hi\\n\");\n}",
+     "why": {
+      "en": "The semicolon after the brackets ends the loop with an empty body. The loop counts to 3 and does nothing. Then the block after it runs once. The compiler warns: for loop has empty body.",
+      "zh": "括号后面的分号让循环以空循环体结束。循环数到 3，什么也没做。然后后面的代码块只运行一次。编译器会警告：for loop has empty body。"
+     },
+     "right": "for (int i = 0; i < 3; i++) {\n    printf(\"hi\\n\");\n}"
+    },
+    {
+     "wrong": "if (1 < x < 5) {\n    printf(\"between\\n\");\n}",
+     "why": {
+      "en": "C reads this from left to right as (1 < x) < 5. The first comparison is 0 or 1, and both 0 and 1 are less than 5, so the condition is always true. Some compilers warn about it. Write two comparisons and join them with &&.",
+      "zh": "C 把它从左到右读成 (1 < x) < 5。第一个比较的结果是 0 或 1，而 0 和 1 都小于 5，所以条件永远为真。有些编译器会对此警告。要写成两个比较，再用 && 连起来。"
+     },
+     "right": "if (1 < x && x < 5) {\n    printf(\"between\\n\");\n}"
+    },
+    {
+     "wrong": "int i = 0;\nwhile (i < 3) {\n    printf(\"%d\\n\", i);\n}",
+     "why": {
+      "en": "Nothing changes i, so i < 3 stays true and the loop prints 0 forever. Press Ctrl and C in the terminal to stop it. Every loop needs a step that moves toward the end.",
+      "zh": "没有任何语句改变 i，所以 i < 3 一直为真，循环会永远打印 0。在终端里按 Ctrl 和 C 来停止它。每个循环都需要一个朝着结束前进的步骤。"
+     },
+     "right": "int i = 0;\nwhile (i < 3) {\n    printf(\"%d\\n\", i);\n    i++;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output of for (int i = 1; i <= 9; i += 4) printf(\"%d \", i);",
+      "zh": "预测输出：for (int i = 1; i <= 9; i += 4) printf(\"%d \", i);"
+     },
+     "a": {
+      "en": "1 5 9. The variable i starts at 1 and grows by 4 each time: 1, 5, 9. The next value, 13, fails the condition i <= 9.",
+      "zh": "1 5 9。i 从 1 开始，每次增加 4：1、5、9。下一个值 13 不满足条件 i <= 9。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a loop that adds the numbers from 1 to 100 into an int called sum, then prints sum.",
+      "zh": "写一个循环，把 1 到 100 的数加到名为 sum 的 int 变量里，然后打印 sum。"
+     },
+     "a": {
+      "en": "int sum = 0;\nfor (int i = 1; i <= 100; i++) {\n    sum += i;\n}\nprintf(\"%d\\n\", sum);\n\nIt prints 5050. The variable sum must start at 0.",
+      "zh": "int sum = 0;\nfor (int i = 1; i <= 100; i++) {\n    sum += i;\n}\nprintf(\"%d\\n\", sum);\n\n它打印 5050。sum 必须从 0 开始。"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix this condition so it tests for an even number: if (n % 2 = 0)",
+      "zh": "修改这个条件，让它判断 n 是否为偶数：if (n % 2 = 0)"
+     },
+     "a": {
+      "en": "Use == to compare: if (n % 2 == 0). A single = tries to assign to n % 2, and the compiler rejects it with an error such as: expression is not assignable.",
+      "zh": "比较要用 ==：if (n % 2 == 0)。单个 = 是想给 n % 2 赋值，编译器会报错拒绝，提示类似：expression is not assignable。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "functions-by-value",
+   "title": {
+    "en": "Functions and pass by value",
+    "zh": "函数与按值传递"
+   },
+   "goal": {
+    "en": "After this you can write your own function, call it, and explain why a function cannot change the variable you passed in.",
+    "zh": "学完这课，你能写出自己的函数并调用它，还能解释为什么函数改不了你传进去的那个变量。"
+   },
+   "plain": {
+    "en": "A function is a named group of instructions that you can use again and again. You have already used two: main and printf. Now you write your own.\n\nHere is a definition:\nint square(int n) { return n * n; }\nIt has four parts. The return type, int, is the type of the value the function hands back. The word void means it hands back nothing. The name is square. The parameters, in brackets, are the names the function uses for the values it receives, and each has a type. The body, in curly brackets, holds the instructions. The statement return sends a value back and ends the function at once.\n\nTo call a function, write its name and put values in brackets: square(5). The values you give are the arguments. The call is an expression: its value is what the function returns. So square(5) is 25, and you can print it or store it in a variable.\n\nThe compiler reads the file from top to bottom. It must learn about a function before you call it. The usual way is a prototype: the first line of the function, followed by a semicolon, placed near the top of the file. It says \"this function exists, with these types, and its body comes later\".\n\nNow the key rule. When you call a function, C copies each argument into the matching parameter. This is called pass by value. The function works on its own copy. Think of giving someone a photocopy of a form. They can scribble on it, and your original stays the same. So if a function sets its parameter to 0, the variable in the caller still holds the old value. To get a new value out, return it and assign it: side = add_one(side).\n\nVariables made inside a function, including its parameters, are local. They exist only while the function runs, and other functions cannot see them. The part of the program where a name can be used is its scope. Two functions can each have a variable called n. They are separate boxes.\n\nLesson 7 shows how a function can change the caller's variable on purpose.",
+    "zh": "函数是一组有名字的指令，你可以反复使用它。你已经用过两个了：main 和 printf。现在你来写自己的函数。\n\n下面是一个函数定义：\nint square(int n) { return n * n; }\n它有四个部分。返回类型 int，是函数交回的值的类型。单词 void 表示什么也不交回。名字是 square。括号里是形参，也就是函数给收到的值起的名字，每个形参都有类型。花括号里是函数体，放着指令。return 语句交回一个值，并立即结束函数。\n\n调用函数时，写出它的名字，并在括号里放上值：square(5)。你给出的这些值叫实参。调用是一个表达式，它的值就是函数返回的值。所以 square(5) 是 25，你可以打印它，也可以把它存进变量。\n\n编译器从上到下读文件。在你调用一个函数之前，它必须先知道这个函数。通常的办法是写函数原型：把函数的第一行加上分号，放在文件靠前的位置。它的意思是“这个函数存在，类型是这样，函数体稍后给出”。\n\n现在讲关键规则。调用函数时，C 会把每个实参复制到对应的形参里。这叫按值传递。函数处理的是它自己的副本。想象你把一张表格的复印件交给别人。他可以在上面乱涂，而你的原件不会变。所以，如果函数把它的形参设成 0，调用者那边的变量仍然是旧值。想把新值带出来，就用返回值，再赋给变量：side = add_one(side)。\n\n在函数内部创建的变量，包括它的形参，都是局部变量。它们只在函数运行期间存在，别的函数看不到。一个名字能在程序的哪一部分里使用，这个范围叫作用域。两个函数可以各有一个叫 n 的变量，它们是两个不同的盒子。\n\n第 7 课会讲怎样让函数有意地改变调用者的变量。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "function",
+      "zh": "函数"
+     },
+     "meaning": {
+      "en": "A named group of instructions that can be called from elsewhere.",
+      "zh": "一组有名字的指令，可以从别处调用。"
+     }
+    },
+    {
+     "term": {
+      "en": "parameter",
+      "zh": "形参"
+     },
+     "meaning": {
+      "en": "A name in a function definition for a value the function receives.",
+      "zh": "函数定义里的一个名字，代表函数接收的一个值。"
+     }
+    },
+    {
+     "term": {
+      "en": "argument",
+      "zh": "实参"
+     },
+     "meaning": {
+      "en": "The value you give in a call. It is copied into the parameter.",
+      "zh": "调用时给出的值，它会被复制进形参。"
+     }
+    },
+    {
+     "term": {
+      "en": "return value",
+      "zh": "返回值"
+     },
+     "meaning": {
+      "en": "The value a function hands back with return.",
+      "zh": "函数用 return 交回的值。"
+     }
+    },
+    {
+     "term": {
+      "en": "prototype",
+      "zh": "函数原型"
+     },
+     "meaning": {
+      "en": "The first line of a function plus a semicolon. It announces the function before its body.",
+      "zh": "函数的第一行加分号。它在函数体之前先宣布这个函数。"
+     }
+    },
+    {
+     "term": {
+      "en": "local variable",
+      "zh": "局部变量"
+     },
+     "meaning": {
+      "en": "A variable made inside a function. It exists only while the function runs.",
+      "zh": "在函数内部创建的变量，只在函数运行期间存在。"
+     }
+    },
+    {
+     "term": {
+      "en": "pass by value",
+      "zh": "按值传递"
+     },
+     "meaning": {
+      "en": "Calling a function copies each argument into its parameter. The original is untouched.",
+      "zh": "调用函数时把每个实参复制进形参，原来的变量不受影响。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\nint square(int n);\nvoid try_to_reset(int n);\nint add_one(int n);\n\nint main(void) {\n    int side = 5;\n    printf(\"square(%d) = %d\\n\", side, square(side));\n\n    try_to_reset(side);\n    printf(\"back in main, side is still %d\\n\", side);\n\n    side = add_one(side);\n    printf(\"after side = add_one(side), side is %d\\n\", side);\n    return 0;\n}\n\nint square(int n) {\n    return n * n;\n}\n\nvoid try_to_reset(int n) {\n    n = 0;\n    printf(\"inside try_to_reset, n is %d\\n\", n);\n}\n\nint add_one(int n) {\n    return n + 1;\n}\n",
+    "output": "square(5) = 25\ninside try_to_reset, n is 0\nback in main, side is still 5\nafter side = add_one(side), side is 6\n",
+    "walk": {
+     "en": [
+      "The three lines before main are prototypes. They tell the compiler that these functions exist, so main can call them even though their bodies come later.",
+      "square(side) copies 5 into the parameter n. The function returns 5 * 5, which is 25, and printf prints it.",
+      "try_to_reset(side) copies 5 into its own n. The function sets that n to 0 and prints 0. This changes only the copy.",
+      "Back in main, side still holds 5. Pass by value protected it.",
+      "add_one(side) returns 6. The assignment side = add_one(side) stores that value in side. This is how a new value gets out of a function.",
+      "The bodies of the three functions come after main. The word void in try_to_reset means it returns nothing, so it has no return statement."
+     ],
+     "zh": [
+      "main 前面的三行是函数原型。它们告诉编译器这些函数存在，所以即使函数体写在后面，main 也可以调用它们。",
+      "square(side) 把 5 复制进形参 n。函数返回 5 * 5，也就是 25，printf 把它打印出来。",
+      "try_to_reset(side) 把 5 复制进它自己的 n。函数把这个 n 设为 0 并打印出 0。被改的只是副本。",
+      "回到 main，side 里仍然是 5。按值传递保护了它。",
+      "add_one(side) 返回 6。赋值 side = add_one(side) 把这个值存进 side。新的值就是这样从函数里出来的。",
+      "三个函数的函数体写在 main 的后面。try_to_reset 里的 void 表示它不返回任何东西，所以没有 return 语句。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "int main(void) {\n    int n = square(3);\n    printf(\"%d\\n\", n);\n    return 0;\n}\n\nint square(int v) { return v * v; }",
+     "why": {
+      "en": "main calls square before the compiler has seen it. The compiler stops with: call to undeclared function 'square' (gcc says: implicit declaration of function 'square'). Put a prototype above main, or define square above main.",
+      "zh": "main 调用 square 的时候，编译器还没有见过它。编译器会停下并提示：call to undeclared function 'square'（gcc 的说法是：implicit declaration of function 'square'）。要在 main 上面写函数原型，或者把 square 的定义放到 main 上面。"
+     },
+     "right": "int square(int v);\n\nint main(void) {\n    int n = square(3);\n    printf(\"%d\\n\", n);\n    return 0;\n}\n\nint square(int v) { return v * v; }"
+    },
+    {
+     "wrong": "void double_it(int n) { n = n * 2; }\n/* in main: */\ndouble_it(x);",
+     "why": {
+      "en": "The function doubles its own copy. The variable x in main does not change. This is the most common surprise about pass by value.",
+      "zh": "函数把它自己的副本翻了倍，main 里的变量 x 没有变。这是按值传递最常让人意外的地方。"
+     },
+     "right": "int double_it(int n) { return n * 2; }\n/* in main: */\nx = double_it(x);"
+    },
+    {
+     "wrong": "int twice(int n) {\n    n * 2;\n}",
+     "why": {
+      "en": "The line n * 2; works out a value and throws it away. The function never returns anything. The compiler warns: expression result unused, and: non-void function does not return a value. Using the result of such a call is undefined behaviour.",
+      "zh": "n * 2; 这一行算出一个值，又把它丢掉了。函数从来没有返回任何东西。编译器会警告：expression result unused，以及 non-void function does not return a value。使用这样一个调用的结果属于未定义行为。"
+     },
+     "right": "int twice(int n) {\n    return n * 2;\n}"
+    },
+    {
+     "wrong": "int helper(void) {\n    int inner = 5;\n    return 1;\n}\n\nint main(void) {\n    helper();\n    printf(\"%d\\n\", inner);\n    return 0;\n}",
+     "why": {
+      "en": "inner is local to helper. main cannot see it, and the compiler stops with: use of undeclared identifier 'inner'. To pass a value out, return it.",
+      "zh": "inner 是 helper 的局部变量，main 看不到它，编译器会停下并提示：use of undeclared identifier 'inner'。要把值传出来，就用返回值。"
+     },
+     "right": "int helper(void) {\n    int inner = 5;\n    return inner;\n}\n\nint main(void) {\n    int got = helper();\n    printf(\"%d\\n\", got);\n    return 0;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output:\nint f(int n) { n = n + 1; return n * 2; }\nint main(void) { int x = 4; int y = f(x); printf(\"%d %d\\n\", x, y); return 0; }",
+      "zh": "预测输出：\nint f(int n) { n = n + 1; return n * 2; }\nint main(void) { int x = 4; int y = f(x); printf(\"%d %d\\n\", x, y); return 0; }"
+     },
+     "a": {
+      "en": "4 10. The function adds 1 to its copy, which becomes 5, and returns 5 * 2 = 10. The variable x in main stays 4.",
+      "zh": "4 10。函数把它的副本加 1，变成 5，并返回 5 * 2 = 10。main 里的 x 仍然是 4。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a function max_of that takes two ints and returns the larger one. Show the call that prints the larger of 3 and 9.",
+      "zh": "写一个函数 max_of，接收两个 int，返回较大的那个。再写出打印 3 和 9 中较大者的调用。"
+     },
+     "a": {
+      "en": "int max_of(int a, int b) {\n    if (a > b) {\n        return a;\n    }\n    return b;\n}\n\nprintf(\"%d\\n\", max_of(3, 9));\n\nIt prints 9. When the if branch returns, the function ends at once, so the second return only runs when a is not greater.",
+      "zh": "int max_of(int a, int b) {\n    if (a > b) {\n        return a;\n    }\n    return b;\n}\n\nprintf(\"%d\\n\", max_of(3, 9));\n\n它打印 9。if 分支一旦 return，函数就立刻结束，所以只有 a 不大于 b 时才会执行第二个 return。"
+     }
+    },
+    {
+     "q": {
+      "en": "This function is meant to swap two variables in the caller, but it does not. Say why.\nvoid swap(int a, int b) { int t = a; a = b; b = t; }",
+      "zh": "这个函数本来想交换调用者的两个变量，但没有成功。说说为什么。\nvoid swap(int a, int b) { int t = a; a = b; b = t; }"
+     },
+     "a": {
+      "en": "The parameters a and b are copies. The function swaps the copies and then they disappear. The caller's variables are untouched. A function can return only one value, so the fix needs pointers, which lesson 7 teaches.",
+      "zh": "形参 a 和 b 是副本。函数交换的是副本，随后副本就消失了，调用者的变量没有被动过。函数只能返回一个值，所以修复需要指针，第 7 课会教。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "arrays-strings",
+   "title": {
+    "en": "Arrays and C strings with the terminating zero",
+    "zh": "数组与 C 字符串：结尾的零"
+   },
+   "goal": {
+    "en": "After this you can keep a row of values in an array, loop over it safely, and explain why a C string needs one extra box for the terminating zero.",
+    "zh": "学完这课，你能用数组保存一排值，安全地遍历它，并解释为什么 C 字符串需要多一个盒子放结尾的零。"
+   },
+   "plain": {
+    "en": "An array is a row of boxes of the same type, side by side in memory. The line int scores[4]; makes four int boxes. The number in the square brackets is the length.\n\nYou reach one box by its index, which is its position number. Counting starts at 0. The boxes of scores are scores[0], scores[1], scores[2] and scores[3]. The last valid index is the length minus 1. There is no scores[4]. But C does not stop you from writing it. The program reads or writes whatever memory lies there. That is undefined behaviour (lesson 3), and it causes many bugs and security holes. The compiler and the browser page will usually not warn you. Lesson 8 shows a tool that does.\n\nYou can set starting values with curly brackets: int scores[4] = {70, 85, 90, 65};\n\nAn array does not remember its own length. The expression sizeof scores gives the total bytes, which is 16 for four ints. Dividing by sizeof scores[0], which is 4, gives the length. Use that, or a named number, so the length is written in one place only.\n\nText is stored as an array of char. A C string is a char array in which the text is followed by a byte with the value 0, written '\\0'. It is called the terminating zero, or the null character. The zero marks the end of the text. Functions like printf and strlen read characters until they meet it.\n\nchar word[] = \"Leon\";\nThe compiler makes the array five boxes long: L, e, o, n and the terminating zero. So sizeof word is 5. The function strlen, from string.h, counts the characters before the zero, so strlen(word) is 4. A string always needs one box more than its visible length. If the zero is missing, functions keep reading past the end of the array.\n\nYou can change one character: word[0] = 'N'. But you cannot copy or compare whole arrays with = or ==. To compare strings use strcmp, from string.h. It returns 0 when the two strings are equal.\n\nRemember the difference between 'A' and \"A\". 'A' is one char. \"A\" is a string of two boxes: the letter A and the terminating zero.",
+    "zh": "数组是同一类型的一排盒子，在内存里并排放着。int scores[4]; 这一行创建了四个 int 盒子。方括号里的数字是长度。\n\n你通过下标来访问其中一个盒子，下标就是它的位置编号。下标从 0 开始数。scores 的盒子是 scores[0]、scores[1]、scores[2] 和 scores[3]。最后一个有效的下标是长度减 1。没有 scores[4]。但是 C 不会阻止你写它，程序会读写那个位置上碰巧存在的任何内存。这属于未定义行为（第 3 课），会引起很多 bug 和安全漏洞。编译器和浏览器页面通常不会提醒你。第 8 课会介绍一个能提醒你的工具。\n\n你可以用花括号设置初始值：int scores[4] = {70, 85, 90, 65};\n\n数组不会记住自己的长度。表达式 sizeof scores 给出总字节数，四个 int 是 16。再除以 sizeof scores[0]，也就是 4，就得到长度。用这个办法，或者用一个有名字的数，这样长度只写在一个地方。\n\n文字是以 char 数组的形式保存的。C 字符串是一个 char 数组，文字后面跟着一个值为 0 的字节，写作 '\\0'。它叫结尾的零，也叫空字符。零标记文字的结束。printf 和 strlen 这样的函数会一直读字符，直到遇到它。\n\nchar word[] = \"Leon\";\n编译器让这个数组有五个盒子：L、e、o、n，以及结尾的零。所以 sizeof word 是 5。string.h 里的函数 strlen 数的是零之前的字符个数，所以 strlen(word) 是 4。字符串需要的盒子总是比看得见的长度多一个。如果缺了零，函数会一直读过数组的末尾。\n\n你可以修改其中一个字符：word[0] = 'N'。但是你不能用 = 或 == 去复制或比较整个数组。要比较字符串，用 string.h 里的 strcmp。两个字符串相等时，它返回 0。\n\n要记住 'A' 和 \"A\" 的区别。'A' 是一个 char。\"A\" 是有两个盒子的字符串：字母 A 和结尾的零。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "array",
+      "zh": "数组"
+     },
+     "meaning": {
+      "en": "A row of boxes of the same type, side by side in memory.",
+      "zh": "同一类型的一排盒子，在内存里并排放着。"
+     }
+    },
+    {
+     "term": {
+      "en": "index",
+      "zh": "下标"
+     },
+     "meaning": {
+      "en": "The position number of a box in an array. The first box is index 0.",
+      "zh": "数组里盒子的位置编号。第一个盒子的下标是 0。"
+     }
+    },
+    {
+     "term": {
+      "en": "string",
+      "zh": "字符串"
+     },
+     "meaning": {
+      "en": "In C, a char array holding text followed by a terminating zero.",
+      "zh": "在 C 里，是一个 char 数组，里面是文字，后面跟着结尾的零。"
+     }
+    },
+    {
+     "term": {
+      "en": "terminating zero",
+      "zh": "结尾的零"
+     },
+     "meaning": {
+      "en": "The byte with value 0, written '\\0', that marks the end of a string. Also called the null character.",
+      "zh": "值为 0 的字节，写作 '\\0'，标记字符串的结束，也叫空字符。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    int scores[4] = {70, 85, 90, 65};\n    int length = (int)(sizeof scores / sizeof scores[0]);\n    int sum = 0;\n    for (int i = 0; i < length; i++) {\n        sum += scores[i];\n    }\n    printf(\"length = %d, first = %d, last = %d, sum = %d\\n\", length, scores[0], scores[length - 1], sum);\n\n    char word[] = \"Leon\";\n    printf(\"sizeof word = %zu, strlen word = %zu\\n\", sizeof word, strlen(word));\n    for (int i = 0; i < 5; i++) {\n        printf(\"word[%d] = %d\\n\", i, word[i]);\n    }\n\n    word[0] = 'N';\n    printf(\"%s\\n\", word);\n    printf(\"equal to Neon: %d\\n\", strcmp(word, \"Neon\") == 0);\n    return 0;\n}\n",
+    "output": "length = 4, first = 70, last = 65, sum = 310\nsizeof word = 5, strlen word = 4\nword[0] = 76\nword[1] = 101\nword[2] = 111\nword[3] = 110\nword[4] = 0\nNeon\nequal to Neon: 1\n",
+    "walk": {
+     "en": [
+      "sizeof scores is 16 bytes and sizeof scores[0] is 4 bytes. Their quotient is 4, the length. The (int) in front turns the size into an int so that it fits the int variable.",
+      "The loop uses i < length, not i <= length. The last index is length - 1, which is 3. The sum is 70 + 85 + 90 + 65 = 310.",
+      "\"Leon\" has four letters, but the array word has five boxes. sizeof word is 5 and strlen(word) is 4. The difference is the terminating zero.",
+      "The second loop prints all five boxes as numbers: 76, 101, 111 and 110 are the codes of L, e, o and n. The fifth box, word[4], holds 0.",
+      "word[0] = 'N' replaces the first character, so %s now prints Neon. %s prints characters until it reaches the zero.",
+      "strcmp(word, \"Neon\") returns 0 when the text is equal. The comparison == 0 turns that into 1 for true, and %d prints it."
+     ],
+     "zh": [
+      "sizeof scores 是 16 字节，sizeof scores[0] 是 4 字节。两者相除得 4，就是长度。前面的 (int) 把这个大小变成 int，这样才能放进 int 变量。",
+      "循环用的是 i < length，而不是 i <= length。最后一个下标是 length - 1，也就是 3。总和是 70 + 85 + 90 + 65 = 310。",
+      "\"Leon\" 有四个字母，但数组 word 有五个盒子。sizeof word 是 5，strlen(word) 是 4。差的那一个就是结尾的零。",
+      "第二个循环把五个盒子都按数字打印出来：76、101、111 和 110 是 L、e、o、n 的编码。第五个盒子 word[4] 里是 0。",
+      "word[0] = 'N' 替换了第一个字符，所以 %s 现在打印 Neon。%s 会一直打印字符，直到遇到零。",
+      "文字相等时 strcmp(word, \"Neon\") 返回 0。比较 == 0 把它变成表示真的 1，再由 %d 打印出来。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "int a[3] = {1, 2, 3};\nint sum = 0;\nfor (int i = 0; i <= 3; i++) {\n    sum += a[i];\n}",
+     "why": {
+      "en": "The loop reaches a[3], which does not exist. The program reads a stray value from a neighbouring box and carries on. The program runs and prints a normal-looking sum, with no error. Use i < 3.",
+      "zh": "循环访问到了 a[3]，而它并不存在。程序从相邻的盒子里读到一个无关的值，然后继续运行。程序能跑，还打印出看起来正常的和，没有任何报错。应该用 i < 3。"
+     },
+     "right": "for (int i = 0; i < 3; i++) {\n    sum += a[i];\n}"
+    },
+    {
+     "wrong": "char s[4] = \"Leon\";",
+     "why": {
+      "en": "\"Leon\" needs five boxes with its terminating zero, and this array has four. The zero is left out. Later, printf(\"%s\", s) or strlen(s) runs on into whatever memory follows.",
+      "zh": "\"Leon\" 加上结尾的零需要五个盒子，而这个数组只有四个，零被省掉了。之后 printf(\"%s\", s) 或 strlen(s) 会继续读到后面碰巧存在的内存。"
+     },
+     "right": "char s[5] = \"Leon\";\n/* or let the compiler count: */\nchar t[] = \"Leon\";"
+    },
+    {
+     "wrong": "if (name == \"Leon\") {\n    printf(\"hello\\n\");\n}",
+     "why": {
+      "en": "== compares where the two texts are stored, not what they say. The compiler warns: result of comparison against a string literal is unspecified. Use strcmp, and include string.h.",
+      "zh": "== 比较的是两段文字存放在哪里，而不是它们写的是什么。编译器会警告：result of comparison against a string literal is unspecified。要用 strcmp，并包含 string.h。"
+     },
+     "right": "if (strcmp(name, \"Leon\") == 0) {\n    printf(\"hello\\n\");\n}"
+    },
+    {
+     "wrong": "char name[] = \"Leon\";\nname = \"Mia\";",
+     "why": {
+      "en": "An array cannot be assigned as a whole. The compiler stops with: array type 'char[5]' is not assignable. Copy the characters with strcpy, from string.h, but only when the new text plus its zero fits.",
+      "zh": "数组不能整体赋值。编译器会停下并提示：array type 'char[5]' is not assignable。可以用 string.h 里的 strcpy 复制字符，但前提是新文字加上结尾的零放得下。"
+     },
+     "right": "strcpy(name, \"Mia\");  /* \"Mia\" and its zero need 4 boxes; name has 5 */"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output of char t[] = \"Hi\"; printf(\"%zu %zu\\n\", sizeof t, strlen(t));",
+      "zh": "预测输出：char t[] = \"Hi\"; printf(\"%zu %zu\\n\", sizeof t, strlen(t));"
+     },
+     "a": {
+      "en": "3 2. The array holds H, i and the terminating zero, so sizeof is 3. strlen counts only the two letters.",
+      "zh": "3 2。数组里有 H、i 和结尾的零，所以 sizeof 是 3。strlen 只数那两个字母。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a loop that finds and prints the largest value in int v[4] = {4, 9, 2, 7};",
+      "zh": "写一个循环，找出 int v[4] = {4, 9, 2, 7}; 里最大的值并打印出来。"
+     },
+     "a": {
+      "en": "int v[4] = {4, 9, 2, 7};\nint largest = v[0];\nfor (int i = 1; i < 4; i++) {\n    if (v[i] > largest) {\n        largest = v[i];\n    }\n}\nprintf(\"%d\\n\", largest);\n\nIt prints 9. Starting from v[0] avoids a made-up starting value.",
+      "zh": "int v[4] = {4, 9, 2, 7};\nint largest = v[0];\nfor (int i = 1; i < 4; i++) {\n    if (v[i] > largest) {\n        largest = v[i];\n    }\n}\nprintf(\"%d\\n\", largest);\n\n它打印 9。从 v[0] 开始，就不需要编一个起始值。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the declaration of a char array that holds the string Mia, and say how many boxes it needs.",
+      "zh": "写出一个能存放字符串 Mia 的 char 数组的声明，并说出它需要几个盒子。"
+     },
+     "a": {
+      "en": "char name[] = \"Mia\"; It needs 4 boxes: M, i, a and the terminating zero. Writing char name[4] = \"Mia\"; also works, but char name[3] would leave out the zero.",
+      "zh": "char name[] = \"Mia\"; 它需要 4 个盒子：M、i、a 和结尾的零。写成 char name[4] = \"Mia\"; 也可以，但 char name[3] 会把零省掉。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "pointers",
+   "title": {
+    "en": "Memory as numbered boxes: address and pointer",
+    "zh": "内存是编了号的盒子：地址与指针"
+   },
+   "goal": {
+    "en": "After this you can draw memory as numbered boxes, say what an address and a pointer are, and use & and * to read and change a variable through a pointer.",
+    "zh": "学完这课，你能把内存画成编了号的盒子，说清楚地址和指针是什么，并用 & 和 * 通过指针读取和修改变量。"
+   },
+   "plain": {
+    "en": "First in words. Picture the computer's memory as one very long street of small boxes. Each box holds one byte. Every box has a number painted on its door, counted from the start of the street. That number is the box's address.\n\nA variable lives in one box or in several boxes in a row. An int usually needs four boxes side by side, so one int covers four addresses, and its address is the number of its first box. An array of three ints is twelve boxes in a row.\n\nNow the new idea. An address is only a number, so it can be stored in a variable too. A variable that holds an address is a pointer. A pointer is like a card with a house number on it. The card is not the house. But from the number you can walk to the house, look inside, or change what is inside. Following the card is called dereferencing.\n\nA small drawing, with made-up numbers. The variable age sits at address 100 and holds 20. The variable p sits at address 200 and holds the number 100. We say p points to age. The example below draws the same picture in a comment.\n\nNow with C symbols. Two symbols do the work.\nThe expression &x means \"the address of x\".\nThe expression *p means \"the thing that p points to\".\n\nThe line int *p = &age; declares p as a pointer to an int. In a declaration, read the star as \"pointer to\". It also gives p the address of age. In an expression, the star means \"follow the pointer\". After that line, *p and age are the same box. Reading *p gives 20. Writing *p = 21 changes age.\n\nThis solves the problem from lesson 5. A function gets copies, but if the copy is an address, the function can follow it to the caller's variable. The call add_one(&age) passes the address of age. Inside, *p = *p + 1 changes the caller's age. The function scanf works this way too. In scanf(\"%d\", &n) the & gives scanf the address of n, so scanf can store the number there.\n\nPointers and arrays are close relatives. The name of an array stands for the address of its first box. If q points at nums[0], then q + 1 points at nums[1]. Adding 1 to a pointer moves it forward by one whole int, which is 4 bytes, not by one byte. The expressions *(q + 1) and q[1] mean the same thing.\n\nA pointer that points at nothing holds NULL. Never follow a NULL pointer, or a pointer that was never set. The program crashes with a segmentation fault, or it silently damages data.\n\nIf you add printf(\"%p\\n\", (void *)p); you will see a real address, such as 0x16d8a3a5c. Yours will be different, and it can change on every run.",
+    "zh": "先用文字说。把电脑的内存想象成一条很长的街，街上排着许多小盒子。每个盒子放一个字节。每个盒子的门上都漆着一个号码，从街头开始数。这个号码就是盒子的地址。\n\n一个变量住在一个盒子里，或者住在连续的几个盒子里。一个 int 通常需要并排的四个盒子，所以一个 int 占四个地址，它的地址是第一个盒子的号码。三个 int 的数组是连续的十二个盒子。\n\n现在讲新概念。地址只是一个数，所以它也可以存进变量。存放地址的变量叫指针。指针就像一张写着门牌号的卡片。卡片不是房子。但是你可以按号码走到那所房子，往里看，或者改变里面的东西。顺着卡片找过去，这个动作叫解引用。\n\n画一张小图，号码是编的。变量 age 在地址 100，里面放着 20。变量 p 在地址 200，里面放着数字 100。我们说 p 指向 age。下面的例子在注释里画了同样的图。\n\n再用 C 的符号。有两个符号在起作用。\n表达式 &x 的意思是“x 的地址”。\n表达式 *p 的意思是“p 所指向的那个东西”。\n\n这一行 int *p = &age; 把 p 声明为指向 int 的指针。在声明里，要把星号读作“指向……的指针”。同时它让 p 得到 age 的地址。在表达式里，星号的意思是“顺着指针找过去”。有了这一行之后，*p 和 age 是同一个盒子。读 *p 得到 20。写 *p = 21 就改变了 age。\n\n这解决了第 5 课的问题。函数拿到的是副本，但如果副本是一个地址，函数就可以顺着它找到调用者的变量。调用 add_one(&age) 传入的是 age 的地址。在函数里，*p = *p + 1 改变了调用者的 age。scanf 函数也是这样工作的。在 scanf(\"%d\", &n) 里，& 把 n 的地址交给 scanf，scanf 才能把读到的数存到那里。\n\n指针和数组是近亲。数组的名字代表它第一个盒子的地址。如果 q 指向 nums[0]，那么 q + 1 就指向 nums[1]。给指针加 1，是向前移动一个完整的 int，也就是 4 个字节，而不是一个字节。表达式 *(q + 1) 和 q[1] 的意思相同。\n\n不指向任何东西的指针里放的是 NULL。永远不要顺着 NULL 指针找过去，也不要用从没设置过的指针。程序要么因为段错误而崩溃，要么悄悄破坏数据。\n\n如果你加上 printf(\"%p\\n\", (void *)p);，会看到一个真实的地址，例如 0x16d8a3a5c。你的结果会不同，而且每次运行都可能变化。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "address",
+      "zh": "地址"
+     },
+     "meaning": {
+      "en": "The number of a box in memory. A variable's address is the number of its first box.",
+      "zh": "内存里一个盒子的号码。变量的地址是它第一个盒子的号码。"
+     }
+    },
+    {
+     "term": {
+      "en": "pointer",
+      "zh": "指针"
+     },
+     "meaning": {
+      "en": "A variable that holds an address.",
+      "zh": "存放地址的变量。"
+     }
+    },
+    {
+     "term": {
+      "en": "&x",
+      "zh": "&x"
+     },
+     "meaning": {
+      "en": "\"The address of x\".",
+      "zh": "“x 的地址”。"
+     }
+    },
+    {
+     "term": {
+      "en": "*p",
+      "zh": "*p"
+     },
+     "meaning": {
+      "en": "\"The thing p points to\". Following the pointer is called dereferencing.",
+      "zh": "“p 所指向的东西”。顺着指针找过去叫解引用。"
+     }
+    },
+    {
+     "term": {
+      "en": "NULL",
+      "zh": "空指针 NULL"
+     },
+     "meaning": {
+      "en": "The value of a pointer that points at nothing. Never dereference it.",
+      "zh": "不指向任何东西的指针的值。绝不能解引用它。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\n/* Memory drawn as numbered boxes (the numbers are made up):\n\n     address   contents      name\n     -------   -----------   ----\n       100     20            age\n       200     100           p      <- p holds the address of age\n*/\n\nvoid add_one(int *p) {\n    *p = *p + 1;\n}\n\nint main(void) {\n    int age = 20;\n    int *p = &age;\n\n    printf(\"age = %d\\n\", age);\n    printf(\"*p = %d\\n\", *p);\n    printf(\"p points at age: %d\\n\", p == &age);\n\n    *p = 21;\n    printf(\"after *p = 21, age = %d\\n\", age);\n\n    add_one(&age);\n    printf(\"after add_one(&age), age = %d\\n\", age);\n\n    int nums[3] = {10, 20, 30};\n    int *q = nums;\n    printf(\"*q = %d, *(q + 1) = %d, q[2] = %d\\n\", *q, *(q + 1), q[2]);\n    printf(\"bytes between nums[0] and nums[1]: %d\\n\", (int)((char *)&nums[1] - (char *)&nums[0]));\n\n    int *nothing = NULL;\n    if (nothing == NULL) {\n        printf(\"nothing points at no object\\n\");\n    }\n    return 0;\n}\n",
+    "output": "age = 20\n*p = 20\np points at age: 1\nafter *p = 21, age = 21\nafter add_one(&age), age = 22\n*q = 10, *(q + 1) = 20, q[2] = 30\nbytes between nums[0] and nums[1]: 4\nnothing points at no object\n",
+    "walk": {
+     "en": [
+      "The comment is the picture. age sits at made-up address 100 and holds 20. p sits at address 200 and holds 100, the address of age.",
+      "int *p = &age; makes p a pointer to int and stores the address of age in it. Printing *p follows the pointer and gives 20, the same as age.",
+      "p == &age compares two addresses. They are the same, so the result is 1 for true.",
+      "*p = 21 writes through the pointer. The box named age now holds 21, though the name age was not used.",
+      "add_one(&age) hands the function the address. The function adds 1 to the box it points at, so age becomes 22. This is what lesson 5 could not do.",
+      "q = nums makes q point at nums[0]. *q is 10, *(q + 1) is 20 and q[2] is 30. The two boxes nums[0] and nums[1] are 4 bytes apart, because an int takes 4 bytes. The (char *) casts make the subtraction count bytes.",
+      "nothing holds NULL. The program compares it with NULL but never follows it."
+     ],
+     "zh": [
+      "注释就是那张图。age 位于编出来的地址 100，里面放着 20。p 位于地址 200，里面放着 100，也就是 age 的地址。",
+      "int *p = &age; 让 p 成为指向 int 的指针，并把 age 的地址存进去。打印 *p 会顺着指针找过去，得到 20，和 age 一样。",
+      "p == &age 比较两个地址。它们相同，所以结果是表示真的 1。",
+      "*p = 21 通过指针写入。虽然没用到 age 这个名字，但叫 age 的盒子里现在是 21。",
+      "add_one(&age) 把地址交给函数。函数给它所指的盒子加 1，所以 age 变成 22。这正是第 5 课做不到的事。",
+      "q = nums 让 q 指向 nums[0]。*q 是 10，*(q + 1) 是 20，q[2] 是 30。nums[0] 和 nums[1] 这两个盒子相隔 4 字节，因为一个 int 占 4 字节。(char *) 转换让减法按字节计数。",
+      "nothing 里放的是 NULL。程序把它和 NULL 比较，但从不顺着它找过去。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "int *p;\n*p = 5;",
+     "why": {
+      "en": "p was never set, so it holds leftover bits that point nowhere in particular. Writing through it crashes with a segmentation fault, or silently damages some other variable. With -Wall, clang warns: variable 'p' is uninitialized when used here.",
+      "zh": "p 从来没有被设置过，里面是遗留的位，指向的是一个说不清的地方。通过它写入，要么因为段错误崩溃，要么悄悄破坏别的变量。加上 -Wall，clang 会警告：variable 'p' is uninitialized when used here。"
+     },
+     "right": "int x = 0;\nint *p = &x;\n*p = 5;"
+    },
+    {
+     "wrong": "int x = 4;\nint *p = &x;\np = 7;",
+     "why": {
+      "en": "Without the star, this stores the number 7 in the pointer itself, as if 7 were an address. The compiler complains: incompatible integer to pointer conversion assigning to 'int *' from 'int'. To change the thing p points to, put the star in front.",
+      "zh": "没有星号，这一行是把数字 7 存进指针本身，好像 7 是一个地址。编译器会抱怨：incompatible integer to pointer conversion assigning to 'int *' from 'int'。要改变 p 所指的东西，就在前面加上星号。"
+     },
+     "right": "*p = 7;"
+    },
+    {
+     "wrong": "int *make(void) {\n    int local = 5;\n    return &local;\n}",
+     "why": {
+      "en": "local is a box inside make. When make ends, the box is given up, and the address now points at a place that no longer belongs to you. The compiler warns: address of stack memory associated with local variable 'local' returned. Return the value instead.",
+      "zh": "local 是 make 里面的一个盒子。make 结束时，这个盒子就被收回了，这个地址指向的地方不再属于你。编译器会警告：address of stack memory associated with local variable 'local' returned。应该改成返回值本身。"
+     },
+     "right": "int make(void) {\n    return 5;\n}"
+    },
+    {
+     "wrong": "int *p = NULL;\n*p = 5;",
+     "why": {
+      "en": "NULL points at no object. Writing through it stops the program with Segmentation fault. Check the pointer before you follow it.",
+      "zh": "NULL 不指向任何对象。通过它写入会让程序以 Segmentation fault 终止。顺着指针找过去之前，先检查它。"
+     },
+     "right": "if (p != NULL) {\n    *p = 5;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output of int x = 5; int *p = &x; *p = *p * 2; printf(\"%d\\n\", x);",
+      "zh": "预测输出：int x = 5; int *p = &x; *p = *p * 2; printf(\"%d\\n\", x);"
+     },
+     "a": {
+      "en": "10. *p is the same box as x. The statement doubles the value in that box, so x holds 10.",
+      "zh": "10。*p 和 x 是同一个盒子。这条语句把盒子里的值翻倍，所以 x 里是 10。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a function swap that really swaps two ints in the caller, and the call that swaps the variables x and y.",
+      "zh": "写一个函数 swap，真正交换调用者的两个 int，再写出交换变量 x 和 y 的调用。"
+     },
+     "a": {
+      "en": "void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nswap(&x, &y);\n\nThe function receives the two addresses and works on the boxes they point at, so the caller's x and y change.",
+      "zh": "void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nswap(&x, &y);\n\n函数收到的是两个地址，直接操作它们指向的盒子，所以调用者的 x 和 y 都改变了。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output of int nums[3] = {10, 20, 30}; int *q = nums; q = q + 2; printf(\"%d\\n\", *q);",
+      "zh": "预测输出：int nums[3] = {10, 20, 30}; int *q = nums; q = q + 2; printf(\"%d\\n\", *q);"
+     },
+     "a": {
+      "en": "30. Adding 2 moves q forward two ints, from nums[0] to nums[2].",
+      "zh": "30。加 2 让 q 向前移动两个 int，从 nums[0] 移到 nums[2]。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "compiler-messages",
+   "title": {
+    "en": "Reading compiler messages and using -Wall",
+    "zh": "读懂编译器提示，并使用 -Wall"
+   },
+   "goal": {
+    "en": "After this you can read the parts of a warning or an error, fix the first error first, and turn on the compiler's checks so mistakes show up before the program runs.",
+    "zh": "学完这课，你能读懂警告或错误的各个部分，先改第一个错误，并打开编译器的检查，让错误在程序运行之前就暴露出来。"
+   },
+   "plain": {
+    "en": "The compiler talks to you in messages. They are the fastest teacher you have, if you can read them. A message looks like this:\nhello.c:5:20: warning: format specifies type 'int' but the argument has type 'double' [-Wformat]\n\nRead it from left to right. hello.c is the file. 5 is the line number. 20 is the column, the position of the character in that line. The word warning is the kind of message. The sentence says what the compiler thinks is wrong. The name in square brackets, -Wformat, is the check that fired, and you can search for it. Below the message the compiler usually shows your line, with a ^ under the spot. A line starting with note: adds detail to the message above it.\n\nThere are three kinds. An error means the compiler could not build the program, so no executable is made. A warning means the program builds but something looks wrong. Treat every warning as a bug until you know better. A note adds detail.\n\nThe messages in this guide come from clang, the compiler on a Mac. gcc, on Linux and in WSL, words them a little differently. For the example above it says: format '%d' expects argument of type 'int', but argument 2 has type 'double'. The file, line, kind, sentence and check name are all there.\n\nBy default a compiler stays quiet about many risky things. You ask for more with options, which you write after cc.\n-Wall turns on the common warnings. Despite its name it does not turn on every warning.\n-Wextra turns on more.\n-Werror makes every warning an error, so you cannot ignore any.\n-std=c11 chooses the C11 version of the language.\n-g keeps line information so that tools can show your line numbers.\n-fsanitize=address,undefined builds a program that checks itself while it runs. It stops at the first bad memory access or undefined operation and names the line.\n\nA good everyday command is:\ncc -std=c11 -Wall -Wextra -g -fsanitize=address,undefined main.c -o main\n\nSome habits help. Fix the first message first: one mistake can cause a chain of later messages, so compile again after each fix. Remember that the line number is where the compiler noticed the problem, and the cause can be on the line above. Never ignore a warning you do not understand.\n\nThe sanitizer matters because the Run button on this page cannot do this job. If a program reads past the end of an array, it runs on this page and prints a normal-looking answer. Nothing checks. Built with the sanitizer, the same program stops with a report that starts with ERROR: AddressSanitizer or runtime error and names the line. That is why a real compiler is worth the ten minutes of setup.\n\nYou can now read the C in the first chapters of the course: types and sizes, conditions and loops, functions that receive copies, arrays and strings with their zero, and pointers. The course goes deeper into each of them. It also adds structures, files, allocating memory with malloc, and much more.",
+    "zh": "编译器通过提示信息和你对话。如果你读得懂，它们就是你最快的老师。一条提示信息长这样：\nhello.c:5:20: warning: format specifies type 'int' but the argument has type 'double' [-Wformat]\n\n从左到右读。hello.c 是文件。5 是行号。20 是列号，也就是这一行里字符的位置。单词 warning 是提示的种类。那句话说的是编译器认为哪里不对。方括号里的名字 -Wformat 是触发提示的那项检查，你可以拿它去搜索。提示下面，编译器通常会显示你写的那一行，并在出问题的地方下面标一个 ^。以 note: 开头的一行，是对上一条提示的补充说明。\n\n提示有三种。错误表示编译器没能生成程序，所以不会产生可执行文件。警告表示程序能生成，但有些地方看起来不对。在你弄明白之前，把每条警告都当作 bug。提示（note）是补充说明。\n\n本篇的提示信息来自 clang，也就是 Mac 上的编译器。Linux 和 WSL 上的 gcc 措辞稍有不同。对上面的例子，它的说法是：format '%d' expects argument of type 'int', but argument 2 has type 'double'。文件、行号、种类、说明和检查名称都有。\n\n默认情况下，编译器对很多有风险的写法是不吭声的。你可以用选项要求更多检查，选项写在 cc 后面。\n-Wall 打开常用的警告。尽管名字叫 all，它并没有打开全部警告。\n-Wextra 打开更多警告。\n-Werror 把每条警告都当作错误，这样你就没法忽略任何一条。\n-std=c11 选择 C11 版本的语言。\n-g 保留行号信息，工具才能显示你代码的行号。\n-fsanitize=address,undefined 生成一个在运行时自我检查的程序。它在遇到第一个错误的内存访问或未定义操作时停下，并指出所在的行。\n\n一条日常好用的命令是：\ncc -std=c11 -Wall -Wextra -g -fsanitize=address,undefined main.c -o main\n\n有几个习惯会有帮助。先改第一条提示：一个错误可能引出后面一连串提示，所以每改一处就重新编译一次。记住行号是编译器发现问题的地方，原因可能在上一行。凡是你看不懂的警告，都不要忽略。\n\nsanitizer 很重要，因为本页的“运行”按钮做不到这件事。如果程序读到了数组末尾之外，它在本页照样运行，还会打印出看起来正常的结果，没有任何检查。用 sanitizer 编译，同样的程序会停下，并给出以 ERROR: AddressSanitizer 或 runtime error 开头的报告，指出所在的行。这就是真正的编译器值得你花十分钟安装的原因。\n\n现在你已经能读懂课程前几章里的 C 了：类型与大小、条件与循环、接收副本的函数、带结尾零的数组与字符串，以及指针。课程会把每一项讲得更深，还会加入结构体、文件、用 malloc 分配内存等更多内容。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "error",
+      "zh": "错误"
+     },
+     "meaning": {
+      "en": "A message that means the compiler could not build the program.",
+      "zh": "表示编译器无法生成程序的提示。"
+     }
+    },
+    {
+     "term": {
+      "en": "warning",
+      "zh": "警告"
+     },
+     "meaning": {
+      "en": "A message that means the program builds but something looks wrong.",
+      "zh": "表示程序能生成，但有些地方看起来不对的提示。"
+     }
+    },
+    {
+     "term": {
+      "en": "note",
+      "zh": "补充说明"
+     },
+     "meaning": {
+      "en": "A line starting with note: that adds detail to the message above it.",
+      "zh": "以 note: 开头的一行，是对上一条提示的补充。"
+     }
+    },
+    {
+     "term": {
+      "en": "option (flag)",
+      "zh": "编译选项"
+     },
+     "meaning": {
+      "en": "Extra text after cc that changes what the compiler does, such as -Wall.",
+      "zh": "写在 cc 后面、改变编译器行为的附加文字，例如 -Wall。"
+     }
+    },
+    {
+     "term": {
+      "en": "sanitizer",
+      "zh": "sanitizer（运行时检查工具）"
+     },
+     "meaning": {
+      "en": "A check built into the program. It stops the program at the first bad memory access or undefined operation and names the line.",
+      "zh": "内置在程序里的检查。它在遇到第一个错误的内存访问或未定义操作时让程序停下，并指出所在的行。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\nint main(void) {\n    int scores[3] = {80, 90, 85};\n    int sum = 0;\n    for (int i = 0; i < 3; i++) {\n        sum += scores[i];\n    }\n    double average = (double)sum / 3;\n    printf(\"sum = %d, average = %.1f\\n\", sum, average);\n    return 0;\n}\n",
+    "output": "sum = 255, average = 85.0\n",
+    "walk": {
+     "en": [
+      "Compile it with the common checks: cc -std=c11 -Wall -Wextra average.c -o average. If the compiler prints nothing, it found nothing to complain about. Then run ./average.",
+      "(double)sum / 3 is a cast. The (double) turns sum into a double for this one calculation, so the division keeps the fraction. Without it, 255 / 3 would be an integer division.",
+      "Now break it on purpose, one change at a time, and compile again. First, delete the semicolon after sum += scores[i]. Clang says: error: expected ';' after expression. gcc says: expected ';' before '}' token. Put the semicolon back.",
+      "Second, change %.1f to %d in the printf. Clang says: warning: format specifies type 'int' but the argument has type 'double' [-Wformat]. Change it back.",
+      "Third, delete the whole line int sum = 0; Clang says: error: use of undeclared identifier 'sum'. gcc says: 'sum' undeclared (first use in this function). The error is reported at every use of sum, and the one missing line causes them all. Put the line back."
+     ],
+     "zh": [
+      "用常用的检查来编译：cc -std=c11 -Wall -Wextra average.c -o average。如果编译器什么也没打印，说明它没有发现可抱怨的地方。然后运行 ./average。",
+      "(double)sum / 3 里有一个强制类型转换。(double) 在这一次计算中把 sum 变成 double，所以除法会保留小数。没有它，255 / 3 就是整数除法。",
+      "现在故意把它弄坏，每次改一处，再重新编译。第一处：删掉 sum += scores[i] 后面的分号。clang 会提示：error: expected ';' after expression。gcc 的说法是：expected ';' before '}' token。把分号改回来。",
+      "第二处：把 printf 里的 %.1f 改成 %d。clang 会提示：warning: format specifies type 'int' but the argument has type 'double' [-Wformat]。再改回来。",
+      "第三处：删掉整行 int sum = 0;。clang 会提示：error: use of undeclared identifier 'sum'。gcc 的说法是：'sum' undeclared (first use in this function)。每处用到 sum 的地方都会报错，而它们都源于缺了那一行。把这一行加回去。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "#include <stdio.h>\nint main(void) {\n    itn count = 0;\n    count = count + 1;\n    printf(\"%d\\n\", count);\n    return 0;\n}\n\n$ cc demo.c -o demo\ndemo.c:3:5: error: use of undeclared identifier 'itn'\ndemo.c:4:5: error: use of undeclared identifier 'count'\ndemo.c:4:13: error: use of undeclared identifier 'count'\ndemo.c:5:20: error: use of undeclared identifier 'count'\n4 errors generated.",
+     "why": {
+      "en": "One typo, itn instead of int, produced four errors. The compiler does not know what count is, because the line that declares it failed. Fix the first error and compile again, and the other three disappear. Do not fix errors from the bottom up. (gcc words these errors differently and may print fewer of them.)",
+      "zh": "一个拼写错误（把 int 写成 itn）引出了四个错误。编译器不知道 count 是什么，因为声明它的那一行失败了。改好第一个错误再编译，另外三个就消失了。不要从最后一个开始往上改。（gcc 对这些错误的措辞不同，可能打印得更少。）"
+     },
+     "right": "int count = 0;"
+    },
+    {
+     "wrong": "#include <stdio.h>\nint main(void) {\n    int total = 3\n    printf(\"%d\\n\", total);\n    return 0;\n}",
+     "why": {
+      "en": "The semicolon is missing at the end of line 3. Some compilers, gcc among them, can name line 4, because that is where they noticed the statement had not ended. The cause is then on the line above the one named. When the named line looks right, check the line before it.",
+      "zh": "第 3 行末尾缺了分号。有些编译器（包括 gcc）可能指向第 4 行，因为它们是在那里才发现语句没有结束。这时真正的原因在被指出的那一行的上一行。当被指出的那一行看起来没问题时，就检查它前面的一行。"
+     },
+     "right": "int total = 3;"
+    },
+    {
+     "wrong": "#include <stdio.h>\nint main(void) {\n    int total;\n    total = total + 5;\n    printf(\"%d\\n\", total);\n    return 0;\n}\n\n$ cc demo.c -o demo\n(no output: it builds)",
+     "why": {
+      "en": "With no options, the compiler says nothing about the unset variable total, so the program builds and gives an unpredictable answer. Ask for the checks every time, and read each warning.",
+      "zh": "不加任何选项时，编译器对没有设值的变量 total 一声不吭，程序照样生成，给出不可预测的结果。每次都要要求编译器做检查，并且读每一条警告。"
+     },
+     "right": "$ cc -std=c11 -Wall -Wextra demo.c -o demo\ndemo.c:4:13: warning: variable 'total' is uninitialized when used here [-Wuninitialized]"
+    },
+    {
+     "wrong": "#include <stdio.h>\nint main(void) {\n    int a[3] = {1, 2, 3};\n    int sum = 0;\n    for (int i = 0; i <= 3; i++) {\n        sum += a[i];\n    }\n    printf(\"%d\\n\", sum);\n    return 0;\n}\n\n(Run button on this page, or a plain cc build: prints a normal-looking sum)",
+     "why": {
+      "en": "The loop reads a[3], which is outside the array. Nothing in the browser, and nothing in an ordinary build, checks this. Built with -g -fsanitize=address,undefined, the program stops and reports runtime error: index 3 out of bounds, and also ERROR: AddressSanitizer: stack-buffer-overflow, naming the line. The Run button on this page cannot do that. This is why you should install a real compiler.",
+      "zh": "循环读取了 a[3]，它在数组之外。浏览器里没有任何东西检查这件事，普通的编译运行也没有。用 -g -fsanitize=address,undefined 编译后，程序会停下，并报告 runtime error: index 3 out of bounds，还有 ERROR: AddressSanitizer: stack-buffer-overflow，同时指出所在的行。本页的“运行”按钮做不到这一点。这就是你该安装真正的编译器的原因。"
+     },
+     "right": "$ cc -std=c11 -Wall -Wextra -g -fsanitize=address,undefined demo.c -o demo\n$ ./demo\ndemo.c:6:16: runtime error: index 3 out of bounds for type 'int[3]'"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Read this message and name the file, the line, the kind and the check:\ndemo.c:12:9: warning: unused variable 'count' [-Wunused-variable]",
+      "zh": "读这条提示，说出文件、行号、种类和检查名称：\ndemo.c:12:9: warning: unused variable 'count' [-Wunused-variable]"
+     },
+     "a": {
+      "en": "The file is demo.c, the line is 12 (column 9), the kind is a warning, and the check is -Wunused-variable. It means a variable called count is declared but never used. Delete it or use it.",
+      "zh": "文件是 demo.c，行号是 12（第 9 列），种类是警告，检查名称是 -Wunused-variable。意思是声明了一个叫 count 的变量，却从没用过它。把它删掉，或者用起来。"
+     }
+    },
+    {
+     "q": {
+      "en": "The compiler reports error: expected ';' after expression at line 8, but line 8 looks correct. Where do you look next, and why?",
+      "zh": "编译器在第 8 行报告 error: expected ';' after expression，但第 8 行看起来是对的。你接下来看哪里？为什么？"
+     },
+     "a": {
+      "en": "Look at line 7, the line before. The compiler reports the place where it noticed the statement had not ended, and a missing semicolon is usually at the end of the line above.",
+      "zh": "看第 7 行，也就是前一行。编译器报告的是它发现语句没有结束的位置，而缺失的分号通常在上一行的末尾。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the command that builds main.c into a program called main, using C11, the common warnings and the sanitizers.",
+      "zh": "写出一条命令：用 C11、常用警告和 sanitizer，把 main.c 编译成名为 main 的程序。"
+     },
+     "a": {
+      "en": "cc -std=c11 -Wall -Wextra -g -fsanitize=address,undefined main.c -o main\nThe name after -o is the program to create. Never put main.c there.",
+      "zh": "cc -std=c11 -Wall -Wextra -g -fsanitize=address,undefined main.c -o main\n-o 后面是要创建的程序名。千万不要把 main.c 写在那里。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Continue with the COMP2017 course notes, starting at chapter 1",
+   "zh": "继续学习 COMP2017 课程笔记，从第 1 章开始"
+  },
+  "href": "courses/comp2017.html",
+  "hrefZh": "courses/comp2017.zh.html"
+ }
+}

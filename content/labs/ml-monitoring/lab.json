@@ -1,0 +1,178 @@
+{
+ "id": "ml-monitoring",
+ "course": "ml",
+ "minutes": 35,
+ "tools": [
+  "python3",
+  "scikit-learn",
+  "numpy",
+  "scipy"
+ ],
+ "title": {
+  "en": "Monitor a deployed model: what to alert on, and what labels you are missing",
+  "zh": "监控已上线的模型：该对什么报警，以及你缺少哪些标签"
+ },
+ "summary": {
+  "en": "Compare a training window with four later weeks using a population stability index and a class-prior check. Decide what pages someone, what waits for morning, what is only logged, and what no check can see before labels arrive.",
+  "zh": "用群体稳定性指数和类别先验检查，把训练窗口与之后四周对比。决定什么该呼叫值班人员、什么等到早上、什么只记录，以及在标签到来之前哪些问题任何检查都看不见。"
+ },
+ "scenario": {
+  "en": "Iris's team runs a model that predicts which parcel deliveries will arrive late, so the support desk can warn customers. It went live three weeks ago. Someone wrote a monitoring job that compares each week's inputs with the training window and pages the on-call engineer when any input moves. The engineer has been woken twice this month and found nothing wrong. Noah asks: what should we alert on, and what should we not?\n\nThe data is fabricated, with a seeded shift in each of four weeks. The monitoring job is not told what changed, which is the position you are in on a real system. You will measure the shift with a population stability index (PSI) and a simple class-prior check, learn how much of the number is noise, write an alert policy, and then see which problem no policy could have caught before the labels arrived. Nothing heavy is trained: a logistic regression on fabricated data runs in a second.",
+  "zh": "Iris 的团队运行一个预测哪些包裹会晚到的模型，好让客服提前通知顾客。它三周前上线。有人写了个监控作业：每周把输入与训练窗口比较，只要有输入变动就呼叫值班工程师。这个月工程师被叫醒了两次，什么问题也没找到。Noah 问：我们该对什么报警，不该对什么报警？\n\n数据是编造的，四周里各有一处带种子的偏移。监控作业并不知道变了什么，这正是你在真实系统里的处境。你会用群体稳定性指数（PSI）和一个简单的类别先验检查来度量偏移，弄清这个数字里有多少是噪声，写出报警策略，然后看看哪一个问题是任何策略在标签到来之前都抓不到的。不训练任何大模型：在编造的数据上跑逻辑回归只要一秒。"
+ },
+ "show": [
+  "monitor.py",
+  "policy.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "The model and the four later weeks",
+    "zh": "模型与之后的四周"
+   },
+   "body": {
+    "en": "`describe.py` trains the model on the training window and prints how much each input moves it: the absolute coefficient times the spread of the input, so inputs on different scales are comparable. `order_value` is zero because it is not an input of the model at all. This table is what the policy will later use to decide which drifts matter. Then it lists the four later weeks with their true late rate.\n\nEach later week contains one deliberate change, and the monitoring job is not told which. Look at the late rates, then predict which weeks deserve attention. We reveal the changes after the first monitoring run.",
+    "zh": "`describe.py` 在训练窗口上训练模型，并打印每个输入对模型的推动大小：系数的绝对值乘以输入的离散程度，使不同量纲的输入可以比较。`order_value` 为零，因为它根本不是模型的输入。后面的策略正是用这张表来判断哪些漂移重要。然后它列出之后四周及其真实的晚到率。\n\n之后每一周都有一处刻意的改变，监控作业并不知道是哪一处。看一下晚到率，先猜哪几周值得关注。改变的内容会在第一次监控运行之后揭晓。"
+   },
+   "command": "python3 describe.py",
+   "contains": [
+    "training window",
+    "how much each input"
+   ]
+  },
+  {
+   "title": {
+    "en": "How much does PSI move when nothing changed?",
+    "zh": "什么都没变时，PSI 会波动多少？"
+   },
+   "body": {
+    "en": "The population stability index compares the share of rows in each bin for two windows: PSI = sum over bins of (a - e) x ln(a / e), where e is the share in the training window and a the share in the current window. Bins are the training window's deciles for numeric inputs and the categories themselves for discrete ones. It is zero when the shares match, never negative, and grows with the shift. The usual rule of thumb says under 0.10 is stable, 0.10 to 0.25 is moderate and above 0.25 is large. That comes from credit scoring and is a convention, not a law. Check it against your own noise.\n\nPart 1 compares two samples of the same process at four window sizes, 30 draws each, and shows the median and the largest PSI. Identical processes still give a nonzero PSI, and it gets larger as the window shrinks. At 100 rows the noise alone crosses the 0.10 line. Windows need a minimum size.\n\nPart 2 simulates 52 weeks in which nothing changed and counts the weeks that would alert under two rules. PSI above 0.10 stays quiet at this window size. A Kolmogorov-Smirnov test, which compares two distributions and gives a p-value, with an alert at p below 0.05 on three numeric series, fires in some weeks by chance alone: each test has a one in twenty chance of a false positive, and a weekly job runs many of them. That is the multiple-testing trap. A p-value also says \"different\", not \"different enough to matter\", so with very large windows it fires on trivial shifts. Prefer an effect size such as PSI, with limits chosen from the noise.",
+    "zh": "群体稳定性指数比较两个窗口在每个分箱里的行占比：PSI = 各分箱 (a - e) × ln(a / e) 之和，其中 e 是训练窗口中的占比，a 是当前窗口中的占比。数值型输入的分箱取训练窗口的十分位，离散型输入就用类别本身。占比一致时它为零，永远不为负，偏移越大它越大。通常的经验法则是：低于 0.10 为稳定，0.10 到 0.25 为中等，高于 0.25 为显著。这套说法来自信用评分领域，是约定而不是定律，要拿自己的噪声去检验。\n\n第一部分比较同一个过程的两份样本，窗口大小取四种，每种抽 30 次，显示 PSI 的中位数和最大值。完全相同的过程也会得到不为零的 PSI，窗口越小它越大。窗口只有 100 行时，单靠噪声就越过了 0.10 这条线。窗口需要一个最小行数。\n\n第二部分模拟 52 周什么都没变的情形，统计在两种规则下会报警的周数。PSI 超过 0.10 在这个窗口大小下保持安静。柯尔莫哥洛夫-斯米尔诺夫（KS）检验比较两个分布并给出 p 值，对三个数值序列在 p 低于 0.05 时报警，仅凭偶然就会在若干周触发：每次检验有二十分之一的误报概率，而每周的作业要做很多次检验。这就是多重检验的陷阱。p 值还只说“不同”，不说“不同到足以重要”，所以窗口很大时它会对微不足道的偏移报警。更好的做法是用 PSI 这类效应量，并根据噪声来设定界限。"
+   },
+   "command": "python3 monitor.py --noise",
+   "contains": [
+    "PSI between two samples",
+    "nothing changed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Run the monitor with the rule that shipped",
+    "zh": "用已上线的规则运行监控"
+   },
+   "body": {
+    "en": "The shipped policy is in `policy.py`: page when any input, or the model score, has PSI above 0.10. The table has one row per week. Columns left to right: PSI of each input against the training window, PSI of the model's own score, then `exp`, the late rate the model expects (its mean prediction), `obs`, the late rate actually observed, and `z`, how many standard errors apart they are. At this point no labels have arrived, so `obs` and `z` are empty. The monitoring job can see inputs and predictions, nothing else. The last column is the action.\n\nRead it as the on-call engineer would. Which pages would you accept at 3 a.m.? Which would you resent? And two weeks say `ok`. One of them really is quiet. Do you believe both, and what would have to be true for each to be right?",
+    "zh": "已上线的策略在 `policy.py` 里：任何输入或模型分数的 PSI 超过 0.10 就呼叫值班人员。表格每周一行。从左到右依次是：每个输入相对于训练窗口的 PSI、模型自身分数的 PSI，然后是 `exp`（模型预期的晚到率，即平均预测值）、`obs`（实际观察到的晚到率）和 `z`（两者相差多少个标准误）。此时标签还没有到，所以 `obs` 和 `z` 是空的。监控作业只能看到输入和预测，别的什么也看不到。最后一列是动作。\n\n像值班工程师那样读它。凌晨三点你愿意接受哪些呼叫？哪些会让你生气？还有两周显示 `ok`，其中一周确实很平静。你两周都信吗？它们各自要成立，需要什么条件？"
+   },
+   "command": "python3 monitor.py",
+   "contains": [
+    "window",
+    "PAGE"
+   ]
+  },
+  {
+   "title": {
+    "en": "Decide what to page on, and what not to",
+    "zh": "决定对什么呼叫值班，对什么不呼叫"
+   },
+   "body": {
+    "en": "Now the reveal. The four weeks were generated like this:\nw1: nothing changed. w2: prices rose by half, so `order_value` shifted a lot, but the model does not use it. w3: a pipeline change reports 90% of distances in miles under the name `distance_km`, so an input the model relies on is now wrong. w4: carriers were overloaded, so more parcels were late for the same inputs.\n\nThe new policy encodes four decisions. First, a window with fewer than 500 rows is not judged, because PSI there is mostly noise. Second, only inputs the model uses can page, and only above 0.25. Third, a PSI between 0.10 and 0.25 on a used input, or a late rate far from the model's expectation once labels exist, opens a ticket for the next working day. Fourth, drift in an input the model does not use is logged and nothing more: it is information for the data team, not a reason to wake anyone.\n\nThe patch replaces the body of `decide`. `exp`, `obs` and `z` in the label rule use a four-standard-error and two-point condition together: the first alone fires on tiny shifts in large windows and the second alone fires on noise in small ones. After the patch, w2 drops from a page to a log line, and w3 is still a page with the reason that matters. The w4 row still says `ok`. Hold on to that.",
+    "zh": "现在揭晓。四周是这样生成的：\nw1：什么都没变。w2：价格上涨了一半，所以 `order_value` 大幅偏移，但模型不使用它。w3：一次流水线变更把 90% 的距离按英里报告，却仍叫 `distance_km`，于是一个模型依赖的输入现在是错的。w4：承运商超负荷，同样的输入下，晚到的包裹更多了。\n\n新策略体现了四个决定。第一，少于 500 行的窗口不做判断，因为那里的 PSI 大部分是噪声。第二，只有模型使用的输入才能呼叫值班，而且要超过 0.25。第三，已用输入上 0.10 到 0.25 之间的 PSI，或标签到来后晚到率与模型预期相差很远，开一张工单，下一个工作日处理。第四，模型不用的输入发生漂移，只记录，不做别的：它是给数据团队的信息，不是叫醒任何人的理由。\n\n补丁替换了 `decide` 的函数体。标签规则里的 `exp`、`obs` 和 `z` 同时要求“四个标准误”和“两个百分点”：只用前者，大窗口里的微小偏移也会触发；只用后者，小窗口里的噪声也会触发。补丁之后，w2 从呼叫降为一条日志，w3 仍然是呼叫，并且给出了真正重要的原因。w4 那一行仍然是 `ok`。请记住这一点。"
+   },
+   "patch": {
+    "file": "policy.py",
+    "from": "PSI_LIMIT = 0.10\n\n\ndef decide(window):\n    \"\"\"Return (action, reasons).\"\"\"\n    over = [f\"PSI {value:.2f} on {feature}\" for feature, value in window[\"psi\"].items() if value > PSI_LIMIT]\n    if over:\n        return \"PAGE\", over\n    return \"ok\", []",
+    "to": "MIN_ROWS = 500       # below this, PSI is mostly noise (see --noise)\nPAGE_PSI = 0.25      # an input the model relies on has clearly moved\nTICKET_PSI = 0.10    # worth a look in working hours\nLABEL_Z = 4.0        # the late rate is this many standard errors from what the model expects...\nLABEL_GAP = 0.02     # ...and at least this far away in absolute terms\n\n\ndef decide(window):\n    \"\"\"Return (action, reasons). PAGE wakes someone, ticket waits for the morning, log is only recorded.\"\"\"\n    if window[\"rows\"] < MIN_ROWS:\n        return \"wait\", [f\"only {window['rows']} rows, too few to judge\"]\n    page, ticket, log = [], [], []\n    for feature, value in window[\"psi\"].items():\n        text = f\"PSI {value:.2f} on {feature}\"\n        if not window[\"used\"][feature]:\n            if value > TICKET_PSI:\n                log.append(text + \" (the model does not use it)\")\n        elif value > PAGE_PSI:\n            page.append(text)\n        elif value > TICKET_PSI:\n            ticket.append(text)\n    if window[\"z\"] is not None and abs(window[\"z\"]) > LABEL_Z and abs(window[\"gap\"]) > LABEL_GAP:\n        ticket.append(f\"late rate {window['gap']:+.3f} from what the model expects (z {window['z']:+.1f})\")\n    for action, reasons in ((\"PAGE\", page), (\"ticket\", ticket), (\"log\", log)):\n        if reasons:\n            return action, reasons\n    return \"ok\", []"
+   },
+   "command": "python3 monitor.py",
+   "contains": [
+    "window",
+    "PAGE",
+    "the model does not use it"
+   ]
+  },
+  {
+   "title": {
+    "en": "Labels arrive two weeks later",
+    "zh": "两周后标签到来"
+   },
+   "body": {
+    "en": "`--labels` shows what the monitor sees once the outcomes are in: the observed late rate and how far it sits from what the model expected, in standard errors. This is the class-prior check. When the inputs are unchanged, as in w4, the model's expectation equals the training prior printed in the first line, so the gap is a plain shift in the share of late parcels. When the inputs changed, as in w3, the model's expectation moved too, and the gap against it is the more useful number. w4 now opens a ticket. Its inputs did not change, so every PSI was quiet. The model's predictions did not change either, so the score PSI was quiet. Parcels were simply late more often than the model said, and nothing available before the labels showed it. That is the limit of unlabeled monitoring: it can tell you that the data looks different, never that the model is wrong. The cause (carrier load) is not an input to the model, so no check on the inputs could see it.\n\nAlso read w3. Labels show a gap there too, observed above expected, though by less than the ticket rule needs, and the input check had already paged days earlier. Input checks are early and indirect. Label checks are late and direct. A policy needs both, and it needs to say clearly on the dashboard which window the labels have reached, so that \"no alert\" is never mistaken for \"checked and fine\".\n\nWhat can be done while waiting? Hand-label a small random sample each week. Use partial outcomes that arrive early, for example parcels already late on day two. Monitor outside drivers you suspect, such as carrier load, as separate series, and consider making them model inputs. And keep a rollback or recalibration plan ready for the ticket.",
+    "zh": "`--labels` 显示结果出来之后监控能看到什么：观察到的晚到率，以及它与模型预期相差多少个标准误。这就是类别先验检查。输入没变时（如 w4），模型的预期等于第一行打印的训练先验，所以这个差距就是晚到包裹占比的直接偏移；输入变了时（如 w3），模型的预期也跟着动了，与它的差距才是更有用的数字。w4 现在开出了一张工单。它的输入没有变，所以每个 PSI 都很平静；模型的预测也没有变，所以分数的 PSI 同样平静。包裹只是比模型说的更常晚到，而在标签到来之前，没有任何可用的信息显示这一点。这就是无标签监控的极限：它能告诉你数据看起来不一样了，却永远不能告诉你模型错了。原因（承运商负载）不是模型的输入，所以对输入的任何检查都看不到它。\n\n再看 w3。标签在那里同样显示出差距（观察值高于预期），只是没有达到开工单规则的要求，而输入检查早在几天前就已经发出呼叫。输入检查来得早、是间接的；标签检查来得晚、是直接的。策略两者都需要，还要在看板上清楚写明标签已经覆盖到哪个窗口，这样“没有报警”就不会被误认为“已检查，一切正常”。\n\n等待期间能做什么？每周随机抽一小批手工标注；利用较早到达的部分结果，例如第二天就已经晚到的包裹；把你怀疑的外部驱动因素（如承运商负载）作为单独序列监控，并考虑把它们纳入模型输入；同时为这张工单备好回滚或重新校准的预案。"
+   },
+   "command": "python3 monitor.py --labels",
+   "contains": [
+    "ticket",
+    "late rate"
+   ]
+  }
+ ],
+ "review": [
+  {
+   "en": "Is the reference window the training data, with its dates, row count and filters recorded next to the monitor?",
+   "zh": "参考窗口就是训练数据吗？它的日期、行数和过滤条件是否记录在监控旁边？"
+  },
+  {
+   "en": "Is every monitored input marked as used or unused by the model, with the evidence, and can an unused input never page anyone?",
+   "zh": "每个被监控的输入是否标明模型使用与否并附有依据？未使用的输入是否永远不会呼叫任何人？"
+  },
+  {
+   "en": "Was the minimum window size and each PSI limit chosen from an A/A check on quiet history, not copied from a rule of thumb?",
+   "zh": "最小窗口大小和每个 PSI 界限，是根据平静历史上的 A/A 检查选定的，还是照搬经验法则？"
+  },
+  {
+   "en": "Does each alert tier have an owner and a first action (page, ticket, log), and can the on-call person tell what to do from the message?",
+   "zh": "每一级报警是否都有负责人和第一步动作（呼叫、工单、记录）？值班的人能从消息里看出该做什么吗？"
+  },
+  {
+   "en": "Was the policy replayed on a quiet period to count false alarms before paging was switched on, and is the share of alerts that led to action tracked?",
+   "zh": "在开启呼叫之前，是否在平静时段重放过策略以统计误报？导致了实际行动的报警占比是否被跟踪？"
+  },
+  {
+   "en": "With many inputs and weekly runs, is the rule based on effect size and a limited set of inputs, rather than per-feature p-values that will fire by chance?",
+   "zh": "输入很多、每周运行时，规则是基于效应量和有限的几个输入，而不是逐特征的 p 值（它们会因偶然而触发）？"
+  },
+  {
+   "en": "Are the model score and the predicted positive rate watched as well as the inputs?",
+   "zh": "除了输入，模型的分数和预测的阳性率是否也在被监视？"
+  },
+  {
+   "en": "Are data-quality checks (nulls, ranges, units, new categories) separate from drift, since they are cheaper to act on and often catch the cause first?",
+   "zh": "数据质量检查（空值、范围、单位、新类别）是否与漂移检查分开？它们处理起来更便宜，往往最先抓到原因。"
+  },
+  {
+   "en": "Is there a label-based check, is its delay stated on the dashboard, and is there a plan (a hand-labelled sample, early partial outcomes) for the period before labels arrive?",
+   "zh": "是否有基于标签的检查？看板上是否写明了它的延迟？标签到来之前的时期是否有预案（手工标注的样本、较早出现的部分结果）？"
+  },
+  {
+   "en": "Are bins fixed from the reference window, with a bucket for unseen categories and a floor for empty bins, so the index never divides by zero?",
+   "zh": "分箱是否由参考窗口固定，有为未见类别准备的桶和为空分箱设置的下限，使指数永远不会除以零？"
+  },
+  {
+   "en": "Is there a runbook for each alert: roll back the pipeline, recalibrate, retrain or accept the change, and who decides?",
+   "zh": "每种报警是否有处理手册：回滚流水线、重新校准、重新训练，还是接受这一变化，以及由谁决定？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "What to measure. PSI is simple, symmetric and easy to explain, but it depends on the bin edges and the number of rows, and it throws away order within a bin. A KS statistic or a Wasserstein distance respects order but is harder to give a stable limit for. A p-value is a statement about evidence, not about size. Whatever you pick, calibrate the limit on your own quiet history, and watch the number of rows. A model-based drift detector, which trains a classifier to tell the two windows apart, sees interactions that one-input-at-a-time checks miss, at the cost of being harder to explain and to localise.\n\nPage, ticket or log. Every page costs sleep and trust. If most pages are false, people mute the channel and the real one is missed. If nothing pages, the units bug of w3 runs for days. The policy puts the sharp tools on inputs the model depends on and keeps the rest as information. Its limits (500 rows, 0.25, four standard errors and two points) are starting values to be tuned against a backtest and the cost of each kind of mistake, not constants.\n\nInput drift is not model failure. w2 shows input drift that did not matter. w4 shows model failure with no input drift. The two are separate questions, and only labels settle the second. Do not retrain just because an input moved, and do not assume the model is fine because nothing moved.\n\nWhat monitoring cannot tell without labels. It cannot tell whether the model is right. It cannot see a change in the relationship between inputs and outcome (concept drift), or a change in the share of positives that the inputs do not reflect (label shift), when the inputs look the same. It does not see an input that was never recorded. It averages over segments, so a loss concentrated in one region can hide in an aggregate. And it can be fooled by the model's own effects: if its predictions change what happens, as when customers are warned and act, the later data no longer looks like the training data for reasons that have nothing to do with the world. Labels fix most of this, but they cost money (annotation) or time (delayed outcomes). Decide how many labels a week you can afford. About two hundred outcomes a week gives a late rate with an uncertainty near plus or minus four points, which barely shows a jump like w4's; a thousand a week narrows it to about plus or minus two.\n\nRetraining. A fixed schedule is simple and wasteful, and retraining on alert risks learning from a bug (the miles data of w3 would become training data). Retrain after the cause is understood, validate on recent labelled data, and keep the previous model to roll back to.",
+  "zh": "度量什么。PSI 简单、对称、容易解释，但它依赖分箱边界和行数，并丢掉了分箱内部的顺序。KS 统计量或 Wasserstein 距离考虑了顺序，但更难为它设定稳定的界限。p 值陈述的是证据，不是幅度。无论选哪种，都要在自己的平静历史上校准界限，并盯住行数。基于模型的漂移检测器（训练一个分类器来区分两个窗口）能看到逐个输入检查漏掉的交互，代价是更难解释、更难定位。\n\n呼叫、工单还是记录。每一次呼叫都消耗睡眠和信任。如果多数呼叫是虚惊，人们会把频道静音，真正的那一次就被错过。如果什么都不呼叫，w3 的单位错误会持续好几天。策略把锋利的工具用在模型依赖的输入上，其余的只作为信息保留。它的界限（500 行、0.25、四个标准误和两个百分点）只是起始值，要根据回测和每种错误的代价来调整，不是常数。\n\n输入漂移不等于模型失效。w2 展示了无关紧要的输入漂移，w4 展示了没有输入漂移的模型失效。这是两个独立的问题，只有标签能回答第二个。不要因为某个输入动了就去重新训练，也不要因为什么都没动就认定模型没问题。\n\n没有标签，监控无法告诉你什么。它无法判断模型是否正确。输入看起来一样时，它看不到输入与结果之间关系的变化（概念漂移），也看不到输入没有反映出来的阳性比例变化（标签偏移）。它看不到从未被记录的输入。它在各分群上取平均，所以集中在某个地区的损失可能藏在汇总里。它还可能被模型自身的影响所迷惑：如果模型的预测改变了事情的走向，比如顾客收到提醒后采取了行动，那么之后的数据与训练数据的差异就与世界本身无关了。标签能解决大部分问题，但要花钱（标注）或花时间（延迟的结果）。要定下每周负担得起多少标签。每周约两百个结果，晚到率的不确定度约为正负四个百分点，勉强能显示出 w4 那样的跳升；每周一千个则可缩小到约正负两个百分点。\n\n重新训练。固定周期的重训简单而浪费，而按报警重训则有从 bug 中学习的风险（w3 的英里数据会变成训练数据）。应当在弄清原因之后再重训，用最近的带标签数据验证，并保留上一个模型以便回滚。"
+ },
+ "done": [
+  {
+   "en": "You can explain how much PSI moves when nothing changes, and why the window needs a minimum size.",
+   "zh": "你能解释什么都没变时 PSI 会波动多少，以及为什么窗口需要最小行数。"
+  },
+  {
+   "en": "The policy pages on the broken input, logs the harmless price change, and you can say why each decision was made.",
+   "zh": "策略对出错的输入呼叫值班，对无害的价格变化只做记录，并且你能说出每个决定的理由。"
+  },
+  {
+   "en": "You can say what the class-prior check showed that no input check could, and why it only works after labels arrive.",
+   "zh": "你能说出类别先验检查显示了哪些任何输入检查都看不到的东西，以及为什么它只有在标签到来后才有效。"
+  },
+  {
+   "en": "You can name two things monitoring cannot tell you without labels and one thing you would do in the meantime.",
+   "zh": "你能说出两件没有标签时监控无法告诉你的事，以及在此期间你会做的一件事。"
+  }
+ ]
+}

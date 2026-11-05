@@ -1,0 +1,189 @@
+{
+ "id": "c-gdb-crash",
+ "course": "comp2017",
+ "minutes": 35,
+ "tools": [
+  "gcc",
+  "gdb"
+ ],
+ "title": {
+  "en": "Find the null behind a segfault with gdb",
+  "zh": "用 gdb 找出段错误背后的空指针"
+ },
+ "summary": {
+  "en": "A contact lookup crashes only for some names. Use gdb in batch mode to read the backtrace, inspect the node, find where the null was stored, then fix it and add a regression test.",
+  "zh": "联系人查找只在某些名字上崩溃。用 gdb 批处理模式读取回溯、检查节点、找出空指针是在哪里存进去的，然后修复并添加回归测试。"
+ },
+ "scenario": {
+  "en": "Emma maintains a small contact tool. It loads a CSV file into a singly linked list, then looks up the names given on the command line. A bug report says: \"Looking up Mia works. Looking up Emma crashes. Same file, same binary.\"\n\nLeon has read the code and says the lookup loop looks right. You cannot guess your way out of this one, so you will let the debugger show you the crash instead. The job has three parts: see where the program died, work out which data it died on, and find where that bad data came from, because the line that crashed is usually not the line that is wrong.",
+  "zh": "Emma 维护一个小的联系人工具。它把 CSV 文件加载进一个单向链表，然后查找命令行里给出的名字。有人提交了缺陷报告：“查 Mia 正常，查 Emma 就崩溃。文件相同，程序相同。”\n\nLeon 读过代码，觉得查找循环看上去没问题。这次靠猜是猜不出来的，所以让调试器来告诉你崩溃发生在哪里。任务分三部分：看清程序死在哪里，弄清它死在哪份数据上，再找出这份坏数据是从哪里来的，因为崩溃的那一行通常并不是出错的那一行。"
+ },
+ "show": [
+  "list.c",
+  "contacts.c",
+  "contacts.csv"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Reproduce the crash",
+    "zh": "复现崩溃"
+   },
+   "body": {
+    "en": "`-g` stores source line information in the program so a debugger can show it. `-O0` turns optimisation off so variables stay in memory where gdb can read them; with optimisation on you will see `<optimized out>` for many of them. `-Wall -Wextra` is clean here: the bug is not something the compiler can see.\n\nThe braces and `2>/dev/null` hide the shell's own \"Segmentation fault\" message, which carries a process id. What matters is the exit status. `139` is 128 plus signal 11, the signal for an invalid memory access (SIGSEGV). The first lookup printed its answer, and the second killed the program.",
+    "zh": "`-g` 把源代码行号信息存进程序，调试器才能显示出来。`-O0` 关闭优化，变量留在内存里，gdb 才读得到；开了优化后你会在很多变量上看到 `<optimized out>`。这里 `-Wall -Wextra` 没有警告：这个错误编译器看不出来。\n\n花括号和 `2>/dev/null` 是为了隐藏 shell 自己打印的 “Segmentation fault” 消息，因为它带有进程号。重要的是退出状态：`139` 等于 128 加信号 11，即无效内存访问的信号（SIGSEGV）。第一次查找打印了结果，第二次让程序死掉了。"
+   },
+   "command": "gcc -std=c11 -Wall -Wextra -g -O0 main.c contacts.c list.c -o contacts && { ./contacts contacts.csv Mia Emma; } 2>/dev/null; echo \"exit status: $?\"",
+   "contains": [
+    "Mia -> id 2",
+    "exit status: 139"
+   ]
+  },
+  {
+   "title": {
+    "en": "Let gdb run it and print the backtrace",
+    "zh": "让 gdb 运行它并打印回溯"
+   },
+   "body": {
+    "en": "`-batch` runs the listed commands and exits without an interactive prompt, which makes the session repeatable and easy to paste into a bug report. Each `-ex 'command'` is one gdb command. `--args` says that everything after it is the program and its own arguments. The commands do four things:\n\n- `run` starts the program and stops it at the signal.\n- `bt` (backtrace) prints the chain of calls that led to the crash, innermost first.\n- `frame 1` selects frame number 1, the caller of the function that crashed.\n- `print *node` follows the pointer `node` in that frame and prints the whole struct.\n\nRead frame `#0`: the program died inside the C library, in a string-comparison function (gdb may show a name such as `__strcmp_avx2`, or only `??`, depending on whether debug symbols for the library are installed). There is no source for it here. That tells you `strcmp` was given a bad pointer, but not whose. Frame `#1` is our code, `list_find_by_name`, at the line that calls `strcmp(node->name, wanted)`. In the struct, `name = 0x0`: node id 3 has a NULL name. On macOS, `lldb -b -o run -o bt -o 'frame select 1' -o 'p *node' -- ./contacts ...` is the same session.",
+    "zh": "`-batch` 运行给出的命令后直接退出，没有交互提示，所以这次会话可以重复，也方便贴进缺陷报告。每个 `-ex '命令'` 是一条 gdb 命令。`--args` 表示它后面的全部内容是被调试的程序及其自己的参数。这几条命令做四件事：\n\n- `run` 启动程序，并在收到信号时让它停住。\n- `bt`（backtrace，回溯）打印导致崩溃的调用链，最内层在最前。\n- `frame 1` 选中 1 号栈帧，也就是崩溃函数的调用者。\n- `print *node` 顺着该栈帧里的指针 `node` 取出并打印整个结构体。\n\n先看帧 `#0`：程序死在 C 库里的字符串比较函数中（根据是否安装了该库的调试符号，gdb 可能显示 `__strcmp_avx2` 这样的名字，也可能只显示 `??`），这里没有它的源代码。这说明 `strcmp` 收到了坏指针，但没说是谁给的。帧 `#1` 是我们自己的代码 `list_find_by_name`，位于调用 `strcmp(node->name, wanted)` 的那一行。结构体里 `name = 0x0`：id 为 3 的节点名字是 NULL。在 macOS 上，`lldb -b -o run -o bt -o 'frame select 1' -o 'p *node' -- ./contacts ...` 是等价的会话。"
+   },
+   "command": "gdb -batch -ex run -ex bt -ex 'frame 1' -ex 'print *node' --args ./contacts contacts.csv Mia Emma",
+   "contains": [
+    "SIGSEGV",
+    "list_find_by_name",
+    "name = 0x0"
+   ],
+   "lines": 30
+  },
+  {
+   "title": {
+    "en": "Ask where the null came from",
+    "zh": "追问空指针从哪里来"
+   },
+   "body": {
+    "en": "The crash site is not the fault site. `list_find_by_name` trusts that every node has a name. The question is who stored a NULL. A conditional breakpoint answers it: `break list_add if name == 0` stops the program only when `list_add` is called with a NULL `name`, and nowhere else. After the stop, `bt` shows the callers and `frame 1` selects the loader. `print row` says which CSV row it was parsing, and `print line` shows the text. The loader has already cut the string at the second comma, so gdb prints a `\\000` (a NUL byte) between `3,` and the email.\n\nThe row is number 3, `3,,noah@example.test`: the name field is empty, and `contacts_load` turns an empty field into NULL on purpose. The list then accepts it silently. Two places agree on a convention that nothing enforces.",
+    "zh": "崩溃的地方不是出错的地方。`list_find_by_name` 默认每个节点都有名字，问题是谁存进去了 NULL。条件断点可以回答：`break list_add if name == 0` 只在 `list_add` 被传入 NULL 的 `name` 时才让程序停下，其他时候不会。停下后，`bt` 显示调用者，`frame 1` 选中加载函数。`print row` 说明它正在解析 CSV 的第几行，`print line` 显示这一行的文本。加载函数已经在第二个逗号处截断了字符串，所以 gdb 会在 `3,` 和邮箱之间打印一个 `\\000`（NUL 字节）。\n\n这是第 3 行，`3,,noah@example.test`：名字字段为空，而 `contacts_load` 特意把空字段变成 NULL，链表又悄悄接受了它。两个地方遵守同一个约定，却没有任何东西来保证这个约定。"
+   },
+   "command": "gdb -batch -ex 'break list_add if name == 0' -ex run -ex bt -ex 'frame 1' -ex 'print row' -ex 'print line' --args ./contacts contacts.csv Mia Emma",
+   "contains": [
+    "Breakpoint 1",
+    "contacts_load",
+    "noah@example.test"
+   ],
+   "lines": 24
+  },
+  {
+   "title": {
+    "en": "Write the test that fails on the old code",
+    "zh": "写一个在旧代码上失败的测试"
+   },
+   "body": {
+    "en": "Before changing the code, record the bug as a test. The heredoc (`cat > file <<'EOF'`) writes test_list.c in place. It states the rule that was missing: adding a contact without a name must be refused. The `CHECK` macro stops at the first failure and prints the line, so you can see exactly which rule broke. Against the current list code, the second check fails with exit status 1.",
+    "zh": "改代码之前，先把这个缺陷写成测试。heredoc（`cat > 文件 <<'EOF'`）会就地写出 test_list.c。它写出了原来缺少的规则：添加没有名字的联系人必须被拒绝。`CHECK` 宏在第一次失败时停下并打印行号，所以你能看清是哪条规则被破坏。对现在的链表代码，第二个检查会失败，退出状态为 1。"
+   },
+   "command": "cat > test_list.c <<'EOF'\n#include <stdio.h>\n#include \"list.h\"\n\n/* Stop at the first failed check and say which one. */\n#define CHECK(cond) do { if (!(cond)) { \\\n    fprintf(stderr, \"FAIL %s:%d: %s\\n\", __FILE__, __LINE__, #cond); return 1; } } while (0)\n\nint main(void)\n{\n    Node *head = NULL;\n    CHECK(list_add(&head, 1, \"Leon\") == 0);\n    CHECK(list_add(&head, 3, NULL) == -1);      /* a contact must have a name */\n    CHECK(list_add(&head, 4, \"Emma\") == 0);\n    Node *hit = list_find_by_name(head, \"Emma\");\n    CHECK(hit != NULL && hit->id == 4);\n    CHECK(list_find_by_name(head, \"Nobody\") == NULL);\n    list_free(head);\n    puts(\"test_list: all checks passed\");\n    return 0;\n}\nEOF\ngcc -std=c11 -Wall -Wextra -g test_list.c list.c -o test_list && ./test_list",
+   "exit": 1,
+   "contains": [
+    "FAIL test_list.c",
+    "list_add(&head, 3, NULL) == -1"
+   ]
+  },
+  {
+   "title": {
+    "en": "Fix the list so the bad state cannot exist",
+    "zh": "修复链表，让坏状态无法产生"
+   },
+   "body": {
+    "en": "The patch makes `list_add` refuse a NULL name and also handle a failed copy, which would have produced the same NULL by another route. Now every node in the list has a name, and `list_find_by_name` stays simple and correct. The test passes.",
+    "zh": "补丁让 `list_add` 拒绝 NULL 名字，同时处理复制失败的情况（复制失败会通过另一条路径产生同样的 NULL）。现在链表里每个节点都有名字，`list_find_by_name` 可以保持简单而正确。测试通过。"
+   },
+   "command": "gcc -std=c11 -Wall -Wextra -g test_list.c list.c -o test_list && ./test_list",
+   "contains": [
+    "all checks passed"
+   ],
+   "patch": {
+    "file": "list.c",
+    "from": "    Node *node = malloc(sizeof *node);\n    if (node == NULL) {\n        return -1;\n    }\n    node->id = id;\n    node->name = copy_string(name);\n",
+    "to": "    if (name == NULL) {\n        return -1;              /* a contact must have a name */\n    }\n    Node *node = malloc(sizeof *node);\n    if (node == NULL) {\n        return -1;\n    }\n    node->id = id;\n    node->name = copy_string(name);\n    if (node->name == NULL) {   /* out of memory */\n        free(node);\n        return -1;\n    }\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Make the loader report the rejected row",
+    "zh": "让加载函数报告被拒绝的行"
+   },
+   "body": {
+    "en": "The loader used to ignore the return value of `list_add`. With the new rule that would drop Noah's row without a word. The patch prints the file and row number to stderr and continues. Rebuild the whole program and run the failing lookup again: Emma is found at last.",
+    "zh": "加载函数原来忽略了 `list_add` 的返回值。有了新规则，这会不声不响地丢掉 Noah 那一行。补丁把文件名和行号打印到 stderr，然后继续。重新构建整个程序并再次运行刚才失败的查找：终于找到 Emma 了。"
+   },
+   "command": "gcc -std=c11 -Wall -Wextra -g -O0 main.c contacts.c list.c -o contacts && ./contacts contacts.csv Mia Emma Noah",
+   "contains": [
+    "contacts.csv:3: row skipped",
+    "Emma -> id 4",
+    "Noah -> not found"
+   ],
+   "patch": {
+    "file": "contacts.c",
+    "from": "        list_add(head, id, name);\n",
+    "to": "        if (list_add(head, id, name) != 0) {\n            fprintf(stderr, \"%s:%d: row skipped (empty name or out of memory)\\n\", path, row);\n        }\n"
+   }
+  }
+ ],
+ "review": [
+  {
+   "en": "Is the fix applied where the invalid state is created or first accepted, not only where it was observed? A NULL check in the lookup loop would have hidden the bug.",
+   "zh": "修复是否放在无效状态产生或首次被接受的地方，而不只是在发现它的地方？在查找循环里加一个 NULL 检查只会把缺陷藏起来。"
+  },
+  {
+   "en": "Is the invariant (\"every node has a non-NULL name\") written in the header and enforced at one entry point?",
+   "zh": "不变量（“每个节点都有非 NULL 的名字”）是否写在头文件里，并在唯一的入口处强制执行？"
+  },
+  {
+   "en": "Is every return value that can signal failure checked? `list_add` returned a status and the caller ignored it.",
+   "zh": "每个可能表示失败的返回值是否都被检查？`list_add` 返回了状态，调用者却忽略了它。"
+  },
+  {
+   "en": "Does the new test fail on the old code and pass on the new? A test that never failed has not proven it can catch the bug.",
+   "zh": "新测试是否在旧代码上失败、在新代码上通过？从未失败过的测试，并没有证明它能抓住这个缺陷。"
+  },
+  {
+   "en": "When a loader skips bad input, is the skip visible (file and row), counted, and reflected in the exit status or a summary?",
+   "zh": "加载器跳过坏输入时，这件事是否可见（文件和行号）、有计数，并反映在退出状态或汇总里？"
+  },
+  {
+   "en": "Does a helper such as `copy_string(NULL) == NULL` hide a caller bug? Prefer the helper that rejects what it should never be given.",
+   "zh": "像 `copy_string(NULL) == NULL` 这样的辅助函数是否掩盖了调用者的缺陷？宁可用拒绝非法输入的辅助函数。"
+  },
+  {
+   "en": "Can another reader reproduce the crash from the report: the exact command line, the input file in the repository, and a debug build with -g?",
+   "zh": "别人能否仅凭报告复现崩溃：准确的命令行、放进仓库的输入文件，以及带 -g 的调试构建？"
+  },
+  {
+   "en": "Is the data path that created the bad row (a CSV export with an empty name) fixed or documented too?",
+   "zh": "产生这行坏数据的上游（名字为空的 CSV 导出）是否也修复或记录了？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**Where to fix.** A NULL check inside `list_find_by_name` is a one-line change that stops this crash. It also lets nameless contacts live in the list, where the next function that touches `name` (sorting, printing, writing a file) needs the same check, and one of them will forget. Refusing at `list_add` costs one branch and a decision about what a rejected row means. The price is that you must now choose between skipping the row, stopping the load, or collecting errors. Skipping with a message, as here, keeps the tool useful but turns bad data into a log line that someone has to read; a batch job should count rejected rows and exit non-zero past a threshold.\n\n**Debugger style.** Batch gdb with a fixed list of `-ex` commands is repeatable, easy to paste into a ticket, and works in CI and over ssh. An interactive session is better when you do not yet know what to look at: you can type `up`, `info locals`, `watch node->name` (a watchpoint that stops when a value changes) and `x/16xb` to examine raw bytes. Prefer the batch form once you know the questions, and keep the command line in the bug report.\n\n**Limits of what you saw.** gdb shows the state at the moment of the signal. Optimised builds (`-O2`) move or drop variables, so `print *node` may say `<optimized out>`, and inlined functions can vanish from the backtrace; debug with `-O0 -g` where you can, and ship separate debug symbols where you cannot. In containers, gdb may warn that it cannot disable address-space randomisation, and attaching to an existing process needs the `SYS_PTRACE` capability. A crash on a machine you cannot attach to is handled with core files: set `ulimit -c unlimited`, let the program crash, then run `gdb -batch -ex bt ./contacts core` (or `coredumpctl gdb` on systemd hosts). A debugger tells you what the state was, not what it should have been; the invariant has to come from reading the code.\n\n**Compared with sanitizers.** A NULL dereference is easy for gdb and for ASan alike. A use of freed memory that happens to look valid is not: gdb will happily show you a struct full of garbage. Run the failing case under AddressSanitizer as well when the crash site does not make sense.",
+  "zh": "**在哪里修。** 在 `list_find_by_name` 里加一个 NULL 检查只改一行，就能挡住这次崩溃。但这也让没有名字的联系人留在链表里，下一个碰 `name` 的函数（排序、打印、写文件）需要同样的检查，总有一个会忘。在 `list_add` 处拒绝的代价是一个分支，外加一个决定：被拒绝的行意味着什么。你必须在跳过该行、停止加载、收集错误三者之间选择。像这里这样带消息地跳过，工具仍然可用，但坏数据变成了需要有人去读的日志；批处理任务应该统计被拒绝的行，超过阈值就以非零状态退出。\n\n**调试器的用法。** 带固定 `-ex` 命令列表的批处理 gdb 可重复、便于贴进工单，在 CI 和 ssh 里也能用。当你还不知道该看什么时，交互式会话更合适：可以输入 `up`、`info locals`、`watch node->name`（数据监视点，值变化时停下）和 `x/16xb`（查看原始字节）。一旦知道要问什么，就改用批处理形式，并把命令行保留在缺陷报告里。\n\n**你看到的有限度。** gdb 展示的是信号发生那一刻的状态。开了优化（`-O2`）的构建会移动或丢弃变量，所以 `print *node` 可能显示 `<optimized out>`，内联函数也可能从回溯里消失；能用 `-O0 -g` 就用，不能的话就单独保存调试符号。在容器里，gdb 可能警告说无法关闭地址空间随机化，附加到已有进程则需要 `SYS_PTRACE` 能力。在无法附加调试器的机器上崩溃，就用核心转储（core file）：设置 `ulimit -c unlimited`，让程序崩溃，然后运行 `gdb -batch -ex bt ./contacts core`（systemd 主机上用 `coredumpctl gdb`）。调试器告诉你状态是什么，但不会告诉你状态应该是什么；不变量只能从阅读代码得到。\n\n**与 sanitizer 对比。** 空指针解引用对 gdb 和 ASan 都很容易。而看上去仍然有效的已释放内存则不然：gdb 会很乐意给你一个充满垃圾的结构体。当崩溃位置说不通时，也要在 AddressSanitizer 下运行失败的用例。"
+ },
+ "done": [
+  {
+   "en": "You can read a backtrace and say which frame is your code and which is the library.",
+   "zh": "你能读懂回溯，并说出哪一帧是自己的代码、哪一帧是库。"
+  },
+  {
+   "en": "You can explain why the crashing line (the lookup) was not the line that was wrong (the loader and `list_add`).",
+   "zh": "你能解释为什么崩溃的那一行（查找）并不是出错的那一行（加载函数和 `list_add`）。"
+  },
+  {
+   "en": "test_list fails on the original `list_add` and passes after the fix, and `./contacts contacts.csv Mia Emma Noah` runs to the end.",
+   "zh": "test_list 在原来的 `list_add` 上失败、修复后通过，`./contacts contacts.csv Mia Emma Noah` 能完整运行。"
+  },
+  {
+   "en": "You can write a conditional breakpoint to find who produced a bad value.",
+   "zh": "你会写条件断点，找出是谁产生了坏值。"
+  }
+ ]
+}

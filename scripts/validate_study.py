@@ -26,6 +26,7 @@ def validate_study():
     errors = []
     courses = {c['id']: c for c in catalogue()['courses']}
     manifest = {e['path'] for e in json.loads((ROOT / 'site' / 'examples' / 'manifest.json').read_text())}
+    manifest |= {e['path'] for e in json.loads((ROOT / 'site' / 'bridges' / 'examples.json').read_text())}
     totals = {'cards': 0, 'questions': 0, 'papers': 0, 'labs': 0}
     for f in sorted(DATA.glob('*.json')):
         if f.name in ('keywords.json', 'summary.json') or f.name.startswith('terms-'):

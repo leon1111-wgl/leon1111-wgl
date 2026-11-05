@@ -3,7 +3,7 @@
   "title": "Systems Programming: C, Processes & Concurrency",
   "subtitle": "Reason about bytes, ownership and coordination from a C program to a parallel system.",
   "description": "Learn C and systems programming in manageable steps. Start with small programs, draw memory and resource ownership, then build complete tools with files, processes and threads.",
-  "coverage": "A complete C11 and POSIX path with 24 chapters and 57 standalone programs. A six-pass study plan leads to three fully worked engineering projects. Follow requirements, interfaces, complete source, debugging and tests. Deeper branches remain available as reference.",
+  "coverage": "A complete C11 and POSIX path with 27 chapters and 65 standalone programs. A six-pass study plan leads to three fully worked engineering projects. Follow requirements, interfaces, complete source, debugging and tests. Deeper branches remain available as reference.",
   "color": "#38bdf8",
   "prerequisites": [
     "Basic programming with variables, loops and functions",
@@ -22,11 +22,13 @@
       "title": "C objects and data",
       "topics": [
         "representation-control",
+        "number-representation",
         "pointers-arrays",
         "strings-parsing",
         "structured-data",
         "file-streams",
         "allocation-ownership",
+        "memory-layout",
         "linked-structures",
         "callbacks"
       ],
@@ -37,6 +39,7 @@
       "topics": [
         "preprocessing",
         "compilation-linkage",
+        "makefiles-libraries",
         "signals",
         "process-fork",
         "exec-wait"
@@ -192,6 +195,332 @@
             "Derive the element count at the array declaration site.",
             "Print the preserved prefix invariant after every update.",
             "Compare the returned value with the unchanged caller variable."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "number-representation",
+      "title": "Number systems, ASCII, binary fractions and bit-fields",
+      "story": "Picture a hallway with eight light switches in a row. The first switch controls 1 lamp, the next 2, then 4, 8, 16, 32, 64 and 128. To light exactly 202 lamps, switch on the groups that add up to 202: 128 + 64 + 8 + 2. Written as on and off, that pattern is 11001010. The row of switches is a binary number, and each switch is one bit.\n\nReading eight switches at once is tiring, so people read them as two groups of four. Four switches make 16 patterns, and one hexadecimal digit (0 to 9, then A to F) names each pattern. A computer never sees letters either. It stores a number for every character, like a theatre where every seat has a number and the letter K is seat 75.\n\nNow imagine a set of measuring cups that only holds a half, a quarter, an eighth and so on. You can measure three quarters exactly, but you can never measure one tenth exactly, however many small cups you add. That is why some decimal fractions are inexact in binary. Finally, picture one small locker label that must hold a day, a month and a year. You give each fact a few of the switches. A C bit-field does that for you.",
+      "principle": "In base B, the digit at position i, counting from 0 on the right, is worth digit times B to the power i. Binary uses the digits 0 and 1. Hexadecimal uses 0 to 9 and then A to F, where A is 10 and F is 15. To go from binary to decimal, add the powers of two where the bit is 1. To go from decimal to binary, divide by 2 again and again, write down each remainder and stop at 0. The first remainder is the lowest bit, so read the remainders from last to first. To go between binary and hex, group the bits in fours from the right; each group is one hex digit. In C a leading 0x marks hex. A leading 0 alone marks octal, so 010 is 8. The 0b prefix is not in C11.\n\nASCII gives each common character a code from 0 to 127. The digits '0' to '9' are 48 to 57 in order. Capitals 'A' to 'Z' are 65 to 90 and lower-case letters are 97 to 122, so a lower-case letter is the capital plus 32, which is the single bit 0x20. A char is just a small integer, so ch - '0' turns a digit character into its value. C guarantees that the digit characters are consecutive, but it does not guarantee the same for letters. Other encodings, such as UTF-8, keep the ASCII codes for these characters and use more bytes for the rest.\n\nAfter the point, position i is worth digit times 2 to the power -i, so 0.75 is 1/2 + 1/4, written 0.11 in binary. A fraction p/q in lowest terms has a finite binary expansion exactly when q is a power of two. The fraction 1/10 has the factor 5 in its denominator, so its binary expansion repeats for ever: 0.0001100110011... A double stores a sign, an exponent and 52 mantissa bits, so it must cut the pattern off and round. The stored value for 0.1 is close to 0.1 but not equal. Because of this, 0.1 + 0.2 == 0.3 is false. Compare doubles with a tolerance, or keep money in whole cents.\n\nA bit-field member is written unsigned name : width; and reserves width bits inside a struct. An unsigned bit-field keeps its value modulo 2 to the power width. You cannot take the address of a bit-field. The order of fields, the padding and whether a field may cross a storage unit are implementation-defined, and so is the signedness of a plain int field. Use bit-fields for compact data inside one program. When an exact layout matters, as in a file or network format, build the value yourself with a fixed-width unsigned type, shifts and masks.",
+      "formula": "Bits b7 ... b0 as a number : sum of b(i) x 2^i\nDecimal to binary         : repeat n = n / 2 (whole part), write n % 2,\n                            stop at 0, then read last to first\nOne hex digit             = 4 bits : 0xF = 1111 (binary) = 15\nBinary to hex             : group by 4 from the right\nASCII                     : 'a' - 'A' = 32 ; ch - '0' = digit value\nFraction bits             : 0.b1 b2 b3 ... = sum of b(i) x 2^-i\np/q ends in binary        <=> reduced q is a power of two\nField of width w, shift s : mask = (1u << w) - 1\n                            value = (word >> s) & mask\nSet / clear / toggle k    : x |= 1u << k ; x &= ~(1u << k) ; x ^= 1u << k",
+      "symbols": "b(i) is the bit at position i, and position 0 is the rightmost bit. \"Sum\" means add up the terms for every i. \"n / 2 (whole part)\" means integer division that drops the fraction, and n % 2 is the remainder, which is always 0 or 1. The symbol <=> reads \"exactly when\". In the field formulas, w is the number of bits in the field, s is the position of its lowest bit, and << and >> move bits left and right. The bit tricks assume an unsigned type that is wide enough for the shifts.\n\nThe binary-fraction rule is about exact storage. A double may print as 0.1 because the printed text is rounded, even though the stored value is not exactly one tenth.",
+      "example": "Convert 202 to binary. The divisions give remainders 0, 1, 0, 1, 0, 0, 1, 1 (202, 101, 50, 25, 12, 6, 3, 1 are the numbers being divided). Read them from last to first: 11001010. Check with powers of two: 128 + 64 + 8 + 2 = 202. Group by four: 1100 is C and 1010 is A, so the value is 0xCA. In ASCII, K is 75 = 0x4B, and k is 107 = 0x6B, exactly 32 more. The character '7' is code 55, so '7' - '0' is 7.\n\nFor fractions, 3/4 has the denominator 4, a power of two, so it is exactly 0.11 in binary. 1/10 has the denominator 10 = 2 x 5. The factor 5 makes the binary digits repeat, so a double holds only a nearby number: 0x3FB999999999999A. As a result 0.1 + 0.2 prints as 0.30000000000000004.\n\nFor bit-fields, pack the date 2025-11-05 into 16 bits. The year offset is 2025 - 1980 = 45, written 0101101 in 7 bits. The month 11 is 1011 in 4 bits, and the day 5 is 00101 in 5 bits. Joined together they give 0101 1011 0110 0101, which is 0x5B65 = 23397.",
+      "pitfall": "A leading zero makes a C number octal: 010 is 8, not 10. A bit-field struct that works on your machine can have a different bit order on another compiler, so never write one straight to a file or a socket. And never use == to compare computed doubles when you expect an exact decimal answer.",
+      "check": {
+        "question": "Write 0xB7 in binary and in decimal. Can a double store 0.2 exactly?",
+        "answer": "B is 1011 and 7 is 0111, so 0xB7 is 10110111, which is 128 + 32 + 16 + 4 + 2 + 1 = 183. No: 0.2 is 1/5, and 5 is not a power of two, so its binary expansion repeats and the double holds only a close neighbour."
+      },
+      "glossary": [
+        {
+          "term": "Bit",
+          "meaning": "One binary digit, 0 or 1; the smallest piece of stored information."
+        },
+        {
+          "term": "Hexadecimal digit",
+          "meaning": "One of 0 to 9 and A to F; it names a group of four bits."
+        },
+        {
+          "term": "ASCII code",
+          "meaning": "The number from 0 to 127 that stands for a common character."
+        },
+        {
+          "term": "Mantissa",
+          "meaning": "The fraction bits of a floating-point number; a double keeps 52 of them."
+        },
+        {
+          "term": "Bit-field",
+          "meaning": "A struct member that uses a stated number of bits."
+        },
+        {
+          "term": "Mask",
+          "meaning": "A number whose 1 bits select the bits you want to keep when you AND with it."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "Why do you read the remainders from last to first?",
+          "answer": "The first remainder is the lowest bit, the ones place. The last remainder is the highest bit, so it must be written first."
+        },
+        {
+          "question": "How can you tell at a glance that 1/10 is not exact in binary?",
+          "answer": "Its reduced denominator is 10, which contains the factor 5. A fraction ends in binary only if the reduced denominator is a power of two."
+        },
+        {
+          "question": "Why is a bit-field declared unsigned?",
+          "answer": "A plain int field may be signed or unsigned, depending on the compiler. A one-bit signed field can only hold 0 and -1."
+        },
+        {
+          "question": "Why is ch - '0' safe for digits but ch - 'A' risky for letters?",
+          "answer": "C guarantees that the digit characters are consecutive. It does not guarantee that the letters are, because some character sets leave gaps."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "Do it by hand once, then let the machine check you",
+          "body": "A memory dump shows bytes as two hex digits. If you can convert by hand, you can read 48 65 6C 6C 6F as the letters H, e, l, l, o at a glance, because the bytes 0x41 to 0x5A are capitals and 0x61 to 0x7A are lower-case. The same skill helps you spot a wrong printf format, such as printing a pointer with %d."
+        },
+        {
+          "title": "Choose exact types for money and counts",
+          "body": "Store 19.99 dollars as 1999 cents in an integer. Integer addition is exact, so a total of many prices never drifts. Convert to dollars only when printing. Use doubles for measurements, where a tiny error is acceptable, and compare them with a tolerance chosen for the size of the numbers."
+        },
+        {
+          "title": "Bit-fields trade portability for compactness",
+          "body": "Suppose a protocol header has a 4-bit version and a 4-bit length in one byte. Two compilers may place the bit-fields at opposite ends of that byte, so the bytes on the wire would differ. Building the byte with (version << 4) | length gives the same result everywhere, and a test can check the exact value."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "c-base-conversion-ascii",
+          "title": "Convert 202 by hand-style division and read ASCII codes",
+          "intro": "The program does on a screen exactly what you do on paper, then treats characters as small numbers.",
+          "language": "c",
+          "code": "#include <stdio.h>\n\nstatic char hex_digit(unsigned value) {\n    return \"0123456789ABCDEF\"[value];\n}\n\n/* Turn n into binary by repeated division by 2, as you would on paper. */\nstatic void show_division(unsigned n) {\n    char digits[32];\n    int count = 0;\n    printf(\"convert %u\\n\", n);\n    while (n > 0) {\n        printf(\"  %u / 2 = %u remainder %u\\n\", n, n / 2, n % 2);\n        digits[count++] = (char)('0' + n % 2);\n        n /= 2;\n    }\n    printf(\"read the remainders from last to first: \");\n    for (int i = count - 1; i >= 0; i--)\n        putchar(digits[i]);\n    putchar('\\n');\n}\n\n/* Read a binary text left to right: double what you have, add the next bit. */\nstatic unsigned from_binary(const char *text) {\n    unsigned value = 0;\n    for (; *text != '\\0'; text++)\n        value = value * 2 + (unsigned)(*text - '0');\n    return value;\n}\n\nint main(void) {\n    show_division(202);\n\n    printf(\"group by four bits:\");\n    for (int shift = 4; shift >= 0; shift -= 4) {\n        unsigned nibble = (202u >> shift) & 0xFu;\n        printf(\" \");\n        for (int bit = 3; bit >= 0; bit--)\n            putchar((nibble >> bit) & 1u ? '1' : '0');\n        printf(\"=%c\", hex_digit(nibble));\n    }\n    printf(\"\\nso 202 is 0x%X\\n\", 202u);\n    printf(\"back to decimal: 11001010 -> %u\\n\", from_binary(\"11001010\"));\n\n    char upper = 'K';\n    char lower = 'k';\n    printf(\"'%c' = %d = 0x%X\\n\", upper, upper, (unsigned)upper);\n    printf(\"'%c' = %d = 0x%X\\n\", lower, lower, (unsigned)lower);\n    printf(\"difference = %d, so clearing bit 5 turns '%c' into '%c'\\n\",\n           lower - upper, lower, (char)(lower & ~0x20));\n    char digit = '7';\n    printf(\"'%c' = %d, and '%c' - '0' = %d\\n\", digit, digit, digit, digit - '0');\n    return 0;\n}\n",
+          "output": "convert 202\n  202 / 2 = 101 remainder 0\n  101 / 2 = 50 remainder 1\n  50 / 2 = 25 remainder 0\n  25 / 2 = 12 remainder 1\n  12 / 2 = 6 remainder 0\n  6 / 2 = 3 remainder 0\n  3 / 2 = 1 remainder 1\n  1 / 2 = 0 remainder 1\nread the remainders from last to first: 11001010\ngroup by four bits: 1100=C 1010=A\nso 202 is 0xCA\nback to decimal: 11001010 -> 202\n'K' = 75 = 0x4B\n'k' = 107 = 0x6B\ndifference = 32, so clearing bit 5 turns 'k' into 'K'\n'7' = 55, and '7' - '0' = 7\n",
+          "explanation": "show_division is the paper method written as code. Each loop turn divides by two, prints the remainder and keeps it as a character. The remainders come out lowest bit first, so the next loop prints them backward.\n\nThe nibble loop takes four bits at a time with a shift and a mask. 202 >> 4 is 12, which is 1100 in binary and the hex digit C. The low four bits, 202 & 0xF, are 1010, which is hex A. So 202 is 0xCA. from_binary goes the other way: for each bit it doubles the running value and adds the bit, giving 1, 3, 6, 12, 25, 50, 101 and finally 202.\n\nThe last lines treat char as a small number. 'K' is 75 and 'k' is 107. The gap is 32, which is the single bit 0x20, so clearing that bit turns a lower-case letter into its capital. The digit '7' has code 55, so '7' - '0' gives the value 7.",
+          "walkthrough": [
+            "Divide by two and keep the remainder at every step.",
+            "Print the remainders from last to first to get the binary number.",
+            "Cut the value into groups of four bits and name each group with one hex digit.",
+            "Rebuild the decimal value from the bit text by doubling and adding.",
+            "Use character codes as numbers: compare cases and turn a digit character into its value."
+          ],
+          "trace": {
+            "columns": [
+              "n before",
+              "n % 2 (bit)",
+              "n / 2 (n after)"
+            ],
+            "rows": [
+              [
+                "202",
+                "0",
+                "101"
+              ],
+              [
+                "101",
+                "1",
+                "50"
+              ],
+              [
+                "50",
+                "0",
+                "25"
+              ],
+              [
+                "25",
+                "1",
+                "12"
+              ],
+              [
+                "12",
+                "0",
+                "6"
+              ],
+              [
+                "6",
+                "0",
+                "3"
+              ],
+              [
+                "3",
+                "1",
+                "1"
+              ],
+              [
+                "1",
+                "1",
+                "0"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "\"0123456789ABCDEF\"[value]",
+              "meaning": "Indexing a string literal picks one character, so index 10 gives A."
+            },
+            {
+              "syntax": "(202u >> shift) & 0xFu",
+              "meaning": "Shift the wanted bits to the right end, then keep only the low four bits."
+            },
+            {
+              "syntax": "printf(\"0x%X\", n)",
+              "meaning": "%X prints an unsigned number in upper-case hex; the 0x before it is ordinary text."
+            },
+            {
+              "syntax": "(unsigned)(*text - '0')",
+              "meaning": "Subtracting '0' turns the digit character '1' into the number 1."
+            },
+            {
+              "syntax": "for (; *text != '\\0'; text++)",
+              "meaning": "Walk along a string until its zero byte; the loop needs no counter."
+            }
+          ]
+        },
+        {
+          "id": "c-binary-fractions",
+          "title": "Why 0.1 is not exact in binary",
+          "intro": "Expand fractions into bits with integers, then look inside a double.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdint.h>\n#include <string.h>\n\nstatic unsigned gcd(unsigned a, unsigned b) {\n    while (b != 0) {\n        unsigned r = a % b;\n        a = b;\n        b = r;\n    }\n    return a;\n}\n\n/* A fraction ends in binary exactly when its reduced denominator is a power of two. */\nstatic int ends_in_binary(unsigned p, unsigned q) {\n    q /= gcd(p, q);\n    return (q & (q - 1)) == 0;\n}\n\n/* Produce binary digits of num/den by doubling the remainder, like long division. */\nstatic void expand(unsigned num, unsigned den, int digits) {\n    printf(\"%u/%u in binary: 0.\", num, den);\n    unsigned remainder = num;\n    for (int i = 0; i < digits && remainder != 0; i++) {\n        remainder *= 2;\n        putchar(remainder >= den ? '1' : '0');\n        if (remainder >= den)\n            remainder -= den;\n    }\n    printf(\"%s\\n\", remainder == 0 ? \"  (stops)\" : \"...  (keeps going)\");\n}\n\nint main(void) {\n    static const unsigned tests[][2] = {{3, 4}, {7, 8}, {1, 10}, {1, 5}, {1, 3}};\n    for (size_t i = 0; i < sizeof tests / sizeof tests[0]; i++)\n        printf(\"%u/%u ends in binary: %s\\n\", tests[i][0], tests[i][1],\n               ends_in_binary(tests[i][0], tests[i][1]) ? \"yes\" : \"no\");\n\n    expand(3, 4, 12);\n    expand(1, 10, 16);\n\n    printf(\"remainders for 1/10 while doubling:\");\n    unsigned r = 1;\n    for (int i = 0; i < 9; i++) {\n        printf(\" %u\", r);\n        r = (r * 2) % 10;\n    }\n    printf(\"\\n\");\n\n    double tenth = 0.1;\n    uint64_t bits;\n    memcpy(&bits, &tenth, sizeof bits);\n    printf(\"0.1 as a double: 0x%016llX\\n\", (unsigned long long)bits);\n    printf(\"exponent field %llu, stored mantissa 0x%013llX\\n\",\n           (unsigned long long)((bits >> 52) & 0x7FF),\n           (unsigned long long)(bits & 0xFFFFFFFFFFFFFull));\n\n    double sum = 0.1 + 0.2;\n    double diff = sum - 0.3;\n    if (diff < 0)\n        diff = -diff;\n    printf(\"0.1 + 0.2 == 0.3 ? %s\\n\", sum == 0.3 ? \"yes\" : \"no\");\n    printf(\"within 1e-9 of 0.3 ? %s\\n\", diff < 1e-9 ? \"yes\" : \"no\");\n    printf(\"%.17g\\n\", sum);\n    printf(\"10 + 20 cents == 30 cents ? %s\\n\", 10 + 20 == 30 ? \"yes\" : \"no\");\n    return 0;\n}\n",
+          "output": "3/4 ends in binary: yes\n7/8 ends in binary: yes\n1/10 ends in binary: no\n1/5 ends in binary: no\n1/3 ends in binary: no\n3/4 in binary: 0.11  (stops)\n1/10 in binary: 0.0001100110011001...  (keeps going)\nremainders for 1/10 while doubling: 1 2 4 8 6 2 4 8 6\n0.1 as a double: 0x3FB999999999999A\nexponent field 1019, stored mantissa 0x999999999999A\n0.1 + 0.2 == 0.3 ? no\nwithin 1e-9 of 0.3 ? yes\n0.30000000000000004\n10 + 20 cents == 30 cents ? yes\n",
+          "explanation": "ends_in_binary reduces the fraction with the greatest common divisor and then asks whether the denominator is a power of two. A power of two has exactly one 1 bit, so q & (q - 1) is zero. 3/4 and 7/8 pass. 1/10, 1/5 and 1/3 fail.\n\nexpand does long division in base 2. Double the remainder; if it reaches the denominator the next bit is 1 and you subtract the denominator. For 3/4 the remainder hits 0 after two bits, so the answer is exactly 0.11. For 1/10 the remainders run 1, 2, 4, 8, 6, 2, 4, 8, 6. A remainder has come back, so the bits repeat for ever: 0.0001100110011...\n\nA double keeps only 52 mantissa bits, so the endless pattern is cut and rounded. memcpy copies the eight bytes of 0.1 into a 64-bit integer so we can look at them. The exponent field 1019 means 2 to the power 1019 - 1023, which is 2 to the power -4. The mantissa digits 999999999999A are the repeating pattern 1001, rounded up in the last place. So the stored value is a little larger than 0.1. Adding 0.1 and 0.2 lands one step above the double nearest 0.3, so == says no, while a tolerance test says yes. Whole cents held in integers avoid the problem.",
+          "walkthrough": [
+            "Reduce the fraction and test whether the denominator is a power of two.",
+            "Produce binary digits by doubling the remainder and watch for a remainder that repeats.",
+            "Copy a double into a 64-bit integer and print its raw fields.",
+            "Compare the sum with 0.3 exactly and with a tolerance.",
+            "Show that integer cents add exactly."
+          ],
+          "trace": {
+            "columns": [
+              "remainder",
+              "doubled",
+              "next bit",
+              "remainder after"
+            ],
+            "rows": [
+              [
+                "1",
+                "2",
+                "0",
+                "2"
+              ],
+              [
+                "2",
+                "4",
+                "0",
+                "4"
+              ],
+              [
+                "4",
+                "8",
+                "0",
+                "8"
+              ],
+              [
+                "8",
+                "16",
+                "1",
+                "6"
+              ],
+              [
+                "6",
+                "12",
+                "1",
+                "2"
+              ],
+              [
+                "2",
+                "4",
+                "0",
+                "4 (the cycle 2, 4, 8, 6 repeats)"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "(q & (q - 1)) == 0",
+              "meaning": "True exactly when q has a single 1 bit, that is, when q is a power of two."
+            },
+            {
+              "syntax": "memcpy(&bits, &tenth, sizeof bits)",
+              "meaning": "Copy the bytes of a double into an integer so you can look at them without a risky pointer cast."
+            },
+            {
+              "syntax": "uint64_t",
+              "meaning": "An unsigned integer of exactly 64 bits, declared in stdint.h."
+            },
+            {
+              "syntax": "%016llX with (unsigned long long)",
+              "meaning": "Print a 64-bit value as 16 hex digits padded with zeros; the cast makes the type match the format."
+            },
+            {
+              "syntax": "%.17g",
+              "meaning": "Print up to 17 significant digits, enough to tell any two doubles apart."
+            },
+            {
+              "syntax": "sizeof tests / sizeof tests[0]",
+              "meaning": "Divide the size of the whole table by the size of one row to count the rows."
+            }
+          ]
+        },
+        {
+          "id": "c-bit-fields-and-masks",
+          "title": "Pack a date with a bit-field and with shifts",
+          "intro": "Three small numbers share 16 bits; compare the compiler's layout with a layout you control.",
+          "language": "c",
+          "code": "#include <stdio.h>\n\n/* Three small numbers share 7 + 4 + 5 = 16 bits. */\nstruct PackedDate {\n    unsigned year : 7;   /* years since 1980, 0..127 */\n    unsigned month : 4;  /* 0..15, we use 1..12 */\n    unsigned day : 5;    /* 0..31, we use 1..31 */\n};\n\n/* Exact layout chosen by us, with shifts and masks:\n   bits 15..9 year, bits 8..5 month, bits 4..0 day. */\nstatic unsigned pack(unsigned year, unsigned month, unsigned day) {\n    return (year << 9) | (month << 5) | day;\n}\n\nstatic void print_bits16(unsigned word) {\n    for (int bit = 15; bit >= 0; bit--) {\n        putchar((word >> bit) & 1u ? '1' : '0');\n        if (bit % 4 == 0 && bit != 0)\n            putchar(' ');\n    }\n}\n\nint main(void) {\n    struct PackedDate date;\n    date.year = 45;\n    date.month = 11;\n    date.day = 5;\n    printf(\"bit-field read back: year=%u month=%u day=%u\\n\", date.year, date.month, date.day);\n\n    unsigned word = pack(45, 11, 5);\n    printf(\"packed word: 0x%04X = \", word);\n    print_bits16(word);\n    printf(\"\\n\");\n\n    unsigned year = (word >> 9) & 0x7Fu;\n    unsigned month = (word >> 5) & 0xFu;\n    unsigned day = word & 0x1Fu;\n    printf(\"unpacked with masks: year=%u month=%u day=%u\\n\", year, month, day);\n\n    unsigned too_big = 17;\n    date.month = too_big;\n    printf(\"stored 17 in a 4-bit field, read back %u\\n\", date.month);\n\n    unsigned flags = 0;\n    flags |= 1u << 2;\n    flags |= 1u << 0;\n    printf(\"flags after setting bits 2 and 0: %u\\n\", flags);\n    printf(\"bit 1 set? %s\\n\", (flags & (1u << 1)) ? \"yes\" : \"no\");\n    flags &= ~(1u << 2);\n    printf(\"flags after clearing bit 2: %u\\n\", flags);\n    flags ^= 1u << 3;\n    printf(\"flags after toggling bit 3: %u\\n\", flags);\n    return 0;\n}\n",
+          "output": "bit-field read back: year=45 month=11 day=5\npacked word: 0x5B65 = 0101 1011 0110 0101\nunpacked with masks: year=45 month=11 day=5\nstored 17 in a 4-bit field, read back 1\nflags after setting bits 2 and 0: 5\nbit 1 set? no\nflags after clearing bit 2: 1\nflags after toggling bit 3: 9\n",
+          "explanation": "A struct with bit-fields names three tiny numbers that share 16 bits: 7 bits for the year since 1980, 4 for the month and 5 for the day. You read and write date.month like any member. The compiler adds the shifts and masks for you.\n\nThe compiler also decides where each field sits inside its storage unit, so the struct does not tell you the bit order. pack() fixes the layout by hand: year in bits 15 to 9, month in bits 8 to 5 and day in bits 4 to 0. Then 45 << 9 is 23040, 11 << 5 is 352, and with the day 5 the total is 23397, which is 0x5B65 or 0101 1011 0110 0101. Any machine can unpack that word with the same masks: 0x7F keeps 7 bits, 0xF keeps 4 and 0x1F keeps 5.\n\nStoring 17 in a four-bit field keeps only the low four bits. 17 mod 16 is 1, and nothing complains at run time. The last block shows the four everyday bit tools: set with |, test with &, clear with & ~, and toggle with ^.",
+          "walkthrough": [
+            "Declare bit-field members with a width after the colon.",
+            "Pack three values into one 16-bit word with shifts and OR.",
+            "Unpack with a right shift and a mask whose width matches the field.",
+            "Observe that an oversized value wraps modulo 2 to the power of the width.",
+            "Set, test, clear and toggle single bits of a flags word."
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "Expression",
+              "Value"
+            ],
+            "rows": [
+              [
+                "year part",
+                "45 << 9",
+                "23040"
+              ],
+              [
+                "month part",
+                "11 << 5",
+                "352"
+              ],
+              [
+                "day part",
+                "5",
+                "5"
+              ],
+              [
+                "sum",
+                "23040 | 352 | 5",
+                "23397 = 0x5B65"
+              ],
+              [
+                "unpack month",
+                "(0x5B65 >> 5) & 0xF",
+                "11"
+              ],
+              [
+                "overflow",
+                "17 stored in 4 bits",
+                "1"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "unsigned month : 4;",
+              "meaning": "Declare a member that uses 4 bits. Use unsigned so the value cannot be negative."
+            },
+            {
+              "syntax": "(word >> 5) & 0xFu",
+              "meaning": "Move the field to the right end, then keep only as many bits as its width."
+            },
+            {
+              "syntax": "flags |= 1u << 2",
+              "meaning": "Set bit 2: build a word with only that bit on and OR it in."
+            },
+            {
+              "syntax": "flags &= ~(1u << 2)",
+              "meaning": "Clear bit 2: invert the one-bit word so every other bit is 1, then AND."
+            },
+            {
+              "syntax": "flags ^= 1u << 3",
+              "meaning": "Toggle bit 3: XOR flips that bit and leaves the others alone."
+            }
           ]
         }
       ]
@@ -1026,6 +1355,309 @@
       ]
     },
     {
+      "id": "memory-layout",
+      "title": "Process memory: stack, heap, data, bss and text",
+      "story": "Think of a busy print shop. Near the door is a spindle of job trays. A new tray goes on top, and only the top tray can be worked on. When a job is done its tray is lifted off and the one below shows again. That spindle is the call stack. At the back is a storage room with numbered shelves. Clerks rent shelves for as long as they need them, in any order, and each shelf must be returned by whoever rented it. That room is the heap.\n\nOn the wall hang fixed signs, painted when the shop opened. Some already carry a message. They are the data region. Some are blank boards that start as zero. They are the bss region. The operations manual is bolted to a desk and nobody may write in it. That is the text region, where the machine code lives.\n\nA drawing of the shop only helps if everyone draws it the same way. So we agree on one convention: low addresses at the bottom, high addresses at the top, every box labelled, and arrows showing which way things grow.",
+      "principle": "A running C program has five main regions. Text holds the machine code of the functions. It is read-only and can be shared between runs of the same program. String literals usually sit in a read-only area next to it, so changing one is undefined behavior. Data holds global and static variables that start with a non-zero value, such as int limit = 7;. Bss holds global and static variables that start at zero or have no initializer. The program file stores only their total size, and the system fills them with zeros at start. The heap holds memory from malloc, calloc and realloc. It lives until free is called and usually grows toward higher addresses. The stack holds one frame for every active function call. A frame holds the parameters, the local variables, some saved registers and the return address. On common systems such as x86-64 and ARM64, the stack grows toward lower addresses. A call pushes a frame and a return pops it. The next call reuses the same bytes, so a pointer to an old local variable is dangling.\n\nOur drawing convention is this. First, low addresses are at the bottom and high addresses at the top, so text is at the bottom and the stack is at the top. Second, draw one box per frame, labelled with the function name and its size, and put the newest frame lowest. Third, write the address of a box's lowest byte on the line under it. Fourth, draw an arrow for each direction of growth: down for the stack and up for the heap. Fifth, draw a pointer as an arrow from the pointer's box to the box it points at. This is a model. The operating system and the compiler decide the real layout, and address randomization changes it on every run.\n\nThe stack has a fixed size limit, often 8 MiB on Linux. Very deep recursion, or a huge local array, uses it up. The next push then goes past the end into a guard page and the system stops the program with a segmentation fault. This is a stack overflow. Fix it by limiting the recursion depth, turning the recursion into a loop, or moving big buffers to the heap.\n\nA stack smash is different. Local variables sit next to each other and next to the saved return address. Code can write past the end of a local array in several ways: gets, an unchecked strcpy, scanf with %s, or a loop with a wrong bound. The extra bytes overwrite the neighbours: other locals first, then the saved frame pointer and the return address. When the function returns, the processor jumps to whatever that address now holds. A mistake crashes the program, and an attacker may choose the value. Stack protectors place a secret canary value before the return address and check it on return. A non-executable stack and address randomization make attacks harder. They only reduce the damage of a bug. The cure is never to write more bytes than the buffer holds: pass sizes, use snprintf and fgets, and check lengths first.",
+      "formula": "high addresses\n+------------------------------+  top of stack\n| main     frame               |\n| f        frame               |  newest frame is lowest\n+------------------------------+  <- stack pointer\n|   v stack grows down         |\n|   (unused space)             |\n|   ^ heap grows up            |\n+------------------------------+  <- end of heap\n| heap: blocks from malloc     |\n+------------------------------+\n| bss   (zero-filled)          |\n| data  (initialised)          |\n| text  (code, read-only)      |\n+------------------------------+\nlow addresses\n\nFrame size  = locals + saved registers + return address (+ padding)\nMax depth   = stack limit / frame size\nSmash       = bytes written to an object > size of that object",
+      "symbols": "The stack limit is the number of bytes the system allows the stack to use. The frame size is the number of bytes one call needs. Dividing one by the other gives only a rough depth, because main and the library functions already use part of the stack, and compilers round frame sizes up to a multiple of 16. The line about a smash is not a formula for a result. It names the condition for the bug: any write that goes past the end of the object it started in.\n\nThe diagram shows a typical layout on a common system. It is a teaching model. The order of locals inside a frame, the direction of growth and the exact placement of regions can differ between systems and compilers.",
+      "example": "Suppose a recursive function has 64-byte frames and the stack limit is 8 MiB, which is 8388608 bytes. Then 8388608 / 64 = 131072, so the function can go about 131000 calls deep before the stack runs out. With 48-byte frames the limit is 174762. A local array int big[3000000] needs 3000000 x 4 = 12000000 bytes, which is more than the whole stack, so the first call to that function fails. The same array from malloc is fine.\n\nNow follow a small program. main (64 bytes) calls read_line (48 bytes), which asks malloc for 100 bytes and then calls parse (32 bytes). With the stack top at 0x7FFF0000, the stack pointer goes to 0x7FFEFFC0, then 0x7FFEFF90, then 0x7FFEFF70. When parse and read_line return, the pointer climbs back to 0x7FFEFFC0, but the 100-byte heap block is still there. If main never receives its address, the block is leaked.\n\nFor a smash, copy \"NoahIrisJack\" with strcpy into char name[8]. The text needs 12 + 1 = 13 bytes. The first 8 fit and the other 5 land on whatever sits after the buffer.",
+      "pitfall": "Never return the address of a local variable. Its frame is reused by the next call. A pointer stored in a local variable dies with the frame, but the heap block it pointed at does not, so forgetting to free it is a leak. And do not treat the picture as a guarantee: addresses, the direction of growth and the order of locals depend on the system and the compiler.",
+      "check": {
+        "question": "A recursive function has 64-byte frames. About how deep can it go on an 8 MiB stack, and what is one change that avoids overflow for large inputs?",
+        "answer": "8388608 / 64 = 131072 levels, a little fewer in practice because main and library code use some stack. Add a depth limit that returns an error, or rewrite the recursion as a loop."
+      },
+      "glossary": [
+        {
+          "term": "Stack frame",
+          "meaning": "The block of stack memory that holds one call's parameters, locals and return address."
+        },
+        {
+          "term": "Stack pointer",
+          "meaning": "The register that holds the address of the newest frame's lowest byte."
+        },
+        {
+          "term": "Heap",
+          "meaning": "Memory obtained with malloc, calloc or realloc; it lives until it is freed."
+        },
+        {
+          "term": "Bss",
+          "meaning": "The region for globals and statics that start at zero; the file stores only its size."
+        },
+        {
+          "term": "Stack canary",
+          "meaning": "A secret value placed before the return address and checked before the function returns."
+        },
+        {
+          "term": "Guard page",
+          "meaning": "An inaccessible page just past the end of the stack; touching it stops the program."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "Where does static int hits = 0; inside a function live, and for how long?",
+          "answer": "It lives in the bss region for the whole run of the program, although only that function can see its name. A static with a non-zero initial value, such as static int limit = 7;, lives in the data region."
+        },
+        {
+          "question": "Why can a pointer to a local variable be wrong after the function returns?",
+          "answer": "The return pops the frame. The next call may push a new frame onto the same bytes, so the old address now holds something else."
+        },
+        {
+          "question": "If the stack is so cheap, why do we still need the heap?",
+          "answer": "Stack space is limited, and its objects die when the call returns. The heap is for sizes known only at run time, for big objects, and for objects that must outlive the call that created them."
+        },
+        {
+          "question": "What does a stack canary catch, and what can it miss?",
+          "answer": "It catches a write that runs over the canary on its way to the return address. It can miss a write that damages a neighbouring variable below the canary, or a write that jumps over it."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "Draw first, then debug",
+          "body": "When a program crashes, ask which region the failing address belongs to. An address near zero is usually a NULL pointer. An address just below the stack limit points to overflow. An address inside a freed heap block points to a use-after-free. A diagram drawn with the same convention every time makes these cases easy to tell apart."
+        },
+        {
+          "title": "Decide where an object lives from its lifetime and size",
+          "body": "A small object that is needed only during one call belongs in a local variable. An object that must outlive the call, or whose size is known only at run time, belongs on the heap with one named owner. A table that lives for the whole run can be static. A 12 MB table as a local array fails, not because the heap is magic, but because the stack is small."
+        },
+        {
+          "title": "Bounds matter more than defenses",
+          "body": "Canaries, non-executable stacks and address randomization are worth turning on, but they only make a bug harder to exploit. Every unchecked copy is still a defect, whether or not anyone attacks it. Writing the length check once, at the point of the copy, is the fix that also makes your program correct."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "c-process-map-model",
+          "title": "Draw a process map from a table of numbers",
+          "intro": "A model with made-up addresses shows frames growing down, the heap growing up and the fixed regions between.",
+          "language": "c",
+          "code": "#include <stdio.h>\n\n/* A MODEL of one process. The addresses are chosen for teaching; a real\n   system picks its own and may randomise them on every run. */\n#define TEXT_START 0x00400000ul\n#define TEXT_END   0x00401200ul\n#define DATA_START 0x00601000ul\n#define BSS_START  0x00601040ul\n#define BSS_END    0x00601240ul\n#define HEAP_START 0x01000000ul\n#define STACK_TOP  0x7FFF0000ul\n\nstatic unsigned long heap_next = HEAP_START;\nstatic unsigned long stack_ptr = STACK_TOP;\n\n/* The heap hands out 16-byte units, moving UP. */\nstatic unsigned long model_malloc(unsigned long size, const char *who) {\n    unsigned long block = heap_next;\n    heap_next += (size + 15ul) / 16ul * 16ul;\n    printf(\"%-9s malloc(%3lu) -> 0x%08lX, heap ends at 0x%08lX\\n\", who, size, block, heap_next);\n    return block;\n}\n\n/* A call moves the stack pointer DOWN by the new frame's size. */\nstatic void push_frame(const char *name, unsigned long size) {\n    stack_ptr -= size;\n    printf(\"call %-9s frame %2lu bytes, stack pointer 0x%08lX\\n\", name, size, stack_ptr);\n}\n\nstatic void pop_frame(const char *name, unsigned long size) {\n    stack_ptr += size;\n    printf(\"return %-9s stack pointer back to 0x%08lX\\n\", name, stack_ptr);\n}\n\n/* Each address labels the line BELOW the box above it: the lowest byte of that box. */\nstatic void edge(unsigned long address, const char *note) {\n    printf(\"0x%08lX  +-------------------------------+%s%s\\n\", address, note[0] ? \" \" : \"\", note);\n}\n\nstatic void box(const char *text) {\n    printf(\"            | %-29s |\\n\", text);\n}\n\nint main(void) {\n    unsigned long main_top = STACK_TOP;\n    push_frame(\"main\", 64);\n    unsigned long read_top = stack_ptr;\n    model_malloc(24, \"main\");\n    push_frame(\"read_line\", 48);\n    unsigned long parse_top = stack_ptr;\n    model_malloc(100, \"read_line\");\n    push_frame(\"parse\", 32);\n\n    char line[40];\n    printf(\"\\nhigh addresses at the top, low addresses at the bottom\\n\");\n    edge(main_top, \"top of stack\");\n    box(\"main frame, 64 bytes\");\n    edge(read_top, \"\");\n    box(\"read_line frame, 48 bytes\");\n    edge(parse_top, \"\");\n    box(\"parse frame, 32 bytes\");\n    edge(stack_ptr, \"<- stack pointer\");\n    box(\"v stack grows down\");\n    snprintf(line, sizeof line, \"unused, about %lu MiB\", (stack_ptr - heap_next) >> 20);\n    box(line);\n    box(\"^ heap grows up\");\n    edge(heap_next, \"<- end of heap\");\n    box(\"heap: blocks of 32 and 112\");\n    edge(HEAP_START, \"heap start\");\n    box(\"(unmapped)\");\n    edge(BSS_END, \"\");\n    box(\"bss: zero-filled globals\");\n    edge(BSS_START, \"\");\n    box(\"data: initialised globals\");\n    edge(DATA_START, \"\");\n    box(\"(unmapped)\");\n    edge(TEXT_END, \"\");\n    box(\"text: machine code, read-only\");\n    edge(TEXT_START, \"lowest address\");\n\n    printf(\"\\n\");\n    pop_frame(\"parse\", 32);\n    pop_frame(\"read_line\", 48);\n    printf(\"heap still holds %lu bytes: blocks outlive the frames that asked\\n\",\n           heap_next - HEAP_START);\n    return 0;\n}\n",
+          "output": "call main      frame 64 bytes, stack pointer 0x7FFEFFC0\nmain      malloc( 24) -> 0x01000000, heap ends at 0x01000020\ncall read_line frame 48 bytes, stack pointer 0x7FFEFF90\nread_line malloc(100) -> 0x01000020, heap ends at 0x01000090\ncall parse     frame 32 bytes, stack pointer 0x7FFEFF70\n\nhigh addresses at the top, low addresses at the bottom\n0x7FFF0000  +-------------------------------+ top of stack\n            | main frame, 64 bytes          |\n0x7FFEFFC0  +-------------------------------+\n            | read_line frame, 48 bytes     |\n0x7FFEFF90  +-------------------------------+\n            | parse frame, 32 bytes         |\n0x7FFEFF70  +-------------------------------+ <- stack pointer\n            | v stack grows down            |\n            | unused, about 2031 MiB        |\n            | ^ heap grows up               |\n0x01000090  +-------------------------------+ <- end of heap\n            | heap: blocks of 32 and 112    |\n0x01000000  +-------------------------------+ heap start\n            | (unmapped)                    |\n0x00601240  +-------------------------------+\n            | bss: zero-filled globals      |\n0x00601040  +-------------------------------+\n            | data: initialised globals     |\n0x00601000  +-------------------------------+\n            | (unmapped)                    |\n0x00401200  +-------------------------------+\n            | text: machine code, read-only |\n0x00400000  +-------------------------------+ lowest address\n\nreturn parse     stack pointer back to 0x7FFEFF90\nreturn read_line stack pointer back to 0x7FFEFFC0\nheap still holds 144 bytes: blocks outlive the frames that asked\n",
+          "explanation": "This program is a model, not a measurement. Its addresses are chosen for teaching, because a real system picks its own and may change them on every run.\n\nmodel_malloc hands out heap space upward in 16-byte units. A request for 24 bytes uses 32, and a request for 100 uses 112, so the heap ends at 0x01000000 + 32 + 112 = 0x01000090. push_frame moves the stack pointer down. The top of the stack is 0x7FFF0000. main takes 64 bytes, so the pointer becomes 0x7FFEFFC0. read_line takes 48 more (0x7FFEFF90) and parse takes 32 more (0x7FFEFF70).\n\nRead the diagram with the convention in the chapter. High addresses are at the top. The address written on a line is the lowest byte of the box above that line. The newest frame, parse, is the lowest one. The big gap between the stack pointer and the end of the heap is the room both can still grow into. When parse and read_line return, the stack pointer simply moves back up. The two heap blocks stay, because only free ends a block's life.",
+          "walkthrough": [
+            "Fix the model addresses of the text, data, bss, heap and stack regions.",
+            "Move the heap end upward for every allocation, rounded to 16 bytes.",
+            "Move the stack pointer downward for every call and upward for every return.",
+            "Print the regions from the highest address to the lowest with one box per block.",
+            "Show that the heap blocks survive after the frames that asked for them are gone."
+          ],
+          "trace": {
+            "columns": [
+              "Event",
+              "Stack pointer",
+              "End of heap"
+            ],
+            "rows": [
+              [
+                "start",
+                "0x7FFF0000",
+                "0x01000000"
+              ],
+              [
+                "call main (64)",
+                "0x7FFEFFC0",
+                "0x01000000"
+              ],
+              [
+                "main: malloc(24)",
+                "0x7FFEFFC0",
+                "0x01000020"
+              ],
+              [
+                "call read_line (48)",
+                "0x7FFEFF90",
+                "0x01000020"
+              ],
+              [
+                "read_line: malloc(100)",
+                "0x7FFEFF90",
+                "0x01000090"
+              ],
+              [
+                "call parse (32)",
+                "0x7FFEFF70",
+                "0x01000090"
+              ],
+              [
+                "return from parse",
+                "0x7FFEFF90",
+                "0x01000090"
+              ],
+              [
+                "return from read_line",
+                "0x7FFEFFC0",
+                "0x01000090"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "#define STACK_TOP 0x7FFF0000ul",
+              "meaning": "A macro with a hex constant; the suffix ul makes it unsigned long so the address does not overflow an int."
+            },
+            {
+              "syntax": "(size + 15ul) / 16ul * 16ul",
+              "meaning": "Round a size up to the next multiple of 16 using integer division."
+            },
+            {
+              "syntax": "printf(\"%-9s\", name)",
+              "meaning": "%-9s pads a string on the right to 9 characters, so columns line up."
+            },
+            {
+              "syntax": "snprintf(line, sizeof line, \"...%lu\", n)",
+              "meaning": "Format text into a character array without ever writing past its size."
+            },
+            {
+              "syntax": "note[0] ? \" \" : \"\"",
+              "meaning": "Use a character of the string as a condition: it is false for an empty string."
+            }
+          ]
+        },
+        {
+          "id": "c-real-stack-behavior",
+          "title": "Watch real frames and keep recursion inside a budget",
+          "intro": "Only facts that hold on every run are printed, because real addresses change from run to run.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n\n#define LEVELS 4\nstatic uintptr_t where[2][LEVELS];\n\n/* Remember the address of one local variable at each call depth. */\nstatic void descend(int round, int level) {\n    char marker = 0;\n    where[round][level] = (uintptr_t)&marker;\n    if (level + 1 < LEVELS)\n        descend(round, level + 1);\n}\n\n/* Recursion with a depth budget: refuse instead of running out of stack. */\nstatic long sum_to(long n, int depth, int limit) {\n    if (depth > limit)\n        return -1;\n    if (n == 0)\n        return 0;\n    long rest = sum_to(n - 1, depth + 1, limit);\n    if (rest < 0)\n        return -1;\n    return n + rest;\n}\n\nint main(void) {\n    descend(0, 0);\n    descend(1, 0);\n\n    int lower = 1;\n    for (int level = 1; level < LEVELS; level++)\n        if (where[0][level] >= where[0][level - 1])\n            lower = 0;\n    printf(\"each deeper call has a lower local address: %s\\n\", lower ? \"yes\" : \"no\");\n\n    int same = 1;\n    for (int level = 0; level < LEVELS; level++)\n        if (where[0][level] != where[1][level])\n            same = 0;\n    printf(\"a second round reuses the same addresses: %s\\n\", same ? \"yes\" : \"no\");\n\n    void *block = malloc(100);\n    int apart = block != NULL;\n    for (int level = 0; level < LEVELS; level++)\n        if ((uintptr_t)block == where[0][level])\n            apart = 0;\n    printf(\"heap block differs from every frame address: %s\\n\", apart ? \"yes\" : \"no\");\n    free(block);\n\n    printf(\"sum_to(10) with budget 100 = %ld\\n\", sum_to(10, 0, 100));\n    printf(\"sum_to(5000) with budget 100 = %ld\\n\", sum_to(5000, 0, 100));\n\n    size_t stack_bytes = 8u * 1024u * 1024u;\n    size_t frame_bytes = 48;\n    printf(\"an %zu byte stack holds about %zu frames of %zu bytes\\n\",\n           stack_bytes, stack_bytes / frame_bytes, frame_bytes);\n    size_t array_bytes = 3000000u * sizeof(int);\n    printf(\"a local int[3000000] needs %zu bytes: %s\\n\", array_bytes,\n           array_bytes > stack_bytes ? \"too big for the stack, use malloc\" : \"fits\");\n    return 0;\n}\n",
+          "output": "each deeper call has a lower local address: yes\na second round reuses the same addresses: yes\nheap block differs from every frame address: yes\nsum_to(10) with budget 100 = 55\nsum_to(5000) with budget 100 = -1\nan 8388608 byte stack holds about 174762 frames of 48 bytes\na local int[3000000] needs 12000000 bytes: too big for the stack, use malloc\n",
+          "explanation": "This program looks at the real stack, but it never prints an address. Real addresses can change on every run, so the output only reports facts that stay true. It must be compiled without optimization: an optimizer may turn the recursion into a loop and remove the frames.\n\ndescend calls itself four levels deep and stores the address of a local variable at each level. On common systems each deeper call has a lower address, because the stack grows down. Calling descend a second time gives the same addresses, because the second call reuses the bytes the first call released. That is why a pointer to a local variable is wrong after its function returns: the next call may write over the same bytes. The heap block is somewhere else entirely.\n\nsum_to shows how to avoid a stack overflow. It carries a depth counter and refuses to go past a limit, returning -1 instead of using up the stack. The last lines are arithmetic. An 8 MiB stack is 8388608 bytes, and with 48-byte frames it holds about 174762 of them. A local array of 3000000 ints needs 12000000 bytes, which is more than the whole stack, so that array belongs on the heap.",
+          "walkthrough": [
+            "Record the address of a local variable at each recursion level.",
+            "Check the direction of growth and the reuse of frames without printing addresses.",
+            "Check that a malloc block does not coincide with any frame address.",
+            "Recurse under a depth limit and report -1 instead of overflowing.",
+            "Estimate the number of frames and the largest safe local array from the stack size."
+          ],
+          "trace": {
+            "columns": [
+              "Quantity",
+              "Calculation",
+              "Result"
+            ],
+            "rows": [
+              [
+                "frames in 8 MiB",
+                "8388608 / 48",
+                "174762"
+              ],
+              [
+                "local int[3000000]",
+                "3000000 x 4 bytes",
+                "12000000 bytes"
+              ],
+              [
+                "stack limit",
+                "8 x 1024 x 1024",
+                "8388608 bytes"
+              ],
+              [
+                "sum_to(10), limit 100",
+                "1 + 2 + ... + 10",
+                "55"
+              ],
+              [
+                "sum_to(5000), limit 100",
+                "depth 101 is refused",
+                "-1"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "uintptr_t",
+              "meaning": "An unsigned integer type big enough to hold a pointer value; it is in stdint.h."
+            },
+            {
+              "syntax": "(uintptr_t)&marker",
+              "meaning": "Convert the address of a local variable to an integer so addresses can be compared and stored."
+            },
+            {
+              "syntax": "static uintptr_t where[2][LEVELS];",
+              "meaning": "A global table, filled by the recursion, so the results survive after the frames are gone."
+            },
+            {
+              "syntax": "if (depth > limit) return -1;",
+              "meaning": "A guard clause: stop before the recursion goes too deep."
+            },
+            {
+              "syntax": "%zu",
+              "meaning": "The printf format for a size_t value."
+            }
+          ]
+        },
+        {
+          "id": "c-stack-smash-model",
+          "title": "Model a stack smash safely and stop it",
+          "intro": "A struct stands in for neighbouring bytes in a frame, so the overflow stays well defined.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <string.h>\n\n/* A MODEL of neighbouring bytes in one stack frame. A real compiler picks\n   the order of locals itself; the point here is only that they are adjacent. */\nstruct Frame {\n    char name[8];         /* a local buffer */\n    unsigned canary;      /* a guard value stored right after it */\n    unsigned return_tag;  /* stands in for the saved return address */\n};\n\n#define CANARY     0xC0FFEE00u\n#define RETURN_TAG 0xA1B2C3D4u\n\nstatic void reset(struct Frame *f) {\n    memset(f, 0, sizeof *f);\n    f->canary = CANARY;\n    f->return_tag = RETURN_TAG;\n}\n\n/* Like strcpy: copies the text and its zero byte, never asking how big name is.\n   It goes through the whole frame's own bytes so this demo stays well defined;\n   in real code the same mistake is undefined behaviour. */\nstatic void unchecked_copy(struct Frame *f, const char *text) {\n    size_t n = strlen(text) + 1;\n    if (n > sizeof *f)\n        n = sizeof *f;\n    memcpy(f, text, n);\n}\n\n/* Refuse text that does not fit, leaving room for the zero byte. */\nstatic int checked_copy(struct Frame *f, const char *text) {\n    size_t n = strlen(text);\n    if (n >= sizeof f->name)\n        return -1;\n    memcpy(f->name, text, n + 1);\n    return 0;\n}\n\nint main(void) {\n    const char *inputs[] = {\"Mia\", \"NoahIrisJack\", \"NoahIrisJackLeo\"};\n    struct Frame frame;\n    printf(\"model frame: name[%zu], then canary, then return tag\\n\", sizeof frame.name);\n\n    for (int i = 0; i < 3; i++) {\n        reset(&frame);\n        unchecked_copy(&frame, inputs[i]);\n        printf(\"unchecked %-16s name=\\\"%.8s\\\" canary %s, return tag %s\\n\", inputs[i], frame.name,\n               frame.canary == CANARY ? \"intact\" : \"OVERWRITTEN\",\n               frame.return_tag == RETURN_TAG ? \"intact\" : \"OVERWRITTEN\");\n        if (frame.canary != CANARY)\n            printf(\"  guard check fails: stack smashing detected, abort before return\\n\");\n    }\n\n    for (int i = 0; i < 3; i++) {\n        reset(&frame);\n        int status = checked_copy(&frame, inputs[i]);\n        printf(\"checked   %-16s %s, canary %s\\n\", inputs[i],\n               status == 0 ? \"stored\" : \"rejected as too long\",\n               frame.canary == CANARY ? \"intact\" : \"OVERWRITTEN\");\n    }\n    return 0;\n}\n",
+          "output": "model frame: name[8], then canary, then return tag\nunchecked Mia              name=\"Mia\" canary intact, return tag intact\nunchecked NoahIrisJack     name=\"NoahIris\" canary OVERWRITTEN, return tag OVERWRITTEN\n  guard check fails: stack smashing detected, abort before return\nunchecked NoahIrisJackLeo  name=\"NoahIris\" canary OVERWRITTEN, return tag OVERWRITTEN\n  guard check fails: stack smashing detected, abort before return\nchecked   Mia              stored, canary intact\nchecked   NoahIrisJack     rejected as too long, canary intact\nchecked   NoahIrisJackLeo  rejected as too long, canary intact\n",
+          "explanation": "A real stack smash is undefined behavior, so this program models it. struct Frame puts an 8-byte buffer next to a canary and a return tag, three neighbours just like the buffer, canary and saved return address in a real frame. A real compiler chooses the order of locals itself. The model only shows that they are adjacent.\n\nunchecked_copy behaves like strcpy: it copies the text and its zero byte and never asks how big name is. It writes through the bytes of the whole frame, so the program itself stays well defined. \"Mia\" needs 4 bytes and fits. \"NoahIrisJack\" needs 13 bytes, so 8 fill the buffer, 4 overwrite the canary and 1 reaches the return tag. \"NoahIrisJackLeo\" needs 16 bytes and overwrites the canary and the whole tag.\n\nThe guard check is what a stack protector does: before the function returns, compare the canary with the secret value, and abort if it changed. That is a defense, not a repair. The real repair is checked_copy, which compares the length with the buffer size and rejects text that does not fit, so the canary is never touched.",
+          "walkthrough": [
+            "Declare a frame model: buffer, canary and return tag side by side.",
+            "Copy text without a size check and see which neighbours change.",
+            "Run the canary check and abort when the guard value no longer matches.",
+            "Copy with a length check and reject text that leaves no room for the zero byte.",
+            "Confirm that the checked version leaves the canary intact for every input."
+          ],
+          "trace": {
+            "columns": [
+              "Input",
+              "Bytes copied",
+              "Buffer",
+              "Canary",
+              "Return tag"
+            ],
+            "rows": [
+              [
+                "\"Mia\"",
+                "4",
+                "fits",
+                "intact",
+                "intact"
+              ],
+              [
+                "\"NoahIrisJack\"",
+                "13",
+                "full",
+                "overwritten",
+                "first byte overwritten"
+              ],
+              [
+                "\"NoahIrisJackLeo\"",
+                "16",
+                "full",
+                "overwritten",
+                "overwritten"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "struct Frame { char name[8]; unsigned canary; unsigned return_tag; };",
+              "meaning": "Three members stored one after another, like neighbouring bytes in a frame."
+            },
+            {
+              "syntax": "memcpy(f, text, n)",
+              "meaning": "Copy n bytes into the object starting at its first byte. It is well defined as long as n is not larger than the object."
+            },
+            {
+              "syntax": "sizeof f->name",
+              "meaning": "The size of the member array, 8 here. Compare lengths with it instead of typing 8 again."
+            },
+            {
+              "syntax": "%.8s",
+              "meaning": "Print at most 8 characters of a string, so a buffer without a zero byte is still safe to print."
+            },
+            {
+              "syntax": "#define CANARY 0xC0FFEE00u",
+              "meaning": "A named guard value; the u suffix makes it unsigned."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "linked-structures",
       "title": "Linked lists and structural invariants",
       "story": "A treasure trail stores the next location on each clue card. Adding a card between two existing cards changes directions rather than shifting every later card. But finding the insertion place still requires following the trail unless someone already knows it. A doubly linked trail also keeps directions backward.\n\nA circular trail returns to its start instead of ending, so an explorer who waits for an end marker walks forever. Linked-list programming succeeds when every update preserves a clear structural invariant and when a card is not destroyed before its next direction has been saved.",
@@ -1533,6 +2165,217 @@
             "Observe that both variables have the same lexical scope.",
             "Track which initialization occurs on every call.",
             "Distinguish object storage duration from function linkage."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "makefiles-libraries",
+      "title": "Makefiles, static libraries and shared libraries",
+      "story": "A small bakery sells bread, buns and a gift box. Each product has a recipe that lists what it needs: the bread needs dough and a baking tray, and the gift box needs the bread and the buns. Every morning the baker checks a list. If the dough was made after the last loaf was baked, bake again. If nothing a product needs has changed since it was made, leave it alone. A good baker never rebakes everything because one sack of flour changed, and never forgets to rebake what that flour touches. A Makefile is this list, written for programs.\n\nLibraries are the bakery's shared recipe book. In the first plan, the baker photocopies the pages a product needs and staples them inside it. The product is complete on its own but bigger, and a corrected recipe means making the copy again. That is a static library. In the second plan, one copy of the book stays on the kitchen shelf and each product only says \"see the book on the shelf\". A fix is made in one place, but if the book is missing the kitchen cannot work. That is a shared library.",
+      "principle": "A Makefile is a list of rules. A rule has the form target: prerequisites, followed by recipe lines that each start with a tab. make compares file modification times. It rebuilds a target when the target is missing or when any prerequisite is newer. It brings the prerequisites up to date first, so the rules form a dependency graph without cycles. The first rule is the default goal, which is what plain make builds.\n\nA variable is set like CC = clang and used as $(CC). Setting it on the command line, as in make CFLAGS=-O2, overrides the file. Inside a recipe, the automatic variables are $@, the target, $<, the first prerequisite, and $^, all the prerequisites. A pattern rule such as %.o: %.c explains how to build any object from the source with the same name. A phony target, such as clean or all, names an action instead of a file, and .PHONY says so. List the headers a source includes as prerequisites. If you do not, make will not recompile when only the header changes. A recipe line must start with a tab, not spaces.\n\nA static library is an archive of object files, made with ar rcs libgeo.a a.o b.o. You link it by naming it, as in clang main.o libgeo.a, or with -L. -lgeo, where -lgeo means the file libgeo.a or libgeo.so. The linker copies only the members it needs, as whole object files. It reads inputs from left to right, so the library goes after the files that use it. The finished executable is complete on its own.\n\nA shared library is loaded when the program starts. Compile its objects with -fPIC, which makes position-independent code. Addresses inside the code are relative, so the library can be loaded at any address, and one copy in memory can serve many programs. Build it with clang -shared -o libgeo.so a.o b.o. When you link with -L. -lgeo, the executable records the name libgeo.so as a dependency. At run time the dynamic loader must find the file. It looks in standard folders, in folders set by the environment variable LD_LIBRARY_PATH, and in a path stored in the program with -Wl,-rpath. The command ldd app lists what the loader needs. If it cannot find the file you get the error \"cannot open shared object file\". On macOS the usual suffix is .dylib and the build flag is -dynamiclib, but the idea is the same.\n\nStatic linking gives one self-contained file, with no run-time search, at the cost of size and relinking for every fix. Shared linking makes smaller programs and lets one fixed library help every program, but the library must be present at run time and compatible with what the program expects.",
+      "formula": "target: prerequisites\n<TAB>recipe       $@ = target   $< = first prerequisite\n                  $^ = all prerequisites\nRebuild when: the target is missing, or a prerequisite is newer than it\n\nCC      = clang\nCFLAGS  = -std=c11 -Wall -Wextra -Werror -pedantic -fPIC\nOBJS    = square.o area.o perim.o\n\nall: app_static app_shared\n\napp_static: main.o libgeo.a\n\t$(CC) main.o libgeo.a -o $@\n\napp_shared: main.o libgeo.so\n\t$(CC) main.o -L. -lgeo -Wl,-rpath,. -o $@\n\nlibgeo.a: $(OBJS)\n\tar rcs $@ $^\n\nlibgeo.so: $(OBJS)\n\t$(CC) -shared -o $@ $^\n\n%.o: %.c geo.h\n\t$(CC) $(CFLAGS) -c $< -o $@\n\nclean:\n\trm -f *.o libgeo.a libgeo.so app_static app_shared\n\n.PHONY: all clean",
+      "symbols": "The first two lines are the pattern of every rule. In the Makefile below them, the line app_static: main.o libgeo.a says that the program needs both files, and its recipe uses $@ for app_static. In the rule %.o: %.c geo.h, the % stands for the same name on both sides, so for area.o the prerequisites are area.c and geo.h. Then $< is area.c only, which is what -c needs, while $^ would be area.c and geo.h and would break the command. The -Wl,-rpath,. option passes -rpath . to the linker, so the program looks for libgeo.so in the folder where you run it.\n\nThe Makefile is a text file named Makefile. This one uses clang on a Unix-like system; make's recipes are ordinary shell commands. All of this describes the common GNU make rules.",
+      "example": "Take main.c, util.c and util.h with the rules app: main.o util.o, main.o: main.c util.h and util.o: util.c util.h. Suppose the times are main.c 1, util.c 2, util.h 3. On a fresh checkout there are no objects, so make compiles main.o (time 4), compiles util.o (time 5) and links app (time 6). Run make again and every product is newer than its inputs, so nothing runs. Edit util.h (time 7). Now util.h is newer than main.o (4) and util.o (5), so both are compiled again (8 and 9) and app is linked again (10). If you had forgotten util.h in the rules, make would say that nothing needs doing, and the old objects would keep using the old declarations.\n\nFor the libraries, let the library hold square.o (400 bytes), area.o (900 bytes) and perim.o (700 bytes), and let main.o be 1200 bytes. Linking statically with libgeo.a copies main.o, area.o and square.o, which is 2500 bytes of code, and leaves out perim.o. Linking dynamically keeps 1200 bytes in the program. The 2000-byte libgeo.so exists once, and ten programs can share it.",
+      "pitfall": "Spaces instead of a tab at the start of a recipe line give \"missing separator\". Leaving a header out of the prerequisites gives stale objects. Putting a static library before the file that needs it gives \"undefined reference\". A shared program that runs on your machine can fail elsewhere with \"cannot open shared object file\", because the loader does not search the current folder unless you tell it to, with -rpath or LD_LIBRARY_PATH.",
+      "check": {
+        "question": "In the example, only util.h changes. Which targets are rebuilt, and in what order?",
+        "answer": "main.o and util.o, because both list util.h, and then app, because make visits the prerequisites before the target and app now has newer prerequisites. The sources main.c and util.c are not compiled by anything else."
+      },
+      "glossary": [
+        {
+          "term": "Target",
+          "meaning": "The file or action a rule builds."
+        },
+        {
+          "term": "Prerequisite",
+          "meaning": "A file the target depends on; if it is newer, the target is out of date."
+        },
+        {
+          "term": "Recipe",
+          "meaning": "The shell command lines make runs to build the target; each starts with a tab."
+        },
+        {
+          "term": "Automatic variable",
+          "meaning": "A variable such as $@, $< or $^ that make fills in for each rule."
+        },
+        {
+          "term": "Phony target",
+          "meaning": "A target that names an action, like clean, not a file."
+        },
+        {
+          "term": "Static library",
+          "meaning": "An archive of object files whose needed members are copied into the program at link time."
+        },
+        {
+          "term": "Shared library",
+          "meaning": "A library loaded when the program starts and shared by every program that uses it."
+        },
+        {
+          "term": "Position-independent code",
+          "meaning": "Code that works wherever it is loaded, as -fPIC produces."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "Does make look at what changed inside a file?",
+          "answer": "No. It compares only modification times. Saving a file without changing it still makes its products out of date, and make -n shows what would run without running it."
+        },
+        {
+          "question": "Why does the order of a static library on the command line matter?",
+          "answer": "The linker reads left to right and takes archive members only for names that are already missing. A library placed first has nothing to resolve, so its members are skipped."
+        },
+        {
+          "question": "Why does a shared library need -fPIC?",
+          "answer": "The loader may place it at a different address in every process. Position-independent code uses relative addresses, so it works wherever it lands, and one copy can serve many programs."
+        },
+        {
+          "question": "In %.o: %.c geo.h, why use $< in the compile command rather than $^?",
+          "answer": "$< is the first prerequisite, the .c file, which is what -c compiles. $^ also contains geo.h, and the compiler would receive a header as an extra input."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "Draw the dependency graph before you write the Makefile",
+          "body": "Draw sources and headers on the left, objects in the middle and the program on the right. Every arrow becomes a prerequisite. The drawing shows at once that main.o depends on util.h and that app depends only on objects. For big projects, ask the compiler to write these header arrows for you with -MMD, so no header is forgotten."
+        },
+        {
+          "title": "Static or shared is a deployment decision",
+          "body": "If you hand one executable to someone whose machine you do not control, a static link avoids a missing library at run time. If many programs use the same library and security fixes must reach them all, a shared library means one fix. Neither is always better, so write down which constraint decided it."
+        },
+        {
+          "title": "Test a library the way users link it",
+          "body": "Write a tiny main that links against the archive and another that links against the shared library. This catches ordering mistakes, a missing -fPIC and unexported names. Use nm to list the symbols in an object or archive, and ldd to list what a program needs at run time."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "c-mini-make-decisions",
+          "title": "Model what make decides to rebuild",
+          "intro": "A rule table, file times and a recursive visit reproduce make's decisions and its automatic variables.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <string.h>\n\n/* A tiny model of what make decides. Time is a counter: a bigger number is a newer file. */\n#define MAX_FILES 8\n#define MAX_PREREQS 3\n\nstruct File {\n    const char *name;\n    int mtime;  /* 0 means the file does not exist */\n};\n\nstruct Rule {\n    const char *target;\n    const char *prereqs[MAX_PREREQS + 1];  /* ends with NULL */\n    const char *recipe;\n};\n\nstatic struct File files[MAX_FILES] = {\n    {\"main.c\", 1}, {\"util.c\", 2}, {\"util.h\", 3}, {\"main.o\", 0}, {\"util.o\", 0}, {\"app\", 0}};\nstatic int file_count = 6;\nstatic int clock_now = 3;\n\nstatic const struct Rule rules[] = {\n    {\"app\", {\"main.o\", \"util.o\", NULL}, \"$(CC) $^ -o $@\"},\n    {\"main.o\", {\"main.c\", \"util.h\", NULL}, \"$(CC) $(CFLAGS) -c $< -o $@\"},\n    {\"util.o\", {\"util.c\", \"util.h\", NULL}, \"$(CC) $(CFLAGS) -c $< -o $@\"},\n};\n\nstatic struct File *find_file(const char *name) {\n    for (int i = 0; i < file_count; i++)\n        if (strcmp(files[i].name, name) == 0)\n            return &files[i];\n    return NULL;\n}\n\nstatic const struct Rule *find_rule(const char *target) {\n    for (size_t i = 0; i < sizeof rules / sizeof rules[0]; i++)\n        if (strcmp(rules[i].target, target) == 0)\n            return &rules[i];\n    return NULL;\n}\n\n/* Replace $@, $<, $^, $(CC) and $(CFLAGS) in a recipe template. */\nstatic void expand(const struct Rule *rule, char *out, size_t size) {\n    size_t used = 0;\n    for (const char *p = rule->recipe; *p != '\\0' && used + 1 < size;) {\n        char piece[80] = \"\";\n        size_t length = 1;\n        if (strncmp(p, \"$@\", 2) == 0) {\n            snprintf(piece, sizeof piece, \"%s\", rule->target);\n            length = 2;\n        } else if (strncmp(p, \"$<\", 2) == 0) {\n            snprintf(piece, sizeof piece, \"%s\", rule->prereqs[0]);\n            length = 2;\n        } else if (strncmp(p, \"$^\", 2) == 0) {\n            for (int i = 0; rule->prereqs[i] != NULL; i++)\n                snprintf(piece + strlen(piece), sizeof piece - strlen(piece), \"%s%s\", i ? \" \" : \"\", rule->prereqs[i]);\n            length = 2;\n        } else if (strncmp(p, \"$(CC)\", 5) == 0) {\n            snprintf(piece, sizeof piece, \"clang\");\n            length = 5;\n        } else if (strncmp(p, \"$(CFLAGS)\", 9) == 0) {\n            snprintf(piece, sizeof piece, \"-std=c11 -Wall -Wextra -Werror -pedantic\");\n            length = 9;\n        } else {\n            piece[0] = *p;\n            piece[1] = '\\0';\n        }\n        for (const char *q = piece; *q != '\\0' && used + 1 < size; q++)\n            out[used++] = *q;\n        p += length;\n    }\n    out[used] = '\\0';\n}\n\n/* Returns 1 if the target was rebuilt. Prerequisites are brought up to date first. */\nstatic int build(const char *target) {\n    const struct Rule *rule = find_rule(target);\n    struct File *file = find_file(target);\n    if (rule == NULL)\n        return 0;  /* a source file: nothing to run */\n    int rebuilt = 0, newest = 0;\n    for (int i = 0; rule->prereqs[i] != NULL; i++) {\n        rebuilt |= build(rule->prereqs[i]);\n        int t = find_file(rule->prereqs[i])->mtime;\n        if (t > newest)\n            newest = t;\n    }\n    if (file->mtime == 0 || newest > file->mtime) {\n        char command[160];\n        expand(rule, command, sizeof command);\n        printf(\"  %s\\n\", command);\n        file->mtime = ++clock_now;\n        return 1;\n    }\n    return rebuilt;\n}\n\nstatic void run_make(const char *title) {\n    printf(\"%s\\n\", title);\n    if (!build(\"app\"))\n        printf(\"  make: 'app' is up to date.\\n\");\n}\n\nstatic void touch(const char *name) {\n    find_file(name)->mtime = ++clock_now;\n}\n\nint main(void) {\n    printf(\"Makefile\\n\");\n    for (size_t i = 0; i < sizeof rules / sizeof rules[0]; i++) {\n        printf(\"%s:\", rules[i].target);\n        for (int j = 0; rules[i].prereqs[j] != NULL; j++)\n            printf(\" %s\", rules[i].prereqs[j]);\n        printf(\"\\n\\t%s\\n\", rules[i].recipe);\n    }\n    printf(\"\\n\");\n\n    run_make(\"$ make   (fresh checkout)\");\n    run_make(\"$ make   (again, nothing changed)\");\n    touch(\"util.c\");\n    run_make(\"$ make   (after editing util.c)\");\n    touch(\"util.h\");\n    run_make(\"$ make   (after editing util.h)\");\n    return 0;\n}\n",
+          "output": "Makefile\napp: main.o util.o\n\t$(CC) $^ -o $@\nmain.o: main.c util.h\n\t$(CC) $(CFLAGS) -c $< -o $@\nutil.o: util.c util.h\n\t$(CC) $(CFLAGS) -c $< -o $@\n\n$ make   (fresh checkout)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c main.c -o main.o\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n$ make   (again, nothing changed)\n  make: 'app' is up to date.\n$ make   (after editing util.c)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n$ make   (after editing util.h)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c main.c -o main.o\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n",
+          "explanation": "This program is a tiny model of make. The rule table is the same as this Makefile, and the program prints it first, with a real tab before every recipe. Time is a counter: a bigger number means a newer file, and 0 means the file does not exist.\n\nbuild() does what make does. It first brings every prerequisite up to date, which is a recursive visit. Then it finds the newest prerequisite. If the target is missing, or that prerequisite is newer than the target, it runs the recipe and gives the target a new time. expand() replaces $@ with the target, $< with the first prerequisite, $^ with all prerequisites, and the variables $(CC) and $(CFLAGS) with their values.\n\nFollow the four runs. On a fresh checkout nothing exists, so main.o, util.o and app are built, in that order, because app needs the objects first. Run it again and every product is newer than its inputs, so make reports that app is up to date. After util.c changes, only util.o and app are rebuilt. After util.h changes, both objects include it, so both are rebuilt, and then app is linked again.",
+          "walkthrough": [
+            "Describe each rule as a target, a list of prerequisites and a recipe template.",
+            "Visit the prerequisites first; this is how make orders the work.",
+            "Rebuild when the target is missing or the newest prerequisite is newer than it.",
+            "Expand $@, $< and $^ and the variables before printing the command.",
+            "Edit one file at a time and watch which commands run."
+          ],
+          "trace": {
+            "columns": [
+              "Step",
+              "What is newer than its product",
+              "Commands that run"
+            ],
+            "rows": [
+              [
+                "make on a fresh checkout",
+                "no .o file or app exists",
+                "compile main.o, compile util.o, link app"
+              ],
+              [
+                "make again",
+                "nothing",
+                "none; app is up to date"
+              ],
+              [
+                "edit util.c, then make",
+                "util.c is newer than util.o",
+                "compile util.o, link app"
+              ],
+              [
+                "edit util.h, then make",
+                "util.h is newer than main.o and util.o",
+                "compile main.o, compile util.o, link app"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "const char *prereqs[MAX_PREREQS + 1];",
+              "meaning": "An array of strings that ends with a NULL entry, so a loop knows where it stops."
+            },
+            {
+              "syntax": "static const struct Rule rules[] = { {...}, {...} };",
+              "meaning": "A table of structs written as a list of braces; the size is counted from the entries."
+            },
+            {
+              "syntax": "strncmp(p, \"$@\", 2) == 0",
+              "meaning": "Check whether the next two characters of the template are $@."
+            },
+            {
+              "syntax": "rebuilt |= build(rule->prereqs[i]);",
+              "meaning": "Visit a prerequisite and remember whether anything below it was rebuilt."
+            },
+            {
+              "syntax": "printf(\"\\n\\t%s\\n\", rules[i].recipe);",
+              "meaning": "\\t prints a real tab, which a Makefile recipe line must start with."
+            }
+          ]
+        },
+        {
+          "id": "c-static-vs-shared-link",
+          "title": "Resolve names against an archive and a shared library",
+          "intro": "A linker model shows which archive members are copied, why order matters, and what a shared library records.",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <string.h>\n\n/* A model of how a linker resolves names. Sizes are made up for the story. */\n#define MAX_NAMES 4\n#define MAX_SYMBOLS 8\n\nstruct Unit {  /* an object file, or one member of an archive */\n    const char *name;\n    const char *defines[MAX_NAMES];  /* each list ends with NULL */\n    const char *needs[MAX_NAMES];\n    int bytes;\n    int pulled;\n};\n\nstatic struct Unit main_o = {\"main.o\", {\"main\", NULL}, {\"area_circle\", NULL}, 1200, 0};\nstatic struct Unit library[3];  /* libgeo members, in archive order */\n\nstruct Link {\n    const char *undefined[MAX_SYMBOLS];\n    int undefined_count;\n    const char *defined[MAX_SYMBOLS];\n    int defined_count;\n    int bytes;\n};\n\nstatic int has(const char *const list[], int count, const char *name) {\n    for (int i = 0; i < count; i++)\n        if (strcmp(list[i], name) == 0)\n            return i;\n    return -1;\n}\n\nstatic void take(struct Link *link, struct Unit *unit) {\n    unit->pulled = 1;\n    link->bytes += unit->bytes;\n    for (int i = 0; unit->defines[i] != NULL; i++) {\n        link->defined[link->defined_count++] = unit->defines[i];\n        int at = has(link->undefined, link->undefined_count, unit->defines[i]);\n        if (at >= 0)\n            link->undefined[at] = link->undefined[--link->undefined_count];\n    }\n    for (int i = 0; unit->needs[i] != NULL; i++)\n        if (has(link->defined, link->defined_count, unit->needs[i]) < 0 &&\n            has(link->undefined, link->undefined_count, unit->needs[i]) < 0)\n            link->undefined[link->undefined_count++] = unit->needs[i];\n    printf(\"  take %s\\n\", unit->name);\n}\n\nstatic int wanted(const struct Link *link, const struct Unit *unit) {\n    for (int i = 0; unit->defines[i] != NULL; i++)\n        if (has(link->undefined, link->undefined_count, unit->defines[i]) >= 0)\n            return 1;\n    return 0;\n}\n\n/* A static archive: keep scanning it until no member is newly needed. */\nstatic void scan_archive(struct Link *link) {\n    for (int pass = 1, changed = 1; changed; pass++) {\n        changed = 0;\n        for (int i = 0; i < 3; i++)\n            if (!library[i].pulled && wanted(link, &library[i])) {\n                if (!changed)\n                    printf(\"  pass %d over libgeo.a\\n\", pass);\n                take(link, &library[i]);\n                changed = 1;\n            }\n    }\n}\n\n/* A shared library: names are matched now, but no code is copied. */\nstatic void use_shared(struct Link *link) {\n    for (int i = 0; i < 3; i++)\n        for (int j = 0; library[i].defines[j] != NULL; j++) {\n            int at = has(link->undefined, link->undefined_count, library[i].defines[j]);\n            if (at >= 0) {\n                printf(\"  libgeo.so provides %s: only a dependency is recorded\\n\", library[i].defines[j]);\n                link->undefined[at] = link->undefined[--link->undefined_count];\n            }\n        }\n}\n\nstatic void finish(const struct Link *link) {\n    for (int i = 0; i < link->undefined_count; i++)\n        printf(\"  error: undefined reference to '%s'\\n\", link->undefined[i]);\n    if (link->undefined_count == 0)\n        printf(\"  ok: the executable holds %d bytes of code\\n\", link->bytes);\n}\n\nstatic void reset_units(void) {\n    static const struct Unit fresh[3] = {\n        {\"square.o\", {\"square\", NULL}, {NULL}, 400, 0},\n        {\"area.o\", {\"area_circle\", \"area_rect\", NULL}, {\"square\", NULL}, 900, 0},\n        {\"perim.o\", {\"perim_rect\", NULL}, {NULL}, 700, 0}};\n    memcpy(library, fresh, sizeof fresh);\n    main_o.pulled = 0;\n}\n\nint main(void) {\n    printf(\"build the library\\n\");\n    printf(\"  clang -c -fPIC square.c area.c perim.c\\n\");\n    printf(\"  ar rcs libgeo.a square.o area.o perim.o\\n\");\n    printf(\"  clang -shared -o libgeo.so square.o area.o perim.o\\n\\n\");\n\n    struct Link link;\n\n    printf(\"clang main.o libgeo.a -o app_static\\n\");\n    reset_units();\n    memset(&link, 0, sizeof link);\n    take(&link, &main_o);\n    scan_archive(&link);\n    for (int i = 0; i < 3; i++)\n        if (!library[i].pulled)\n            printf(\"  left out %s\\n\", library[i].name);\n    finish(&link);\n\n    printf(\"\\nclang libgeo.a main.o -o app_wrong_order\\n\");\n    reset_units();\n    memset(&link, 0, sizeof link);\n    scan_archive(&link);\n    printf(\"  nothing is missing yet, so no member is taken\\n\");\n    take(&link, &main_o);\n    finish(&link);\n\n    printf(\"\\nclang main.o -L. -lgeo -o app_shared\\n\");\n    reset_units();\n    memset(&link, 0, sizeof link);\n    take(&link, &main_o);\n    use_shared(&link);\n    finish(&link);\n    printf(\"  libgeo.so (2000 bytes) is loaded when the program starts and shared by every user\\n\");\n    return 0;\n}\n",
+          "output": "build the library\n  clang -c -fPIC square.c area.c perim.c\n  ar rcs libgeo.a square.o area.o perim.o\n  clang -shared -o libgeo.so square.o area.o perim.o\n\nclang main.o libgeo.a -o app_static\n  take main.o\n  pass 1 over libgeo.a\n  take area.o\n  pass 2 over libgeo.a\n  take square.o\n  left out perim.o\n  ok: the executable holds 2500 bytes of code\n\nclang libgeo.a main.o -o app_wrong_order\n  nothing is missing yet, so no member is taken\n  take main.o\n  error: undefined reference to 'area_circle'\n\nclang main.o -L. -lgeo -o app_shared\n  take main.o\n  libgeo.so provides area_circle: only a dependency is recorded\n  ok: the executable holds 1200 bytes of code\n  libgeo.so (2000 bytes) is loaded when the program starts and shared by every user\n",
+          "explanation": "The program first prints the three commands that build the library. Each source is compiled with -fPIC, ar packs the objects into the archive libgeo.a, and clang -shared makes libgeo.so from the same objects.\n\nThen it models three link commands. The linker keeps a list of names that are used but not yet defined. In clang main.o libgeo.a, it takes main.o, which needs area_circle. It then scans the archive. On pass 1 it takes area.o, which defines area_circle but needs square. On pass 2 it takes square.o. perim.o defines nothing that is missing, so it is left out. The executable holds 1200 + 900 + 400 = 2500 bytes of code, all copied in, and it needs no library at run time. A whole member is copied, so area_rect travels along with area_circle even if nobody calls it.\n\nIn clang libgeo.a main.o, the archive is scanned first, when nothing is missing, so no member is taken. Then main.o adds a missing name, and the linker does not go back. The result is an undefined reference. This is why a static library goes after the files that use it. That left-to-right rule is how the Linux linker behaves. Some other linkers are more forgiving, but you should write commands as if they were not. In the shared case, the linker only checks that libgeo.so provides area_circle and records a dependency. The executable keeps 1200 bytes, and the 2000-byte library is loaded when the program starts and shared by every program that uses it. All sizes are made-up numbers for the story.",
+          "walkthrough": [
+            "Print the commands that build the objects, the archive and the shared library.",
+            "Keep a list of names that are used but not yet defined while taking objects in order.",
+            "Scan the archive repeatedly and take only members that define a missing name.",
+            "Show that an archive placed first resolves nothing, leaving an undefined reference.",
+            "For the shared library, record a dependency and copy no code."
+          ],
+          "trace": {
+            "columns": [
+              "Link command",
+              "What happens",
+              "Result"
+            ],
+            "rows": [
+              [
+                "clang main.o libgeo.a",
+                "take main.o, then area.o (area_circle), then square.o (square)",
+                "2500 bytes of code, perim.o left out"
+              ],
+              [
+                "clang libgeo.a main.o",
+                "archive scanned while nothing is missing; main.o then needs area_circle",
+                "undefined reference"
+              ],
+              [
+                "clang main.o -L. -lgeo",
+                "libgeo.so provides area_circle; dependency recorded",
+                "1200 bytes; library loaded at start"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "-fPIC",
+              "meaning": "Compile position-independent code, so the library can be loaded at any address."
+            },
+            {
+              "syntax": "ar rcs libgeo.a a.o b.o",
+              "meaning": "r adds the files, c creates the archive without a warning, and s writes an index of the symbols."
+            },
+            {
+              "syntax": "clang -shared -o libgeo.so a.o b.o",
+              "meaning": "Link the objects into a shared library instead of a program."
+            },
+            {
+              "syntax": "-L. -lgeo",
+              "meaning": "-L. adds the current folder to the search path; -lgeo finds libgeo.so or libgeo.a."
+            },
+            {
+              "syntax": "struct Unit library[3];",
+              "meaning": "A global array of three structs, filled before each scenario by copying a fresh table."
+            }
           ]
         }
       ]

@@ -53,6 +53,13 @@ def pages():
         alts = {'en': f'projects/{base}.en.html', 'zh': f'projects/{base}.zh.html'}
         for l in ('en', 'zh'):
             yield alts[l], alts
+    for page in sorted((SITE / 'bridges').glob('*.html')):
+        if page.name.endswith('.zh.html'):
+            continue
+        base = page.name.removesuffix('.html')
+        alts = {'en': f'bridges/{base}.html', 'zh': f'bridges/{base}.zh.html'}
+        for l in ('en', 'zh'):
+            yield alts[l], alts
     for pdf in sorted((SITE / 'downloads').glob('*cheatsheet*.pdf')):
         yield f'downloads/{pdf.name}', None
 

@@ -1,0 +1,766 @@
+{
+ "id": "paper-python",
+ "course": "python",
+ "kind": "by-hand",
+ "title": {
+  "en": "Writing Python on paper",
+  "zh": "在纸上写 Python 代码"
+ },
+ "summary": {
+  "en": "Write Python with a pen: no autocomplete, no running. Five short lessons: run a program in your head, draw names and objects, memorise the skeletons, catch the slips an interpreter would catch, and mark your own work.",
+  "zh": "用笔写 Python 代码：没有自动补全，也不能运行。五节短课：在脑子里运行程序、画名字和对象、背熟代码骨架、抓住解释器本来会抓的小错，以及给自己的答案打分。"
+ },
+ "needs": [
+  {
+   "en": "You have run one small Python program before. If not, read the Python first-steps guide first. This guide starts at the point where no computer is there to help.",
+   "zh": "你以前运行过一个小的 Python 程序。如果没有，请先读 Python 入门指南。本篇从“身边没有计算机帮你检查”这一步开始。"
+  },
+  {
+   "en": "A pen or pencil, an eraser, and squared or lined paper. Tables are easier on squared paper.",
+   "zh": "一支笔或铅笔、一块橡皮，以及方格纸或横线纸。在方格纸上画表格更方便。"
+  },
+  {
+   "en": "About 20 minutes for each lesson. Do the check questions on paper, not in your head.",
+   "zh": "每课大约 20 分钟。检查题要写在纸上，不要只在脑子里想。"
+  }
+ ],
+ "lessons": [
+  {
+   "id": "read-like-a-computer",
+   "title": {
+    "en": "Read like a computer",
+    "zh": "像计算机一样读代码"
+   },
+   "goal": {
+    "en": "You can run a short Python program by hand, one line at a time, and write down every name and value it uses.",
+    "zh": "你能一行一行地手动运行一小段 Python 程序，并写下它用到的每个名字和值。"
+   },
+   "plain": {
+    "en": "When you write code on paper, nothing tells you that a line is wrong. Your only check is to run the program yourself, half in your head and half on the page. This is called a dry run: you act as the computer, with a pen, one line at a time.\n\nA computer has no idea what your program is for. It does exactly what each line says, in order, and it remembers only what is stored under names. In Python, a name is a label for a value, such as count or items. While you trace, do the same. Do what the line says, not what you meant it to say.\n\nThe tool is a trace table. A trace table has one column for each name and one row for each line that runs. Build it in four steps.\n\n1. Number the lines of the program in the margin, starting at 1.\n2. Draw the table. The first column is Line. Then one column for each name. The last column is Note, where you write what happened, for example \"test is true\", or what the program printed.\n3. Run the program. Python starts at line 1 and goes down. Each time a line runs, add a row. Write the line number, then the value of every name after that line has finished. Copy unchanged values down from the row above, so that every row can be read on its own.\n4. Write a dash (–) for a name that does not exist yet. In Python, a name appears the first time something is stored under it. Using a name before that stops the program with a NameError.\n\nA line that starts with def only creates the function. The lines inside it do not run until somebody calls the function. So a def line gets one row, and its body gets rows later, at the call.\n\nPython shows what belongs together by indentation, the spaces at the start of a line. Lines that are pushed in under a for, if or def belong to it. When you move back out to the left, you have left that block.\n\nA loop line runs many times, so it gets many rows. For a loop of the form for x in items, add one row each time x takes the next item. Write the new value of x. When no items are left, add one last row to show that the loop ends. Unlike C or Java, the name x is still there after the loop, and it keeps the last item.\n\nAn if line gets one row. If its test is false, the next row is the first line after the indented block.\n\nWhen the program calls a function, the function's parameters become new names that start with the values you passed in. Keep them in the same table and say in Note that you are inside the function. When it returns, write the returned value in Note.",
+    "zh": "在纸上写代码时，没有任何东西会告诉你某一行写错了。你唯一的检查办法，是自己把程序运行一遍：一半在脑子里，一半写在纸上。这叫手动跟踪（英文叫 dry run）：你扮演计算机，拿着笔，一行一行地运行程序。\n\n计算机不知道你的程序是做什么用的。它严格按每一行写的内容，按顺序执行，并且只记得存在各个名字之下的东西。在 Python 里，名字就是一个值的标签，例如 count 或 items。你在跟踪时也要这样做：按这一行实际写的内容去做，而不是按你原本想写的内容去做。\n\n用的工具叫跟踪表。跟踪表里每个名字占一列，每执行一行代码占一行。分四步来做。\n\n1. 在页边给程序的每一行编号，从 1 开始。\n2. 画表格。第一列是“行号”，接着每个名字一列，最后一列叫“备注”，用来写发生了什么，例如“条件为真”，或者程序输出了什么。\n3. 开始运行。Python 从第 1 行开始，往下执行。每执行一行，就加一行记录：先写行号，再写这一行执行完之后每个名字的值。没有变化的值要从上一行抄下来，这样每一行单独看也能读懂。\n4. 对还不存在的名字写短横线（–）。在 Python 里，名字是在第一次有东西存到它下面时才出现的。在此之前使用它，程序会因 NameError 而停止。\n\n以 def 开头的那一行只是创建函数。函数里面的代码要等到有人调用这个函数时才会运行。所以 def 那一行只占一行记录，函数体的记录要到调用的时候才出现。\n\nPython 用缩进（行首的空格）表示哪些代码属于一起。在 for、if 或 def 下面缩进的行，属于它们。回到左边，就离开了那个代码块。\n\n循环语句会执行很多次，所以会有很多行记录。对于 for x in items 这种形式，每当 x 取到下一个元素，就加一行记录，写下 x 的新值。元素取完之后，再加最后一行记录，表示循环结束。和 C、Java 不同，循环结束之后名字 x 仍然存在，保留着最后一个元素。\n\nif 语句只占一行记录。如果条件为假，下一行记录就是缩进代码块之后的第一行代码。\n\n程序调用函数时，函数的参数会成为新的名字，初始值就是你传进去的值。把它们放在同一张表里，并在备注里说明现在在函数内部。函数返回时，把返回值写在备注里。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "dry run",
+      "zh": "手动跟踪（dry run）"
+     },
+     "meaning": {
+      "en": "Running a program by hand, with a pen, without a computer.",
+      "zh": "不用计算机，拿笔手动运行一个程序。"
+     }
+    },
+    {
+     "term": {
+      "en": "trace table",
+      "zh": "跟踪表"
+     },
+     "meaning": {
+      "en": "A grid with one column per name and one row per line that runs.",
+      "zh": "一张表格：每个名字一列，每执行一行代码一行。"
+     }
+    },
+    {
+     "term": {
+      "en": "name",
+      "zh": "名字（变量）"
+     },
+     "meaning": {
+      "en": "A label for a value, such as count. A name appears the first time something is stored under it.",
+      "zh": "一个值的标签，例如 count。名字在第一次有东西存到它下面时出现。"
+     }
+    },
+    {
+     "term": {
+      "en": "indentation",
+      "zh": "缩进"
+     },
+     "meaning": {
+      "en": "The spaces at the start of a line. They show which lines belong to a for, an if or a def.",
+      "zh": "行首的空格，表示哪些行属于某个 for、if 或 def。"
+     }
+    },
+    {
+     "term": {
+      "en": "None",
+      "zh": "None"
+     },
+     "meaning": {
+      "en": "The value that means \"nothing here\". A function with no return gives it back.",
+      "zh": "表示“这里什么都没有”的值。没有 return 的函数会返回它。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def count_big(items, limit):\n    count = 0\n    for x in items:\n        if x > limit:\n            count = count + 1\n    return count\n\n\nprint(count_big([3, 8, 5], 4))\n",
+    "output": "2",
+    "walk": {
+     "en": [
+      "Set up first. Number the lines of code from 1: def count_big is 1, count = 0 is 2, for x in items is 3, if x > limit is 4, count = count + 1 is 5, return count is 6, and print is 7. Blank lines are not numbered here. Draw six columns: Line | items | limit | count | x | Note.",
+      "Line 1 | items = – | limit = – | count = – | x = – | def creates the function count_big. Its body does not run yet. Python moves on to the next line of code, which is line 7.",
+      "Line 7 | items = [3, 8, 5] | limit = 4 | count = – | x = – | print needs the value of count_big([3, 8, 5], 4), so the call happens first. The parameters items and limit are new names for the values passed in. Note: inside count_big.",
+      "Line 2 | count = 0 | count is created with 0.",
+      "Line 3 | x = 3 | The for line takes the first item of items. Note: first item.",
+      "Line 4 | x = 3 | count = 0 | 3 > 4 is false. The indented line 5 is skipped.",
+      "Line 3 | x = 8 | count = 0 | The for line takes the next item.",
+      "Line 4 | x = 8 | count = 0 | 8 > 4 is true. Go into the indented block.",
+      "Line 5 | x = 8 | count = 1 | count = 0 + 1 stores 1.",
+      "Line 3 | x = 5 | count = 1 | The for line takes the last item.",
+      "Line 4 | x = 5 | count = 1 | 5 > 4 is true.",
+      "Line 5 | x = 5 | count = 2 | count = 1 + 1 stores 2.",
+      "Line 3 | x = 5 | count = 2 | No items are left, so the loop ends. x is still there and keeps the last item, 5.",
+      "Line 6 | x = 5 | count = 2 | return count sends 2 back to the call. Note: returns 2.",
+      "Line 7 | Back in the main program, print writes 2. The program prints 2."
+     ],
+     "zh": [
+      "先做准备。从 1 开始给有代码的行编号：def count_big 是 1，count = 0 是 2，for x in items 是 3，if x > limit 是 4，count = count + 1 是 5，return count 是 6，print 是 7。空行这里不编号。画六列：行号 | items | limit | count | x | 备注。",
+      "第 1 行 | items = – | limit = – | count = – | x = – | def 创建函数 count_big。函数体现在不运行。Python 接着执行下一行代码，也就是第 7 行。",
+      "第 7 行 | items = [3, 8, 5] | limit = 4 | count = – | x = – | print 需要 count_big([3, 8, 5], 4) 的值，所以先进行调用。参数 items 和 limit 是传入值的新名字。备注：进入 count_big。",
+      "第 2 行 | count = 0 | 创建 count 并存入 0。",
+      "第 3 行 | x = 3 | for 这一行取 items 的第一个元素。备注：第一个元素。",
+      "第 4 行 | x = 3 | count = 0 | 3 > 4 为假。缩进的第 5 行被跳过。",
+      "第 3 行 | x = 8 | count = 0 | for 这一行取下一个元素。",
+      "第 4 行 | x = 8 | count = 0 | 8 > 4 为真，进入缩进的代码块。",
+      "第 5 行 | x = 8 | count = 1 | count = 0 + 1，存入 1。",
+      "第 3 行 | x = 5 | count = 1 | for 这一行取最后一个元素。",
+      "第 4 行 | x = 5 | count = 1 | 5 > 4 为真。",
+      "第 5 行 | x = 5 | count = 2 | count = 1 + 1，存入 2。",
+      "第 3 行 | x = 5 | count = 2 | 没有元素了，所以循环结束。x 仍然存在，保留着最后一个元素 5。",
+      "第 6 行 | x = 5 | count = 2 | return count 把 2 送回调用处。备注：返回 2。",
+      "第 7 行 | 回到主程序，print 输出 2。程序输出 2。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "for i in range(1, 4):\n    print(i)",
+     "why": {
+      "en": "range(1, 4) stops before 4. It gives 1, 2 and 3. If you want 1, 2, 3 and 4, the second number is one more than the last value you want: range(1, 5). Write the values of i down in a row, and the last one is visible at once.",
+      "zh": "range(1, 4) 在 4 之前停止，得到 1、2、3。如果你想要 1、2、3、4，第二个数字应该比最后一个想要的值大 1：range(1, 5)。把 i 的取值写成一排，最后一个值一眼就能看出来。"
+     },
+     "right": "for i in range(1, 5):\n    print(i)"
+    },
+    {
+     "wrong": "for i in range(7 / 2):\n    print(i)",
+     "why": {
+      "en": "In Python, / always gives a float, so 7 / 2 is 3.5, and range cannot count with a float. It stops the program with a TypeError. // divides and rounds down to a whole number: 7 // 2 is 3.",
+      "zh": "在 Python 里，/ 总是得到浮点数，所以 7 / 2 是 3.5，而 range 不能用浮点数来数数，程序会因 TypeError 而停止。// 做除法后向下取整：7 // 2 是 3。"
+     },
+     "right": "for i in range(7 // 2):\n    print(i)"
+    },
+    {
+     "wrong": "for i in range(3):\n    print(i)\n    print(\"done\")",
+     "why": {
+      "en": "Both print lines are pushed in, so both belong to the loop. The word done is printed three times, once per round. If you want it once, at the end, move it back out to the left, level with the for.",
+      "zh": "两条 print 都缩进了，所以都属于循环。done 会输出三次，每轮一次。如果你想让它只在最后输出一次，就把它移回左边，与 for 对齐。"
+     },
+     "right": "for i in range(3):\n    print(i)\nprint(\"done\")"
+    },
+    {
+     "wrong": "def add(a, b):\n    result = a + b\n\nprint(add(1, 2))",
+     "why": {
+      "en": "A function without a return line gives back None. The sum is worked out and then thrown away when the function ends. The row for the call in your trace table would show Note: returns None. Write return result.",
+      "zh": "没有 return 的函数会返回 None。和被算出来，函数一结束就被丢掉了。你的跟踪表里这次调用那一行的备注会是：返回 None。要写 return result。"
+     },
+     "right": "def add(a, b):\n    result = a + b\n    return result\n\nprint(add(1, 2))"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Make a trace table for these four lines, numbered 1 to 4: a = 4, then b = a, then a = a + 1, then b = b * 2. What are a and b at the end?",
+      "zh": "为下面四行代码（编号 1 到 4）做一张跟踪表：a = 4，然后 b = a，然后 a = a + 1，然后 b = b * 2。最后 a 和 b 各是多少？"
+     },
+     "a": {
+      "en": "Line 1: a = 4, b = –. Line 2: a = 4, b = 4. Line 3: a = 5, b = 4. Line 4: a = 5, b = 8. At the end a is 5 and b is 8. Line 3 changes a only. Line 4 uses b’s own value.",
+      "zh": "第 1 行：a = 4，b = –。第 2 行：a = 4，b = 4。第 3 行：a = 5，b = 4。第 4 行：a = 5，b = 8。最后 a 是 5，b 是 8。第 3 行只改变 a，第 4 行用的是 b 自己的值。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict, without running: what does for n in range(10, 0, -3): print(n) print? Write every value of n.",
+      "zh": "不运行，直接预测：for n in range(10, 0, -3): print(n) 会输出什么？写出 n 的每个取值。"
+     },
+     "a": {
+      "en": "It prints 10, 7, 4 and 1, each on its own line. The step is -3, and the next value, -2, is not above the stop value 0, so the loop ends.",
+      "zh": "依次输出 10、7、4、1，各占一行。步长是 -3，下一个值 -2 没有大于终点 0，所以循环结束。"
+     }
+    },
+    {
+     "q": {
+      "en": "In the worked program, what value goes in the x column on the row for line 6, and why?",
+      "zh": "在上面的完整例子里，第 6 行那一行记录中，x 这一列应该写什么？为什么？"
+     },
+     "a": {
+      "en": "5. A Python loop variable stays after the loop and keeps the last item. The last item of [3, 8, 5] is 5.",
+      "zh": "写 5。Python 的循环变量在循环结束后仍然存在，保留着最后一个元素。[3, 8, 5] 的最后一个元素是 5。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "draw-memory",
+   "title": {
+    "en": "Draw names and objects",
+    "zh": "画出名字和对象"
+   },
+   "goal": {
+    "en": "You can draw the names and objects of a Python program at any line, say what = does, and tell mutable objects from immutable ones.",
+    "zh": "你能画出 Python 程序在任意一行时的名字和对象，说清 = 做了什么，并分辨可变对象和不可变对象。"
+   },
+   "plain": {
+    "en": "In Python, a name is not a box that holds a value. A name is a label stuck on an object, like a label on a jar. Two labels can be stuck on the same jar. You cannot see that in the code, so you have to draw it. Use the same picture every time.\n\nDraw two columns: Names on the left and Objects on the right.\n\nObjects. Every value is an object: the number 5, the text \"hi\", the list [1, 2]. Draw each object as a box, and write its type and value, such as int 10 or str \"hi\". Give each object a label, O1, O2, O3, in the order it is made. A list is a box with one cell for each item. A cell that holds a number or a piece of text may show the value directly. A cell that holds a list or another object that can change has an arrow to it.\n\nNames. A name is a label on the left with exactly one arrow to an object. A name has no value of its own. The names inside a function are drawn in a frame, a box around them, that exists only while the function runs.\n\nWhat = does. The statement b = a never copies anything. It puts a second label, b, on the object that a already points at. The statement a = 5 finds or makes the object 5 and moves the arrow of a to it. Assignment moves arrows. It does not copy objects.\n\nImmutable and mutable. An immutable object can never change after it is made. Numbers, strings, tuples and None are immutable. A mutable object can change in place. Lists, dicts and sets are mutable, and so are objects of your own classes.\n\nWith an immutable object, s = s + \"!\" does not touch the old string. It makes a new string and moves the arrow of s. Any other label on the old string still sees the old text. With a mutable object, b.append(3) changes the list itself. Every label on that list sees the change. Two names for one object is called aliasing.\n\nCopying. b = a.copy() makes a new list with the same cells. It is a shallow copy: the cells hold arrows to the same items as before. If an item is itself a list, both outer lists share it. Draw the arrows and you will see this.\n\nFunction calls. A call makes a new frame. Its parameter names are new labels on the same objects the caller passed in. So a function can change a mutable argument in place. But a statement such as param = something only moves the label inside the frame.\n\nEqual and same. a == b asks whether two objects look equal. a is b asks whether the two names are on the same object.\n\nGarbage. An object with no label and no arrow into it can never be reached again. Python removes it. Cross it out in the picture.",
+    "zh": "在 Python 里，名字不是装着值的盒子。名字是贴在对象上的标签，就像贴在罐子上的标签。两张标签可以贴在同一个罐子上。这一点从代码里看不出来，必须画出来。每次都用同一种画法。\n\n画两列：左边是名字，右边是对象。\n\n对象。每个值都是对象：数字 5、文字 \"hi\"、列表 [1, 2]。把每个对象画成一个方框，写上它的类型和值，例如 int 10 或 str \"hi\"。给每个对象一个标签 O1、O2、O3，按创建的顺序编号。列表是一个方框，每个元素占一个单元。单元里如果是数字或文字，可以直接写出值；如果是列表或别的可以改变的对象，就画一支箭头指向它。\n\n名字。名字是左边的一个标签，恰好有一支箭头指向一个对象。名字自己没有值。函数里的名字画在栈帧里，也就是围住它们的一个方框，只在函数运行期间存在。\n\n= 做了什么。语句 b = a 从不复制任何东西。它只是在 a 已经指向的对象上，再贴一张标签 b。语句 a = 5 找到或创建对象 5，并把 a 的箭头移过去。赋值移动的是箭头，不是复制对象。\n\n不可变与可变。不可变对象在创建之后永远不会改变。数字、字符串、元组和 None 是不可变的。可变对象可以原地改变。列表、字典和集合是可变的，你自己定义的类的对象也是。\n\n对不可变对象，s = s + \"!\" 不会碰旧的字符串，而是创建一个新字符串，并把 s 的箭头移过去。旧字符串上的其他标签看到的仍然是旧文字。对可变对象，b.append(3) 改变的是列表本身，贴在这个列表上的每张标签看到的都是改变后的内容。同一个对象有两个名字，叫做别名。\n\n复制。b = a.copy() 创建一个新列表，单元与原来相同。这是浅拷贝：单元里存的是指向原来那些元素的箭头。如果某个元素本身是列表，两个外层列表就共用它。把箭头画出来，你就会看到这一点。\n\n函数调用。调用会产生新的栈帧。它的参数名是贴在调用者传入的那些对象上的新标签。所以函数可以就地修改可变的实参。但是像 param = something 这样的语句，只会移动栈帧里的标签。\n\n相等与同一个。a == b 问的是两个对象看上去是否相等。a is b 问的是两个名字是否贴在同一个对象上。\n\n垃圾。既没有标签、也没有箭头指向的对象，再也不可能被访问到。Python 会把它清除。在图里把它划掉。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "object",
+      "zh": "对象"
+     },
+     "meaning": {
+      "en": "A value in memory, such as 5, \"hi\" or [1, 2]. Every value in Python is an object.",
+      "zh": "内存里的一个值，例如 5、\"hi\" 或 [1, 2]。Python 里的每个值都是对象。"
+     }
+    },
+    {
+     "term": {
+      "en": "name",
+      "zh": "名字"
+     },
+     "meaning": {
+      "en": "A label stuck on an object. It points at the object and has no value of its own.",
+      "zh": "贴在对象上的标签。它指向对象，自己没有值。"
+     }
+    },
+    {
+     "term": {
+      "en": "immutable",
+      "zh": "不可变"
+     },
+     "meaning": {
+      "en": "Cannot change after it is made: numbers, strings, tuples, None.",
+      "zh": "创建之后不能改变：数字、字符串、元组、None。"
+     }
+    },
+    {
+     "term": {
+      "en": "mutable",
+      "zh": "可变"
+     },
+     "meaning": {
+      "en": "Can change in place: lists, dicts, sets, objects of your own classes.",
+      "zh": "可以原地改变：列表、字典、集合、你自己定义的类的对象。"
+     }
+    },
+    {
+     "term": {
+      "en": "alias",
+      "zh": "别名"
+     },
+     "meaning": {
+      "en": "A second name for the same object.",
+      "zh": "同一个对象的第二个名字。"
+     }
+    },
+    {
+     "term": {
+      "en": "shallow copy",
+      "zh": "浅拷贝"
+     },
+     "meaning": {
+      "en": "A new outer object whose cells lead to the same items as the old one.",
+      "zh": "新建的外层对象，它的单元通向与旧对象相同的那些元素。"
+     }
+    },
+    {
+     "term": {
+      "en": "frame",
+      "zh": "栈帧"
+     },
+     "meaning": {
+      "en": "The box around the names of one function call. It exists only while the call runs.",
+      "zh": "围住一次函数调用中所有名字的方框，只在这次调用运行期间存在。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "a = [1, 2]\nb = a\nb.append(3)\nc = a.copy()\nc.append(4)\nx = 10\ny = x\ny = y + 1\nnested = [a, [5]]\ndup = nested.copy()\ndup[1].append(6)\ndup[0] = [0]\nprint(a, b, c)\nprint(x, y)\nprint(nested)\nprint(dup)\n",
+    "output": "[1, 2, 3] [1, 2, 3] [1, 2, 3, 4]\n10 11\n[[1, 2, 3], [5, 6]]\n[[0], [5, 6]]",
+    "walk": {
+     "en": [
+      "a = [1, 2]. Draw two columns: Names and Objects. Make the list O1 with cells 1 and 2, and a label a with an arrow to O1.",
+      "b = a. Nothing new is made. Stick a second label, b, on O1. One list, two names.",
+      "b.append(3). The method changes O1 itself: it now has cells 1, 2 and 3. Both a and b lead to O1, so both see [1, 2, 3].",
+      "c = a.copy(). A new list O2 with cells 1, 2, 3 is made, and c leads to O2. Then c.append(4) changes only O2, which becomes [1, 2, 3, 4]. O1 is unchanged.",
+      "x = 10. Make the int O3 holding 10 and a label x with an arrow to it. Then y = x puts the label y on the same O3.",
+      "y = y + 1. First y + 1 is worked out and gives the int 11. Draw it as a new object, O4. (Python may reuse an 11 that already exists, but numbers never change, so you cannot tell the difference.) Then the arrow of y moves to O4. O3 still holds 10 and x still leads to it. A number is never changed in place.",
+      "nested = [a, [5]]. Make O5, a list with two cells. Cell 0 gets an arrow to O1 (the very list that a leads to). Cell 1 gets an arrow to a new list O6 holding 5. The label nested leads to O5.",
+      "dup = nested.copy(). Make a new list O7 with two cells that hold the same two arrows: cell 0 to O1 and cell 1 to O6. This is a shallow copy: the items are shared. The label dup leads to O7.",
+      "dup[1].append(6). dup[1] follows the arrow in cell 1 of O7 to O6. append changes O6 to [5, 6]. Cell 1 of O5 also leads to O6, so nested shows [5, 6] too.",
+      "dup[0] = [0]. A new list O8 holding 0 is made, and the arrow in cell 0 of O7 moves to O8. This changes the cell of dup only: cell 0 of O5 still leads to O1.",
+      "The prints. a, b and c are [1, 2, 3], [1, 2, 3] and [1, 2, 3, 4]. x and y are 10 and 11. nested is [[1, 2, 3], [5, 6]] and dup is [[0], [5, 6]]."
+     ],
+     "zh": [
+      "a = [1, 2]。画两列：名字和对象。创建列表 O1，单元是 1 和 2，再画一个标签 a，箭头指向 O1。",
+      "b = a。没有创建任何新东西。在 O1 上再贴一张标签 b。一个列表，两个名字。",
+      "b.append(3)。这个方法改变的是 O1 本身：它现在有 1、2、3 三个单元。a 和 b 都通向 O1，所以两者看到的都是 [1, 2, 3]。",
+      "c = a.copy()。创建新列表 O2，单元是 1、2、3，c 通向 O2。接着 c.append(4) 只改变 O2，它变成 [1, 2, 3, 4]。O1 不受影响。",
+      "x = 10。创建 int 对象 O3，值为 10，再画标签 x，箭头指向它。接着 y = x 把标签 y 也贴在同一个 O3 上。",
+      "y = y + 1。先算出 y + 1，得到 int 值 11。把它画成一个新对象 O4。（Python 也许会重用已经存在的 11，但数字永远不会改变，所以你看不出区别。）然后 y 的箭头移到 O4。O3 里仍是 10，x 仍然通向它。数字从不会被原地改变。",
+      "nested = [a, [5]]。创建列表 O5，有两个单元。单元 0 画一支箭头指向 O1（也就是 a 所指的那个列表）。单元 1 画一支箭头指向新列表 O6，里面是 5。标签 nested 通向 O5。",
+      "dup = nested.copy()。创建新列表 O7，它的两个单元里是同样的两支箭头：单元 0 指向 O1，单元 1 指向 O6。这是浅拷贝：元素是共用的。标签 dup 通向 O7。",
+      "dup[1].append(6)。dup[1] 顺着 O7 单元 1 的箭头走到 O6。append 把 O6 改成 [5, 6]。O5 的单元 1 也通向 O6，所以 nested 里看到的也是 [5, 6]。",
+      "dup[0] = [0]。创建新列表 O8，里面是 0，O7 单元 0 的箭头移到 O8。这只改变了 dup 的那个单元：O5 的单元 0 仍然通向 O1。",
+      "输出。a、b、c 分别是 [1, 2, 3]、[1, 2, 3] 和 [1, 2, 3, 4]。x 和 y 是 10 和 11。nested 是 [[1, 2, 3], [5, 6]]，dup 是 [[0], [5, 6]]。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "scores = [70, 80]\nbackup = scores\nscores.append(90)",
+     "why": {
+      "en": "The aim was to keep a backup of the old list, but backup = scores only sticks a second label on the same list. When scores grows, backup shows [70, 80, 90] too. Make a separate list with scores.copy().",
+      "zh": "本意是保留旧列表的备份，但 backup = scores 只是在同一个列表上贴了第二张标签。scores 变长时，backup 显示的也是 [70, 80, 90]。要用 scores.copy() 创建一个独立的列表。"
+     },
+     "right": "scores = [70, 80]\nbackup = scores.copy()\nscores.append(90)"
+    },
+    {
+     "wrong": "def add_item(item, items=[]):\n    items.append(item)\n    return items",
+     "why": {
+      "en": "The default [] is made once, when the def line runs, and every call that leaves out items gets a label on that same list. So add_item(1) gives [1], and then add_item(2) gives [1, 2], not [2]. Use None as the default and make a fresh list inside the function.",
+      "zh": "默认值 [] 只在 def 那一行运行时创建一次，每一次省略 items 的调用，拿到的都是贴在同一个列表上的标签。所以 add_item(1) 得到 [1]，接着 add_item(2) 得到 [1, 2]，而不是 [2]。应该把默认值写成 None，并在函数内部创建新列表。"
+     },
+     "right": "def add_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items"
+    },
+    {
+     "wrong": "grid = [[0] * 3] * 3\ngrid[0][0] = 1",
+     "why": {
+      "en": "[[0] * 3] * 3 repeats the arrow, not the row. The outer list gets three cells that all lead to the same inner list. Setting grid[0][0] changes that one row, and all three rows show it. Build each row separately with a comprehension.",
+      "zh": "[[0] * 3] * 3 重复的是箭头，不是那一行。外层列表的三个单元全都通向同一个内层列表。设置 grid[0][0] 改的就是这一行，三行看起来都变了。要用推导式分别创建每一行。"
+     },
+     "right": "grid = [[0] * 3 for _ in range(3)]\ngrid[0][0] = 1"
+    },
+    {
+     "wrong": "s = \"hi\"\ns[0] = \"H\"",
+     "why": {
+      "en": "A string is immutable, so a single letter cannot be changed in place. Python stops with a TypeError. Make a new string and move the label: s = \"H\" + s[1:].",
+      "zh": "字符串是不可变的，不能原地修改其中某一个字母，Python 会因 TypeError 而停止。要创建一个新字符串并移动标签：s = \"H\" + s[1:]。"
+     },
+     "right": "s = \"hi\"\ns = \"H\" + s[1:]"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Draw it: s = \"hi\", then t = s, then s = s + \"!\". What do s and t lead to at the end?",
+      "zh": "画出来：s = \"hi\"，然后 t = s，然后 s = s + \"!\"。最后 s 和 t 各通向什么？"
+     },
+     "a": {
+      "en": "After t = s, both labels are on the string O1 \"hi\". Then s + \"!\" makes a new string O2 \"hi!\", and the arrow of s moves to O2. t still leads to O1. So s is \"hi!\" and t is \"hi\". Strings are immutable, so t never changes.",
+      "zh": "执行 t = s 之后，两张标签都贴在字符串 O1 \"hi\" 上。然后 s + \"!\" 创建新字符串 O2 \"hi!\"，s 的箭头移到 O2。t 仍然通向 O1。所以 s 是 \"hi!\"，t 是 \"hi\"。字符串不可变，t 永远不会变。"
+     }
+    },
+    {
+     "q": {
+      "en": "Draw it: x = [1, 2], then y = [1, 2], then z = x. Which of x == y, x is y and x is z are True?",
+      "zh": "画出来：x = [1, 2]，然后 y = [1, 2]，然后 z = x。x == y、x is y 和 x is z 哪些为 True？"
+     },
+     "a": {
+      "en": "There are two lists: O1, led to by x and z, and O2, led to by y. x == y is True, because both lists look equal. x is y is False, because they are different objects. x is z is True, because the labels are on the same object.",
+      "zh": "一共有两个列表：O1，由 x 和 z 通向；O2，由 y 通向。x == y 为 True，因为两个列表看上去相等。x is y 为 False，因为它们是不同的对象。x is z 为 True，因为两张标签贴在同一个对象上。"
+     }
+    },
+    {
+     "q": {
+      "en": "A function is defined as def f(v): followed by two lines, v.append(0) and then v = [9]. After a = [1] and f(a), what does print(a) show?",
+      "zh": "有一个函数 def f(v):，下面有两行：v.append(0)，然后是 v = [9]。执行 a = [1] 和 f(a) 之后，print(a) 显示什么？"
+     },
+     "a": {
+      "en": "It shows [1, 0]. Inside the call, v is a second label on the list a leads to, so v.append(0) changes that shared list. Then v = [9] only moves the label v inside the frame to a new list. The list that a leads to is unchanged by it.",
+      "zh": "显示 [1, 0]。在调用里，v 是贴在 a 所通向的那个列表上的第二张标签，所以 v.append(0) 改变的是这个共享的列表。接着 v = [9] 只是把栈帧里的标签 v 移到一个新列表上，不会影响 a 通向的那个列表。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "syntax-to-memorise",
+   "title": {
+    "en": "Syntax to memorise",
+    "zh": "要背熟的语法"
+   },
+   "goal": {
+    "en": "You can write the eight Python skeletons below from memory, shortest first, with every colon and indent in place.",
+    "zh": "你能凭记忆写出下面八个 Python 骨架，从最短的开始，每个冒号和缩进都不缺。"
+   },
+   "plain": {
+    "en": "Some code cannot be worked out on the spot. You must know its shape without looking. The eight shapes in this lesson are the ones Python needs again and again. They are short enough to learn by heart. Learn them in this order, shortest first, and add the next one only when the last is solid.\n\n1. def, with if, elif and else. 2. for. 3. f-strings. 4. List methods. 5. Dict methods. 6. Comprehensions. 7. try and except. 8. A class with __init__.\n\nHow to memorise: cover the page and write the shape on paper. Compare it with the page, character by character. Tick it only when it is right with no peeking. Do it again tomorrow. A shape that you write correctly three days in a row is learned.\n\nThe program below contains all eight shapes, each marked with a comment such as (2). Read it once. Then cover it and write each shape on its own, in a few lines of your own paper.\n\nTwo things that you must never forget. Every line that opens a block ends with a colon: def, if, elif, else, for, while, class, try, except. And every block is indented by the same amount, usually four spaces.\n\nList methods. words.append(x) adds at the end. words.pop() removes the last item and gives it back. words.insert(i, x) puts x at position i. words.remove(x) removes the first x. words.sort() sorts in place and returns None. sorted(words) returns a new sorted list. len(words) is the length. words[0] is the first item, words[-1] the last, and words[1:3] is a slice: positions 1 and 2, because the end is not included.\n\nDict methods. d[key] = value stores. d[key] reads, and stops with a KeyError when the key is missing. d.get(key, default) reads and gives the default when the key is missing. key in d asks whether the key is there. d.keys(), d.values() and d.items() give the keys, the values and the (key, value) pairs. del d[key] removes.",
+    "zh": "有些代码没法当场推出来，你必须不看资料就知道它的形状。这一课的八个骨架，是 Python 里反复要用的。它们都很短，可以背下来。按下面的顺序学，从最短的开始，上一个背牢了，再加下一个。\n\n1. def，以及 if、elif、else。2. for。3. f 字符串。4. 列表的方法。5. 字典的方法。6. 推导式。7. try 和 except。8. 带 __init__ 的类。\n\n背诵的办法：盖住页面，在纸上默写这个骨架，再和页面逐个字符对照。只有完全对、中途没有偷看，才打勾。明天再来一遍。连续三天都能写对的骨架，才算学会。\n\n下面的程序包含全部八个骨架，每个骨架旁边有一条形如 (2) 的注释。先读一遍，再盖住它，在你自己的纸上把每个骨架单独默写出来，每个只写几行。\n\n有两件事永远不能忘。每一个开启代码块的行都以冒号结尾：def、if、elif、else、for、while、class、try、except。每个代码块的缩进量都要一致，通常是四个空格。\n\n列表的方法。words.append(x) 在末尾添加。words.pop() 删除最后一个元素并把它交还给你。words.insert(i, x) 把 x 放在位置 i。words.remove(x) 删除第一个 x。words.sort() 原地排序，返回 None。sorted(words) 返回一个新的排好序的列表。len(words) 是长度。words[0] 是第一个元素，words[-1] 是最后一个，words[1:3] 是切片：位置 1 和 2，因为不包括末尾位置。\n\n字典的方法。d[key] = value 存入。d[key] 读取，键不存在时会以 KeyError 停止。d.get(key, default) 读取，键不存在时给出默认值。key in d 问键是否存在。d.keys()、d.values() 和 d.items() 分别给出键、值和（键，值）对。del d[key] 删除。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "skeleton",
+      "zh": "骨架"
+     },
+     "meaning": {
+      "en": "The fixed shape of a piece of code, with the details left to fill in.",
+      "zh": "一段代码固定不变的形状，细节留待填写。"
+     }
+    },
+    {
+     "term": {
+      "en": "comprehension",
+      "zh": "推导式"
+     },
+     "meaning": {
+      "en": "A one-line way to build a list or dict from another collection, such as [n * n for n in range(4)].",
+      "zh": "用一行从另一个集合创建列表或字典的写法，例如 [n * n for n in range(4)]。"
+     }
+    },
+    {
+     "term": {
+      "en": "f-string",
+      "zh": "f 字符串"
+     },
+     "meaning": {
+      "en": "A string with the letter f before the quote. Names and expressions inside { } are put into the text.",
+      "zh": "引号前有字母 f 的字符串。{ } 里的名字和表达式会被放进文字里。"
+     }
+    },
+    {
+     "term": {
+      "en": "exception",
+      "zh": "异常"
+     },
+     "meaning": {
+      "en": "An error that stops normal flow, such as ValueError. An except block can handle it.",
+      "zh": "中断正常流程的错误，例如 ValueError。except 块可以处理它。"
+     }
+    },
+    {
+     "term": {
+      "en": "self",
+      "zh": "self"
+     },
+     "meaning": {
+      "en": "The first parameter of a method. It stands for the object the method was called on.",
+      "zh": "方法的第一个参数，代表调用这个方法的那个对象。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "# (1) def, with if, elif and else\ndef average(nums):\n    return sum(nums) / len(nums)\n\n\ndef label(score):\n    if score >= 8:\n        return \"high\"\n    elif score >= 4:\n        return \"mid\"\n    else:\n        return \"low\"\n\n\n# (4) list methods\nwords = [\"pear\", \"fig\", \"apple\"]\nwords.append(\"kiwi\")\nwords.sort()\nlast = words.pop()\nprint(words, last, len(words))\n\n# (5) dict methods, and (2) for\nlengths = {}\nfor w in words:\n    lengths[w] = len(w)\nfor key, value in lengths.items():\n    # (3) f-string\n    print(f\"{key} has {value} letters\")\nprint(lengths.get(\"plum\", 0), \"fig\" in lengths)\n\n# (6) comprehensions\nsquares = [n * n for n in range(4)]\nlong_words = [w for w in words if len(w) > 3]\nsizes = {w: len(w) for w in words}\nprint(squares, long_words, sizes)\n\n\n# (8) class and __init__\nclass Counter:\n    def __init__(self, name):\n        self.name = name\n        self.total = 0\n\n    def add(self, amount):\n        self.total += amount\n\n\nc = Counter(\"steps\")\nc.add(5)\nc.add(7)\nprint(f\"{c.name}: {c.total}, average {average([c.total, 8]):.1f}, {label(c.total)}\")\n\n# (7) try and except\ntry:\n    n = int(\"12a\")\nexcept ValueError:\n    n = -1\nprint(n)\n",
+    "output": "['apple', 'fig', 'kiwi'] pear 3\napple has 5 letters\nfig has 3 letters\nkiwi has 4 letters\n0 True\n[0, 1, 4, 9] ['apple', 'kiwi'] {'apple': 5, 'fig': 3, 'kiwi': 4}\nsteps: 12, average 10.0, high\n-1",
+    "walk": {
+     "en": [
+      "(1) def, with if, elif and else. def name(parameters): then the body, indented. return gives a value back. if test: ... elif test: ... else: ... Each of these lines ends with a colon, and the elif and else line up under the if. average(nums) divides the sum by the length. label(score) gives high for 8 or more, mid for 4 to 7, and low otherwise.",
+      "(2) for. for item in collection: with the body indented. for key, value in lengths.items(): takes a pair at a time and gives each part its own name. To count n times, use for i in range(n):, which gives 0 up to n - 1.",
+      "(3) f-string. f\"text {name} more text {value}\". The letter f comes right before the opening quote. Whatever sits inside the curly braces is worked out and put into the text. A format can follow a colon: {x:.1f} writes x with one decimal place. This line prints apple has 5 letters, and so on.",
+      "(4) List methods. words starts as pear, fig, apple. append(\"kiwi\") adds kiwi at the end. sort() puts them in alphabetical order: apple, fig, kiwi, pear. pop() removes pear and gives it back, so last is pear and words is apple, fig, kiwi. The line prints ['apple', 'fig', 'kiwi'] pear 3.",
+      "(5) Dict methods. lengths = {} makes an empty dict. lengths[w] = len(w) stores a pair. lengths.get(\"plum\", 0) gives 0, because plum is not a key. \"fig\" in lengths is True. The line prints 0 True.",
+      "(6) Comprehensions. [expression for item in collection] builds a list. Add if test at the end to keep only some items. {key: value for item in collection} builds a dict. The expression comes first. squares is [0, 1, 4, 9], long_words is ['apple', 'kiwi'], and sizes is a dict of lengths.",
+      "(7) try and except. try: with the risky code indented, then except ErrorName: with the plan B indented. int(\"12a\") cannot read the text as a number, so it raises a ValueError, the rest of the try block is skipped, and the except block sets n to -1. The program prints -1.",
+      "(8) A class with __init__. class Name: then def __init__(self, parameters): which sets self.attribute = value. Every method has self as its first parameter. You leave self out when you call: c.add(5) calls add with self set to c. The program prints steps: 12, average 10.0, high."
+     ],
+     "zh": [
+      "(1) def，以及 if、elif、else。def 名字(参数): 然后是缩进的函数体。return 把一个值交还回去。if 条件: ... elif 条件: ... else: ... 这些行都以冒号结尾，elif 和 else 与 if 左对齐。average(nums) 用总和除以长度。label(score) 在 8 及以上给出 high，4 到 7 给出 mid，其余给出 low。",
+      "(2) for。for 元素 in 集合: 然后是缩进的循环体。for key, value in lengths.items(): 每次取一对，并给每一部分起各自的名字。要重复 n 次，用 for i in range(n):，i 取 0 到 n - 1。",
+      "(3) f 字符串。f\"文字 {name} 更多文字 {value}\"。字母 f 紧贴在左引号前面。花括号里的东西会被算出来并放进文字里。冒号后面可以接格式：{x:.1f} 写出保留一位小数的 x。这一行输出 apple has 5 letters，依此类推。",
+      "(4) 列表的方法。words 一开始是 pear、fig、apple。append(\"kiwi\") 在末尾加入 kiwi。sort() 按字母顺序排好：apple、fig、kiwi、pear。pop() 删除 pear 并把它交还回来，所以 last 是 pear，words 是 apple、fig、kiwi。这一行输出 ['apple', 'fig', 'kiwi'] pear 3。",
+      "(5) 字典的方法。lengths = {} 创建空字典。lengths[w] = len(w) 存入一对。lengths.get(\"plum\", 0) 得到 0，因为 plum 不是键。\"fig\" in lengths 为 True。这一行输出 0 True。",
+      "(6) 推导式。[表达式 for 元素 in 集合] 创建列表。在末尾加 if 条件，只保留一部分元素。{键: 值 for 元素 in 集合} 创建字典。表达式写在最前面。squares 是 [0, 1, 4, 9]，long_words 是 ['apple', 'kiwi']，sizes 是长度的字典。",
+      "(7) try 和 except。try: 下面缩进写有风险的代码，然后 except 错误名: 下面缩进写备用方案。int(\"12a\") 无法把这段文字读成数字，于是引发 ValueError，try 块里剩下的部分被跳过，except 块把 n 设为 -1。程序输出 -1。",
+      "(8) 带 __init__ 的类。class 名字: 然后 def __init__(self, 参数): 在里面设置 self.属性 = 值。每个方法的第一个参数都是 self。调用时不写 self：c.add(5) 调用 add，并把 self 设为 c。程序输出 steps: 12, average 10.0, high。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "words = [\"pear\", \"fig\"]\nordered = words.sort()",
+     "why": {
+      "en": "sort() changes the list in place and gives back None, so ordered is None. Either sort in place and keep using words, or ask for a new sorted list with sorted(words).",
+      "zh": "sort() 原地改变列表并返回 None，所以 ordered 是 None。要么原地排序然后继续用 words，要么用 sorted(words) 得到一个新的排好序的列表。"
+     },
+     "right": "words = [\"pear\", \"fig\"]\nordered = sorted(words)"
+    },
+    {
+     "wrong": "ages = {\"Leon\": 20}\nage = ages[\"Emma\"]",
+     "why": {
+      "en": "The key Emma is not in the dict, so d[key] stops the program with a KeyError. If a missing key is possible, use d.get(key, default), or ask key in d first.",
+      "zh": "字典里没有键 Emma，所以 d[key] 会让程序因 KeyError 而停止。如果键可能不存在，就用 d.get(key, default)，或者先用 key in d 判断。"
+     },
+     "right": "ages = {\"Leon\": 20}\nage = ages.get(\"Emma\", 0)"
+    },
+    {
+     "wrong": "words = [\"pear\", \"fig\"]\nn = words.length\nm = words.size()",
+     "why": {
+      "en": "Python has one way to ask how many: the function len, with the thing in brackets. Lists have no length field and no size method. Write len(words).",
+      "zh": "Python 询问“有多少个”只有一种办法：函数 len，把对象放在括号里。列表没有 length 字段，也没有 size 方法。要写 len(words)。"
+     },
+     "right": "words = [\"pear\", \"fig\"]\nn = len(words)"
+    },
+    {
+     "wrong": "name = \"Mia\"\nprint(\"Hello {name}\")",
+     "why": {
+      "en": "Without the letter f in front of the quote, this is an ordinary string, and the braces are printed as they are: Hello {name}. Nothing is reported as an error. Write f\"Hello {name}\".",
+      "zh": "引号前面没有字母 f，它就是一个普通字符串，花括号会原样输出：Hello {name}。不会报任何错误。要写 f\"Hello {name}\"。"
+     },
+     "right": "name = \"Mia\"\nprint(f\"Hello {name}\")"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "On paper, write from memory a function longest(words) that returns the longest string in a non-empty list, using a for loop.",
+      "zh": "在纸上默写一个函数 longest(words)：用 for 循环，返回一个非空列表中最长的字符串。"
+     },
+     "a": {
+      "en": "def longest(words):  then, indented, best = words[0]  then for w in words:  then, indented again, if len(w) > len(best):  then best = w  and finally, back at the first indent, return best. Check: colons on def, for and if; the same indentation inside each block; return outside the loop.",
+      "zh": "def longest(words):  接着缩进写 best = words[0]，然后 for w in words:，再缩进写 if len(w) > len(best):，再缩进写 best = w，最后回到第一层缩进写 return best。对照检查：def、for、if 后面有冒号；每个代码块里缩进一致；return 在循环外面。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write one line that builds a list of the squares of the even numbers from 0 to 8, using a comprehension.",
+      "zh": "写一行代码：用推导式创建 0 到 8 中偶数的平方组成的列表。"
+     },
+     "a": {
+      "en": "[n * n for n in range(9) if n % 2 == 0]  It gives [0, 4, 16, 36, 64]. The expression n * n comes first, then the for, then the if.",
+      "zh": "[n * n for n in range(9) if n % 2 == 0]  结果是 [0, 4, 16, 36, 64]。表达式 n * n 写在最前面，然后是 for，最后是 if。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a class Dog whose __init__ takes a name and stores it, and a method speak that returns the text name says woof, using an f-string.",
+      "zh": "写一个类 Dog：__init__ 接收名字并保存它；再写一个方法 speak，用 f 字符串返回“名字 says woof”这段文字。"
+     },
+     "a": {
+      "en": "class Dog:  then, indented, def __init__(self, name):  then self.name = name  then, back one level, def speak(self):  then return f\"{self.name} says woof\"  Check: self is the first parameter of both methods, and self.name is used to read the attribute.",
+      "zh": "class Dog:  接着缩进写 def __init__(self, name):，再缩进写 self.name = name，退回一层写 def speak(self):，再缩进写 return f\"{self.name} says woof\"。对照检查：两个方法的第一个参数都是 self，读取属性时用 self.name。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "handwriting-mistakes",
+   "title": {
+    "en": "Common handwriting mistakes",
+    "zh": "手写时常见的错误"
+   },
+   "goal": {
+    "en": "You can read your own Python answer a second time, as the interpreter would, and catch the slips that would otherwise cost marks.",
+    "zh": "你能把自己写的 Python 答案像解释器那样再读一遍，抓住本来会丢分的小错。"
+   },
+   "plain": {
+    "en": "On a computer, Python stops you at the first syntax error and tells you the line. On paper, nobody stops you, and every one of these slips costs marks even though it has nothing to do with whether you understand the problem. So you must be your own interpreter.\n\nWhen your answer is finished, read it a second time. This time do not ask whether the logic is right. Ask only whether the form is right. Use this list, and tick each item with your pen.\n\n1. Every line that opens a block ends with a colon: def, if, elif, else, for, while, class, try, except.\n2. The lines of a block are indented by the same amount. Lines after the block move back to the left.\n3. Every ( [ { has its partner, and every opening quote has a closing quote of the same kind.\n4. = stores a value. == asks a question. There is no ++: write += 1.\n5. Use and, or, not. Use elif, not else if. Write True, False and None with a capital letter.\n6. Names are case sensitive: count and Count are different names.\n7. Every method of a class has self as its first parameter, and reads and writes attributes with self.\n8. A function that should give a value back has a return. Without one, it gives back None.\n9. Text and numbers do not mix: \"5\" + 1 is an error. Convert with int() or str().\n10. Python does not tell you off for a name you misspelled until the line runs. Check each name against where it was first stored.\n\nBelow are four pairs that cost the most marks. In each pair the first block is what people write, and the second block is the repair.",
+    "zh": "在计算机上，Python 会在第一个语法错误处拦住你，并告诉你是哪一行。在纸上，没有人拦你，而这些小错每一个都会丢分，尽管它们和你是否理解题目毫无关系。所以你必须自己当自己的解释器。\n\n答案写完之后，再读第二遍。这一遍不要问逻辑对不对，只问形式对不对。照下面的清单，用笔逐项打勾。\n\n1. 每一个开启代码块的行都以冒号结尾：def、if、elif、else、for、while、class、try、except。\n2. 同一个代码块的各行缩进量一致。代码块之后的行要退回左边。\n3. 每个 ( [ { 都有配对的另一半，每个左引号都有同一种的右引号。\n4. = 是存入一个值，== 是提出一个问题。Python 没有 ++：要写 += 1。\n5. 用 and、or、not。用 elif，不要写 else if。True、False、None 的首字母要大写。\n6. 名字区分大小写：count 和 Count 是不同的名字。\n7. 类的每个方法的第一个参数都是 self，读写属性时要用 self。\n8. 需要交还一个值的函数要有 return。没有 return，它交还的是 None。\n9. 文字和数字不能混着算：\"5\" + 1 是错误。要用 int() 或 str() 转换。\n10. 拼错的名字，Python 要等那一行真正运行时才会指出来。把每个名字都和它第一次被存入的地方核对一遍。\n\n下面是最容易丢分的四组错误。每组里第一块是常见的错误写法，第二块是改正后的写法。"
+   },
+   "mistakes": [
+    {
+     "wrong": "def double(x)\n    return x * 2\n\nfor i in range(3):\nprint(i)",
+     "why": {
+      "en": "Two slips. The def line has no colon at the end. And the print line is not indented, so the for has no body. Python refuses both. Put a colon after every line that opens a block, then indent the lines under it by four spaces.",
+      "zh": "两处错误。def 那一行末尾没有冒号。print 那一行没有缩进，所以 for 没有循环体。Python 对这两处都会拒绝。每个开启代码块的行后面都要加冒号，然后把它下面的行缩进四个空格。"
+     },
+     "right": "def double(x):\n    return x * 2\n\nfor i in range(3):\n    print(i)"
+    },
+    {
+     "wrong": "if x > 0 && y > 0:\n    count++\nelse if x == 0:\n    print(\"zero\")",
+     "why": {
+      "en": "Three habits from C and Java. Python spells && as and. It has no ++, so write count += 1. And else if is written elif. Python reports a syntax error on the first of these.",
+      "zh": "三处来自 C 和 Java 的习惯。Python 里 && 要写成 and。它没有 ++，要写 count += 1。else if 要写成 elif。Python 会在其中第一处报语法错误。"
+     },
+     "right": "if x > 0 and y > 0:\n    count += 1\nelif x == 0:\n    print(\"zero\")"
+    },
+    {
+     "wrong": "if x = 3:\n    print(\"three\")\nif x == 3 or 4:\n    print(\"three or four\")",
+     "why": {
+      "en": "Two slips. A single = stores, and it is not allowed in a condition, so Python reports a syntax error. And x == 3 or 4 means (x == 3) or 4. The 4 is always true, so the second print always runs. Write each comparison in full, or use x in (3, 4).",
+      "zh": "两处错误。单个 = 是存入，条件里不允许这样写，Python 会报语法错误。而且 x == 3 or 4 的意思是 (x == 3) or 4。4 永远为真，所以第二个 print 总会执行。要把每个比较写完整，或者用 x in (3, 4)。"
+     },
+     "right": "if x == 3:\n    print(\"three\")\nif x == 3 or x == 4:\n    print(\"three or four\")"
+    },
+    {
+     "wrong": "class Dog:\n    def __init__(name):\n        self.name = name\n\n    def rename(self, new):\n        name = new",
+     "why": {
+      "en": "Two slips. __init__ must take self as its first parameter, or Python cannot pass the new object in, and new Dog(\"Rex\") fails. And inside rename, name = new makes a local name that disappears when the method ends. The attribute is self.name.",
+      "zh": "两处错误。__init__ 的第一个参数必须是 self，否则 Python 无法把新对象传进来，Dog(\"Rex\") 会失败。另外，在 rename 里，name = new 只创建了一个局部名字，方法一结束就消失了。属性应当写成 self.name。"
+     },
+     "right": "class Dog:\n    def __init__(self, name):\n        self.name = name\n\n    def rename(self, new):\n        self.name = new"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Fix both slips: else if x == 3 print(\"three\")  (two slips: the keyword and a missing symbol).",
+      "zh": "改正两处错误：else if x == 3 print(\"three\")（两处：一个关键字，和一个漏掉的符号）。"
+     },
+     "a": {
+      "en": "It must be elif x == 3: and then the print goes on the next line, indented: print(\"three\"). So elif replaces else if, and a colon is added after the condition.",
+      "zh": "应该写成 elif x == 3:，然后 print 放到下一行并缩进：print(\"three\")。也就是用 elif 代替 else if，并在条件后面加冒号。"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix the loop header: for i in range(len(items): total += items[i]",
+      "zh": "改正这个循环的开头：for i in range(len(items): total += items[i]"
+     },
+     "a": {
+      "en": "The brackets are not paired: range( and len( are both opened, but only one is closed. Write for i in range(len(items)): and put total += items[i] on the next line, indented. Counting brackets in pairs finds it.",
+      "zh": "括号没有配对：range( 和 len( 都打开了，却只关闭了一个。应写成 for i in range(len(items)):，并把 total += items[i] 放到下一行并缩进。把括号成对地数一遍就能发现。"
+     }
+    },
+    {
+     "q": {
+      "en": "In a class Dog, the method __init__(self, name) contains the line name = name. What is wrong, and what should it say?",
+      "zh": "在类 Dog 里，方法 __init__(self, name) 中有一行 name = name。哪里错了？应该怎么写？"
+     },
+     "a": {
+      "en": "It stores the parameter under the same local name, so nothing is kept after the method ends. The attribute needs self: self.name = name.",
+      "zh": "它把参数又存回同一个局部名字，方法结束后什么也没有留下。属性需要 self：self.name = name。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mark-yourself",
+   "title": {
+    "en": "Mark yourself",
+    "zh": "给自己打分"
+   },
+   "goal": {
+    "en": "You can mark your own paper answer honestly against a rubric, find where the marks went, plan tomorrow's practice, and write under time.",
+    "zh": "你能对照评分标准诚实地给自己的手写答案打分，找出分数丢在哪里，安排明天的练习，并在限时下写代码。"
+   },
+   "plain": {
+    "en": "On paper, a page of writing can look finished and still be wrong. Marking yourself fixes that. You compare your answer with a rubric. A rubric is a list of lines, each worth a number of marks, each describing something that you can see in the answer. Be strict. The mark that counts is the one a stranger would give.\n\nHow to read a rubric, line by line.\n\n1. Read one line. Ask: what exactly would I see in a correct answer?\n2. Find that thing in your answer and touch it with the tip of your pen. If you can point to it, tick the line and write its marks. If you cannot point to it, the line is worth zero.\n3. Do not give half marks for \"nearly\". Give part of a line only if the rubric says how it splits.\n4. Check every path. A line such as \"handles the empty string\" is zero if only the normal case works.\n5. Add up the lines. Write the total as marks out of the maximum on the page.\n\nHow to find where the marks went. Put each lost mark into one of four boxes. Idea: I did not know how to solve it. Recall: I knew, but could not remember the syntax or the method name. Slip: a small mistake in something I did know, such as a missing colon or a missing return. Time: I ran out of time. Count each box. The biggest box tells you what to work on. Idea: reread the lesson. Recall: more cover-and-write practice. Slip: the interpreter pass from the last lesson and a tiny test. Time: practise planning.\n\nWhat to do the next day. First, rewrite the same answer on a blank page without looking. Second, do a different question of the same kind. Third, mark both again. Repeat after three days and after a week. When the biggest box changes, you are improving.\n\nHow to write under time.\n\n1. Plan first. Use the first tenth of the time. Write the def line and three or four comment lines that name the steps. Do not skip this.\n2. Leave a blank line between blocks of code. You will need room to insert a line you forgot. Python is sensitive to indentation, so write the indentation as clearly as you can, and use the same four spaces each time.\n3. Name things clearly: count, not c; longest, not l. Clear names stop you from mixing up two names.\n4. Test with a tiny input, by hand. When the code is written, run it on the smallest case: one item, an empty list, a one-letter word. Then run one case that repeats a value. This takes a minute and finds most boundary errors.\n5. Spend about one minute per mark. If you are stuck on a part, write a comment saying what you would do, move on, and come back.\n6. Leave two minutes for the interpreter pass.\n\nOn the Practice page, the questions of kind Write code have a Paper mode with a timer, a model answer and a rubric with tick boxes. Use it exactly like this lesson: write on paper, then mark.",
+    "zh": "在纸上，一页写满的答案看起来像是完成了，其实可能是错的。给自己打分能解决这个问题。你拿答案去对照评分标准。评分标准是一组条目，每条值若干分，每条描述一件你能在答案里看到的东西。要严格。真正算数的分数，是一个陌生人会给你的分数。\n\n怎样逐条读评分标准。\n\n1. 读一条。问自己：一个正确的答案里，我到底会看到什么？\n2. 在你的答案里找到那样东西，用笔尖点住它。指得出来，就打勾并写下这条的分数；指不出来，这一条就是零分。\n3. “差不多”不给半分。只有评分标准写明怎么拆分时，才给一条的部分分数。\n4. 检查每一条路径。像“处理空字符串”这样的条目，如果只有正常情况能工作，就是零分。\n5. 把各条加起来，把总分写成“得分/满分”的形式放在页面上。\n\n怎样找出分数丢在哪里。把每一个丢掉的分放进四个格子之一。思路：我不知道怎么解。记忆：我知道，但记不起语法或方法名。小错：在我本来会的东西上犯的小错误，例如漏了冒号或漏了 return。时间：我没写完。数一数每个格子。最大的格子告诉你该练什么。思路：重读对应的课。记忆：多做“盖住再默写”。小错：用上一课的解释器检查清单，再加一个很小的测试。时间：练习先做计划。\n\n第二天要做什么。第一，在空白页上不看资料，把同一道题的答案重写一遍。第二，做一道同类型的不同题目。第三，把两份答案再各打一次分。三天后和一周后再重复。当最大的格子换了，说明你在进步。\n\n怎样在限时下写。\n\n1. 先做计划。用掉最初的十分之一时间。写出 def 那一行，再写三四行说明步骤的注释。不要跳过这一步。\n2. 代码块之间空一行。你会需要空间补写漏掉的一行。Python 对缩进很敏感，所以缩进要写得尽量清楚，并且每次都用同样的四个空格。\n3. 名字要起得清楚：用 count，不要用 c；用 longest，不要用 l。名字清楚，就不会把两个名字混在一起。\n4. 用一个很小的输入手算测试。代码写完后，用最小的情况走一遍：只有一项、空列表、只有一个字母的单词。再走一个有重复值的情况。这只要一分钟，却能找出大部分边界错误。\n5. 大约每分花一分钟。某一部分卡住了，就写一行注释说明你打算怎么做，然后往下写，回头再补。\n6. 留出两分钟做解释器检查。\n\n在“练习”页面里，题型为“手写代码”的题目有手写模式：有计时器、参考答案，以及可以打勾的评分标准。完全按这一课的办法用它：先在纸上写，再打分。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "rubric",
+      "zh": "评分标准"
+     },
+     "meaning": {
+      "en": "A list of lines, each worth some marks, each describing something you can point to in the answer.",
+      "zh": "一组条目，每条值若干分，每条描述一件你能在答案里指出来的东西。"
+     }
+    },
+    {
+     "term": {
+      "en": "boundary case",
+      "zh": "边界情况"
+     },
+     "meaning": {
+      "en": "A test input that sits on an edge, such as one item, an empty string, or a repeated value.",
+      "zh": "落在边缘上的测试输入，例如只有一项、空字符串或有重复值。"
+     }
+    },
+    {
+     "term": {
+      "en": "interpreter pass",
+      "zh": "解释器检查"
+     },
+     "meaning": {
+      "en": "A second reading of your answer that checks only the form: colons, indents, brackets, self.",
+      "zh": "把答案再读一遍，只检查形式：冒号、缩进、括号、self。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def count_letters(word):\n    counts = {}\n    for ch in word:\n        counts[ch] = counts.get(ch, 0) + 1\n\n\nprint(count_letters(\"aba\"), \"(expected {'a': 2, 'b': 1})\")\n",
+    "output": "None (expected {'a': 2, 'b': 1})",
+    "walk": {
+     "en": [
+      "The task: write count_letters(word), which returns a dict that says how many times each letter occurs in word. The rubric has four lines, one mark each. (1) The def line is right: the name, one parameter, and a colon. (2) It starts with an empty dict. (3) It visits every letter and adds 1 to that letter’s count, including the first time the letter is seen. (4) It returns the dict.",
+      "Mark line 1. def count_letters(word): is right. Put the pen on it. +1.",
+      "Mark line 2. counts = {} is there. +1.",
+      "Mark line 3. for ch in word visits every letter, and counts[ch] = counts.get(ch, 0) + 1 adds 1, using 0 when the letter is new. +1.",
+      "Mark line 4. The pen has nothing to point at: there is no return line. 0 marks.",
+      "Score: 3 out of 4. Now the tiny test: the word \"aba\". The dict is built correctly inside, but the function ends without return, so the call gives back None. The program prints None (expected {'a': 2, 'b': 1}). The lost mark goes in the Slip box: the idea was right, one line was left out. The fix is return counts, indented once, level with the for."
+     ],
+     "zh": [
+      "题目：写 count_letters(word)，返回一个字典，说明 word 中每个字母出现了多少次。评分标准有四条，每条一分。(1) def 那一行正确：函数名、一个参数，以及冒号。(2) 从一个空字典开始。(3) 访问每个字母，给该字母的计数加 1，包括第一次遇到这个字母的情况。(4) 返回这个字典。",
+      "给第 1 条打分。def count_letters(word): 是对的，用笔点住它。+1。",
+      "给第 2 条打分。counts = {} 在那里。+1。",
+      "给第 3 条打分。for ch in word 访问每个字母，counts[ch] = counts.get(ch, 0) + 1 加 1，字母是新的时候从 0 开始。+1。",
+      "给第 4 条打分。笔下什么也指不出来：没有 return 那一行。0 分。",
+      "得分：4 分里得 3 分。现在手算一个很小的测试：单词 \"aba\"。字典在函数内部建对了，但函数结束时没有 return，所以调用交还的是 None。程序输出 None (expected {'a': 2, 'b': 1})。丢掉的那一分放进“小错”格：思路是对的，只是漏了一行。改法是加上 return counts，缩进一层，与 for 对齐。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "counts = {}\nfor ch in word:\n    counts[ch] += 1",
+     "why": {
+      "en": "The first time a letter is seen, counts[ch] does not exist, so counts[ch] += 1 stops with a KeyError. The tiny test \"a\" finds it at once. Start from a default: counts[ch] = counts.get(ch, 0) + 1.",
+      "zh": "第一次遇到某个字母时，counts[ch] 还不存在，所以 counts[ch] += 1 会以 KeyError 停止。用很小的测试 \"a\" 就能立刻发现。要从默认值开始：counts[ch] = counts.get(ch, 0) + 1。"
+     },
+     "right": "counts = {}\nfor ch in word:\n    counts[ch] = counts.get(ch, 0) + 1"
+    },
+    {
+     "wrong": "total = 0\nfor i in range(1, len(items)):\n    total += items[i]",
+     "why": {
+      "en": "range(1, len(items)) starts at position 1, so items[0] is never added. A tiny test with one item shows it: the total stays 0. Start at 0, or skip the positions and loop over the items themselves.",
+      "zh": "range(1, len(items)) 从位置 1 开始，所以 items[0] 从来没有被加进去。用只有一项的小测试就能看到：总和一直是 0。要从 0 开始，或者干脆不用位置，直接遍历元素本身。"
+     },
+     "right": "total = 0\nfor x in items:\n    total += x"
+    },
+    {
+     "wrong": "def total(items):\n    s = 0\n    for x in items:\n        s += x\n    print(s)",
+     "why": {
+      "en": "The task said the function returns the total, but this one prints it and returns None. The caller gets nothing to use. This is a reading slip: before you write, find the words returns, prints and reads in the task and underline them.",
+      "zh": "题目说的是函数“返回”总和，这个函数却把它打印出来，返回的是 None，调用者拿不到可用的值。这是读题的疏漏：写之前先在题目里找出“返回”“打印”“读取”这些词，并划上线。"
+     },
+     "right": "def total(items):\n    s = 0\n    for x in items:\n        s += x\n    return s"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "A rubric line says \"gives the right answer for the empty string\". Your function works for \"aba\" but crashes on \"\". How many marks does that line get, and why?",
+      "zh": "评分标准里有一条“对空字符串给出正确结果”。你的函数对 \"aba\" 能工作，但对 \"\" 会崩溃。这一条得多少分？为什么？"
+     },
+     "a": {
+      "en": "Zero. The line is about a path, and that path fails. Put the pen on the code that handles the empty string. There is none that works. Test every path with a tiny input, not only the usual one.",
+      "zh": "0 分。这一条说的是一条路径，而这条路径出错了。把笔点在处理空字符串的代码上，没有任何能工作的代码。要用很小的输入测试每一条路径，不能只测常见的那一条。"
+     }
+    },
+    {
+     "q": {
+      "en": "You have 12 minutes for a 12-mark task: write a class with __init__ and one method, and a few lines that test it. Write a plan with times.",
+      "zh": "你有 12 分钟，完成一道 12 分的题：写一个带 __init__ 和一个方法的类，再写几行测试它。写出带时间的计划。"
+     },
+     "a": {
+      "en": "1 minute: write the class line and the two def lines as comments. 4 minutes: write the class. 2 minutes: write the test lines for one tiny case. 3 minutes: run that case by hand with a trace table. 2 minutes: the interpreter pass for colons, indents and self.",
+      "zh": "1 分钟：把 class 那一行和两个 def 行先写成注释。4 分钟：写类。2 分钟：为一个很小的情况写测试行。3 分钟：用跟踪表手算这个情况。2 分钟：做解释器检查，核对冒号、缩进和 self。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the tiny tests that you would run by hand on a function that returns the most common letter in a word.",
+      "zh": "写出你会用来手算测试“返回单词中出现最多的字母的函数”的几个很小的输入。"
+     },
+     "a": {
+      "en": "The empty string (decide what to return, and check the code does it), a one-letter word, a word where two letters tie (which one wins?), and a word like \"aab\" with a clear winner. Run each through your code with a trace table.",
+      "zh": "空字符串（先决定返回什么，再检查代码是否照做）、只有一个字母的单词、两个字母并列最多的单词（谁胜出？），以及像 \"aab\" 这样有明确胜者的单词。把每个都用跟踪表走一遍。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Practise on paper: open the Write code questions for Python, set a timer, and mark yourself against the rubric.",
+   "zh": "在纸上练习：打开 Python 的“手写代码”题，设好计时器，对照评分标准给自己打分。"
+  },
+  "href": "learn/#/practice/python?kind=write",
+  "hrefZh": "learn/#/practice/python?kind=write"
+ }
+}

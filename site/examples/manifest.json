@@ -72,6 +72,24 @@
     "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
   },
   {
+    "path": "examples/INFO1113/memory-diagrams-java-reference-diagram-states/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "memory-diagrams",
+    "title": "Print the diagram: primitives, references and arrays",
+    "output": "primitives: n=5 m=9\np -> #1{value=3}, q -> #1{value=3}, r -> #2{value=3}\np == q: true, p == r: false\nafter q.value = 7: p -> #1{value=7}, r -> #2{value=3}\nafter q = new Box(1): p -> #1{value=7}, q -> #3{value=1}\nx[1]=20 y[1]=20 same array: true\nrow[0] -> #1{value=7}, row[1] -> #2{value=3}, row[2] -> null\ninside change: n=6 b=#4{value=-1} a[0]=99\nafter change: n=5 p -> #1{value=8} x[0]=99\nrow[0] sees it too: #1{value=8}\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/memory-diagrams-java-mark-and-sweep-model/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "memory-diagrams",
+    "title": "Run mark-and-sweep on a tiny heap",
+    "output": "heap starts with 9 objects\nroots are variables a and e; G and the H-I pair are unreachable\ncollection 1\n  marked in order: A B D C E F\n  freed: G H I\n  heap now has 6 objects\ncollection 2 after e = null\n  marked in order: A B D C\n  freed: E F\n  heap now has 4 objects\ncollection 3 after a.right = null\n  marked in order: A B D\n  freed: C\n  heap now has 3 objects\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
     "path": "examples/INFO1113/strings-java-string-value-identity/Main.java",
     "language": "java",
     "group": "INFO1113",
@@ -324,6 +342,24 @@
     "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
   },
   {
+    "path": "examples/INFO1113/custom-exceptions-java-checked-custom-exception/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "custom-exceptions",
+    "title": "A checked exception that carries data",
+    "output": "paid 200, balance 50\ncaught: need 50 more cents\nbalance unchanged: 50\ntopped up 50, balance 100\nsecond try paid 100, balance 0\nprogramming error: price must be positive: -5\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/custom-exceptions-java-exception-hierarchy-cause/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "custom-exceptions",
+    "title": "A hierarchy, a wrapped cause and an unchecked contract error",
+    "output": "tea:2 -> 600 cents\n  processed tea:2\njuice:1 -> unknown code juice\n  processed juice:1\ncake:x3 -> bad quantity in \"cake:x3\", cause: 'x' is not a digit\n  processed cake:x3\ncake:0 -> contract violated: quantity must be at least 1 but was 0\n  processed cake:0\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
     "path": "examples/INFO1113/enums-state-java-explicit-state-transitions/Main.java",
     "language": "java",
     "group": "INFO1113",
@@ -414,6 +450,24 @@
     "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
   },
   {
+    "path": "examples/INFO1113/packages-uml-java-visibility-in-one-file/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "packages-uml",
+    "title": "Visibility inside one file, and the full rule table",
+    "output": "same package, package-private field: 1\nsame package, protected field: 2\nprivate field through a method: 7\nsubclass uses inherited members: 6\nnested private seen by the outer class: 5\n\nmodifier   same class  same package  subclass elsewhere  anyone\nprivate    yes         no            no                  no\n(none)     yes         yes           no                  no\nprotected  yes         yes           yes                 no\npublic     yes         yes           yes                 yes\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
+    "path": "examples/INFO1113/packages-uml-java-design-to-diagram-javadoc/Main.java",
+    "language": "java",
+    "group": "INFO1113",
+    "topic": "packages-uml",
+    "title": "From a design to a class diagram and Javadoc",
+    "output": "catalog holds 3 shapes\nlargest: square area=16\nlargest rect: rect area=18\nthrough the interface: square area=25\nrejected: sides must be at least 1\nempty catalog largest: null\n",
+    "run": "javac -encoding UTF-8 Main.java\njava -ea Main"
+  },
+  {
     "path": "examples/INFO1113/application-design-java-headless-event-flow/Main.java",
     "language": "java",
     "group": "INFO1113",
@@ -457,6 +511,33 @@
     "title": "Trace a prefix sum and a copied parameter",
     "output": "processed=1 sum=2\nprocessed=2 sum=6\nprocessed=3 sum=13\nreturned=9\ncaller=5\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread representation-control-c-prefix-and-pass-by-value.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/number-representation-c-base-conversion-ascii.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "number-representation",
+    "title": "Convert 202 by hand-style division and read ASCII codes",
+    "output": "convert 202\n  202 / 2 = 101 remainder 0\n  101 / 2 = 50 remainder 1\n  50 / 2 = 25 remainder 0\n  25 / 2 = 12 remainder 1\n  12 / 2 = 6 remainder 0\n  6 / 2 = 3 remainder 0\n  3 / 2 = 1 remainder 1\n  1 / 2 = 0 remainder 1\nread the remainders from last to first: 11001010\ngroup by four bits: 1100=C 1010=A\nso 202 is 0xCA\nback to decimal: 11001010 -> 202\n'K' = 75 = 0x4B\n'k' = 107 = 0x6B\ndifference = 32, so clearing bit 5 turns 'k' into 'K'\n'7' = 55, and '7' - '0' = 7\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread number-representation-c-base-conversion-ascii.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/number-representation-c-binary-fractions.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "number-representation",
+    "title": "Why 0.1 is not exact in binary",
+    "output": "3/4 ends in binary: yes\n7/8 ends in binary: yes\n1/10 ends in binary: no\n1/5 ends in binary: no\n1/3 ends in binary: no\n3/4 in binary: 0.11  (stops)\n1/10 in binary: 0.0001100110011001...  (keeps going)\nremainders for 1/10 while doubling: 1 2 4 8 6 2 4 8 6\n0.1 as a double: 0x3FB999999999999A\nexponent field 1019, stored mantissa 0x999999999999A\n0.1 + 0.2 == 0.3 ? no\nwithin 1e-9 of 0.3 ? yes\n0.30000000000000004\n10 + 20 cents == 30 cents ? yes\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread number-representation-c-binary-fractions.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/number-representation-c-bit-fields-and-masks.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "number-representation",
+    "title": "Pack a date with a bit-field and with shifts",
+    "output": "bit-field read back: year=45 month=11 day=5\npacked word: 0x5B65 = 0101 1011 0110 0101\nunpacked with masks: year=45 month=11 day=5\nstored 17 in a 4-bit field, read back 1\nflags after setting bits 2 and 0: 5\nbit 1 set? no\nflags after clearing bit 2: 1\nflags after toggling bit 3: 9\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread number-representation-c-bit-fields-and-masks.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/pointers-arrays-c-warmup-copy-and-alias.c",
@@ -603,6 +684,33 @@
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread allocation-ownership-growing-owned-vector.c -lm -o demo\n./demo"
   },
   {
+    "path": "examples/COMP2017/memory-layout-c-process-map-model.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "memory-layout",
+    "title": "Draw a process map from a table of numbers",
+    "output": "call main      frame 64 bytes, stack pointer 0x7FFEFFC0\nmain      malloc( 24) -> 0x01000000, heap ends at 0x01000020\ncall read_line frame 48 bytes, stack pointer 0x7FFEFF90\nread_line malloc(100) -> 0x01000020, heap ends at 0x01000090\ncall parse     frame 32 bytes, stack pointer 0x7FFEFF70\n\nhigh addresses at the top, low addresses at the bottom\n0x7FFF0000  +-------------------------------+ top of stack\n            | main frame, 64 bytes          |\n0x7FFEFFC0  +-------------------------------+\n            | read_line frame, 48 bytes     |\n0x7FFEFF90  +-------------------------------+\n            | parse frame, 32 bytes         |\n0x7FFEFF70  +-------------------------------+ <- stack pointer\n            | v stack grows down            |\n            | unused, about 2031 MiB        |\n            | ^ heap grows up               |\n0x01000090  +-------------------------------+ <- end of heap\n            | heap: blocks of 32 and 112    |\n0x01000000  +-------------------------------+ heap start\n            | (unmapped)                    |\n0x00601240  +-------------------------------+\n            | bss: zero-filled globals      |\n0x00601040  +-------------------------------+\n            | data: initialised globals     |\n0x00601000  +-------------------------------+\n            | (unmapped)                    |\n0x00401200  +-------------------------------+\n            | text: machine code, read-only |\n0x00400000  +-------------------------------+ lowest address\n\nreturn parse     stack pointer back to 0x7FFEFF90\nreturn read_line stack pointer back to 0x7FFEFFC0\nheap still holds 144 bytes: blocks outlive the frames that asked\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread memory-layout-c-process-map-model.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/memory-layout-c-real-stack-behavior.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "memory-layout",
+    "title": "Watch real frames and keep recursion inside a budget",
+    "output": "each deeper call has a lower local address: yes\na second round reuses the same addresses: yes\nheap block differs from every frame address: yes\nsum_to(10) with budget 100 = 55\nsum_to(5000) with budget 100 = -1\nan 8388608 byte stack holds about 174762 frames of 48 bytes\na local int[3000000] needs 12000000 bytes: too big for the stack, use malloc\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread memory-layout-c-real-stack-behavior.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/memory-layout-c-stack-smash-model.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "memory-layout",
+    "title": "Model a stack smash safely and stop it",
+    "output": "model frame: name[8], then canary, then return tag\nunchecked Mia              name=\"Mia\" canary intact, return tag intact\nunchecked NoahIrisJack     name=\"NoahIris\" canary OVERWRITTEN, return tag OVERWRITTEN\n  guard check fails: stack smashing detected, abort before return\nunchecked NoahIrisJackLeo  name=\"NoahIris\" canary OVERWRITTEN, return tag OVERWRITTEN\n  guard check fails: stack smashing detected, abort before return\nchecked   Mia              stored, canary intact\nchecked   NoahIrisJack     rejected as too long, canary intact\nchecked   NoahIrisJackLeo  rejected as too long, canary intact\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread memory-layout-c-stack-smash-model.c -lm -o demo\n./demo"
+  },
+  {
     "path": "examples/COMP2017/linked-structures-c-list-remove-link.c",
     "language": "c",
     "group": "COMP2017",
@@ -682,6 +790,24 @@
     "title": "Separate local scope from storage duration",
     "output": "automatic=1 persistent=1\nautomatic=1 persistent=2\nautomatic=1 persistent=3\n",
     "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread compilation-linkage-c-scope-and-storage-duration.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/makefiles-libraries-c-mini-make-decisions.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "makefiles-libraries",
+    "title": "Model what make decides to rebuild",
+    "output": "Makefile\napp: main.o util.o\n\t$(CC) $^ -o $@\nmain.o: main.c util.h\n\t$(CC) $(CFLAGS) -c $< -o $@\nutil.o: util.c util.h\n\t$(CC) $(CFLAGS) -c $< -o $@\n\n$ make   (fresh checkout)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c main.c -o main.o\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n$ make   (again, nothing changed)\n  make: 'app' is up to date.\n$ make   (after editing util.c)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n$ make   (after editing util.h)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c main.c -o main.o\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread makefiles-libraries-c-mini-make-decisions.c -lm -o demo\n./demo"
+  },
+  {
+    "path": "examples/COMP2017/makefiles-libraries-c-static-vs-shared-link.c",
+    "language": "c",
+    "group": "COMP2017",
+    "topic": "makefiles-libraries",
+    "title": "Resolve names against an archive and a shared library",
+    "output": "build the library\n  clang -c -fPIC square.c area.c perim.c\n  ar rcs libgeo.a square.o area.o perim.o\n  clang -shared -o libgeo.so square.o area.o perim.o\n\nclang main.o libgeo.a -o app_static\n  take main.o\n  pass 1 over libgeo.a\n  take area.o\n  pass 2 over libgeo.a\n  take square.o\n  left out perim.o\n  ok: the executable holds 2500 bytes of code\n\nclang libgeo.a main.o -o app_wrong_order\n  nothing is missing yet, so no member is taken\n  take main.o\n  error: undefined reference to 'area_circle'\n\nclang main.o -L. -lgeo -o app_shared\n  take main.o\n  libgeo.so provides area_circle: only a dependency is recorded\n  ok: the executable holds 1200 bytes of code\n  libgeo.so (2000 bytes) is loaded when the program starts and shared by every user\n",
+    "run": "cc -std=c11 -Wall -Wextra -pedantic -pthread makefiles-libraries-c-static-vs-shared-link.c -lm -o demo\n./demo"
   },
   {
     "path": "examples/COMP2017/signals-c-minimal-signal-handler.c",
@@ -972,6 +1098,33 @@
     "run": "python analysis-correctness-doubling-array-cost.py"
   },
   {
+    "path": "examples/COMP2123/induction-invariants-odd-sum-recursion.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "induction-invariants",
+    "title": "A recursive function that follows its proof",
+    "output": "n = 0  sum = 0  n*n = 0  equal: True\nn = 1  sum = 1  n*n = 1  equal: True\nn = 2  sum = 4  n*n = 4  equal: True\nn = 3  sum = 9  n*n = 9  equal: True\nn = 4  sum = 16  n*n = 16  equal: True\nn = 5  sum = 25  n*n = 25  equal: True\nn = 6  sum = 36  n*n = 36  equal: True\n",
+    "run": "python induction-invariants-odd-sum-recursion.py"
+  },
+  {
+    "path": "examples/COMP2123/induction-invariants-gcd-loop-invariant.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "induction-invariants",
+    "title": "A loop whose invariant never changes",
+    "output": "start  a = 252  b = 105  common divisors: [1, 3, 7, 21]\nafter  a = 105  b = 42  common divisors: [1, 3, 7, 21]\nafter  a = 42  b = 21  common divisors: [1, 3, 7, 21]\nafter  a = 21  b = 0  common divisors: [1, 3, 7, 21]\nexit: b = 0, so the greatest common divisor is a = 21\n",
+    "run": "python induction-invariants-gcd-loop-invariant.py"
+  },
+  {
+    "path": "examples/COMP2123/induction-invariants-power-strong-induction.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "induction-invariants",
+    "title": "Recursion that needs strong induction",
+    "output": "n = 0  3^n = 1  multiplications: 0\nn = 1  3^n = 3  multiplications: 2\nn = 2  3^n = 9  multiplications: 3\nn = 5  3^n = 243  multiplications: 5\nn = 13  3^n = 1594323  multiplications: 7\nn = 64  3^n = 3433683820292512484657849089281  multiplications: 8\n",
+    "run": "python induction-invariants-power-strong-induction.py"
+  },
+  {
     "path": "examples/COMP2123/lists-representations-array-insert-shifts.py",
     "language": "python",
     "group": "COMP2123",
@@ -1006,6 +1159,42 @@
     "title": "Serve waiting jobs with deque",
     "output": "served: Ada\nwaiting: ['Bo', 'Cy']\nleft end: urgent\nwaiting: ['Bo', 'Cy']\n",
     "run": "python stacks-queues-deque-fifo-service.py"
+  },
+  {
+    "path": "examples/COMP2123/stack-queue-applications-delimiter-error-report.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "stack-queue-applications",
+    "title": "Report where the brackets go wrong",
+    "output": "'f(a[1], {b})' -> ok\n'f(a[1)]' -> found ) at 5 but [ from 3 is still open\n'a)' -> extra ) at 1\n'{(x)' -> unclosed { from 0\n'' -> ok\n",
+    "run": "python stack-queue-applications-delimiter-error-report.py"
+  },
+  {
+    "path": "examples/COMP2123/stack-queue-applications-call-stack-frames.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "stack-queue-applications",
+    "title": "Watch the call stack grow and overflow",
+    "output": "enter: sum(3)\nenter: sum(3) > sum(2)\nenter: sum(3) > sum(2) > sum(1)\nenter: sum(3) > sum(2) > sum(1) > sum(0)\nleave: sum(3) > sum(2) > sum(1) > sum(0) returns 0\nleave: sum(3) > sum(2) > sum(1) returns 1\nleave: sum(3) > sum(2) returns 3\nleave: sum(3) returns 6\nanswer: 6\ncapacity 4, n = 2 -> 3\ncapacity 4, n = 3 -> 6\ncapacity 4, n = 6 -> stack overflow while calling sum(2)\nloop version, n = 6 -> 21\n",
+    "run": "python stack-queue-applications-call-stack-frames.py"
+  },
+  {
+    "path": "examples/COMP2123/stack-queue-applications-round-robin-queue.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "stack-queue-applications",
+    "title": "Share a processor fairly with a queue",
+    "output": "t = 0 Leon runs 2\nt = 2 Mia runs 2\nt = 4 Emma runs 1\nt = 5 Leon runs 2\nt = 7 Mia runs 1\nt = 8 Leon runs 1\nquantum 2  first turns: {'Leon': 0, 'Mia': 2, 'Emma': 4}  finish: {'Emma': 5, 'Mia': 8, 'Leon': 9}\nquantum 100 first turns: {'Leon': 0, 'Mia': 5, 'Emma': 8}  finish: {'Leon': 5, 'Mia': 8, 'Emma': 9}\n",
+    "run": "python stack-queue-applications-round-robin-queue.py"
+  },
+  {
+    "path": "examples/COMP2123/stack-queue-applications-ring-queue-iterator.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "stack-queue-applications",
+    "title": "An iterator for a circular queue",
+    "output": "slots: ['Noah', 'Mia', 'Emma', 'Jack']  front: 1\nin order: ['Mia', 'Emma', 'Jack', 'Noah']  size: 4\nMia Emma Mia\nvisiting Mia\nerror: queue changed during iteration\n",
+    "run": "python stack-queue-applications-ring-queue-iterator.py"
   },
   {
     "path": "examples/COMP2123/trees-traversal-tree-three-orders.py",
@@ -1170,6 +1359,33 @@
     "run": "python dfs-bridges-dfs-explicit-stack.py"
   },
   {
+    "path": "examples/COMP2123/topological-scc-topo-dfs-finishing.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "topological-scc",
+    "title": "Order tasks by reversed DFS finishing times",
+    "output": "finishing order: ['serve', 'mix', 'fry', 'chop', 'pasta', 'boil', 'shop']\norder: ['shop', 'boil', 'pasta', 'chop', 'fry', 'mix', 'serve']\norder: None\n",
+    "run": "python topological-scc-topo-dfs-finishing.py"
+  },
+  {
+    "path": "examples/COMP2123/topological-scc-kahn-indegree-queue.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "topological-scc",
+    "title": "Order tasks with in-degrees and a queue",
+    "output": "order: ['shop', 'chop', 'boil', 'fry', 'pasta', 'mix', 'serve']\nall edges point forward: True\nplaced: ['plan', 'party']\nblocked: ['unlock', 'enter', 'key']\n",
+    "run": "python topological-scc-kahn-indegree-queue.py"
+  },
+  {
+    "path": "examples/COMP2123/topological-scc-scc-two-pass.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "topological-scc",
+    "title": "Find strongly connected components in two passes",
+    "output": "finishing order: ['B', 'A', 'D', 'C', 'G', 'F', 'E']\ncomponents: [['E', 'F', 'G'], ['C', 'D'], ['A', 'B']]\n",
+    "run": "python topological-scc-scc-two-pass.py"
+  },
+  {
     "path": "examples/COMP2123/bfs-distance-bfs-distance-and-route.py",
     "language": "python",
     "group": "COMP2123",
@@ -1222,6 +1438,42 @@
     "title": "Handle a negative edge with Bellman–Ford",
     "output": "at most 0 edges: [0, inf, inf, inf]\nat most 1 edges: [0, 4, 5, inf]\nat most 2 edges: [0, 4, 2, 8]\nat most 3 edges: [0, 4, 2, 5]\nZ is unreachable: True\nreachable negative cycle\n",
     "run": "python dijkstra-relaxation-negative-edge-relaxation.py"
+  },
+  {
+    "path": "examples/COMP2123/augmenting-structures-tree-size-rank-select.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "augmenting-structures",
+    "title": "Rank and select with subtree sizes",
+    "output": "sizes: root 7  left 3  right 3\n5th smallest: 50  walk: [40, 60, 50]\nrank of 50: 5  rank of 65: 7\nkeys in [25, 56): 3\n",
+    "run": "python augmenting-structures-tree-size-rank-select.py"
+  },
+  {
+    "path": "examples/COMP2123/augmenting-structures-rotation-size-repair.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "augmenting-structures",
+    "title": "A rotation must repair sizes",
+    "output": "before: root 30  size 3  inorder [10, 20, 30]\nlinks changed, sizes not yet repaired:\n  new root 20  stored size 2  true size 3\nafter repair: new root 20  stored size 3  true size 3\nold root 30  size 1  inorder [10, 20, 30]\n",
+    "run": "python augmenting-structures-rotation-size-repair.py"
+  },
+  {
+    "path": "examples/COMP2123/augmenting-structures-min-stack-adt.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "augmenting-structures",
+    "title": "Add a minimum() operation to a stack",
+    "output": "push 5  minimum: 5\npush 3  minimum: 3\npush 7  minimum: 3\npush 3  minimum: 3\npush 8  minimum: 3\npop 8  minimum: 3  one-variable version says: 3\npop 3  minimum: 3  one-variable version says: 3\npop 7  minimum: 3  one-variable version says: 3\npop 3  minimum: 5  one-variable version says: 3\n",
+    "run": "python augmenting-structures-min-stack-adt.py"
+  },
+  {
+    "path": "examples/COMP2123/augmenting-structures-ticket-state-graph.py",
+    "language": "python",
+    "group": "COMP2123",
+    "topic": "augmenting-structures",
+    "title": "Model a free ticket as extra state",
+    "output": "tickets 0 -> cost 7  states: [('S', 0), ('A', 0), ('C', 0), ('T', 0)]\ntickets 1 -> cost 2  states: [('S', 1), ('A', 1), ('T', 0)]\ntickets 2 -> cost 0  states: [('S', 2), ('A', 1), ('T', 0)]\nplan first, discount the dearest road later: 3\n",
+    "run": "python augmenting-structures-ticket-state-graph.py"
   },
   {
     "path": "examples/COMP2123/minimum-spanning-trees-kruskal-union-find.py",
@@ -1467,6 +1719,24 @@
     "run": "python parse-trees-ambiguity-count-expression-trees.py"
   },
   {
+    "path": "examples/COMP2022/turing-machine-variants-rule-table-simulator.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "turing-machine-variants",
+    "title": "Run a rule table on one tape and on two",
+    "output": "one tape : 1011 + 1 = 1100 in 8 steps\none tape : 111 + 1 = 1000 in 8 steps\ntwo tapes: x = 101, counter 111 -> x = 1000 in 29 steps\n  at the loop test: x = [1]01    counter = [1]11\n  at the loop test: x = [1]10    counter = 1[1]1\n  at the loop test: x = [1]11    counter = 11[1]\n  at the loop test: x = [1]000   counter = 111[_]\n",
+    "run": "python turing-machine-variants-rule-table-simulator.py"
+  },
+  {
+    "path": "examples/COMP2022/reductions-closure-reduction-gadget-demo.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "reductions-closure",
+    "title": "Build the gadget without running it",
+    "output": "machine      w     M accepts w  R says empty  S accepts  S correct\neven_ones    1001  True         False         True       True\neven_ones    1011  False        True          False      True\nspin         1001  False        True          False      True\nslow_accept  1001  True         True          False      False\nbuilding M_w for a looping M returns at once: True\nrunning that M_w on w for 100 steps gives: None\n",
+    "run": "python reductions-closure-reduction-gadget-demo.py"
+  },
+  {
     "path": "examples/COMP2022/logical-consequence-entailment-countermodels.py",
     "language": "python",
     "group": "COMP2022",
@@ -1485,6 +1755,15 @@
     "run": "python predicate-logic-finite-witness-search.py"
   },
   {
+    "path": "examples/COMP2022/quantifier-translation-quantifier-model-check.py",
+    "language": "python",
+    "group": "COMP2022",
+    "topic": "quantifier-translation",
+    "title": "Check translations and extraction rules on small models",
+    "output": "Everyone admires someone: True\nSomeone is admired by everyone: False\nSomeone is admired by everyone else: True\nNobody admires themselves: True\nExactly one person admires Emma: True\n(all x P) and R  =  all x (P and R): holds on every model with 1-3 objects  (fails on 0 objects)\n(exists x P) or R  =  exists x (P or R): holds on every model with 1-3 objects  (fails on 0 objects)\n(all x P) -> R  =  exists x (P -> R): holds on every model with 1-3 objects  (fails on 0 objects)\n(exists x P) -> R  =  all x (P -> R): holds on every model with 1-3 objects\n(all x P) or (all x Q)  =  all x (P or Q): fails: 2 objects, P=[False, True], Q=[True, False], R=False\n(exists x P) and (exists x Q)  =  exists x (P and Q): fails: 2 objects, P=[False, True], Q=[True, False], R=False\n",
+    "run": "python quantifier-translation-quantifier-model-check.py"
+  },
+  {
     "path": "examples/COMP3308/astar-heuristics-astar-reopen-states.py",
     "language": "python",
     "group": "COMP3308",
@@ -1494,6 +1773,15 @@
     "run": "python astar-heuristics-astar-reopen-states.py"
   },
   {
+    "path": "examples/COMP3308/greedy-best-first-dominance-greedy-uniform-astar-compare.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "greedy-best-first-dominance",
+    "title": "Greedy, uniform-cost and A* on one graph",
+    "output": "h1: admissible=True consistent=True\nh2: admissible=True consistent=True\nh2 dominates h1: True\ngreedy (h2)   expanded 3: S E G         path SEG   cost 17\nuniform-cost  expanded 6: S A E D B G   path SABG  cost 14\nA* with h1    expanded 5: S A B E G     path SABG  cost 14\nA* with h2    expanded 4: S A B G       path SABG  cost 14\nha         admissible=True consistent=True\nhb         admissible=True consistent=True\nmax(ha,hb) admissible=True consistent=True\nha+hb      admissible=False consistent=False\nA* with ha         expanded 5: S A B E G\nA* with hb         expanded 5: S A D B G\nA* with max(ha,hb) expanded 4: S A B G\nha+hb is above the true remaining cost at: S A B E\n",
+    "run": "python greedy-best-first-dominance-greedy-uniform-astar-compare.py"
+  },
+  {
     "path": "examples/COMP3308/learning-neighbors-nearest-two-trace.py",
     "language": "python",
     "group": "COMP3308",
@@ -1501,6 +1789,24 @@
     "title": "Find and average two neighbors",
     "output": "Neighbors: [(1, 4, 10), (2, 7, 16)]\nPrediction: 13.0",
     "run": "python learning-neighbors-nearest-two-trace.py"
+  },
+  {
+    "path": "examples/COMP3308/knn-practice-curse-of-dimensionality-numbers.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "knn-practice",
+    "title": "Measure the curse of dimensionality",
+    "output": "dims  edge holding 1% of the cube  points for 10 per axis  nearest/farthest\n   1                        0.010                   10^1             0.007\n   2                        0.100                   10^2             0.053\n  10                        0.631                  10^10             0.384\n 100                        0.955                 10^100             0.765\n1000                        0.995                10^1000             0.919\nuseless columns  1-NN accuracy (mean of 5 data sets)\n              0  1.000\n              2  0.990\n             10  0.837\n             50  0.667\n            200  0.577\n",
+    "run": "python knn-practice-curse-of-dimensionality-numbers.py"
+  },
+  {
+    "path": "examples/COMP3308/knn-practice-mixed-distance-missing-scaling.py",
+    "language": "python",
+    "group": "COMP3308",
+    "topic": "knn-practice",
+    "title": "Mixed distance, missing values and scaling",
+    "output": "ranges: {0: (25, 65), 1: (2, 12)}\npenalty ['r1=0.781', 'r3=1.000', 'r4=1.050', 'r5=1.106', 'r2=1.187']\n  k=1: came\n  k=3: missed\nrescale ['r3=0.000', 'r1=0.781', 'r4=1.050', 'r5=1.106', 'r2=1.187']\n  k=1: missed\n  k=3: missed\nunscaled: A=101.98 B=2000.00 -> nearest is A\nscaled:   A=0.500 B=0.176 -> nearest is B\na new person aged 80 scales to 1.375\none query reads 5,000,000 numbers; 1,000 queries read 5,000,000,000\na balanced tree over the same examples is 17 questions deep\n",
+    "run": "python knn-practice-mixed-distance-missing-scaling.py"
   },
   {
     "path": "examples/COMP3308/naive-bayes-log-space-word-counts.py",

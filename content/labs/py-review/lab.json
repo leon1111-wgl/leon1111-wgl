@@ -1,0 +1,208 @@
+{
+ "id": "py-review",
+ "course": "comp2123",
+ "minutes": 35,
+ "tools": [
+  "python3",
+  "pytest",
+  "ruff"
+ ],
+ "title": {
+  "en": "Review a small function: state, silence and cost",
+  "zh": "审查一个小函数：状态、沉默与开销"
+ },
+ "summary": {
+  "en": "A twenty-line lock-out check hides a shared default list, a swallowed exception and a quadratic loop. Write your review first, then compare it with the tools, the tests and the fix.",
+  "zh": "一个二十行的账号锁定检查里藏着共享的默认列表、被吞掉的异常和二次方的循环。先写你自己的审查意见，再与工具、测试和修复版本对照。"
+ },
+ "scenario": {
+  "en": "Jack opened a pull request that adds `accounts.py`. It reads one batch of authentication log lines and returns the accounts that failed to sign in at least three times, so another job can lock them. It has been running in a test environment for a week with no complaints. You are asked to review it before it goes to production.\n\nThis lab reverses the usual order. You read and write your comments first, with no tools. Only then do you run evidence, a linter and tests, so you can see which of your comments were right, which the tools would have caught, and which only a reader could have found. The review checklist at the end is the main output of the lab. The code and the log lines are fabricated.",
+  "zh": "Jack 提交了一个拉取请求，新增 `accounts.py`。它读取一批认证日志行，返回登录失败至少三次的账号，供另一个作业去锁定它们。它已经在测试环境运行了一周，没有人抱怨。现在请你在它上生产之前做代码审查。\n\n这个实验把通常的顺序倒过来。你先读代码、写意见，不借助任何工具；然后才运行证据、检查器和测试，看看你的哪些意见对了、哪些工具本来就能抓到、哪些只有读代码的人才能发现。末尾的审查清单是这个实验的主要产出。代码和日志行都是编造的。"
+ },
+ "show": [
+  "accounts.py",
+  "test_accounts.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Read first, comment second",
+    "zh": "先读，再写意见"
+   },
+   "body": {
+    "en": "Open `accounts.py` and read it as the person who has to approve the pull request. Run nothing yet. Write your comments in a file or on paper, one per problem, in this shape: where, severity (blocker, should fix, question, nit), what you see, why it matters, what you would suggest.\n\nThree prompts to start. What does the function return the second time it is called? What happens to a line that cannot be parsed, and who finds out? How does the running time change when the number of lines is multiplied by four? Also write at least one comment about something that is not a bug: a question, a name, a missing test.\n\nCommit to your comments before the next step. If you read the evidence first, you will mostly find what it shows you.",
+    "zh": "打开 `accounts.py`，以必须批准这个拉取请求的人的身份来读。先什么都不要运行。把你的意见写在文件或纸上，每个问题一条，格式是：位置、严重程度（阻塞、应修复、疑问、小问题）、你看到什么、为什么重要、你建议怎么做。\n\n三个起步的问题。第二次调用这个函数时，它返回什么？无法解析的行会怎样，谁会知道？行数乘 4，运行时间怎么变？另外至少写一条不是 bug 的意见：一个疑问、一个命名，或一个缺失的测试。\n\n进入下一步之前，把意见定下来。如果先看证据，你多半只会发现证据让你看到的东西。"
+   }
+  },
+  {
+   "title": {
+    "en": "Check your comments against the behaviour",
+    "zh": "用实际行为核对你的意见"
+   },
+   "body": {
+    "en": "`evidence.py` calls the function in the situations the prompts described: two unrelated batches in a row, and a batch where the last line of three failures was cut off when the log rotated. `bench.py` times the function at 3,000 and 12,000 lines, the best of two runs each, and prints the growth.\n\nWhich of your comments does this confirm? Which did you miss? Pay attention to the second batch, to the empty result for iris, and to the line `growth: lines x4`, which gives the factor by which the input grew, followed by the factor by which the time grew.",
+    "zh": "`evidence.py` 在提示问题所描述的情境下调用函数：连续两批互不相关的数据，以及一批数据中三次失败的最后一行在日志轮转时被截断。`bench.py` 在 3,000 行和 12,000 行下给函数计时（各取两次中较快的），并打印增长倍数。\n\n哪些意见得到了证实？你漏掉了什么？注意第二批的结果、iris 的空结果，以及 `growth: lines x4` 那一行：它先给出输入增长的倍数，再给出时间增长的倍数。"
+   },
+   "command": "python3 evidence.py; python3 bench.py",
+   "contains": [
+    "batch 2",
+    "growth:"
+   ]
+  },
+  {
+   "title": {
+    "en": "Ask a linter what it can see",
+    "zh": "问问检查器它能看到什么"
+   },
+   "body": {
+    "en": "A linter reads code without running it. `--select B006,BLE001,S112` turns on exactly three rules by code. `B006` is a mutable default argument. `BLE001` is a blind `except Exception`. `S112` is `try` / `except` / `continue`, which is a handler that does nothing but skip. `--output-format concise` prints one line per finding.\n\nThe tool finds two of your three problems. It says nothing about the quadratic loop, because no rule can know that `.count()` inside a loop over the same list is expensive in your case. Automation raises the floor of a review. It does not replace reading.",
+    "zh": "检查器不运行代码，只读代码。`--select B006,BLE001,S112` 按代码只启用三条规则：`B006` 是可变的默认参数，`BLE001` 是宽泛的 `except Exception`，`S112` 是 `try` / `except` / `continue`，即只会跳过的处理器。`--output-format concise` 每个发现只打印一行。\n\n工具找到了三个问题中的两个。对于二次方的循环它什么也没说，因为没有哪条规则能知道，在你的情形里对同一个列表循环时调用 `.count()` 代价很高。自动化抬高了审查的下限，却不能取代阅读。"
+   },
+   "command": "ruff check --select B006,BLE001,S112 --output-format concise accounts.py",
+   "exit": 1,
+   "contains": [
+    "B006",
+    "BLE001",
+    "S112"
+   ]
+  },
+  {
+   "title": {
+    "en": "Compare with our review comments",
+    "zh": "与我们的审查意见对照"
+   },
+   "body": {
+    "en": "`grep -nE` searches with an extended regular expression and `-n` prints line numbers. The four patterns pick out the lines we comment on. Our comments, in the shape from step one:\n\nBlocker, `locked=[]` in the signature. A default value is built once, when the function is defined, not on every call. Every call that omits `locked` shares and appends to the same list, so batch 2 reports batch 1's accounts, and tests pass or fail depending on the order they run in. Suggest `locked=None` and `already = set(locked or ())`, and return a new list. Do not change the caller's list.\n\nBlocker, `except Exception: continue`. A line that cannot be parsed vanishes without a trace. In a lock-out report the lost line is probably a failed sign-in, so an account that should be locked is not. `Exception` also hides real bugs, such as a misspelt name raising `NameError`. Suggest catching `ValueError`, which is what unpacking a wrong-length line raises, logging the line number, counting the bad lines, and refusing to decide above a stated fraction. Ask the owner what the system should do when the log is damaged; that is a product decision, not a coding one.\n\nShould fix, `failures.count(user)` and `user not in locked`. `.count()` rescans the whole list for every failure, and `not in` on a list scans another list. Twelve thousand lines took far more than four times the time of three thousand. Suggest counting once into a dict, and a set for the membership test.\n\nQuestion, the contract. The docstring says accounts already in `locked` are not reported again, yet the function returns `locked` itself, which includes them. Which behaviour do callers rely on? Search for callers before changing what is returned.\n\nNit. `stamp` is unused, and user names are compared as written, so `Leon` and `leon` count separately. Decide whether to normalise.\n\nTest request. Add tests that fail on this version: two batches in a row, the caller's list left alone, a damaged line that is logged. Do not put a wall-clock assertion in the unit tests; keep the growth check in a benchmark script.",
+    "zh": "`grep -nE` 用扩展正则表达式搜索，`-n` 打印行号。四个模式挑出了我们要评论的行。我们的意见，按第一步的格式：\n\n阻塞，签名里的 `locked=[]`。默认值在函数定义时只构造一次，不是每次调用都构造。每个省略 `locked` 的调用都共用并追加到同一个列表，所以第二批会报告第一批的账号，测试的通过与否还取决于执行顺序。建议改成 `locked=None`，再用 `already = set(locked or ())`，并返回新列表。不要修改调用者传入的列表。\n\n阻塞，`except Exception: continue`。无法解析的行无声无息地消失了。在锁定报告里，丢掉的那一行很可能是一次登录失败，于是本该被锁定的账号没有被锁定。`Exception` 还会掩盖真正的 bug，例如拼错名字引发的 `NameError`。建议只捕获 `ValueError`（对长度不对的行做解包时抛出的就是它），记录行号，统计坏行数量，并在超过某个明确比例时拒绝做决定。要问负责人：日志损坏时系统该怎么办？这是产品决定，不是编码问题。\n\n应修复，`failures.count(user)` 与 `user not in locked`。`.count()` 对每一次失败都重新扫描整个列表，对列表做 `not in` 又要扫描另一个列表。一万两千行花的时间远多于三千行的四倍。建议一次性计数到字典里，成员判断用集合。\n\n疑问，接口约定。文档字符串说已在 `locked` 里的账号不会被再次报告，但函数返回的是 `locked` 本身，其中包含它们。调用者依赖的是哪种行为？修改返回内容之前先搜索调用者。\n\n小问题。`stamp` 未使用，用户名按原样比较，所以 `Leon` 和 `leon` 会被分开计数。请决定是否要规范化。\n\n测试请求。补充在这个版本上会失败的测试：连续两批数据、调用者的列表保持不变、损坏的行被记录。不要在单元测试里写墙钟时间的断言，把增长检查放在基准脚本里。"
+   },
+   "command": "grep -nE \"locked=\\[\\]|except Exception|failures.count|not in locked\" accounts.py",
+   "contains": [
+    "locked=[]",
+    "except Exception",
+    "failures.count"
+   ]
+  },
+  {
+   "title": {
+    "en": "Tests for the behaviour we want fail on this version",
+    "zh": "想要的行为的测试在这个版本上失败"
+   },
+   "body": {
+    "en": "`test_accounts.py` was written from the docstring and from what the batch job needs, not from the implementation. The first command uses `-x`, which stops at the first failure, and `--tb=short`, which shortens its traceback. The second lists every failure and drops tracebacks with `--tb=no`. Exit code 1 means failures.\n\nLook at the first failure. `test_account_below_the_threshold_is_not_reported` fails although the threshold logic is fine: it inherited `leon` from the previous test through the shared default list. A test that passes or fails depending on what ran before it is the classic symptom of state that outlives a call. The other failures match your comments one for one.",
+    "zh": "`test_accounts.py` 是根据文档字符串和批处理作业的需要写的，不是照着实现写的。第一条命令使用 `-x`，在第一个失败处停下，并用 `--tb=short` 缩短回溯。第二条命令列出所有失败，并用 `--tb=no` 去掉回溯。退出码 1 表示有失败。\n\n看第一个失败。`test_account_below_the_threshold_is_not_reported` 失败了，可阈值逻辑本身没问题：它通过共享的默认列表，从上一个测试继承了 `leon`。测试的通过与否取决于之前运行了什么，这是状态活得比一次调用更久的典型症状。其余的失败与你的意见一一对应。"
+   },
+   "command": "python3 -m pytest -q -x --tb=short; python3 -m pytest -q --tb=no",
+   "exit": 1,
+   "contains": [
+    "FAILED",
+    "test_batches_do_not_share_state"
+   ]
+  },
+  {
+   "title": {
+    "en": "See the fixed version",
+    "zh": "看修复后的版本"
+   },
+   "body": {
+    "en": "The fix replaces the function and keeps the parameter name `locked`, so existing callers that pass one still work. What changed:\n\nState: `locked=None`, a local `already` set, a new list returned, the caller's list untouched. Failure: only `ValueError` is caught; each bad line is logged with its number and counted; above one percent of the batch the function raises instead of deciding on partial data. Cost: one pass with a dict for counts and a set for membership, so the work grows with the number of lines.\n\nAll the tests pass, and the three ruff rules are clean. `&&` runs ruff only when the tests pass. Note what the fix did not do: it did not add a timing assertion to the tests, and it did not silently decide the policy for damaged logs. The one percent limit is a default that someone with authority over the lock-out process has to confirm.",
+    "zh": "修复版本替换了这个函数，并保留参数名 `locked`，所以传了这个参数的现有调用者仍然可用。改动如下：\n\n状态：`locked=None`，函数内部用集合 `already`，返回新列表，调用者的列表不被改动。失败处理：只捕获 `ValueError`；每个坏行带行号记录并计数；超过批次的百分之一，函数会抛出异常，而不是基于残缺数据做决定。开销：只遍历一遍，用字典计数、用集合做成员判断，工作量随行数线性增长。\n\n所有测试通过，三条 ruff 规则也没有发现。`&&` 让 ruff 只在测试通过后才运行。也要注意修复没有做什么：没有往测试里加计时断言，也没有悄悄替人决定损坏日志的处理策略。百分之一这个上限只是默认值，需要对锁定流程有决定权的人来确认。"
+   },
+   "patch": {
+    "file": "accounts.py",
+    "from": "def accounts_to_lock(lines, threshold=3, locked=[]):\n    \"\"\"Return accounts with at least `threshold` failed sign-ins in this batch.\n\n    Accounts already in `locked` are not reported again.\n    \"\"\"\n    failures = []\n    for line in lines:\n        try:\n            stamp, user, outcome = parse_line(line)\n        except Exception:\n            continue\n        if outcome == \"FAIL\":\n            failures.append(user)\n\n    for user in failures:\n        if failures.count(user) >= threshold and user not in locked:\n            log.info(\"locking %s\", user)\n            locked.append(user)\n    return locked",
+    "to": "MAX_BAD_FRACTION = 0.01  # above this share of unreadable lines, refuse to decide\n\n\ndef accounts_to_lock(lines, threshold=3, locked=None):\n    \"\"\"Return accounts with at least `threshold` failed sign-ins in this batch.\n\n    Accounts already in `locked` are not reported again, and the caller's\n    `locked` is never changed. Unreadable lines are logged with their line\n    number; if more than MAX_BAD_FRACTION of the batch is unreadable the\n    batch is refused with ValueError instead of being judged on partial data.\n    \"\"\"\n    already = set(locked or ())\n    failures = {}\n    total = bad = 0\n    for number, line in enumerate(lines, start=1):\n        total += 1\n        try:\n            _, user, outcome = parse_line(line)\n        except ValueError:\n            bad += 1\n            log.warning(\"line %d is not 'stamp,user,outcome': %r\", number, line[:60])\n            continue\n        if outcome == \"FAIL\":\n            failures[user] = failures.get(user, 0) + 1\n\n    if total and bad / total > MAX_BAD_FRACTION:\n        raise ValueError(f\"{bad} of {total} log lines could not be read\")\n\n    to_lock = []\n    for user, count in failures.items():\n        if count >= threshold and user not in already:\n            log.info(\"locking %s\", user)\n            to_lock.append(user)\n    return to_lock"
+   },
+   "command": "python3 -m pytest -q --tb=short && ruff check --select B006,BLE001,S112 accounts.py",
+   "contains": [
+    "passed",
+    "All checks passed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Measure the growth again",
+    "zh": "再量一次增长"
+   },
+   "body": {
+    "en": "Same benchmark, same two sizes. The time factor should now sit near the line factor of four, with noise: both runs take milliseconds. This is the check the unit tests deliberately do not make. Put it in a benchmark script or a scheduled job and compare trends, not single numbers.",
+    "zh": "同样的基准，同样的两种规模。现在时间倍数应当接近行数倍数 4，并带有噪声：两次都只要几毫秒。这正是单元测试有意不做的检查。把它放进基准脚本或定时作业，比较趋势，而不是单个数字。"
+   },
+   "command": "python3 bench.py",
+   "contains": [
+    "growth:"
+   ]
+  }
+ ],
+ "review": [
+  {
+   "en": "Call it twice with different inputs: does anything survive from the first call (default arguments, module globals, class attributes, caches)?",
+   "zh": "用不同输入连续调用两次：第一次调用有没有任何东西留下来（默认参数、模块全局变量、类属性、缓存）？"
+  },
+  {
+   "en": "Does the function change an argument it was given? If it must, is that visible in its name or its docstring?",
+   "zh": "函数会修改传进来的参数吗？如果必须修改，名字或文档字符串里看得出来吗？"
+  },
+  {
+   "en": "For every `except`: which exceptions can really occur here, is the clause that narrow, and what does the caller learn when it fires (a log with a position, a count, a raised error)?",
+   "zh": "对每一个 `except`：这里真的可能出现哪些异常，子句是否这么窄，它触发时调用者能得知什么（带位置的日志、计数、抛出的错误）？"
+  },
+  {
+   "en": "If data can be dropped, what does one lost record cost, and is there a limit past which the function refuses to answer?",
+   "zh": "如果数据可能被丢弃，丢一条记录的代价是什么？超过什么限度函数会拒绝作答？"
+  },
+  {
+   "en": "For every loop, name n and the cost of each operation inside it. `in` on a list, `.count()`, `.index()`, `.remove()`, `.pop(0)`, string `+=` and `sorted()` each hide another loop.",
+   "zh": "对每个循环，说出 n 是什么，以及循环里每个操作的代价。列表上的 `in`、`.count()`、`.index()`、`.remove()`、`.pop(0)`、字符串 `+=` 和 `sorted()` 都藏着另一层循环。"
+  },
+  {
+   "en": "What is the largest realistic input, and who controls it: a user, an upstream feed, an attacker? Do time and memory stay bounded?",
+   "zh": "最大的现实输入是多大，谁能控制它：用户、上游数据流，还是攻击者？时间和内存是否有上界？"
+  },
+  {
+   "en": "Does the docstring match what the code does? Where they disagree, which one do callers rely on? Search the callers before changing a return value or a default.",
+   "zh": "文档字符串与代码行为一致吗？不一致时调用者依赖哪一个？修改返回值或默认值之前先搜索调用者。"
+  },
+  {
+   "en": "Are edge cases decided: empty input, duplicate keys, case and whitespace in identifiers, a threshold of 0 or less?",
+   "zh": "边界情况是否已有明确决定：空输入、重复的键、标识符的大小写与空白、阈值为 0 或更小？"
+  },
+  {
+   "en": "Do the tests describe the behaviour that is wanted, fail on the old code, and pass in any order and alone?",
+   "zh": "测试描述的是想要的行为吗？它们在旧代码上失败吗？按任意顺序、单独运行都能通过吗？"
+  },
+  {
+   "en": "Which of these did a tool already check (ruff, a type checker, CI)? Leave those to the tool and spend your attention on intent, failure policy and cost.",
+   "zh": "其中哪些已经有工具检查过（ruff、类型检查器、CI）？这些交给工具，你的注意力用在意图、失败策略和开销上。"
+  },
+  {
+   "en": "Is each comment actionable: a location, a severity, the reason and a suggestion? Did you say what is good, and what you did not review?",
+   "zh": "每条意见都可执行吗：有位置、严重程度、理由和建议？你说了哪里做得好、哪些部分你没有审查吗？"
+  },
+  {
+   "en": "Is the change small enough to review in one sitting, with separate commits for separate fixes?",
+   "zh": "改动是否小到可以一次审完，不同的修复是否分成了不同的提交？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "Fail closed or fail open. The fix refuses to decide when more than one percent of the lines are unreadable. That is safe against acting on bad data, but it also means a batch with damaged lines locks nobody, and anyone who can corrupt the log can stop lock-outs. The alternative is to act on the readable lines and page a human. Neither is free. The right limit depends on what an unlocked account costs against what a wrongly locked one costs, and the people who own the lock-out process should set it, not the reviewer.\n\nChanging the contract. The old function returned everything locked since the process started, by accident. The new one returns only the accounts to lock now, as the docstring said. A caller that relied on the accident will break quietly. Search for callers, say so in the pull request, and if there are many, add a new function and deprecate the old one. Keeping the parameter name `locked` avoided a second break.\n\nWhat linters can and cannot do. Three rules caught two of three problems for almost no cost. The cost of turning them on across a code base is noise: a process-level worker loop that must never die does need a broad `except`, and each such place needs a `noqa` comment with a reason. No rule found the quadratic loop. Reviewers should read loops for hidden scans, because that is exactly the kind of fault that tools cannot see and tests at small sizes do not show.\n\nTests and timing. A wall-clock assertion in a unit test is flaky: shared CI machines are slow at random. A generous budget finds nothing until it is too late, and a tight one fails for no reason. Count operations when you can, run a benchmark job on a schedule, and compare trends.\n\nSize of the review. This pull request mixes three separate fixes. They are small enough to review together here, but in a larger change use separate commits so that each one can be reverted and each one has its own test. A reviewer's time is the scarce resource, so say clearly which comments block the merge and which do not.",
+  "zh": "失败时关闭还是放行。修复版在超过百分之一的行无法读取时，拒绝做决定。这样可以避免基于坏数据行动，但也意味着含有损坏行的批次不会锁定任何人，能破坏日志的人就能阻止锁定。另一种做法是按可读的行行动，再通知人工。两者都有代价。合适的上限取决于“没锁住的账号”与“被误锁的账号”各自的代价，应当由锁定流程的负责人来定，而不是审查者。\n\n修改接口约定。旧函数返回的是进程启动以来锁定过的所有账号，这是意外造成的。新函数只返回现在要锁定的账号，与文档字符串一致。依赖了那个意外行为的调用者会悄悄出错。要搜索调用者，在拉取请求里说明；如果调用者很多，就新增一个函数并弃用旧的。保留参数名 `locked` 避免了第二次破坏。\n\n检查器能做什么、不能做什么。三条规则几乎没有成本，就抓到了三个问题里的两个。在整个代码库启用它们的成本是噪声：必须永不退出的进程级工作循环确实需要宽泛的 `except`，每处都要写带理由的 `noqa` 注释。没有任何规则发现了二次方的循环。审查者应当专门去读循环里的隐藏扫描，因为这正是工具看不见、小规模测试也显现不出来的那类错误。\n\n测试与计时。单元测试里的墙钟断言不稳定：共享的 CI 机器会随机变慢。预算宽松就要到太晚才发现问题，预算严格则会无故失败。能数操作次数就数操作次数，定时运行基准作业，比较趋势。\n\n审查的体量。这个拉取请求混合了三个独立的修复。在这里小到可以放在一起审，但改动更大时应分成不同的提交，使每一个都能单独回退，并有自己的测试。审查者的时间是稀缺资源，所以要明确哪些意见会阻止合并，哪些不会。"
+ },
+ "done": [
+  {
+   "en": "You wrote your own comments before running anything, and you can say which of ours you missed.",
+   "zh": "你在运行任何东西之前写下了自己的意见，并且能说出我们的意见中你漏掉了哪些。"
+  },
+  {
+   "en": "The tests that failed on the original version pass on the fixed one, and the three ruff rules are clean.",
+   "zh": "在原版上失败的测试在修复版上通过，三条 ruff 规则也没有发现。"
+  },
+  {
+   "en": "The time for four times the lines grows by a factor near four after the fix.",
+   "zh": "修复之后，行数乘 4 时，时间增长的倍数接近 4。"
+  },
+  {
+   "en": "You can name one thing a linter cannot find in this code and one decision in the fix that belongs to someone else.",
+   "zh": "你能说出这段代码里检查器找不到的一件事，以及修复中需要别人拍板的一个决定。"
+  }
+ ]
+}

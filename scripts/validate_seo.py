@@ -12,7 +12,7 @@ from seo import SITE_URL
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / 'site'
 PAGES = ['index.html', 'learn/index.html', 'python-zero-to-practice/index.html',
-         *[p.relative_to(SITE).as_posix() for folder in ('courses', 'cheatsheets', 'ai', 'projects') for p in sorted((SITE / folder).glob('*.html'))]]
+         *[p.relative_to(SITE).as_posix() for folder in ('courses', 'cheatsheets', 'ai', 'projects', 'bridges') for p in sorted((SITE / folder).glob('*.html'))]]
 
 
 def local(url):

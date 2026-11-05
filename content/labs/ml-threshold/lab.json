@@ -1,0 +1,161 @@
+{
+ "id": "ml-threshold",
+ "course": "ml",
+ "minutes": 35,
+ "tools": [
+  "python3",
+  "scikit-learn",
+  "numpy"
+ ],
+ "title": {
+  "en": "Choose a decision threshold from costs, then expect it to move",
+  "zh": "根据成本选择决策阈值，并预期它会变动"
+ },
+ "summary": {
+  "en": "A fraud model scores payments. The default cut-off of 0.5 flags almost nothing. Choose the cut-off from stated costs on a validation set, report it once on a test set, then check calibration and watch it drift.",
+  "zh": "欺诈模型给每笔付款打分，默认的 0.5 几乎什么也不标记。根据明确的成本在验证集上选择阈值，在测试集上只报告一次，再检查校准情况并观察它如何漂移。"
+ },
+ "scenario": {
+  "en": "Emma leads a small team that reviews card payments. A model gives every payment a score between 0 and 1, and the service flags a payment for review when the score is at least 0.5, because that is what `predict()` does. Each review takes an analyst about five units of time, whether the payment is fraud or not. A fraud payment that is not flagged costs about a hundred on average. Noah asks a plain question: is 0.5 the right cut-off, and how would we know?\n\nYou will answer it the way a production team should. Write the costs down. Pick the threshold on a validation set that the model did not train on. Open the test set once and report with an honest interval. Then ask how far the score can be read as a probability, and how long the choice will stay right. The payments are fabricated by a seeded generator. The model is a logistic regression and everything runs in a few seconds.",
+  "zh": "Emma 带领一个审核银行卡付款的小团队。模型给每笔付款一个 0 到 1 之间的分数，服务在分数不低于 0.5 时把付款标记出来交给人工复核，因为 `predict()` 就是这样做的。每次复核大约占用分析师五个单位的时间，无论这笔付款是不是欺诈。没有被标记的欺诈付款，平均损失约一百。Noah 提出一个朴素的问题：0.5 是合适的阈值吗？我们怎么知道？\n\n你要按生产团队该有的方式回答它。把成本写下来；在模型没有训练过的验证集上选阈值；只打开一次测试集，并带着诚实的区间报告；然后问分数在多大程度上可以当作概率读，以及这个选择能保持多久正确。付款数据由带种子的生成器编造，模型是逻辑回归，一切几秒钟即可跑完。"
+ },
+ "show": [
+  "fraud.py",
+  "choose_threshold.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "The default threshold on the validation set",
+    "zh": "验证集上的默认阈值"
+   },
+   "body": {
+    "en": "A confusion matrix counts payments by what is true (rows) and what the model said (columns). Top left are legitimate payments left alone (true negatives), top right are legitimate payments flagged (false positives), bottom left are fraud missed (false negatives), and bottom right are fraud caught (true positives). `confusion.py` uses only the validation set and a threshold you may pass as an argument, 0.5 by default. The test set stays closed.\n\nRead accuracy first and then recall. Accuracy looks excellent because almost every payment is legitimate: a model that never flags anything would score nearly as well. Recall is the share of fraud caught. Then read the cost line against the two baselines: flag nothing and flag everything. At 0.5 the model flags so few payments that the cost is hardly below doing nothing.\n\nThe cost rule is in `fraud.py`: five for every flagged payment, one hundred for every fraud not flagged. Where do those numbers come from, and who agreed to them? A threshold chosen from costs can only be as good as the costs.",
+    "zh": "混淆矩阵按真实情况（行）和模型的判断（列）对付款计数。左上是未被打扰的正常付款（真阴性），右上是被标记的正常付款（假阳性），左下是漏掉的欺诈（假阴性），右下是抓到的欺诈（真阳性）。`confusion.py` 只用验证集，阈值可以作为参数传入，默认 0.5。测试集保持关闭。\n\n先看准确率，再看召回率。准确率看起来很棒，因为几乎所有付款都是正常的：一个什么都不标记的模型得分也差不多。召回率是抓到的欺诈所占的比例。然后对照两个基线读成本那一行：什么都不标记，以及全部标记。在 0.5 时，模型标记的付款太少，成本几乎不比什么都不做低。\n\n成本规则在 `fraud.py` 里：每标记一笔付款五，每漏掉一笔欺诈一百。这些数字从哪里来，谁同意过？从成本出发选出的阈值，最多只能和成本一样好。"
+   },
+   "command": "python3 confusion.py",
+   "contains": [
+    "predicted fraud",
+    "accuracy",
+    "flag nothing"
+   ]
+  },
+  {
+   "title": {
+    "en": "Choose the threshold from the costs",
+    "zh": "根据成本选择阈值"
+   },
+   "body": {
+    "en": "Flagging a payment costs the review. Not flagging it costs the loss, but only when it is fraud. If a score were a true probability p, flagging would pay when p times the loss exceeds the review cost, that is when p is above 5 divided by 100, or 0.05. That is the theory, and it only holds for calibrated scores.\n\nSo the script does not trust the formula. It sweeps thresholds from 0.01 to 0.60 on the validation set, computes the real total cost at each one, and looks at the whole curve. The table prints a few rows. Then it reports the cheapest threshold and the range of thresholds within 3% of that cost. The curve is flat near the bottom and the validation set has only a hundred or so fraud cases, so the single cheapest point is partly noise. The script saves the middle of the flat range, which is more stable, in `threshold.json` together with the costs it assumed, and what it was chosen on.\n\nCompare the saved value with the theoretical 0.05. They should be close, because this model is roughly calibrated. The next steps show what happens when it is not.",
+    "zh": "标记一笔付款的代价是复核。不标记的代价是损失，但只有它真是欺诈时才发生。如果分数是真正的概率 p，那么当 p 乘以损失超过复核成本时，标记才划算，也就是 p 大于 5 除以 100，即 0.05。这是理论，而且只在分数经过校准时成立。\n\n所以脚本不盲信这个公式。它在验证集上从 0.01 扫到 0.60，在每个阈值处计算真实的总成本，并观察整条曲线。表格打印了其中几行。然后它报告成本最低的阈值，以及成本在最低值 3% 之内的阈值范围。曲线在底部很平，而验证集只有一百来个欺诈样本，所以单一的最低点有一部分是噪声。脚本把平坦区间的中点（更稳定）连同它假设的成本和选择依据一起存进 `threshold.json`。\n\n把保存的值与理论值 0.05 比较。两者应当接近，因为这个模型大体上是校准的。后面的步骤会展示不校准时会怎样。"
+   },
+   "command": "python3 choose_threshold.py",
+   "contains": [
+    "chosen threshold",
+    "saved threshold.json"
+   ]
+  },
+  {
+   "title": {
+    "en": "Report on the test set, once",
+    "zh": "在测试集上报告，只报告一次"
+   },
+   "body": {
+    "en": "`report_test.py` reads the saved threshold and does nothing else to it. It never tunes anything on the test set, which is the whole point of having one. The first table repeats the confusion matrix. The second compares four policies per 1,000 payments, so the figures have a plain meaning: how many get flagged, and what the cost is. Always put the baselines next to the result. A cost figure with no \"flag nothing\" row beside it cannot be judged.\n\nThe last line gives the recall with a 90% bootstrap interval: it resamples the fraud cases with replacement 1,000 times and reports the 5th and 95th percentiles. With about a hundred and forty fraud cases, recall is known only to a few points either way. Say that when you report it. Also look at flagged per 1,000: does the review team have the capacity for that many?",
+    "zh": "`report_test.py` 读取保存的阈值，对它不做任何别的操作。它从不在测试集上调任何东西，这正是留测试集的意义。第一张表重复混淆矩阵。第二张表按每 1,000 笔付款比较四种策略，让数字有朴素的含义：标记多少笔，成本是多少。总要把基线放在结果旁边。没有“什么都不标记”一行的成本数字，是无法评判的。\n\n最后一行给出召回率及其 90% 的自助法区间：对欺诈样本做 1,000 次有放回重采样，报告第 5 和第 95 百分位。欺诈样本约一百四十个时，召回率只能确定到上下几个百分点。报告时要把这一点说出来。还要看每 1,000 笔中被标记的数量：复核团队有能力处理这么多吗？"
+   },
+   "command": "python3 report_test.py",
+   "contains": [
+    "policy",
+    "chosen threshold",
+    "recall"
+   ]
+  },
+  {
+   "title": {
+    "en": "Is the score a probability? Check calibration",
+    "zh": "分数是概率吗？检查校准"
+   },
+   "body": {
+    "en": "A model is calibrated when, among payments scored around 0.2, about 20% really are fraud. The reliability table groups validation payments by score range and shows the mean score next to the fraud rate that actually occurred. The Brier score is the mean squared difference between the score and the outcome (0 or 1). Lower is better, and it punishes confident wrong scores.\n\nThe script runs two models on the same data. The first has no class weights. The second uses `class_weight=\"balanced\"`, which many people add because fraud is rare. It reweights the training loss so that the rare class counts as much as the common one. Its ranking, measured by ROC AUC, is about the same. Its probabilities are not: the score ranges show fraud rates far below the scores, and the Brier score is much worse.\n\nNow look at the last line of each block, the cheapest threshold. For the balanced model it moves far from the theoretical 0.05, to a value near 0.4, yet the best cost it reaches is about the same. The threshold quietly absorbed the miscalibration. That works only while the base rate and the model stay as they were. It also means that 0.5 is only a sensible default when classes are balanced and the two kinds of mistake cost about the same, which here they do not.\n\nIf the score is shown to a person as \"probability of fraud\", or multiplied by an amount to estimate expected loss, calibrate it. A held-out set is needed for that. For the decision alone, choosing the threshold on a validation set is enough.",
+    "zh": "一个模型被称为校准的，是指在分数约为 0.2 的付款里，大约 20% 真的是欺诈。可靠性表把验证集的付款按分数区间分组，并把平均分数与实际出现的欺诈率并排放在一起。Brier 分数是分数与结果（0 或 1）之间的均方差，越低越好，它会惩罚自信的错误分数。\n\n脚本在同样的数据上运行两个模型。第一个不加类别权重。第二个使用 `class_weight=\"balanced\"`，欺诈很少见，所以很多人会加上它。它重新加权训练损失，让稀有类别与常见类别同等重要。它的排序能力（用 ROC AUC 衡量）差不多，但概率不再可信：各分数区间里的实际欺诈率远低于分数，Brier 分数也差得多。\n\n再看每个模型最后一行，成本最低的阈值。平衡模型的最优阈值远离理论上的 0.05，到了 0.4 附近，而它能达到的最低成本却差不多。阈值悄悄吸收了校准偏差。这只有在基础比率和模型都保持原样时才成立。这也意味着：只有当类别平衡、两种错误的代价相近时，0.5 才是合理的默认值，而这里不是。\n\n如果分数要作为“欺诈概率”展示给人看，或者乘以金额来估计预期损失，就要做校准，这需要一个留出集。只为了做决定，在验证集上选阈值就够了。"
+   },
+   "command": "python3 calibration.py",
+   "contains": [
+    "Brier",
+    "class_weight=balanced"
+   ]
+  },
+  {
+   "title": {
+    "en": "Why the threshold will not stay put",
+    "zh": "为什么阈值不会一直不变"
+   },
+   "body": {
+    "en": "Two things move it. Part 1 is sampling noise. The script redraws the validation set with replacement 200 times (a bootstrap) and finds the cheapest threshold each time. The spread between the 10th and 90th percentile is the uncertainty in a threshold chosen from one validation set of about a hundred and forty fraud cases. Treat a threshold as a range, not a point.\n\nPart 2 is change in the world. The table compares the saved threshold with the cheapest one for each situation, and \"extra\" is how much more the saved threshold costs than the best one. The first row is the situation it was chosen for. The second is a later month where fraud became more common. The third is the same month but analyst time rose from 5 to 12 units. Which kind of change costs more here?\n\nNotice that the \"best t\" column is known only in hindsight, with labels. In payments the labels arrive late: chargebacks can take weeks. So you cannot recompute the best threshold in real time. You can put the assumptions (costs, base rate, model version, date) next to the threshold, re-estimate it on a schedule, and recheck it when a cost or a volume changes. The monitoring lab shows how to notice changes before the labels arrive.",
+    "zh": "有两件事会让它移动。第一部分是抽样噪声。脚本对验证集做 200 次有放回的重新抽取（自助法），每次都找出成本最低的阈值。第 10 与第 90 百分位之间的差距，就是在只有约一百四十个欺诈样本的单个验证集上选出阈值的不确定性。把阈值当作一个范围，而不是一个点。\n\n第二部分是世界在变。表格对每种情形，把保存的阈值与当时成本最低的阈值作比较，“extra”是保存的阈值比最优阈值多花的成本比例。第一行是它被选出时的情形；第二行是欺诈变得更普遍的后一个月；第三行是同一个月但分析师时间从 5 涨到 12 个单位。这里哪一种变化代价更大？\n\n注意“best t”这一列只有事后拿到标签才知道。付款场景里标签来得很晚：拒付可能要几周。所以你无法实时重新计算最优阈值。你可以把假设（成本、基础比率、模型版本、日期）放在阈值旁边，定期重新估计，并在成本或交易量变化时重新检查。监控实验会展示如何在标签到来之前察觉变化。"
+   },
+   "command": "python3 drift.py",
+   "contains": [
+    "best threshold",
+    "saved threshold"
+   ]
+  }
+ ],
+ "review": [
+  {
+   "en": "Are the costs written down in the code or a config file, with units, an owner and a date, and agreed with the people who bear them?",
+   "zh": "成本是否写在代码或配置文件里，带有单位、负责人和日期，并得到承担这些成本的人的认可？"
+  },
+  {
+   "en": "Was the threshold chosen on data the model did not train on, and was the test set opened only after the choice and used once?",
+   "zh": "阈值是在模型没有训练过的数据上选的吗？测试集是否在选定之后才打开，并且只用一次？"
+  },
+  {
+   "en": "Is the result shown next to the baselines (flag nothing, flag everything, the old default) and per 1,000 events?",
+   "zh": "结果是否与基线（什么都不标记、全部标记、旧默认值）并排展示，并按每 1,000 个事件给出？"
+  },
+  {
+   "en": "How flat is the cost curve near the best point? Is the chosen value the middle of a plateau, not the lowest single point?",
+   "zh": "最优点附近的成本曲线有多平？选定的值是平坦区间的中点，而不是单个最低点吗？"
+  },
+  {
+   "en": "Is the headline metric given with an interval, given how many positive cases there are?",
+   "zh": "考虑到阳性样本的数量，主要指标是否带有区间？"
+  },
+  {
+   "en": "If the score is shown or multiplied by an amount, has calibration been checked? Did `class_weight` or resampling change the probabilities?",
+   "zh": "如果分数要展示出来或乘以金额，是否检查过校准？`class_weight` 或重采样是否改变了概率？"
+  },
+  {
+   "en": "Can the team handle the number of flagged cases per day? If capacity is the real limit, would \"review the top N\" be a better rule than a threshold?",
+   "zh": "团队能处理每天被标记的数量吗？如果真正的限制是处理能力，“复核得分最高的前 N 笔”会不会比阈值更合适？"
+  },
+  {
+   "en": "Is the threshold stored with the model version and the assumptions it relied on, and is there a trigger to revisit it (costs, base rate or model change)?",
+   "zh": "阈值是否与模型版本及其依赖的假设一起保存，是否有重新检查的触发条件（成本、基础比率或模型变化）？"
+  },
+  {
+   "en": "Is performance checked by segment (new accounts, a region, a payment type) before a single global threshold is accepted?",
+   "zh": "在接受单一全局阈值之前，是否按分群（新账户、地区、付款类型）检查过表现？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "Costs against capacity. A cost-based threshold answers \"what is cheapest\" but may flag more payments than analysts can review, and an unreviewed flag is worth nothing. A capacity rule, \"review the top 300 a day\", always fits the team and adapts when the base rate moves, but it ignores costs and reviews low-risk payments on a quiet day. In practice many teams choose by cost, then check the flagged count against capacity and adjust.\n\nCalibrate or just move the threshold. Calibration, with Platt scaling or isotonic regression on a held-out set, makes scores usable as probabilities for every purpose, including expected loss and tiered handling. It needs enough positive cases (isotonic overfits with few) and one more data split. Moving the threshold is simpler and sufficient for a single yes/no decision, but it hides miscalibration and breaks silently when the base rate changes. If anyone downstream reads the number as a probability, calibrate.\n\nHow often to re-tune. A frozen threshold is stable and auditable, but it drifts out of date when fraud patterns, prices or staffing change. Re-tuning each week follows the world but moves the decision boundary under the analysts' feet and chases noise, as the bootstrap spread shows. A common middle path is a scheduled review, a documented change process, and an alert when the flagged share moves outside an agreed band.\n\nCosts are not constant. A hundred is an average. A missed fraud of 5,000 and one of 20 are not the same loss, and a flat threshold treats them alike. Using amount in the decision, with an expected-loss score or separate thresholds per amount band, can save more than any model improvement, at the price of a more complex policy to explain and audit.\n\nDelayed labels. The threshold is tuned on past, labelled payments, and the labels of the most recent weeks are the least complete. A threshold fitted to the last month of mature labels already lags the world by that month. This is a reason to prefer stable ranges and documented assumptions over fine-tuned points, and a reason to monitor inputs and flag rates while the labels are still on their way.",
+  "zh": "成本与处理能力。基于成本的阈值回答的是“怎样最省”，但标记的数量可能超过分析师能复核的量，没复核的标记毫无价值。能力规则，例如“每天复核得分最高的 300 笔”，永远适合团队的人力，在基础比率变化时也能自适应，但它忽略成本，在平静的日子里也会去复核低风险的付款。实践中不少团队先按成本选，再对照处理能力检查标记数量并加以调整。\n\n校准，还是只挪动阈值。用 Platt 缩放或保序回归在留出集上做校准，能让分数在所有用途下（包括预期损失和分级处理）都可当作概率使用。它需要足够多的阳性样本（保序回归在样本少时会过拟合），还要多一次数据划分。只挪阈值更简单，对单一的是/否决策足够，但它掩盖了校准偏差，并在基础比率变化时悄无声息地失效。只要下游有人把这个数字当作概率读，就应该校准。\n\n多久重新调整一次。冻结的阈值稳定、可审计，但在欺诈模式、价格或人手变化时会过时。每周重新调整能跟上世界，却会让分析师脚下的判定边界不断移动，也会追逐噪声，自助法的离散程度已经说明了这一点。常见的折中办法是：定期复核、有文档的变更流程，以及标记比例超出约定范围时报警。\n\n成本并非恒定。一百只是平均值。漏掉一笔 5,000 的欺诈和漏掉一笔 20 的，损失并不相同，而统一的阈值把它们一视同仁。在决策中使用金额，无论是预期损失分数还是按金额区间分设阈值，节省的可能超过任何一次模型改进，代价是更复杂、更难解释和审计的策略。\n\n延迟的标签。阈值是在过去带标签的付款上调出来的，而最近几周的标签最不完整。依据最近一个月已成熟标签拟合的阈值，本身就落后世界一个月。这是偏好稳定区间和有文档的假设、而不是精调的点的理由，也是在标签还在路上时就要监控输入和标记率的理由。"
+ },
+ "done": [
+  {
+   "en": "You can state the costs, the threshold chosen from them on a validation set, and the test-set result with baselines and an interval.",
+   "zh": "你能说出成本、据此在验证集上选出的阈值，以及带基线和区间的测试集结果。"
+  },
+  {
+   "en": "You can explain why `class_weight=\"balanced\"` leaves the ranking alone but changes where the best threshold sits.",
+   "zh": "你能解释为什么 `class_weight=\"balanced\"` 不改变排序，却改变了最优阈值的位置。"
+  },
+  {
+   "en": "You can name two reasons the saved threshold will need to be revisited and what you would store next to it.",
+   "zh": "你能说出保存的阈值需要重新检查的两个原因，以及你会把什么信息存在它旁边。"
+  }
+ ]
+}

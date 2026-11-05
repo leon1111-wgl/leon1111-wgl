@@ -1,0 +1,194 @@
+{
+ "id": "c-tsan-race",
+ "course": "comp2017",
+ "minutes": 35,
+ "tools": [
+  "clang",
+  "ThreadSanitizer"
+ ],
+ "title": {
+  "en": "A shared counter that is usually right",
+  "zh": "大多数时候都对的共享计数器"
+ },
+ "summary": {
+  "en": "Four threads update one set of totals with no lock. Show that normal runs mostly pass, let ThreadSanitizer name both racing accesses, fix with a mutex, then compare lock granularity and atomics.",
+  "zh": "四个线程在没有锁的情况下更新同一组总数。先看到普通运行大多通过，再让 ThreadSanitizer 指出两个相互竞争的访问，用互斥锁修复，最后比较锁的粒度和原子操作。"
+ },
+ "scenario": {
+  "en": "Iris wrote the counters behind a small server's /metrics page. Four worker threads handle requests and add to two shared totals: how many requests were served and how many bytes were sent. Her test starts the workers, joins them, and compares the totals with a single-threaded reference. It has passed in CI for weeks.\n\nLast Friday the dashboard showed a request count lower than the access log. Nobody could reproduce it. You suspect the counters and want evidence, not a hunch. The job: see how often the plain program is wrong, get a tool to name the race, fix it, and decide how much locking the fix really needs.",
+  "zh": "Iris 为一个小型服务器的 /metrics 页面写了计数器。四个工作线程处理请求，并往两个共享总数里累加：服务的请求数和发送的字节数。她的测试启动工作线程、等待它们结束，再把总数与单线程的参照值比较。这个测试在 CI 里已经通过了好几周。\n\n上周五，仪表盘显示的请求数比访问日志少。没有人能复现。你怀疑是计数器，想要的是证据，而不是直觉。任务：弄清普通程序多久会错一次，让工具指出数据竞争，修复它，并决定修复究竟需要多少加锁。"
+ },
+ "show": [
+  "counter.c"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Run the unlocked program many times",
+    "zh": "把没有加锁的程序运行很多次"
+   },
+   "body": {
+    "en": "`-pthread` compiles and links with POSIX threads, `-std=c11` fixes the language version, `-Wall -Wextra` turn on the compiler's common warnings, and `-g` keeps line numbers for the tools. No `-O` option means no optimisation. The first command runs the program once to show its output. The loop runs it 100 times, and counts the runs whose totals matched the reference (the program exits 0 only when both totals match).\n\nHow many runs are right depends on the machine and on what else it is doing. On a quiet machine nearly all are right and a few may be wrong; on a busy one more are wrong. If you see 100 of 100, run it again: a race that passes once proves nothing. Each worker finishes so quickly that it is often done before the next one starts, so a lost update needs unlucky timing. A test that runs the program once, or ten times, will often pass and look reassuring. Your count will differ from someone else's, and from your own next run: that variation is the nature of a race.",
+    "zh": "`-pthread` 让编译和链接使用 POSIX 线程，`-std=c11` 固定语言版本，`-Wall -Wextra` 打开编译器常用的警告，`-g` 为工具保留行号；不写 `-O` 选项就是不做优化。第一条命令先运行一次，展示输出。循环把程序运行 100 次，统计总数与参照值一致的运行次数（只有两个总数都一致时程序才以 0 退出）。\n\n有多少次运行是正确的，取决于机器以及它当时还在做什么。机器空闲时几乎都是对的，偶尔有错；机器繁忙时错的更多。如果你看到 100 次全对，请再运行一次：一次通过的数据竞争什么也证明不了。每个工作线程结束得太快，往往在下一个线程启动之前就跑完了，所以丢失更新需要运气不好的时序。只运行一次或十次的测试常常会通过，让人放心。你的次数会和别人的不同，也会和你下一次运行的不同：这种差异正是数据竞争的特点。"
+   },
+   "command": "clang -std=c11 -Wall -Wextra -g -pthread counter.c -o counter && ./counter; ok=0; for i in $(seq 100); do ./counter > /dev/null && ok=$((ok + 1)); done; echo \"$ok of 100 runs gave the right totals\"",
+   "contains": [
+    "(expected 200)",
+    "of 100 runs gave the right totals"
+   ]
+  },
+  {
+   "title": {
+    "en": "Give each thread more work",
+    "zh": "给每个线程更多工作"
+   },
+   "body": {
+    "en": "The program takes the number of requests per worker as an argument. With 2,000,000 per worker, each thread runs long enough that all four overlap. The totals are now far below the reference, and they change from run to run. The exact numbers will be different on your machine, and the program exits with status 1 when a total is wrong. Each `stats.requests++` is really three steps (load, add, store); when two threads load the same old value, one increment is lost.\n\nThis unoptimised build shows lost increments. If you build with `-O2`, the compiler may keep the counter in a register for the whole loop and store it once, so the total looks like a multiple of the per-worker count instead. The program is equally broken either way: a data race is undefined behaviour, and the compiler is allowed to assume it does not happen.",
+    "zh": "程序接受每个工作线程的请求数作为参数。每个线程处理 2,000,000 个请求时，运行时间足够长，四个线程会互相重叠。此时总数远低于参照值，而且每次运行都不同。具体数值在你的机器上会不一样，总数出错时程序以状态 1 退出。每个 `stats.requests++` 其实是三步（读、加、写）；两个线程读到同一个旧值时，就会丢掉一次增量。\n\n这个未优化的构建表现为丢失增量。如果用 `-O2` 构建，编译器可能在整个循环里把计数器放在寄存器中，最后只写一次，总数就会像是每线程请求数的整数倍。两种情况下程序同样是错的：数据竞争属于未定义行为，编译器可以假定它不会发生。"
+   },
+   "command": "./counter 2000000; echo \"exit status: $?\"",
+   "contains": [
+    "(expected 8000000)",
+    "exit status:"
+   ]
+  },
+  {
+   "title": {
+    "en": "Build with ThreadSanitizer",
+    "zh": "用 ThreadSanitizer 构建"
+   },
+   "body": {
+    "en": "`-fsanitize=thread` instruments every memory access and every lock operation, and keeps a short history of who touched each location and which synchronisation connects the accesses. It reports two accesses to the same address from different threads, with no ordering between them, when at least one is a write. It does not need the totals to come out wrong. The default workload of 50 requests per worker is enough.\n\nThe process exits with status 66 when it has reported anything. (On macOS the sanitizer aborts instead, status 134.) The report text is similar on both systems.",
+    "zh": "`-fsanitize=thread` 会给每次内存访问和每次加锁操作加上检测，并保存一小段历史：每个位置被谁访问过，以及有哪些同步关系把这些访问连起来。当来自不同线程的两次访问落在同一地址、它们之间没有先后次序、且至少有一次是写入时，它就会报告。它不需要总数真的出错；默认每个工作线程处理 50 个请求就够了。\n\n只要报告过任何问题，进程就以状态 66 退出。（在 macOS 上 sanitizer 改为 abort，状态 134。）两个系统上的报告文字相近。"
+   },
+   "command": "clang -std=c11 -Wall -Wextra -g -fsanitize=thread -pthread counter.c -o counter-tsan && ./counter-tsan",
+   "exit": 66,
+   "contains": [
+    "WARNING: ThreadSanitizer: data race",
+    "Previous",
+    "worker",
+    "SUMMARY: ThreadSanitizer: data race"
+   ],
+   "lines": 40
+  },
+  {
+   "title": {
+    "en": "Read the race report",
+    "zh": "读懂数据竞争报告"
+   },
+   "body": {
+    "en": "Read each block as a pair of accesses.\n\n1. `WARNING: ThreadSanitizer: data race` opens a report. Each report is one pair of source locations.\n2. The first access names its kind (`Write of size 8` or `Read of size 8`), the thread (T2) and the line in `worker`. The second block, `Previous write of size 8 ... by thread T1`, is the access it conflicts with. Both lines are the same statement, executed by two threads.\n3. `Location is global 'stats'` tells you what was touched. Other cases name a heap block with the line that allocated it, or a stack slot.\n4. The `Thread T2 ... created by main thread at` blocks say where each thread was started. That is how you know which thread functions are involved when the pair is not obvious.\n5. `SUMMARY` gives one line per report. At the end, `reported N warnings` counts them. There is at least one for `requests` and one for `bytes`; the same line can appear in more than one report when a read races with a write and when two writes race.\n\nNotice what is missing: any mention of the totals being wrong. The sanitizer proves the access pattern is unsafe, and you do not have to wait for a bad total. The fix must cover both fields, and it must cover the main-thread read too if it ever happens while workers still run.",
+    "zh": "把每个块看作一对访问来读。\n\n1. `WARNING: ThreadSanitizer: data race` 开始一份报告，每份报告对应一对源代码位置。\n2. 第一个访问给出类型（`Write of size 8` 或 `Read of size 8`）、线程（T2）和 `worker` 里的行号。第二块 `Previous write of size 8 ... by thread T1` 是与它冲突的访问。两行是同一条语句，由两个线程执行。\n3. `Location is global 'stats'` 说明被访问的对象是什么。其他情况下它会指出一个堆块以及分配它的那一行，或一个栈上的位置。\n4. `Thread T2 ... created by main thread at` 的块说明每个线程是在哪里启动的。当这一对访问不太明显时，靠它可以知道涉及哪些线程函数。\n5. `SUMMARY` 为每份报告给出一行。结尾的 `reported N warnings` 是计数。`requests` 和 `bytes` 至少各有一份；当读与写竞争、两个写互相竞争时，同一行可能出现在不止一份报告里。\n\n注意缺少了什么：报告里没有任何关于总数出错的说法。sanitizer 证明的是访问方式不安全，你不必等到总数出错。修复必须覆盖两个字段；如果主线程在工作线程仍在运行时读取它们，也必须覆盖主线程的读取。"
+   }
+  },
+  {
+   "title": {
+    "en": "Fix it with a mutex",
+    "zh": "用互斥锁修复"
+   },
+   "body": {
+    "en": "The patch adds a `pthread_mutex_t` next to the data it protects, with a comment that names the pairing, and takes the lock around both updates. They go in the same critical section because they describe one request: a reader that sees `requests` incremented but not `bytes` would compute a wrong average. Rebuild with the sanitizer and run again. No report, and the totals match, so the exit status is 0.",
+    "zh": "补丁在它所保护的数据旁边添加一个 `pthread_mutex_t`，用注释写明两者的对应关系，并在两处更新外面加锁。两个更新放在同一个临界区里，因为它们描述的是同一个请求：读取者如果看到 `requests` 已增加而 `bytes` 还没有，算出的平均值就是错的。用 sanitizer 重新构建再运行：没有报告，总数一致，退出状态为 0。"
+   },
+   "command": "clang -std=c11 -Wall -Wextra -g -fsanitize=thread -pthread counter.c -o counter-tsan && ./counter-tsan",
+   "contains": [
+    "requests=200 (expected 200)"
+   ],
+   "patch": {
+    "file": "counter.c",
+    "from": "static struct stats stats;  /* shared by all workers */\nstatic long per_worker = 50;\n\n/* The size of request i handled by worker id: fixed, so runs are comparable. */\nstatic long response_size(int id, long i)\n{\n    return 100 + (id * 7 + i) % 50;\n}\n\nstatic void *worker(void *arg)\n{\n    int id = (int)(long)arg;\n    for (long i = 0; i < per_worker; i++) {\n        long size = response_size(id, i);\n        stats.requests++;\n        stats.bytes += size;\n    }\n    return NULL;\n}\n\n",
+    "to": "static struct stats stats;  /* shared by all workers; protected by stats_lock */\nstatic pthread_mutex_t stats_lock = PTHREAD_MUTEX_INITIALIZER;\nstatic long per_worker = 50;\n\n/* The size of request i handled by worker id: fixed, so runs are comparable. */\nstatic long response_size(int id, long i)\n{\n    return 100 + (id * 7 + i) % 50;\n}\n\nstatic void *worker(void *arg)\n{\n    int id = (int)(long)arg;\n    for (long i = 0; i < per_worker; i++) {\n        long size = response_size(id, i);\n        pthread_mutex_lock(&stats_lock);\n        stats.requests++;\n        stats.bytes += size;\n        pthread_mutex_unlock(&stats_lock);\n    }\n    return NULL;\n}\n\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Shrink the critical section: merge once per thread",
+    "zh": "缩小临界区：每个线程只合并一次"
+   },
+   "body": {
+    "en": "The first fix is correct and takes the lock 50 times per worker. At real request rates that serialises the workers on one lock. The workers do not need the shared totals while they work, only at the end. The patch keeps a private pair of counters in each thread (nothing else can see them, so no lock) and merges them under the lock once.\n\nNow the lock is taken 4 times in total instead of 200, and it protects three assignments. Run it under the sanitizer, then run a large workload with `-O2` to check the result at the size that failed in step 2.",
+    "zh": "第一种修复是正确的，但每个工作线程要加锁 50 次。在真实的请求速率下，这会让所有工作线程在同一把锁上排队。工作线程在工作期间并不需要共享总数，只在结束时才需要。补丁让每个线程保留一对私有计数器（别的线程看不到，所以不用锁），最后在锁内只合并一次。\n\n现在锁总共只取 4 次而不是 200 次，它只保护三条赋值。先在 sanitizer 下运行，然后用 `-O2` 运行大工作量，在第 2 步失败的规模上检查结果。"
+   },
+   "command": "clang -std=c11 -Wall -Wextra -g -fsanitize=thread -pthread counter.c -o counter-tsan && ./counter-tsan && clang -std=c11 -O2 -pthread counter.c -o counter && ./counter 2000000",
+   "contains": [
+    "requests=200 (expected 200)",
+    "requests=8000000 (expected 8000000)"
+   ],
+   "patch": {
+    "file": "counter.c",
+    "from": "static void *worker(void *arg)\n{\n    int id = (int)(long)arg;\n    for (long i = 0; i < per_worker; i++) {\n        long size = response_size(id, i);\n        pthread_mutex_lock(&stats_lock);\n        stats.requests++;\n        stats.bytes += size;\n        pthread_mutex_unlock(&stats_lock);\n    }\n    return NULL;\n}\n\n",
+    "to": "static void *worker(void *arg)\n{\n    int id = (int)(long)arg;\n    long requests = 0, bytes = 0;               /* private to this thread */\n    for (long i = 0; i < per_worker; i++) {\n        requests++;\n        bytes += response_size(id, i);\n    }\n    pthread_mutex_lock(&stats_lock);            /* one short critical section per thread */\n    stats.requests += requests;\n    stats.bytes += bytes;\n    pthread_mutex_unlock(&stats_lock);\n    return NULL;\n}\n\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Compare with C11 atomics",
+    "zh": "与 C11 原子操作比较"
+   },
+   "body": {
+    "en": "counter_atomic.c is the same program with `_Atomic long` counters and `atomic_fetch_add_explicit(..., memory_order_relaxed)`. Each increment is one indivisible operation, so there is no lock and no race, and ThreadSanitizer is silent. `memory_order_relaxed` is enough for an independent counter, because nobody uses the count to decide what other memory to read.\n\nThe catch is that the two counters are no longer updated together. A reader can see one request counted and its bytes not yet added. For two numbers that only appear on a dashboard that may be fine. If a rule such as \"average = bytes / requests\" must hold at every instant, the pair needs one lock, or a snapshot taken under it.",
+    "zh": "counter_atomic.c 是同一个程序，只是计数器换成 `_Atomic long`，并使用 `atomic_fetch_add_explicit(..., memory_order_relaxed)`。每次增量都是一个不可分割的操作，所以没有锁、也没有数据竞争，ThreadSanitizer 保持沉默。对独立的计数器来说 `memory_order_relaxed` 就够了，因为没有人用这个计数来决定去读哪块其他内存。\n\n问题在于两个计数器不再一起更新。读取者可能看到一个请求已经计数，而它的字节数还没加上。如果这两个数字只是显示在仪表盘上，也许没关系；如果“平均值 = 字节数 / 请求数”这样的规则必须在每一刻都成立，这一对数据就需要同一把锁，或者在锁内取快照。"
+   },
+   "command": "clang -std=c11 -Wall -Wextra -g -fsanitize=thread -pthread counter_atomic.c -o counter-atomic && ./counter-atomic",
+   "contains": [
+    "requests=200 (expected 200)"
+   ]
+  }
+ ],
+ "review": [
+  {
+   "en": "For every shared variable, is the protecting lock named in a comment next to it, and does every access (including reads in other threads) take that lock?",
+   "zh": "对每个共享变量，是否在旁边的注释里写明了保护它的锁，并且每一次访问（包括其他线程里的读取）都持有这把锁？"
+  },
+  {
+   "en": "Are fields that must stay consistent with each other (requests and bytes) updated and read inside the same critical section?",
+   "zh": "必须彼此保持一致的字段（requests 和 bytes）是否在同一个临界区里更新和读取？"
+  },
+  {
+   "en": "Is the critical section as short as possible without splitting an invariant, and free of I/O, allocation and calls that can block?",
+   "zh": "临界区是否在不拆开不变量的前提下尽可能短，并且不含 I/O、内存分配和可能阻塞的调用？"
+  },
+  {
+   "en": "Could each thread accumulate privately and merge once? Compare the cost of a lock per update with the staleness of merged totals.",
+   "zh": "每个线程能否先私有累加、再合并一次？比较“每次更新都加锁”的代价和“合并后的总数滞后”的代价。"
+  },
+  {
+   "en": "If atomics are used, is each atomic independent, and is the memory order justified in a comment (relaxed for a pure counter)?",
+   "zh": "如果使用原子操作，每个原子变量是否相互独立，内存序是否在注释里给出理由（纯计数器用 relaxed）？"
+  },
+  {
+   "en": "Is every lock released on every path, including early returns? Is the lock order documented where more than one lock exists?",
+   "zh": "每条路径（包括提前返回）是否都会释放锁？有多把锁时，加锁顺序是否有文档说明？"
+  },
+  {
+   "en": "Does CI run the multi-threaded tests under ThreadSanitizer with enough threads and iterations to reach the concurrent code, and fail on any report?",
+   "zh": "CI 是否在 ThreadSanitizer 下运行多线程测试，线程数和迭代次数是否足以走到并发代码，并在出现任何报告时失败？"
+  },
+  {
+   "en": "Is there any `volatile`, `sleep` or \"it has never failed\" standing in for synchronisation? None of them is synchronisation.",
+   "zh": "有没有用 `volatile`、`sleep` 或“从来没出过问题”代替同步？它们都不是同步。"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**Lock granularity.** One lock around both counters is the simplest design and is right until profiling says otherwise. Finer locks (one per field) raise the chance of two fields being read in an inconsistent state and add lock-order rules. Coarser locks (one for the whole server) are easy to reason about and serialise everything. Keeping the lock off the hot path, as in the merge-once version, usually gives the biggest win: private data needs no lock, and the price is staleness. A metrics page reading mid-run sees totals from workers that have already finished, not live ones. That is acceptable for dashboards, and not for a rate limiter. If many threads must update the same counter at high speed, shard it (one counter per thread, summed on read) and pad each counter to its own cache line, or the threads will slow each other down through false sharing.\n\n**Atomics versus mutexes.** An atomic counter is lock-free, cheap on its own, and cannot deadlock. It protects exactly one variable, so it fits independent counters and flags. As soon as an invariant spans two variables, or a read must be followed by a decision about what to write, you need a mutex. Atomics with stronger memory orders (the default `seq_cst`) add cost, and weaker ones add reasoning. Start with a mutex, and move to an atomic only for a counter you can describe in one sentence.\n\n**What ThreadSanitizer costs and misses.** Expect a slowdown of roughly 5x to 15x and several times the memory, so use it in tests and CI, not in production. It cannot be combined with AddressSanitizer in one binary, so CI needs a separate job. It reports only the races that happen in the run: it needs both accesses to execute, so a path never run concurrently by your tests is not checked. It understands pthread locks and condition variables and C11 atomics; hand-made synchronisation (a spin loop on a plain flag, an assembly barrier) may need annotations or will produce false reports. It does not find logic races where every individual access is locked but the sequence is wrong, such as checking a value under the lock, releasing it, and acting later. Deadlock is a different failure; TSan reports lock-order inversions it sees, which helps, but it cannot prove freedom from deadlock.\n\n**Practical notes.** On some Linux kernels with high ASLR entropy, the sanitizer stops with \"unexpected memory mapping\". Lowering it (`sudo sysctl vm.mmap_rnd_bits=28`) fixes it. Suppress known third-party reports in a file passed with `TSAN_OPTIONS=suppressions=...` rather than disabling the check. Treat a clean TSan run as evidence for the paths exercised, and keep a stress test that runs the concurrent code many times.",
+  "zh": "**锁的粒度。** 用一把锁同时保护两个计数器，是最简单的设计，在性能分析给出相反结论之前它都是正确的选择。更细的锁（每个字段一把）会增加两个字段被读成不一致状态的可能，还要增加加锁顺序的规则。更粗的锁（整个服务器一把）容易推理，但会让一切串行。把锁挪出热路径（就像每线程合并一次的版本）通常收益最大：私有数据不需要锁，代价是数据滞后。中途读取的指标页面只能看到已完成线程的总数，而不是实时的总数。这对仪表盘可以接受，对限流器则不行。如果许多线程必须高速更新同一个计数器，就把它分片（每线程一个计数器，读取时求和），并把每个计数器填充到各自的缓存行，否则线程会通过伪共享（false sharing）互相拖慢。\n\n**原子操作与互斥锁。** 原子计数器无锁、本身开销小，也不会死锁。它只保护一个变量，所以适用于相互独立的计数器和标志。一旦不变量跨越两个变量，或者读取之后要据此决定写什么，就需要互斥锁。更强的内存序（默认的 `seq_cst`）会增加开销，更弱的会增加推理难度。先用互斥锁，只有当计数器能用一句话描述清楚时，再换成原子操作。\n\n**ThreadSanitizer 的代价和盲区。** 预计会慢约 5 到 15 倍，内存占用是原来的数倍，所以用在测试和 CI 中，不要用在生产环境。它不能与 AddressSanitizer 放进同一个二进制，所以 CI 需要单独的任务。它只报告这次运行中发生的数据竞争：两个访问都必须执行到，测试从未并发运行的路径就不会被检查。它理解 pthread 的锁和条件变量以及 C11 的原子操作；手写的同步（对普通标志的自旋循环、汇编屏障）可能需要加标注，否则会产生误报。它发现不了这样的逻辑竞争：每个单独的访问都加了锁，但操作序列是错的，例如在锁内检查某个值，释放锁，稍后再据此行动。死锁是另一类故障；TSan 会报告它看到的锁顺序颠倒，这有帮助，但不能证明不会死锁。\n\n**实用说明。** 在 ASLR 熵很高的某些 Linux 内核上，sanitizer 会以“unexpected memory mapping”停止。把它调低（`sudo sysctl vm.mmap_rnd_bits=28`）即可。已知的第三方报告，应放进文件并通过 `TSAN_OPTIONS=suppressions=...` 抑制，而不是关闭检查。把 TSan 运行干净看作对已走过路径的证据，并保留一个反复运行并发代码的压力测试。"
+ },
+ "done": [
+  {
+   "en": "You can explain why a test that runs the program a few times passes while the code is wrong.",
+   "zh": "你能解释为什么只运行几次的测试会通过，而代码其实是错的。"
+  },
+  {
+   "en": "You can read a ThreadSanitizer report as a pair of accesses: kind, thread, line, and the location touched.",
+   "zh": "你能把 ThreadSanitizer 报告读成一对访问：类型、线程、行号，以及被访问的位置。"
+  },
+  {
+   "en": "counter.c is clean under ThreadSanitizer, produces the right totals at 2,000,000 per worker, and each shared field has a named lock.",
+   "zh": "counter.c 在 ThreadSanitizer 下干净，每线程 2,000,000 个请求时总数正确，且每个共享字段都有一把写明名字的锁。"
+  },
+  {
+   "en": "You can say when an atomic counter is enough and when two fields need one lock.",
+   "zh": "你能说出什么时候原子计数器就够了，什么时候两个字段需要同一把锁。"
+  }
+ ]
+}

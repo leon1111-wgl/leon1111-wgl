@@ -1,0 +1,770 @@
+{
+ "id": "paper-c",
+ "course": "comp2017",
+ "kind": "by-hand",
+ "title": {
+  "en": "Writing C on paper",
+  "zh": "在纸上写 C 代码"
+ },
+ "summary": {
+  "en": "Write C with a pen: no compiler, no autocomplete, no running. Five short lessons: run a program in your head, draw memory, memorise the skeletons, catch the slips a compiler would catch, and mark your own work.",
+  "zh": "用笔写 C 代码：没有编译器，没有自动补全，也不能运行。五节短课：在脑子里运行程序、画内存图、背熟代码骨架、抓住编译器本来会抓的小错，以及给自己的答案打分。"
+ },
+ "needs": [
+  {
+   "en": "You have compiled and run one small C program before. If not, read the C first-steps guide first. This guide starts at the point where no computer is there to help.",
+   "zh": "你以前编译并运行过一个小的 C 程序。如果没有，请先读 C 入门指南。本篇从“身边没有计算机帮你检查”这一步开始。"
+  },
+  {
+   "en": "A pen or pencil, an eraser, and squared or lined paper. Tables are easier on squared paper.",
+   "zh": "一支笔或铅笔、一块橡皮，以及方格纸或横线纸。在方格纸上画表格更方便。"
+  },
+  {
+   "en": "About 20 minutes for each lesson. Do the check questions on paper, not in your head.",
+   "zh": "每课大约 20 分钟。检查题要写在纸上，不要只在脑子里想。"
+  }
+ ],
+ "lessons": [
+  {
+   "id": "read-like-a-computer",
+   "title": {
+    "en": "Read like a computer",
+    "zh": "像计算机一样读代码"
+   },
+   "goal": {
+    "en": "You can run a short C program by hand, one line at a time, and write down every value it uses.",
+    "zh": "你能一行一行地手动运行一小段 C 程序，并写下它用到的每一个值。"
+   },
+   "plain": {
+    "en": "When you write code on paper, nothing tells you that a line is wrong. Your only check is to run the program yourself, half in your head and half on the page. This is called a dry run: you act as the computer, with a pen, one line at a time.\n\nA computer has no idea what your program is for. It does exactly what each line says, in order, and it remembers only what is stored in variables. A variable is a named place that holds a value. While you trace, do the same. Do what the line says, not what you meant it to say.\n\nThe tool is a trace table. A trace table has one column for each variable and one row for each line that runs. Build it in four steps.\n\n1. Number the lines of the program in the margin, starting at 1.\n2. Draw the table. The first column is Line. Then one column for each variable. The last column is Note, where you write what happened, for example \"test is true\", or what the program printed.\n3. Run the program. Each time a line runs, add a row. Write the line number, then the value of every variable after that line has finished. Copy unchanged values down from the row above, so that every row can be read on its own.\n4. Use two marks for a variable with no value. A dash (–) means the variable does not exist yet. A question mark (?) means it exists but nothing has been stored in it. A correct C program never reads a variable that still holds a question mark.\n\nA loop line runs many times, so it gets many rows. For a for loop, add one row each time the computer reaches the test. Write the values after the update part (such as i++), and write the result of the test in Note. The last row of a loop is the visit where the test is false. The body does not run after it. A variable declared inside the for line, such as i, stops existing when the loop ends, so write a dash for it afterwards.\n\nAn if line gets one row. If its test is false, the next row is the first line after the closing brace of the if.\n\nIf the program calls a function, draw a second small table for that call, with columns for its parameters and its own variables. Number the calls (f#1, f#2). When the function returns, write the returned value in the Note column of the line that made the call.",
+    "zh": "在纸上写代码时，没有任何东西会告诉你某一行写错了。你唯一的检查办法，是自己把程序运行一遍：一半在脑子里，一半写在纸上。这叫手动跟踪（英文叫 dry run）：你扮演计算机，拿着笔，一行一行地运行程序。\n\n计算机不知道你的程序是做什么用的。它严格按每一行写的内容，按顺序执行，并且只记得变量里存着的东西。变量就是一个有名字的位置，里面存着一个值。你在跟踪时也要这样做：按这一行实际写的内容去做，而不是按你原本想写的内容去做。\n\n用的工具叫跟踪表。跟踪表里每个变量占一列，每执行一行代码占一行。分四步来做。\n\n1. 在页边给程序的每一行编号，从 1 开始。\n2. 画表格。第一列是“行号”，接着每个变量一列，最后一列叫“备注”，用来写发生了什么，例如“条件为真”，或者程序输出了什么。\n3. 开始运行。每执行一行，就加一行记录：先写行号，再写这一行执行完之后每个变量的值。没有变化的值要从上一行抄下来，这样每一行单独看也能读懂。\n4. 对没有值的变量，用两种记号。短横线（–）表示这个变量还不存在，问号（?）表示它已经存在，但还没有存进任何值。正确的 C 程序不会去读一个仍然是问号的变量。\n\n循环语句会执行很多次，所以会有很多行记录。对于 for 循环，每当计算机走到条件判断，就加一行：写下更新部分（例如 i++）之后各变量的值，并在备注里写条件判断的结果。循环的最后一行记录，是条件为假的那一次，这之后循环体不会再执行。在 for 括号里声明的变量（例如 i）在循环结束后就不存在了，所以之后要写短横线。\n\nif 语句只占一行记录。如果条件为假，下一行记录就是这个 if 右花括号之后的第一行代码。\n\n如果程序调用了函数，就为这次调用另画一张小表，列出它的参数和它自己的变量，并给每次调用编号（f#1、f#2）。函数返回时，把返回值写在发起调用的那一行的备注里。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "dry run",
+      "zh": "手动跟踪（dry run）"
+     },
+     "meaning": {
+      "en": "Running a program by hand, with a pen, without a computer.",
+      "zh": "不用计算机，拿笔手动运行一个程序。"
+     }
+    },
+    {
+     "term": {
+      "en": "trace table",
+      "zh": "跟踪表"
+     },
+     "meaning": {
+      "en": "A grid with one column per variable and one row per line that runs.",
+      "zh": "一张表格：每个变量一列，每执行一行代码一行。"
+     }
+    },
+    {
+     "term": {
+      "en": "variable",
+      "zh": "变量"
+     },
+     "meaning": {
+      "en": "A named place that holds one value, such as int total.",
+      "zh": "一个有名字的位置，存放一个值，例如 int total。"
+     }
+    },
+    {
+     "term": {
+      "en": "test",
+      "zh": "条件判断"
+     },
+     "meaning": {
+      "en": "The yes-or-no question in an if or a for, such as i <= 4. Its answer is true or false.",
+      "zh": "if 或 for 里那个是或否的问题，例如 i <= 4，答案是真或假。"
+     }
+    },
+    {
+     "term": {
+      "en": "remainder (%)",
+      "zh": "取余（%）"
+     },
+     "meaning": {
+      "en": "What is left after division. 7 % 2 is 1, and 6 % 2 is 0. A number is even when n % 2 is 0.",
+      "zh": "除法之后剩下的部分。7 % 2 是 1，6 % 2 是 0。当 n % 2 等于 0 时，n 是偶数。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\nint main(void) {\n    int total = 0;\n    for (int i = 1; i <= 4; i++) {\n        if (i % 2 == 0) {\n            total = total + i;\n        }\n    }\n    printf(\"%d\\n\", total);\n    return 0;\n}\n",
+    "output": "6",
+    "walk": {
+     "en": [
+      "Set up first. Number the lines 1 to 12: the #include line is 1, int main(void) { is 3, and the last } is 12. The page does not print numbers, so count them yourself. Draw four columns: Line | i | total | Note. The computer starts at the first line inside main, which is line 4.",
+      "Line 4 | i = – | total = 0 | int total = 0; creates total and stores 0. The variable i does not exist yet, so it gets a dash.",
+      "Line 5 | i = 1 | total = 0 | The for line creates i and stores 1. The test 1 <= 4 is true, so the body runs.",
+      "Line 6 | i = 1 | total = 0 | 1 % 2 is 1, not 0, so the if test is false. The body of the if is skipped. The next row is the for line again.",
+      "Line 5 | i = 2 | total = 0 | i++ makes i 2. The test 2 <= 4 is true.",
+      "Line 6 | i = 2 | total = 0 | 2 % 2 is 0, so the test is true. Go into the body.",
+      "Line 7 | i = 2 | total = 2 | total = 0 + 2 stores 2.",
+      "Line 5 | i = 3 | total = 2 | i++ makes i 3. The test is true.",
+      "Line 6 | i = 3 | total = 2 | 3 % 2 is 1, so the test is false.",
+      "Line 5 | i = 4 | total = 2 | i++ makes i 4. The test 4 <= 4 is true, because <= includes 4.",
+      "Line 6 | i = 4 | total = 2 | 4 % 2 is 0, so the test is true.",
+      "Line 7 | i = 4 | total = 6 | total = 2 + 4 stores 6.",
+      "Line 5 | i = 5 | total = 6 | i++ makes i 5. The test 5 <= 4 is false, so the loop ends. The body does not run again.",
+      "Line 10 | i = – | total = 6 | printf writes 6 and a new line. The variable i stopped existing when the loop ended, so it gets a dash again. The program prints 6."
+     ],
+     "zh": [
+      "先做准备。给代码编号 1 到 12：#include 那一行是 1，int main(void) { 是 3，最后一个 } 是 12。页面不显示行号，你要自己数。画四列：行号 | i | total | 备注。计算机从 main 里的第一行开始，也就是第 4 行。",
+      "第 4 行 | i = – | total = 0 | int total = 0; 创建 total 并存入 0。变量 i 还不存在，所以写短横线。",
+      "第 5 行 | i = 1 | total = 0 | for 这一行创建 i 并存入 1。条件 1 <= 4 为真，所以执行循环体。",
+      "第 6 行 | i = 1 | total = 0 | 1 % 2 是 1，不是 0，所以 if 的条件为假，if 的内部被跳过。下一行记录又回到 for 那一行。",
+      "第 5 行 | i = 2 | total = 0 | i++ 使 i 变成 2。条件 2 <= 4 为真。",
+      "第 6 行 | i = 2 | total = 0 | 2 % 2 是 0，条件为真，进入 if 内部。",
+      "第 7 行 | i = 2 | total = 2 | total = 0 + 2，存入 2。",
+      "第 5 行 | i = 3 | total = 2 | i++ 使 i 变成 3。条件为真。",
+      "第 6 行 | i = 3 | total = 2 | 3 % 2 是 1，条件为假。",
+      "第 5 行 | i = 4 | total = 2 | i++ 使 i 变成 4。条件 4 <= 4 为真，因为 <= 包含 4。",
+      "第 6 行 | i = 4 | total = 2 | 4 % 2 是 0，条件为真。",
+      "第 7 行 | i = 4 | total = 6 | total = 2 + 4，存入 6。",
+      "第 5 行 | i = 5 | total = 6 | i++ 使 i 变成 5。条件 5 <= 4 为假，循环结束，循环体不再执行。",
+      "第 10 行 | i = – | total = 6 | printf 输出 6 和一个换行。变量 i 在循环结束时就不存在了，所以又写短横线。程序输出 6。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "/* meant: run the body 3 times */\nfor (int i = 0; i <= 3; i++) {\n    printf(\"*\");\n}",
+     "why": {
+      "en": "The test uses <=, so the loop still runs when i is 3. The values of i are 0, 1, 2 and 3, which is four rounds. A trace table shows this at once: count the rows where the test is true. To run the body n times, start at 0 and use <.",
+      "zh": "条件用的是 <=，所以 i 等于 3 时循环还会执行。i 的取值是 0、1、2、3，一共四轮。跟踪表能立刻显示这一点：数一数条件为真的那些行。要让循环体执行 n 次，就从 0 开始并使用 <。"
+     },
+     "right": "/* runs the body 3 times */\nfor (int i = 0; i < 3; i++) {\n    printf(\"*\");\n}"
+    },
+    {
+     "wrong": "double half = 7 / 2;",
+     "why": {
+      "en": "Both 7 and 2 are ints, so C does integer division first. 7 / 2 is 3, and C then stores 3 as 3.0. The decimal part is already gone. Trace with the types the program has, not with the numbers you hoped for. Make at least one side a double: 7 / 2.0 is 3.5.",
+      "zh": "7 和 2 都是 int，所以 C 先做整数除法。7 / 2 的结果是 3，然后 C 把 3 存成 3.0，小数部分早就没有了。跟踪时要按程序里实际的类型来算，而不是按你希望的数字来算。让至少一边是 double：7 / 2.0 等于 3.5。"
+     },
+     "right": "double half = 7 / 2.0;"
+    },
+    {
+     "wrong": "int i = 3;\nint a = i++;",
+     "why": {
+      "en": "i++ hands out the old value of i, and only then adds 1. So a is 3 and i is 4. If you want the new value, put the increment on its own line first. While you are learning, keep ++ on its own line, so that each change gets its own row in the table.",
+      "zh": "i++ 先把 i 的旧值交出去，然后才加 1。所以 a 是 3，i 是 4。如果你想要新值，就把自增单独写成一行放在前面。刚开始学时，让 ++ 独占一行，这样每次变化在表里都有自己的一行。"
+     },
+     "right": "int i = 3;\ni++;\nint a = i;"
+    },
+    {
+     "wrong": "a = b;\nb = a;",
+     "why": {
+      "en": "After a = b, the old value of a is gone, so b = a copies b back onto itself. In the table, both columns hold the same number from that row on. Swapping needs a third place to keep one value safe.",
+      "zh": "执行 a = b 之后，a 原来的值就没有了，所以 b = a 只是把 b 又抄回给 b。在表里，从那一行起两列的数字相同。交换两个值需要第三个位置，把其中一个值先保存起来。"
+     },
+     "right": "int t = a;\na = b;\nb = t;"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Make a trace table for these four lines, numbered 1 to 4: int a = 5; int b = 2; a = a - b; b = a * b; What are a and b at the end?",
+      "zh": "为下面四行代码（编号 1 到 4）做一张跟踪表：int a = 5; int b = 2; a = a - b; b = a * b; 最后 a 和 b 各是多少？"
+     },
+     "a": {
+      "en": "Line 1: a = 5, b = –. Line 2: a = 5, b = 2. Line 3: a = 3, b = 2. Line 4: a = 3, b = 6. At the end a is 3 and b is 6. Line 4 uses the new value of a (3), not the old 5.",
+      "zh": "第 1 行：a = 5，b = –。第 2 行：a = 5，b = 2。第 3 行：a = 3，b = 2。第 4 行：a = 3，b = 6。最后 a 是 3，b 是 6。第 4 行用的是 a 的新值 3，不是原来的 5。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict, without running: what does for (int i = 3; i > 0; i--) printf(\"%d \", i); print? Which row ends the loop?",
+      "zh": "不运行，直接预测：for (int i = 3; i > 0; i--) printf(\"%d \", i); 会输出什么？哪一行记录让循环结束？"
+     },
+     "a": {
+      "en": "It prints 3 2 1, each followed by a space. The test i > 0 is true for 3, 2 and 1. After the third round, i-- makes i 0, the test is false, and the loop ends. The value 0 is never printed.",
+      "zh": "输出 3 2 1，每个数后面有一个空格。i 取 3、2、1 时条件 i > 0 为真。第三轮之后，i-- 使 i 变成 0，条件为假，循环结束。0 从来没有被输出。"
+     }
+    },
+    {
+     "q": {
+      "en": "Change the worked program so that the if test is i % 2 == 1. Write the total column of the new trace table and the output.",
+      "zh": "把上面的完整例子里 if 的条件改成 i % 2 == 1。写出新跟踪表里 total 这一列的变化，以及程序的输出。"
+     },
+     "a": {
+      "en": "Now the body runs only for i = 1 and i = 3. The total column starts at 0, becomes 1 after i = 1, stays 1 for i = 2 (the test is false), becomes 4 after i = 3, and stays 4 for i = 4. The program prints 4.",
+      "zh": "现在循环体只在 i = 1 和 i = 3 时执行。total 这一列从 0 开始，i = 1 之后变成 1，i = 2 时条件为假，保持 1，i = 3 之后变成 4，i = 4 时保持 4。程序输出 4。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "draw-memory",
+   "title": {
+    "en": "Draw memory",
+    "zh": "画出内存"
+   },
+   "goal": {
+    "en": "You can draw the stack, the heap and static data for a C program at any line, with one fixed convention, and say what free changes in the picture.",
+    "zh": "你能用一套固定的画法，画出 C 程序在任意一行时的栈、堆和静态数据区，并说出 free 会让图发生什么变化。"
+   },
+   "plain": {
+    "en": "A program with pointers cannot be understood from the code alone. You need a picture of where each value lives and which pointer points where. On paper, this picture is your trace table for pointers. If you draw it the same way every time, you will make far fewer slips.\n\nC keeps values in three places. Draw them as three columns, each with a heading: Static data, Stack, Heap.\n\nStatic data holds what exists for the whole run: string literals such as \"hi\", and global variables. Text written as a string literal is read-only. Writing to it is an error.\n\nThe stack holds one frame for each function that is running right now. A frame is a box that holds that function's parameters and local variables. Draw main's frame first, at the top of the Stack column. Each call adds a new frame below it. When a function returns, cross its frame out. Everything inside it is gone.\n\nThe heap holds blocks that you ask for with malloc. A block lives until you call free on it. No function frame owns it.\n\nNow the rules for drawing things.\n\n1. A variable is a small box. Write its type and name beside it and its value inside, such as int n and 3. A variable with no value yet holds ?.\n2. A pointer is a box too. Its value is an arrow. The arrow starts inside the box and ends at the thing it points at. Also write the target's label inside the box, so you can still read it when arrows cross.\n3. Give every heap block a label: H1, H2, H3, in the order malloc is called. Write the label, the type and the size on top, such as H1 (int[3]). Draw each cell of a block as a box with its index: [0], [1], [2]. Real addresses change from run to run, so a drawing uses labels instead.\n4. An assignment copies what is in the box. p = q copies the arrow, not the block. After int *q = p; there are two boxes with arrows and still one block.\n5. A string is an array of char cells that ends with a cell holding '\\0'. char s[] = \"hi\" makes a three-cell array inside the frame. char *t = \"hi\" makes a pointer inside the frame whose arrow ends in read-only text in Static data.\n\nWhat free does to the drawing. free(p) frees the block that p points at. On the page, draw a large X over the block and write freed. Leave the arrow and the label in p alone, because free does not change p. Every pointer that still holds that label is now a dangling pointer: it points at memory you no longer own. Reading or writing through it is undefined behaviour, which means the language makes no promise about what the program does. Calling free twice on the same block is also undefined behaviour. After free(p), write p = NULL; and draw a slash through the box of p. NULL is a pointer value that points at nothing, and free(NULL) does nothing.\n\nA leak is a block that was never freed and that no arrow reaches any more. At the last line of main, look at each block. If it has no X and no arrow into it, it leaked.",
+    "zh": "只看代码，是看不懂带指针的程序的。你需要一张图，说明每个值放在哪里、每个指针指向哪里。在纸上，这张图就是指针版的跟踪表。每次都用同一种画法，出错就会少很多。\n\nC 把值放在三个地方。把它们画成三列，每列写一个标题：静态数据区、栈、堆。\n\n静态数据区放整个运行期间都存在的东西：字符串字面量（例如 \"hi\"）和全局变量。写成字面量的文字是只读的，往里面写数据是错误。\n\n栈为当前正在运行的每个函数放一个栈帧。栈帧是一个方框，里面放这个函数的参数和局部变量。先画 main 的栈帧，放在栈这一列的最上面。每调用一次函数，就在它下面加一个新栈帧。函数返回时，把它的栈帧划掉，里面的东西全部消失。\n\n堆放你用 malloc 要来的内存块。内存块会一直存在，直到你对它调用 free。它不属于任何一个函数的栈帧。\n\n下面是画图的规则。\n\n1. 变量是一个小方框。类型和名字写在旁边，值写在里面，例如 int n 和 3。还没有值的变量里写 ?。\n2. 指针也是一个方框，它的值是一支箭头。箭头从方框里出发，指向它所指的东西。同时在方框里写上目标的标签，这样箭头交叉时你仍然能读出来。\n3. 给每个堆内存块加标签：H1、H2、H3，按 malloc 被调用的顺序编号。在块的上方写标签、类型和大小，例如 H1 (int[3])。块里的每个单元画成一个带下标的方框：[0]、[1]、[2]。真实地址每次运行都会变，所以图里改用标签。\n4. 赋值是复制方框里的内容。p = q 复制的是箭头，不是内存块。执行 int *q = p; 之后，有两个带箭头的方框，但内存块仍然只有一个。\n5. 字符串是一个 char 数组，最后一格存 '\\0'。char s[] = \"hi\" 在栈帧里画一个三格的数组。char *t = \"hi\" 在栈帧里画一个指针，它的箭头指向静态数据区里的只读文字。\n\nfree 会让图发生什么变化。free(p) 释放 p 所指的内存块。在纸上这样画：在内存块上打一个大叉，写上 freed。p 方框里的箭头和标签不要改，因为 free 不会改变 p。所有仍然带着这个标签的指针现在都是悬空指针：它们指向你已经不再拥有的内存。通过悬空指针读或写，是未定义行为，意思是语言对程序会发生什么不作任何保证。对同一个块调用两次 free 也是未定义行为。free(p) 之后写 p = NULL;，并在 p 的方框上画一道斜线。NULL 是不指向任何东西的指针值，free(NULL) 什么也不做。\n\n泄漏是指：一个内存块从未被释放，而且图里已经没有任何箭头能到达它。在 main 的最后一行，检查每一个块。如果它上面没有叉，也没有箭头指向它，它就泄漏了。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "stack and frame",
+      "zh": "栈和栈帧"
+     },
+     "meaning": {
+      "en": "The stack holds one frame for each running function. A frame holds that call's parameters and local variables and is gone when the call returns.",
+      "zh": "栈为每个正在运行的函数放一个栈帧。栈帧里是这次调用的参数和局部变量，调用返回时就消失。"
+     }
+    },
+    {
+     "term": {
+      "en": "heap",
+      "zh": "堆"
+     },
+     "meaning": {
+      "en": "The memory blocks you get with malloc. They stay until you free them.",
+      "zh": "用 malloc 得到的内存块。它们一直存在，直到你 free 它们。"
+     }
+    },
+    {
+     "term": {
+      "en": "static data",
+      "zh": "静态数据区"
+     },
+     "meaning": {
+      "en": "Memory that exists for the whole run: string literals and global variables.",
+      "zh": "整个运行期间都存在的内存：字符串字面量和全局变量。"
+     }
+    },
+    {
+     "term": {
+      "en": "pointer, &x and *p",
+      "zh": "指针、&x 和 *p"
+     },
+     "meaning": {
+      "en": "A pointer is a variable that holds an address. &x is the address of x. *p is the thing p points at.",
+      "zh": "指针是存放地址的变量。&x 是 x 的地址。*p 是 p 所指的那个东西。"
+     }
+    },
+    {
+     "term": {
+      "en": "label",
+      "zh": "标签"
+     },
+     "meaning": {
+      "en": "A name such as H1 that you give to a heap block in your drawing, instead of a real address.",
+      "zh": "你在图里给堆内存块起的名字，例如 H1，用来代替真实地址。"
+     }
+    },
+    {
+     "term": {
+      "en": "NULL",
+      "zh": "空指针 NULL"
+     },
+     "meaning": {
+      "en": "A pointer value that points at nothing. It is safe to compare with, and unsafe to read through.",
+      "zh": "不指向任何东西的指针值。可以拿它做比较，但不能通过它读写。"
+     }
+    },
+    {
+     "term": {
+      "en": "dangling pointer",
+      "zh": "悬空指针"
+     },
+     "meaning": {
+      "en": "A pointer that still holds the label of a block that was freed, or of a frame that is gone.",
+      "zh": "仍然存着已被释放的内存块（或已消失的栈帧）标签的指针。"
+     }
+    },
+    {
+     "term": {
+      "en": "undefined behaviour",
+      "zh": "未定义行为"
+     },
+     "meaning": {
+      "en": "A mistake after which the language promises nothing: the program may crash, print rubbish or seem to work.",
+      "zh": "犯了这种错之后，语言不作任何保证：程序可能崩溃、输出乱码，也可能看上去正常。"
+     }
+    },
+    {
+     "term": {
+      "en": "leak",
+      "zh": "内存泄漏"
+     },
+     "meaning": {
+      "en": "A heap block that was never freed and that no pointer reaches any more.",
+      "zh": "一个从未被释放、也没有任何指针能到达的堆内存块。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint *make(int n) {\n    int *a = malloc(n * sizeof(int));\n    if (a == NULL) {\n        return NULL;\n    }\n    for (int i = 0; i < n; i++) {\n        a[i] = (i + 1) * 10;\n    }\n    return a;\n}\n\nint main(void) {\n    int *p = make(3);\n    if (p == NULL) {\n        return 1;\n    }\n    int *q = p;\n    q[1] = 99;\n    /* A: draw the memory here */\n    printf(\"%d %d %d\\n\", p[0], p[1], p[2]);\n    free(p);\n    p = NULL;\n    /* B: draw the memory here */\n    return 0;\n}\n",
+    "output": "10 99 30",
+    "walk": {
+     "en": [
+      "Draw three columns with headings: Static data, Stack, Heap. This program has no globals and no string literals to keep, so Static data stays empty. (The format string \"%d %d %d\\n\" is a string literal, so you may write it there.)",
+      "main starts. Draw main’s frame at the top of Stack with two boxes: int *p holding ?, and int *q holding ?. Nothing has been stored yet.",
+      "make(3) is called. Draw a new frame below main’s with two boxes: int n holding 3, and int *a holding ?. The argument 3 was copied, so n is a new box with its own 3.",
+      "malloc(n * sizeof(int)) asks for room for 3 ints. Draw the first heap block: H1 (int[3]) with cells [0], [1], [2], all holding ?, because malloc does not set them. a gets an arrow to H1 and the label H1 inside its box.",
+      "The loop stores 10, 20, 30 into the cells, with a[i] = (i + 1) * 10. While it runs, i is a third box inside make’s frame. When the loop ends, i is gone.",
+      "return a copies the arrow out of make. Cross out make’s frame: n and a are gone. The block H1 stays, because a heap block does not belong to a frame. In main, p now holds H1: draw an arrow from p to H1.",
+      "int *q = p; copies the arrow. q holds H1 and its arrow also ends at H1. There is still one block. q[1] = 99 changes that one block, so cell [1] now holds 99. At marker A the picture is: main has p = H1 and q = H1, and H1 holds 10, 99, 30.",
+      "printf prints p[0], p[1] and p[2], which are 10, 99 and 30. The program prints 10 99 30. Notice that p[1] shows 99, although only q was used to write it.",
+      "free(p) frees H1: draw a big X over the block and write freed. p still holds H1 and so does q, so both are now dangling. Then p = NULL; puts a slash through p’s box. At marker B: p is NULL, q still holds H1 and is dangling, and H1 is freed. The program does not use q again, so it is safe, but *q would be undefined behaviour. No block is left without an X, so there is no leak."
+     ],
+     "zh": [
+      "画三列并写上标题：静态数据区、栈、堆。这个程序没有全局变量，也没有需要保存的字符串字面量，所以静态数据区是空的。（格式字符串 \"%d %d %d\\n\" 也是字符串字面量，你可以把它写在那里。）",
+      "main 开始运行。在栈的最上面画 main 的栈帧，里面有两个方框：int *p，里面是 ?；int *q，里面是 ?。现在还没有存入任何东西。",
+      "调用 make(3)。在 main 的栈帧下面画一个新的栈帧，里面有两个方框：int n，里面是 3；int *a，里面是 ?。实参 3 被复制了一份，所以 n 是一个新方框，里面有它自己的 3。",
+      "malloc(n * sizeof(int)) 要来可以放 3 个 int 的空间。画出第一个堆内存块：H1 (int[3])，有 [0]、[1]、[2] 三个单元，里面都是 ?，因为 malloc 不会给它们赋值。a 得到一支指向 H1 的箭头，方框里写上标签 H1。",
+      "循环用 a[i] = (i + 1) * 10 把 10、20、30 存进各个单元。循环运行时，i 是 make 栈帧里的第三个方框。循环结束后，i 就消失了。",
+      "return a 把箭头复制出 make。划掉 make 的栈帧：n 和 a 都消失了。内存块 H1 还在，因为堆里的块不属于任何栈帧。在 main 里，p 现在存着 H1：画一支从 p 指向 H1 的箭头。",
+      "int *q = p; 复制箭头。q 里存着 H1，它的箭头也指向 H1。内存块仍然只有一个。q[1] = 99 修改的就是这一个块，所以单元 [1] 现在是 99。在标记 A 处，图是这样的：main 里 p = H1，q = H1，H1 里依次是 10、99、30。",
+      "printf 输出 p[0]、p[1]、p[2]，也就是 10、99、30。程序输出 10 99 30。注意 p[1] 是 99，虽然写入时用的是 q。",
+      "free(p) 释放 H1：在块上打一个大叉并写上 freed。p 和 q 里仍然都存着 H1，所以它们现在都是悬空指针。接着 p = NULL; 在 p 的方框上画一道斜线。在标记 B 处：p 是 NULL，q 里仍存着 H1，是悬空指针，H1 已经 freed。程序后面没有再用 q，所以是安全的，但如果写 *q，就是未定义行为。没有任何块缺少叉号，所以没有泄漏。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "int *q = p;\n\np [H1] ----> H1 (int[3]) | 10 | 20 | 30 |\nq [H2] ----> H2 (int[3]) | 10 | 20 | 30 |",
+     "why": {
+      "en": "This picture shows q = p copying the whole block. It does not: it copies the arrow. The drawing then makes you believe that writing through q leaves p alone. Look at the box you copy from. It holds a label, so the label is what you copy.",
+      "zh": "这张图把 q = p 画成了复制整个内存块。其实不是：复制的只是箭头。这样画，会让你以为通过 q 写数据不会影响 p。看看你复制的那个方框：里面存的是标签，所以复制的就是标签。"
+     },
+     "right": "int *q = p;\n\np [H1] ----+\n           v\n           H1 (int[3]) | 10 | 20 | 30 |\n           ^\nq [H1] ----+"
+    },
+    {
+     "wrong": "free(p);\n\np [NULL]\nH1 (int[3]) | 10 | 20 | 30 |",
+     "why": {
+      "en": "free does not change p. This picture says that p became NULL and that the block is still fine. Both are wrong. p still holds H1, and the block is no longer yours. Only an assignment such as p = NULL changes p.",
+      "zh": "free 不会改变 p。这张图说 p 变成了 NULL，而且内存块还完好，这两点都不对。p 里仍然是 H1，而内存块已经不再属于你。只有 p = NULL 这样的赋值才会改变 p。"
+     },
+     "right": "free(p);\n\np [H1] ----> H1 (int[3]) FREED\n             |  X  |  X  |  X  |\np is now dangling; write p = NULL"
+    },
+    {
+     "wrong": "char *s = \"hi\";\ns[0] = 'H';",
+     "why": {
+      "en": "char *s only makes a pointer in the frame, and its arrow ends in read-only text in Static data. Writing to that text is undefined behaviour and usually crashes. char s[] makes a private three-cell copy inside the frame, and you may change it.",
+      "zh": "char *s 只是在栈帧里放了一个指针，它的箭头指向静态数据区里的只读文字。往那段文字里写数据是未定义行为，通常会使程序崩溃。char s[] 则在栈帧里做了一份三格的私有副本，可以修改。"
+     },
+     "right": "char s[] = \"hi\";\ns[0] = 'H';"
+    },
+    {
+     "wrong": "int *bad(void) {\n    int x = 5;\n    return &x;\n}",
+     "why": {
+      "en": "x lives in bad’s frame, and that frame is crossed out when bad returns. The returned arrow then ends in a frame that no longer exists. Draw the two frames and you can see it. Return the value itself, or put the value in a heap block (a malloc block outlives the frame, but the caller must then free it).",
+      "zh": "x 放在 bad 的栈帧里，bad 返回时这个栈帧就被划掉了。返回出去的箭头于是指向一个已经不存在的栈帧。把两个栈帧画出来，你就能看见这一点。应当直接返回值，或者把值放进堆里的内存块（malloc 的块比栈帧存在得久，但之后调用者必须 free 它）。"
+     },
+     "right": "int good(void) {\n    int x = 5;\n    return x;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Draw it: int a = 4; int *p = &a; *p = 9; Where does the arrow of p end, and what is a at the end? (&a means the address of a. *p means the thing p points at.)",
+      "zh": "画出来：int a = 4; int *p = &a; *p = 9; p 的箭头指向哪里？最后 a 是多少？（&a 表示 a 的地址，*p 表示 p 所指的那个东西。）"
+     },
+     "a": {
+      "en": "Both boxes are in main’s frame. The arrow of p ends at the box of a, on the stack, not in the heap. *p = 9 writes 9 into the box that p points at, which is a. So a is 9.",
+      "zh": "两个方框都在 main 的栈帧里。p 的箭头指向 a 的方框，在栈上，不在堆里。*p = 9 把 9 写进 p 所指的方框，也就是 a。所以 a 是 9。"
+     }
+    },
+    {
+     "q": {
+      "en": "Draw it: int *p = malloc(sizeof(int)); *p = 7; free(p); Is *p allowed on the next line? What should the next line be?",
+      "zh": "画出来：int *p = malloc(sizeof(int)); *p = 7; free(p); 下一行可以用 *p 吗？下一行应该写什么？"
+     },
+     "a": {
+      "en": "Block H1 (int) holds 7 and is then crossed out and marked freed. The box p still holds H1, so p is dangling. Using *p is undefined behaviour. The next line should be p = NULL;.",
+      "zh": "内存块 H1 (int) 里存着 7，随后被划掉并标上 freed。方框 p 里仍然是 H1，所以 p 是悬空指针。使用 *p 是未定义行为。下一行应该是 p = NULL;。"
+     }
+    },
+    {
+     "q": {
+      "en": "Find the leak: int *p = malloc(4 * sizeof(int)); p = malloc(8 * sizeof(int)); free(p); Draw the heap and say which block leaks and how to fix it.",
+      "zh": "找出泄漏：int *p = malloc(4 * sizeof(int)); p = malloc(8 * sizeof(int)); free(p); 画出堆，说明哪个块泄漏了，以及怎么改。"
+     },
+     "a": {
+      "en": "There are two blocks. The first malloc makes H1 (int[4]) and p holds H1. The second malloc makes H2 (int[8]) and the arrow of p moves to H2. No arrow reaches H1 any more and it was never freed, so H1 leaks. free(p) frees H2 only. Fix: call free(p) before the second malloc, or keep the first arrow in another pointer and free both.",
+      "zh": "一共有两个块。第一次 malloc 得到 H1 (int[4])，p 里是 H1。第二次 malloc 得到 H2 (int[8])，p 的箭头移到了 H2。已经没有任何箭头能到达 H1，而且它从未被释放，所以 H1 泄漏。free(p) 只释放了 H2。改法：在第二次 malloc 之前先 free(p)，或者用另一个指针保存第一个箭头，最后两个都释放。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "syntax-to-memorise",
+   "title": {
+    "en": "Syntax to memorise",
+    "zh": "要背熟的语法"
+   },
+   "goal": {
+    "en": "You can write the eight C skeletons below from memory, shortest first, with every semicolon and bracket in place.",
+    "zh": "你能凭记忆写出下面八个 C 骨架，从最短的开始，每个分号和括号都不缺。"
+   },
+   "plain": {
+    "en": "Some code cannot be worked out on the spot. You must know its shape without looking. The eight shapes in this lesson are the ones C needs again and again. They are short enough to learn by heart. Learn them in this order, shortest first, and add the next one only when the last is solid.\n\n1. Includes. 2. main. 3. A function. 4. A for loop. 5. A struct with typedef. 6. malloc with a NULL check, and free. 7. String functions. 8. printf specifiers.\n\nHow to memorise: cover the page and write the shape on paper. Compare it with the page, character by character. Tick it only when it is right with no peeking. Do it again tomorrow. A shape that you write correctly three days in a row is learned.\n\nThe program below contains all eight shapes, each marked with a comment such as (1). Read it once. Then cover it and write each shape on its own, in a few lines of your own paper.\n\nString functions: the destination always comes first, like the left side of an equals sign. strcpy(dest, src) copies src into dest. strcat(dest, src) adds src to the end of dest. strncpy(dest, src, n) and strncat(dest, src, n) take a limit n as the last argument. Be careful: strncpy does not write the '\\0' when src is n characters or longer. strcmp(a, b) returns 0 when the strings are equal, a negative number when a comes before b, and a positive number when a comes after b. Because 0 means equal, write strcmp(a, b) == 0. strlen(s) gives the length without the '\\0'. The destination must already have room for the text and the '\\0'.\n\nprintf specifiers: %d an int, %u an unsigned int, %ld a long, %zu a size_t (what strlen returns), %f a double, %.2f a double with two decimal places, %c one char, %s a string, %p a pointer, %x an unsigned int in hexadecimal, %% a percent sign. Each specifier needs one argument of the matching type, in the same order.",
+    "zh": "有些代码没法当场推出来，你必须不看资料就知道它的形状。这一课的八个骨架，是 C 里反复要用的。它们都很短，可以背下来。按下面的顺序学，从最短的开始，上一个背牢了，再加下一个。\n\n1. 头文件包含。2. main。3. 函数。4. for 循环。5. 带 typedef 的 struct。6. 带 NULL 检查的 malloc，以及 free。7. 字符串函数。8. printf 的格式符。\n\n背诵的办法：盖住页面，在纸上默写这个骨架，再和页面逐个字符对照。只有完全对、中途没有偷看，才打勾。明天再来一遍。连续三天都能写对的骨架，才算学会。\n\n下面的程序包含全部八个骨架，每个骨架旁边有一条形如 (1) 的注释。先读一遍，再盖住它，在你自己的纸上把每个骨架单独默写出来，每个只写几行。\n\n字符串函数：目标总是放在第一个，就像等号的左边。strcpy(dest, src) 把 src 复制到 dest。strcat(dest, src) 把 src 接在 dest 的末尾。strncpy(dest, src, n) 和 strncat(dest, src, n) 把限制长度 n 放在最后一个参数。要小心：当 src 有 n 个字符或更多时，strncpy 不会写入 '\\0'。strcmp(a, b) 在两个字符串相等时返回 0，a 排在 b 前面时返回负数，a 排在 b 后面时返回正数。因为 0 表示相等，所以要写成 strcmp(a, b) == 0。strlen(s) 返回不含 '\\0' 的长度。目标数组必须已经有足够的空间，放得下文字和 '\\0'。\n\nprintf 的格式符：%d 是 int，%u 是 unsigned int，%ld 是 long，%zu 是 size_t（strlen 的返回类型），%f 是 double，%.2f 是保留两位小数的 double，%c 是一个 char，%s 是字符串，%p 是指针，%x 是十六进制的 unsigned int，%% 是百分号。每个格式符都需要一个类型匹配的参数，顺序也要一致。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "skeleton",
+      "zh": "骨架"
+     },
+     "meaning": {
+      "en": "The fixed shape of a piece of code, with the details left to fill in.",
+      "zh": "一段代码固定不变的形状，细节留待填写。"
+     }
+    },
+    {
+     "term": {
+      "en": "header",
+      "zh": "头文件"
+     },
+     "meaning": {
+      "en": "A file such as stdio.h that tells the compiler what a library function looks like.",
+      "zh": "像 stdio.h 这样的文件，告诉编译器某个库函数是什么样子。"
+     }
+    },
+    {
+     "term": {
+      "en": "format specifier",
+      "zh": "格式符"
+     },
+     "meaning": {
+      "en": "A code such as %d inside a printf format string that marks where a value goes.",
+      "zh": "printf 格式字符串里形如 %d 的记号，标出某个值要放的位置。"
+     }
+    },
+    {
+     "term": {
+      "en": "destination",
+      "zh": "目标"
+     },
+     "meaning": {
+      "en": "The array that receives the result of a string function. It is always the first argument.",
+      "zh": "字符串函数把结果写进去的数组。它总是第一个参数。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "/* (1) includes */\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* (5) struct with typedef */\ntypedef struct {\n    char name[20];\n    int score;\n} Player;\n\n/* (3) a function */\nint add(int a, int b) {\n    return a + b;\n}\n\n/* (2) main */\nint main(void) {\n    /* (4) for */\n    int total = 0;\n    for (int i = 0; i < 3; i++) {\n        total = add(total, i);\n    }\n\n    Player p;\n    strcpy(p.name, \"Mia\");\n    p.score = total;\n\n    /* (6) malloc, NULL check, free */\n    int *a = malloc(3 * sizeof(int));\n    if (a == NULL) {\n        return 1;\n    }\n    for (int i = 0; i < 3; i++) {\n        a[i] = i * 10;\n    }\n\n    /* (7) string functions */\n    char word[20];\n    strcpy(word, \"hello\");\n    strcat(word, \"!\");\n    if (strcmp(word, \"hello!\") == 0) {\n        /* (8) printf specifiers */\n        printf(\"%s %d %c %.2f %zu\\n\", p.name, p.score, word[0], 3.14159, strlen(word));\n    }\n\n    free(a);\n    return 0;\n}\n",
+    "output": "Mia 3 h 3.14 6",
+    "walk": {
+     "en": [
+      "(1) Includes. #include <stdio.h> gives you printf. #include <stdlib.h> gives you malloc and free. #include <string.h> gives you strcpy, strcat, strcmp and strlen. Angle brackets, no semicolon. Before you finish, scan your code for each library function you used and tick off its header.",
+      "(2) main. int main(void) { ... return 0; }. The return type is int. The word void between the round brackets says that main takes no arguments. return 0; means success. Check that the braces match.",
+      "(3) A function. return_type name(type param, type param) { ... return value; }. Here it is int add(int a, int b) { return a + b; }. Every parameter needs its own type. The function must appear above main, or you must declare it above main with its first line followed by a semicolon.",
+      "(4) for. for (int i = 0; i < n; i++) { ... }. Three parts in the round brackets, separated by two semicolons: start, test, step. There is no semicolon after the closing bracket. To run n times, start at 0 and use <.",
+      "(5) struct with typedef. typedef struct { type field; type field; } Name; The semicolon after the closing brace is required. Use a dot to reach a field of a struct variable, as in p.score. Use an arrow when you have a pointer to a struct, as in ptr->score.",
+      "(6) malloc, NULL check, free. type *p = malloc(count * sizeof(type)); if (p == NULL) { return 1; } ... free(p); Write the count times sizeof of the element type. Test for NULL straight after malloc, because malloc returns NULL when it cannot give you the memory. Each malloc needs exactly one free.",
+      "(7) String functions. Destination first: strcpy(dest, src), strcat(dest, src). Compare with strcmp(a, b) == 0. The length is strlen(s). The array word has 20 cells, which is plenty for \"hello!\" (6 characters and the \\0).",
+      "(8) printf. printf(\"format\", arg1, arg2, ...); one specifier for each argument, in order. Here %s is p.name, %d is p.score, %c is word[0], %.2f is 3.14159 and %zu is strlen(word). The program prints Mia 3 h 3.14 6."
+     ],
+     "zh": [
+      "(1) 头文件。#include <stdio.h> 提供 printf。#include <stdlib.h> 提供 malloc 和 free。#include <string.h> 提供 strcpy、strcat、strcmp 和 strlen。用尖括号，行末没有分号。写完之前，把用到的每个库函数扫一遍，确认各自的头文件都写了。",
+      "(2) main。int main(void) { ... return 0; }。返回类型是 int。圆括号里的 void 表示 main 不接收参数。return 0; 表示成功。检查花括号是否配对。",
+      "(3) 函数。返回类型 函数名(类型 参数, 类型 参数) { ... return 值; }。这里是 int add(int a, int b) { return a + b; }。每个参数都要写自己的类型。函数必须写在 main 的上面，否则要在 main 上面用“首行加分号”的形式先声明。",
+      "(4) for。for (int i = 0; i < n; i++) { ... }。圆括号里有三部分，用两个分号隔开：起点、条件、步进。右括号后面没有分号。要执行 n 次，就从 0 开始并使用 <。",
+      "(5) 带 typedef 的 struct。typedef struct { 类型 字段; 类型 字段; } 名字; 右花括号后面的分号不能省。结构体变量用点访问字段，例如 p.score。如果手里是指向结构体的指针，则用箭头，例如 ptr->score。",
+      "(6) malloc、NULL 检查和 free。类型 *p = malloc(个数 * sizeof(类型)); if (p == NULL) { return 1; } ... free(p); 写成“个数乘以元素类型的 sizeof”。malloc 之后马上检查 NULL，因为内存不够时 malloc 会返回 NULL。每个 malloc 对应恰好一个 free。",
+      "(7) 字符串函数。目标放第一个：strcpy(dest, src)、strcat(dest, src)。比较用 strcmp(a, b) == 0。长度用 strlen(s)。数组 word 有 20 格，放 \"hello!\"（6 个字符加 \\0）绰绰有余。",
+      "(8) printf。printf(\"格式\", 参数1, 参数2, ...); 每个参数对应一个格式符，顺序一致。这里 %s 对应 p.name，%d 对应 p.score，%c 对应 word[0]，%.2f 对应 3.14159，%zu 对应 strlen(word)。程序输出 Mia 3 h 3.14 6。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "char buf[10];\nstrcpy(\"hi\", buf);",
+     "why": {
+      "en": "The destination is the first argument, like the left side of x = y. Here the text \"hi\" sits in read-only static data, and the call tries to write into it. Say it aloud as you write: copy into the first, from the second.",
+      "zh": "目标是第一个参数，就像 x = y 的左边。这里的 \"hi\" 放在只读的静态数据区里，这个调用却想往里面写数据。写的时候念出来：复制到第一个，从第二个复制。"
+     },
+     "right": "char buf[10];\nstrcpy(buf, \"hi\");"
+    },
+    {
+     "wrong": "if (strcmp(a, b)) {\n    printf(\"same\\n\");\n}",
+     "why": {
+      "en": "strcmp returns 0 when the strings are equal, and an if treats 0 as false. So this prints \"same\" only when the strings are different. Always compare the result with 0 yourself.",
+      "zh": "两个字符串相等时 strcmp 返回 0，而 if 把 0 当作假。所以这段代码只有在两个字符串不同的时候才会输出 same。一定要自己把返回值和 0 比较。"
+     },
+     "right": "if (strcmp(a, b) == 0) {\n    printf(\"same\\n\");\n}"
+    },
+    {
+     "wrong": "printf(\"%d %s\\n\", 3.5, 'a');",
+     "why": {
+      "en": "%d expects an int but gets a double, and %s expects a string but gets a single char. The output is rubbish, or the program crashes. Match each specifier to the type of its argument: %f for a double, %c for a char.",
+      "zh": "%d 需要 int，传进去的却是 double；%s 需要字符串，传进去的却是单个 char。输出会是乱码，或者程序崩溃。每个格式符都要和对应参数的类型匹配：double 用 %f，char 用 %c。"
+     },
+     "right": "printf(\"%f %c\\n\", 3.5, 'a');"
+    },
+    {
+     "wrong": "int *a = malloc(3);",
+     "why": {
+      "en": "malloc counts bytes, not ints. Three bytes is too small for three ints (usually 12 bytes), so writing a[1] goes past the end of the block. Always write the count times sizeof of the element type.",
+      "zh": "malloc 数的是字节，不是 int 的个数。3 个字节放不下 3 个 int（通常需要 12 个字节），写 a[1] 就会越过内存块的末尾。永远写成“个数乘以元素类型的 sizeof”。"
+     },
+     "right": "int *a = malloc(3 * sizeof(int));"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "On paper, write from memory a function max2 that takes two ints and returns the larger one. Then compare it with the function skeleton.",
+      "zh": "在纸上默写一个函数 max2：接收两个 int，返回较大的那个。然后和函数骨架对照。"
+     },
+     "a": {
+      "en": "int max2(int a, int b) { if (a > b) { return a; } return b; } Check: the return type int, a type for both parameters, matching braces, a semicolon after each return, and no semicolon after the round brackets of the if or after the closing brace of the function.",
+      "zh": "int max2(int a, int b) { if (a > b) { return a; } return b; } 对照检查：返回类型 int；两个参数各有类型；花括号配对；每个 return 后有分号；if 的圆括号后面和函数的右花括号后面都没有多余的分号。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the three lines that declare a char array named color, copy \"red\" into it, and then add \"dish\" to its end. How many cells must color have?",
+      "zh": "写出三行代码：声明一个叫 color 的 char 数组，把 \"red\" 复制进去，再把 \"dish\" 接到末尾。color 至少要有多少格？"
+     },
+     "a": {
+      "en": "char color[8]; strcpy(color, \"red\"); strcat(color, \"dish\"); It needs 8 cells: reddish has 7 characters, plus one for the \\0.",
+      "zh": "char color[8]; strcpy(color, \"red\"); strcat(color, \"dish\"); 至少 8 格：reddish 有 7 个字符，再加一格放 \\0。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the line that asks for room for 5 doubles, then the two lines that handle failure, and then the line that gives the memory back.",
+      "zh": "写出为 5 个 double 申请空间的那一行，处理失败的两三行，以及把内存还回去的那一行。"
+     },
+     "a": {
+      "en": "double *d = malloc(5 * sizeof(double)); if (d == NULL) { return 1; } ... and later free(d); The NULL check comes straight after malloc, and free comes after the last use.",
+      "zh": "double *d = malloc(5 * sizeof(double)); if (d == NULL) { return 1; } …… 最后 free(d); NULL 检查紧跟在 malloc 后面，free 放在最后一次使用之后。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "handwriting-mistakes",
+   "title": {
+    "en": "Common handwriting mistakes",
+    "zh": "手写时常见的错误"
+   },
+   "goal": {
+    "en": "You can read your own C answer a second time, as the compiler would, and catch the slips that would otherwise cost marks.",
+    "zh": "你能把自己写的 C 答案像编译器那样再读一遍，抓住本来会丢分的小错。"
+   },
+   "plain": {
+    "en": "On a computer, the compiler stops you at the first missing semicolon. On paper, nobody stops you, and every one of these slips costs marks even though it has nothing to do with whether you understand the problem. So you must be your own compiler.\n\nWhen your answer is finished, read it a second time. This time do not ask whether the logic is right. Ask only whether the form is right. Use this list, and tick each item with your pen.\n\n1. Every statement ends with a semicolon. A struct definition ends with one too, after the closing brace.\n2. Every ( [ { has its partner. Count the braces in pairs.\n3. Every variable is declared, with a type, before you use it.\n4. Every library function has its header.\n5. = stores a value. == asks a question. Check every if and while.\n6. Strings use double quotes. A single char uses single quotes.\n7. Every printf specifier has an argument of the right type.\n8. Array indexes run from 0 to n - 1. A string of n characters needs n + 1 cells.\n9. A dot reaches a field of a struct. An arrow reaches a field through a pointer.\n10. A for or while line has no semicolon after its round brackets.\n\nBelow are four pairs that cost the most marks. In each pair the first block is what people write, and the second block is the repair.",
+    "zh": "在计算机上，编译器会在第一个漏掉的分号处拦住你。在纸上，没有人拦你，而这些小错每一个都会丢分，尽管它们和你是否理解题目毫无关系。所以你必须自己当自己的编译器。\n\n答案写完之后，再读第二遍。这一遍不要问逻辑对不对，只问形式对不对。照下面的清单，用笔逐项打勾。\n\n1. 每条语句都以分号结尾。struct 的定义在右花括号后面也要有分号。\n2. 每个 ( [ { 都有配对的另一半。把花括号成对地数一遍。\n3. 每个变量在使用之前都已声明，并且带着类型。\n4. 用到的每个库函数都写了头文件。\n5. = 是存入一个值，== 是提出一个问题。检查每一个 if 和 while。\n6. 字符串用双引号，单个字符用单引号。\n7. 每个 printf 格式符都有类型正确的参数。\n8. 数组下标从 0 到 n - 1。n 个字符的字符串需要 n + 1 格。\n9. 点用来访问结构体变量的字段，箭头用来通过指针访问字段。\n10. for 或 while 那一行的圆括号后面不能有分号。\n\n下面是最容易丢分的四组错误。每组里第一块是常见的错误写法，第二块是改正后的写法。"
+   },
+   "mistakes": [
+    {
+     "wrong": "typedef struct {\n    int x;\n    int y;\n} Point\n\nfor (int i = 0; i < 3; i++);\n{\n    printf(\"%d\\n\", i);\n}",
+     "why": {
+      "en": "Two semicolon slips. A struct definition needs a semicolon after its closing brace; without it the compiler reports an error on the next line. And a semicolon right after the for brackets is an empty body: the loop runs three times doing nothing, and the braces below it run once (and cannot even see i).",
+      "zh": "两处分号错误。struct 定义的右花括号后面需要分号，缺了它，编译器会在下一行报错。for 括号后面直接加分号，则循环体是空的：循环空转三次，下面花括号里的代码只执行一次（而且连 i 都看不到）。"
+     },
+     "right": "typedef struct {\n    int x;\n    int y;\n} Point;\n\nfor (int i = 0; i < 3; i++) {\n    printf(\"%d\\n\", i);\n}"
+    },
+    {
+     "wrong": "if (n = 0) {\n    printf(\"empty\\n\");\n}\nchar c = \"a\";",
+     "why": {
+      "en": "if (n = 0) stores 0 into n, and 0 is false, so the body never runs and n is changed. Use == to ask a question. And \"a\" is a string (two cells: a and \\0), while 'a' is one char. A char variable needs single quotes.",
+      "zh": "if (n = 0) 把 0 存进 n，而 0 是假，所以循环体永远不会执行，n 还被改掉了。提问要用 ==。另外 \"a\" 是字符串（两格：a 和 \\0），'a' 才是单个 char。char 变量要用单引号。"
+     },
+     "right": "if (n == 0) {\n    printf(\"empty\\n\");\n}\nchar c = 'a';"
+    },
+    {
+     "wrong": "Node *p = head;\nprintf(\"%d\\n\", p.value);\nint n;\nscanf(\"%d\", n);",
+     "why": {
+      "en": "p is a pointer to a struct, so its field is reached with an arrow, p->value, not a dot. And scanf needs the address of n, written &n, so that it can store the number there. Without &, scanf treats the value of n as an address, and the program usually crashes.",
+      "zh": "p 是指向结构体的指针，所以要用箭头 p->value 访问字段，不能用点。scanf 需要 n 的地址，也就是 &n，才能把读到的数存进去。没有 & 时，scanf 会把 n 的值当作地址，程序通常会崩溃。"
+     },
+     "right": "Node *p = head;\nprintf(\"%d\\n\", p->value);\nint n;\nscanf(\"%d\", &n);"
+    },
+    {
+     "wrong": "char s[3] = \"abc\";\nif (s == \"abc\") {\n    printf(\"same\\n\");\n}",
+     "why": {
+      "en": "Two string slips. \"abc\" needs four cells, three letters and the \\0; with three cells there is no end marker, and printf(\"%s\") would read past the array. And == compares two addresses, not the letters, so it is almost never true. Compare letters with strcmp(s, \"abc\") == 0, and include <string.h>.",
+      "zh": "两处字符串错误。\"abc\" 需要四格：三个字母加 \\0；只有三格就没有结束标记，printf(\"%s\") 会越过数组继续读。而且 == 比较的是两个地址，不是字母，几乎不会为真。比较字母要用 strcmp(s, \"abc\") == 0，并且要 include <string.h>。"
+     },
+     "right": "char s[4] = \"abc\";\nif (strcmp(s, \"abc\") == 0) {\n    printf(\"same\\n\");\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Find every slip (there are four): typedef struct { int x } Pt; int main(void) { Pt p; p.x = 1; if (p.x = 1) { printf(\"one\\n\") } return 0; }",
+      "zh": "找出所有的错误（共四处）：typedef struct { int x } Pt; int main(void) { Pt p; p.x = 1; if (p.x = 1) { printf(\"one\\n\") } return 0; }"
+     },
+     "a": {
+      "en": "1. int x needs a semicolon: int x;. 2. The if stores instead of asking: write p.x == 1. 3. printf(\"one\\n\") needs a semicolon after it. 4. printf needs #include <stdio.h> at the top. Working through the ten-item list in order finds all four.",
+      "zh": "1. int x 后面缺分号，应写 int x;。2. if 里是存入而不是提问，应写 p.x == 1。3. printf(\"one\\n\") 后面缺分号。4. 用到 printf，最上面要写 #include <stdio.h>。按那十条清单依次检查，四处都能找到。"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix the string handling: char name[4] = \"Emma\"; if (name == \"Emma\") { puts(\"same\"); }",
+      "zh": "改正字符串的写法：char name[4] = \"Emma\"; if (name == \"Emma\") { puts(\"same\"); }"
+     },
+     "a": {
+      "en": "char name[5] = \"Emma\"; (four letters plus the \\0) and if (strcmp(name, \"Emma\") == 0) { puts(\"same\"); } with #include <string.h> at the top.",
+      "zh": "char name[5] = \"Emma\";（四个字母加 \\0），以及 if (strcmp(name, \"Emma\") == 0) { puts(\"same\"); }，最上面加 #include <string.h>。"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix the loop over a list of nodes: Node *n = head; while (n != NULL); { n = n.next; }",
+      "zh": "改正遍历链表的循环：Node *n = head; while (n != NULL); { n = n.next; }"
+     },
+     "a": {
+      "en": "There are two slips. The semicolon after the while brackets makes an empty loop that never ends, because n never changes. And n is a pointer, so the field is n->next. Correct: while (n != NULL) { n = n->next; }",
+      "zh": "有两处错误。while 括号后面的分号使循环体为空，而 n 又永远不变，所以循环永远不会结束。另外 n 是指针，字段要写成 n->next。正确写法：while (n != NULL) { n = n->next; }"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mark-yourself",
+   "title": {
+    "en": "Mark yourself",
+    "zh": "给自己打分"
+   },
+   "goal": {
+    "en": "You can mark your own paper answer honestly against a rubric, find where the marks went, plan tomorrow's practice, and write under time.",
+    "zh": "你能对照评分标准诚实地给自己的手写答案打分，找出分数丢在哪里，安排明天的练习，并在限时下写代码。"
+   },
+   "plain": {
+    "en": "On paper, a page of writing can look finished and still be wrong. Marking yourself fixes that. You compare your answer with a rubric. A rubric is a list of lines, each worth a number of marks, each describing something that you can see in the answer. Be strict. The mark that counts is the one a stranger would give.\n\nHow to read a rubric, line by line.\n\n1. Read one line. Ask: what exactly would I see in a correct answer?\n2. Find that thing in your answer and touch it with the tip of your pen. If you can point to it, tick the line and write its marks. If you cannot point to it, the line is worth zero.\n3. Do not give half marks for \"nearly\". Give part of a line only if the rubric says how it splits.\n4. Check every path. A line such as \"frees the block\" is zero if one route through your code, for example an early return, skips the free.\n5. Add up the lines. Write the total as marks out of the maximum on the page.\n\nHow to find where the marks went. Put each lost mark into one of four boxes. Idea: I did not know how to solve it. Recall: I knew, but could not remember the syntax or the function. Slip: a small mistake in something I did know, such as a missing semicolon or a wrong sign. Time: I ran out of time. Count each box. The biggest box tells you what to work on. Idea: reread the lesson. Recall: more cover-and-write practice. Slip: the compiler pass from the last lesson and a tiny test. Time: practise planning.\n\nWhat to do the next day. First, rewrite the same answer on a blank page without looking. Second, do a different question of the same kind. Third, mark both again. Repeat after three days and after a week. When the biggest box changes, you are improving.\n\nHow to write under time.\n\n1. Plan first. Use the first tenth of the time. Write the function header and three or four comment lines that name the steps. Do not skip this.\n2. Leave a blank line between lines of code. You will need room to insert a line you forgot.\n3. Name variables clearly: count, not c; head, not h. Clear names stop you from mixing up two variables.\n4. Test with a tiny input, by hand. When the code is written, run it on the smallest case: one element, an empty string, n equal to 1. This takes a minute and finds most boundary errors.\n5. Spend about one minute per mark. If you are stuck on a part, write a comment saying what you would do, move on, and come back.\n6. Leave two minutes for the compiler pass.\n\nOn the Practice page, the questions of kind Write code have a Paper mode with a timer, a model answer and a rubric with tick boxes. Use it exactly like this lesson: write on paper, then mark.",
+    "zh": "在纸上，一页写满的答案看起来像是完成了，其实可能是错的。给自己打分能解决这个问题。你拿答案去对照评分标准。评分标准是一组条目，每条值若干分，每条描述一件你能在答案里看到的东西。要严格。真正算数的分数，是一个陌生人会给你的分数。\n\n怎样逐条读评分标准。\n\n1. 读一条。问自己：一个正确的答案里，我到底会看到什么？\n2. 在你的答案里找到那样东西，用笔尖点住它。指得出来，就打勾并写下这条的分数；指不出来，这一条就是零分。\n3. “差不多”不给半分。只有评分标准写明怎么拆分时，才给一条的部分分数。\n4. 检查每一条路径。像“释放内存块”这样的条目，只要你的代码里有一条路线（例如提前 return）跳过了 free，就是零分。\n5. 把各条加起来，把总分写成“得分/满分”的形式放在页面上。\n\n怎样找出分数丢在哪里。把每一个丢掉的分放进四个格子之一。思路：我不知道怎么解。记忆：我知道，但记不起语法或函数。小错：在我本来会的东西上犯的小错误，例如漏了分号或写错了符号。时间：我没写完。数一数每个格子。最大的格子告诉你该练什么。思路：重读对应的课。记忆：多做“盖住再默写”。小错：用上一课的编译器检查清单，再加一个很小的测试。时间：练习先做计划。\n\n第二天要做什么。第一，在空白页上不看资料，把同一道题的答案重写一遍。第二，做一道同类型的不同题目。第三，把两份答案再各打一次分。三天后和一周后再重复。当最大的格子换了，说明你在进步。\n\n怎样在限时下写。\n\n1. 先做计划。用掉最初的十分之一时间。写出函数头，再写三四行说明步骤的注释。不要跳过这一步。\n2. 代码行之间空一行。你会需要空间补写漏掉的一行。\n3. 变量名要清楚：用 count，不要用 c；用 head，不要用 h。名字清楚，就不会把两个变量混在一起。\n4. 用一个很小的输入手算测试。代码写完后，用最小的情况走一遍：只有一个元素、空字符串、n 等于 1。这只要一分钟，却能找出大部分边界错误。\n5. 大约每分花一分钟。某一部分卡住了，就写一行注释说明你打算怎么做，然后往下写，回头再补。\n6. 留出两分钟做编译器检查。\n\n在“练习”页面里，题型为“手写代码”的题目有手写模式：有计时器、参考答案，以及可以打勾的评分标准。完全按这一课的办法用它：先在纸上写，再打分。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "rubric",
+      "zh": "评分标准"
+     },
+     "meaning": {
+      "en": "A list of lines, each worth some marks, each describing something you can point to in the answer.",
+      "zh": "一组条目，每条值若干分，每条描述一件你能在答案里指出来的东西。"
+     }
+    },
+    {
+     "term": {
+      "en": "boundary case",
+      "zh": "边界情况"
+     },
+     "meaning": {
+      "en": "The smallest or most extreme input, such as one element or an empty string, where code most often breaks.",
+      "zh": "最小或最极端的输入，例如只有一个元素或空字符串，代码最容易在这里出错。"
+     }
+    },
+    {
+     "term": {
+      "en": "compiler pass",
+      "zh": "编译器检查"
+     },
+     "meaning": {
+      "en": "A second reading of your answer that checks only the form: semicolons, brackets, types, headers.",
+      "zh": "把答案再读一遍，只检查形式：分号、括号、类型、头文件。"
+     }
+    }
+   ],
+   "example": {
+    "language": "c",
+    "code": "#include <stdio.h>\n\n/* A student's answer. It has one bug. */\nint smallest(const int *a, int n) {\n    int best = 0;\n    for (int i = 0; i < n; i++) {\n        if (a[i] < best) {\n            best = a[i];\n        }\n    }\n    return best;\n}\n\nint main(void) {\n    int test[] = {5, 3, 8};\n    printf(\"%d (expected 3)\\n\", smallest(test, 3));\n    return 0;\n}\n",
+    "output": "0 (expected 3)",
+    "walk": {
+     "en": [
+      "The task: write int smallest(const int *a, int n), which returns the smallest of n ints (n is at least 1). The rubric has four lines, one mark each. (1) The header is right: it returns int and takes the array and the count. (2) The search starts from a[0], not from a made-up number. (3) The loop visits every element and none outside the array. (4) It updates when it finds a smaller value, and returns the result.",
+      "Mark line 1. The header int smallest(const int *a, int n) is right. Put the pen on it. +1.",
+      "Mark line 2. The answer starts best at 0. The pen has nothing to point at that starts from a[0]. 0 marks.",
+      "Mark line 3. The loop for (int i = 0; i < n; i++) visits a[0] to a[n - 1], and stops before a[n]. +1.",
+      "Mark line 4. if (a[i] < best) best = a[i]; and return best; are both there. +1.",
+      "Score: 3 out of 4. Now the tiny test by hand: {5, 3, 8}. best starts at 0. The tests 5 < 0, 3 < 0 and 8 < 0 are all false, so the function returns 0, not 3. The program prints 0 (expected 3), which confirms it. The lost mark goes in the Idea box: the start value was not thought through. The fix is int best = a[0]; and a loop that starts at i = 1."
+     ],
+     "zh": [
+      "题目：写 int smallest(const int *a, int n)，返回 n 个 int 里最小的一个（n 至少为 1）。评分标准有四条，每条一分。(1) 函数头正确：返回 int，接收数组和个数。(2) 查找从 a[0] 开始，而不是从一个随便编的数开始。(3) 循环访问每个元素，且不超出数组。(4) 发现更小的值时更新，并返回结果。",
+      "给第 1 条打分。函数头 int smallest(const int *a, int n) 是对的，用笔点住它。+1。",
+      "给第 2 条打分。答案把 best 从 0 开始。笔下找不到任何“从 a[0] 开始”的东西。0 分。",
+      "给第 3 条打分。循环 for (int i = 0; i < n; i++) 访问 a[0] 到 a[n - 1]，并在 a[n] 之前停止。+1。",
+      "给第 4 条打分。if (a[i] < best) best = a[i]; 和 return best; 都有。+1。",
+      "得分：4 分里得 3 分。现在手算一个很小的测试：{5, 3, 8}。best 从 0 开始。5 < 0、3 < 0、8 < 0 都为假，所以函数返回 0，而不是 3。程序输出 0 (expected 3)，证实了这一点。丢掉的那一分放进“思路”格：起始值没有想清楚。改法是 int best = a[0];，并让循环从 i = 1 开始。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "for (int i = 1; i < n - 1; i++) {\n    if (a[i] < best) {\n        best = a[i];\n    }\n}",
+     "why": {
+      "en": "The test i < n - 1 stops one element early, so the last element is never looked at. A tiny test with the smallest value in the last place finds this at once: {5, 8, 3}. Check the first and the last element every time.",
+      "zh": "条件 i < n - 1 提前一个元素停止，所以最后一个元素从来没被看过。用一个“最小值在最后”的小测试能立刻发现：{5, 8, 3}。每次都要检查第一个和最后一个元素。"
+     },
+     "right": "for (int i = 1; i < n; i++) {\n    if (a[i] < best) {\n        best = a[i];\n    }\n}"
+    },
+    {
+     "wrong": "int sum;\nfor (int i = 0; i < n; i++) {\n    sum = sum + a[i];\n}",
+     "why": {
+      "en": "sum was declared but never given a value, so it holds a question mark in your trace table, and the first addition reads it. The total is rubbish. Give every total a starting value on the line where you declare it.",
+      "zh": "sum 只声明了，从没赋值，所以它在跟踪表里是问号，而第一次加法就读了它，结果是乱码。每个累加用的变量，都要在声明的那一行给它一个初始值。"
+     },
+     "right": "int sum = 0;\nfor (int i = 0; i < n; i++) {\n    sum = sum + a[i];\n}"
+    },
+    {
+     "wrong": "int total(const int *a, int n) {\n    int sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum = sum + a[i];\n    }\n    printf(\"%d\\n\", sum);\n}",
+     "why": {
+      "en": "The task said \"returns the total\", but this function prints it and returns nothing. The caller gets rubbish. This is a rubric slip: read the task for the exact words returns, prints and reads, and underline them before you write.",
+      "zh": "题目说的是“返回总和”，这个函数却把它打印出来，什么也没有返回，调用者拿到的是乱码。这是读题的疏漏：写之前先在题目里找出“返回”“打印”“读取”这些确切的词，并划上线。"
+     },
+     "right": "int total(const int *a, int n) {\n    int sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum = sum + a[i];\n    }\n    return sum;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "A rubric line says \"frees the block on every path\". Your function frees it at the end, but an early return skips the free. How many marks does that line get, and why?",
+      "zh": "评分标准里有一条“在每条路径上都释放内存块”。你的函数在末尾释放了它，但有一个提前 return 跳过了 free。这一条得多少分？为什么？"
+     },
+     "a": {
+      "en": "Zero, unless the rubric says how to split the mark. Put the pen on the free of the early-return path. There is none. Test every path through your code, not only the main one.",
+      "zh": "0 分，除非评分标准写明了怎么拆分。把笔点在提前 return 那条路径的 free 上，那里没有。要检查代码里的每一条路径，不能只看主路径。"
+     }
+    },
+    {
+     "q": {
+      "en": "You lost three marks: one for not knowing where to put & in scanf, one for a missing semicolon, and one because you ran out of time. Which box does each go in, and what do you do tomorrow?",
+      "zh": "你丢了三分：一分是因为记不得 scanf 里 & 该放哪里，一分是漏了分号，一分是时间不够。各放进哪个格子？明天做什么？"
+     },
+     "a": {
+      "en": "Recall, Slip, Time. Tomorrow: write the scanf line from memory three times, use the ten-item compiler pass on every answer, and plan for the first tenth of the time before writing.",
+      "zh": "记忆、小错、时间。明天：凭记忆把 scanf 那一行写三遍；每份答案都用那十条编译器检查清单过一遍；写之前先用最初十分之一的时间做计划。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the tiny tests that you would run by hand on a function that returns the length of a string.",
+      "zh": "写出你会用来手算测试“返回字符串长度的函数”的几个很小的输入。"
+     },
+     "a": {
+      "en": "The empty string (length 0), a one-character string (length 1), and a normal word. If the task allows it, also NULL. Run each through your code, line by line, with a trace table.",
+      "zh": "空字符串（长度 0）、只有一个字符的字符串（长度 1），以及一个普通的单词。如果题目允许，还有 NULL。把每个都用跟踪表一行一行地走一遍。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Practise on paper: open the Write code questions for COMP2017, set a timer, and mark yourself against the rubric.",
+   "zh": "在纸上练习：打开 COMP2017 的“手写代码”题，设好计时器，对照评分标准给自己打分。"
+  },
+  "href": "learn/#/practice/comp2017?kind=write",
+  "hrefZh": "learn/#/practice/comp2017?kind=write"
+ }
+}

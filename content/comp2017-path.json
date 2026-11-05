@@ -16,7 +16,9 @@
       },
       "topics": [
         "representation-control",
+        "number-representation",
         "compilation-linkage",
+        "makefiles-libraries",
         "preprocessing"
       ],
       "goal": {
@@ -40,6 +42,7 @@
         "strings-parsing",
         "structured-data",
         "allocation-ownership",
+        "memory-layout",
         "linked-structures",
         "callbacks"
       ],
@@ -161,6 +164,24 @@
         "zh": "前者使用整数除法，得到 3；后者使用浮点运算，得到 3.5。"
       }
     },
+    "number-representation": {
+      "model": {
+        "en": "A byte is a row of eight switches. The same pattern can be a number, a letter or a set of flags, depending on the type you read it with.",
+        "zh": "一个字节就是一排八个开关。同样的图案，按不同的类型去读，可以是一个数、一个字母，也可以是一组标志。"
+      },
+      "engineering": {
+        "en": "Choose the representation before you write the code. Use integers for counts and for money in cents. Use doubles for measurements and compare them with a tolerance. For anything that leaves your program, such as a file or a network message, build the bytes with fixed-width unsigned types, shifts and masks instead of bit-field structs.",
+        "zh": "先选定表示方式，再写代码。计数和以分为单位的金额用整数；测量值用 double，并用容差比较。凡是要离开程序的数据，例如文件或网络消息，都用固定宽度的无符号类型、移位和掩码来构造字节，而不是位域结构体。"
+      },
+      "question": {
+        "en": "Why store a price of 19.99 as 1999 cents?",
+        "zh": "为什么要把 19.99 的价格保存成 1999 分？"
+      },
+      "answer": {
+        "en": "19.99 has no exact binary form, so sums of such doubles drift. 1999 is an exact integer, additions are exact, and you only convert to dollars when printing.",
+        "zh": "19.99 没有精确的二进制形式，这类 double 相加会产生漂移。1999 是精确的整数，加法也精确，只在打印时才换算成美元。"
+      }
+    },
     "pointers-arrays": {
       "model": {
         "en": "A pointer is an address value; the pointed-to object is a separate thing.",
@@ -251,6 +272,24 @@
         "zh": "如果把失败结果直接赋给唯一所有者，就会丢失旧地址。成功后再提交新指针。"
       }
     },
+    "memory-layout": {
+      "model": {
+        "en": "Memory is a tall column of numbered bytes. The stack grows down from the top, one box per active call. The heap grows up in blocks you ask for. Code and global data sit at the bottom.",
+        "zh": "内存是一根很高的、带编号字节的柱子。栈从顶部向下增长，每个活动的调用一个方框。堆在你申请的块中向上增长。代码和全局数据放在底部。"
+      },
+      "engineering": {
+        "en": "Decide where each object lives by how long it must live and how big it is. Keep small, short-lived values in locals. Put large or long-lived objects on the heap and name their owner. Bound every recursion and every copy, because the stack is small and its neighbours are fragile.",
+        "zh": "根据对象需要存活多久、有多大，来决定它放在哪里。小而短命的值放在局部变量里；大的或长寿的对象放到堆上，并指定所有者。每个递归和每次复制都要设定边界，因为栈很小，而它的邻居很脆弱。"
+      },
+      "question": {
+        "en": "A function stores the result of malloc in a local pointer and returns without calling free. What happens to the pointer and to the block?",
+        "zh": "一个函数把 malloc 的结果保存在局部指针里，返回时没有调用 free。指针和那个块各自会怎样？"
+      },
+      "answer": {
+        "en": "The pointer lives in the frame, so it disappears on return. The block lives on the heap, so it stays allocated, but nothing can reach it any more. That is a leak. Return the pointer or free the block before returning.",
+        "zh": "指针存放在栈帧里，所以函数返回时就消失了。块存放在堆上，仍然处于已分配状态，却再也没有东西能找到它。这就是泄漏。应当把指针返回出去，或者在返回前 free 这个块。"
+      }
+    },
     "linked-structures": {
       "model": {
         "en": "A link is a stored address, so changing it changes reachability.",
@@ -321,6 +360,24 @@
       "answer": {
         "en": "A declaration may make a call type-correct while no linked definition supplies the named function.",
         "zh": "声明可以让函数调用类型正确，但参与链接的文件中可能没有该函数的定义。"
+      }
+    },
+    "makefiles-libraries": {
+      "model": {
+        "en": "A Makefile is a list of \"to make this, you need that\" rules. make repeats only the work whose inputs are newer than its output.",
+        "zh": "Makefile 是一张“要做出这个，需要那些”的规则清单。make 只重复那些输入比输出更新的工作。"
+      },
+      "engineering": {
+        "en": "Before you write recipe lines, draw the graph of sources, headers, objects and programs. Every arrow becomes a prerequisite. Move code into a library only when two or more programs share it. Choose a static library if you must ship one file, and a shared library if many programs should pick up a fix without relinking.",
+        "zh": "写配方行之前，先画出源文件、头文件、目标文件和程序的依赖图。每条箭头都变成一个先决条件。只有两个或更多程序共用代码时，才把它放进库。必须只交付一个文件时选静态库；希望许多程序不用重新链接就能得到修复时选共享库。"
+      },
+      "question": {
+        "en": "Why is a header listed as a prerequisite of every object that includes it?",
+        "zh": "为什么每个包含某头文件的目标文件，都要把该头文件列为先决条件？"
+      },
+      "answer": {
+        "en": "make compares timestamps. If the header is not listed, changing it leaves the old .o files looking up to date, so they keep the old declarations.",
+        "zh": "make 比较的是时间戳。如果没有列出头文件，改动它之后，旧的 .o 文件看起来仍是最新的，会继续沿用旧的声明。"
       }
     },
     "signals": {

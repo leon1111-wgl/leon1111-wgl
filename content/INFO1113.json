@@ -3,7 +3,7 @@
   "title": "Object-Oriented Programming in Java",
   "subtitle": "Follow values, objects, contracts and collections from source code to a working application.",
   "description": "Build a precise mental model of Java through original stories, traced examples and design decisions. Each lesson connects syntax to the behavior of a running program and gives you a question that tests transfer.",
-  "coverage": "A complete Java 8 path through execution, object contracts, input and output, collections, generics, exceptions, testing, recursion, callbacks and application design. Each of the 23 chapters includes two independent runnable programs, traced behavior, guided questions and engineering notes.",
+  "coverage": "A complete Java 8 path through execution, object contracts, input and output, collections, generics, exceptions, testing, recursion, callbacks and application design. Each of the 26 chapters includes two independent runnable programs, traced behavior, guided questions and engineering notes.",
   "color": "#38bdf8",
   "prerequisites": [
     "Basic programming: variables, conditions and functions",
@@ -26,6 +26,7 @@
         "control-flow",
         "methods-references",
         "arrays",
+        "memory-diagrams",
         "strings"
       ],
       "purpose": "Read expressions, branches and references before designing larger objects."
@@ -57,6 +58,7 @@
       "title": "Handle change and failure",
       "topics": [
         "exceptions",
+        "custom-exceptions",
         "enums-state",
         "testing-contracts",
         "recursion-memoization"
@@ -68,6 +70,7 @@
       "topics": [
         "lambdas",
         "debugging-documentation",
+        "packages-uml",
         "application-design"
       ],
       "purpose": "Connect reusable behavior into applications, then test and explain what they do."
@@ -548,6 +551,218 @@
             "Guard row!=null before reading length.",
             "Assign a String array to a wider reference type while retaining its actual component type.",
             "Catch the deliberate store failure and inspect unchanged state."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory-diagrams",
+      "title": "Memory diagrams: stack, heap, references and garbage collection",
+      "story": "Imagine a hotel front desk. Each guest carries a small key card with a room number on it. The rooms themselves are big and stay in the building. If two guests hold cards for the same room, either of them can move the furniture and both will see it. Copying a card makes a second card, not a second room. A card can also be blank, with no room at all. And a room that nobody holds a card for, and that no sign in a corridor points to, can be emptied and reused by the hotel.\n\nA memory diagram is a drawing of the cards and the rooms. The cards go on the left, in boxes, because they are the variables of the running methods. The rooms go on the right, because they are the objects and arrays. An arrow runs from each card to its room. Drawing this by hand is the quickest way to see why a change appears in one place but not in another.",
+      "principle": "A running Java program uses two areas that matter for diagrams. The stack holds one frame for each method call that has started and not yet returned. A frame holds that call's parameters and local variables. A frame is pushed when the method is called and popped when it returns. The heap holds every object and every array, created by new. They stay there for as long as the program can still reach them.\n\nA variable is drawn as a labelled box. A primitive variable (int, double, boolean, char and so on) holds its value inside the box. A reference variable holds a reference, which you draw as an arrow to an object, or the word null for no object. Copying a variable copies what is in the box. For a reference that means copying the arrow, so two variables now reach one object. That is called an alias. The operator == on references asks whether two boxes hold the same arrow. On primitives it compares values. The method equals compares contents, but only when the class defines it that way.\n\nAn array is an object on the heap. Draw it as a row of cells with the index above each cell and the length written beside it. The cells of an int[] hold numbers. The cells of a Box[] hold arrows, and they start as null. A two-dimensional array is an array of arrows to arrays. A String is also an object, and it cannot be changed after it is created.\n\nHere is the drawing convention. Draw the stack on the left, with one box per method call and the newest call lowest. Draw one labelled square per variable. Draw the heap on the right, with each object as a box showing its class and fields. Start every arrow inside the variable's box and end it at the edge of the object. Draw a fresh diagram after every statement that changes anything, so you can compare the pictures. Static fields can go in a separate box labelled static.\n\nAn object is reachable if some chain of arrows leads to it from a root. The roots are the local variables of the methods that are still running, and the static fields. An object that is not reachable is garbage. The program can no longer use it, and the Java system may reclaim its memory at some moment you cannot predict. System.gc() is only a request. One simple way to collect is mark-and-sweep. In the mark phase, start at each root, follow the arrows and mark every object you meet. In the sweep phase, visit every object, free the unmarked ones and clear the marks. Because reachability starts at the roots, two garbage objects that refer to each other are still collected. A \"memory leak\" in Java is a different problem: objects that are still reachable, for example through a static list, even though the program no longer needs them. Real collectors are more complicated, with generations and concurrent work, but they follow the same idea of reachability.",
+      "formula": "STACK (left)                    HEAP (right)\nmain\n  n  [ 5 ]\n  p  [ * ]------------------->  #1  Box { value = 7 }\n  q  [ * ]------------------->  #1  (same arrow target)\n  x  [ * ]------------------->  int[2]  [0]=1  [1]=20\n  r  [ null ]\n\nReachable(o)  : some root has a chain of arrows to o\nGarbage       = all objects - reachable objects\nMark          : from each root, mark every object reached\nSweep         : free each unmarked object, then clear the marks",
+      "symbols": "A box with a star is a reference variable. The arrow starts in the box and ends at an object. A number in a box, such as 5, is a primitive stored directly. \"Roots\" are the starting points of reachability, namely the live local variables and the static fields. \"All objects minus reachable objects\" is a set difference: it leaves exactly the objects that no root can reach.\n\nThe picture is a model. It leaves out details such as object headers, the string pool and where static fields really live, because they do not change the answer to the questions about sharing and reachability.",
+      "example": "Start with int[] a = {4, 6}; and int[] b = a;. There is one array and two arrows. After b[0] = 9; both a[0] and b[0] are 9, because the array is shared. Now run b = new int[]{1};. Only b's arrow moves, to a new array. The old array is still {9, 6} and a still reaches it. Next run a = null;. No variable reaches {9, 6} any more, so it is garbage and can be collected. The array {1} stays alive because b reaches it.\n\nFor the mark-and-sweep model there are 9 objects and two roots. Collection 1 marks 6 objects, A, B, D, C, E and F, and sweeps the other 3: G, H and I. After e = null the roots reach only A, B, D and C, so collection 2 sweeps E and F, and the heap holds 4 objects. After a.right = null, collection 3 sweeps C and leaves 3 objects.",
+      "pitfall": "Do not draw a second object when the code copies a reference: Box q = p; adds an arrow, not a box. Setting a variable to null does not delete the object; it only removes one arrow, and the object stays as long as any other arrow reaches it. And never rely on System.gc() or finalizers to close files or release resources. Close them yourself.",
+      "check": {
+        "question": "After int[] a = {4, 6}; int[] b = a; b = new int[]{1}; a = null; is the array {4, 6} reachable?",
+        "answer": "No. At first both a and b reached it. Then b was redirected to the new array and a became null, so no variable reaches {4, 6}. It is garbage and can be collected. The array {1} is reachable through b."
+      },
+      "glossary": [
+        {
+          "term": "Stack frame",
+          "meaning": "The part of the stack that holds the parameters and local variables of one method call."
+        },
+        {
+          "term": "Heap",
+          "meaning": "The area where objects and arrays live until they can no longer be reached."
+        },
+        {
+          "term": "Reference",
+          "meaning": "A value that identifies an object, drawn as an arrow; it may also be null."
+        },
+        {
+          "term": "Alias",
+          "meaning": "A second variable holding the same reference, so both reach one object."
+        },
+        {
+          "term": "Reachable",
+          "meaning": "An object that some root can reach through a chain of references."
+        },
+        {
+          "term": "Mark-and-sweep",
+          "meaning": "A collection method that marks everything reachable from the roots, then frees the rest."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "What does a primitive variable box contain, and what does a reference variable box contain?",
+          "answer": "A primitive box contains the value itself, such as 5. A reference box contains an arrow to an object, or null."
+        },
+        {
+          "question": "Why does b.value = 1 inside a method change the caller's object, while b = new Box(1) does not?",
+          "answer": "The first follows the arrow and changes the shared object. The second moves only the method's own arrow. The parameter is a copy of the arrow, not the caller's variable."
+        },
+        {
+          "question": "Can two garbage objects that refer to each other be collected?",
+          "answer": "Yes. Reachability starts at the roots. If no root reaches either object, both are garbage, whatever they refer to."
+        },
+        {
+          "question": "For two boxes with the same value, how do p == r and p.equals(r) differ?",
+          "answer": "p == r asks whether the arrows are the same, so it is false for two different boxes. p.equals(r) compares contents only if the class overrides equals; by default it also compares identity."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "Draw one diagram per statement",
+          "body": "Aliasing bugs show up as the first diagram in which two arrows reach one box. If a list seems to change by itself, find that diagram. The statement just before it is usually the line where a reference was copied instead of an object. Drawing every step takes minutes and avoids hours of guessing."
+        },
+        {
+          "title": "Leaks in a garbage-collected language are reachability bugs",
+          "body": "A static list that collects every request object keeps all of them reachable, so none can ever be collected. Drawing the roots shows the static list as the culprit. The cure is to remove the entries you no longer need or to drop the static reference, not to call System.gc()."
+        },
+        {
+          "title": "A model is allowed to be simpler than the machine",
+          "body": "The mark-and-sweep model keeps a list of every object, which a real Java system does not need. Real collectors also split objects by age because most objects die young. The conclusions you draw from the model still hold: only reachable objects survive, and cycles do not keep garbage alive. That is also why simple reference counting fails on cycles and tracing from roots does not."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "java-reference-diagram-states",
+          "title": "Print the diagram: primitives, references and arrays",
+          "intro": "Each object gets a label like #1, so every line of output describes one picture.",
+          "language": "java",
+          "code": "public class Main {\n    static int nextId = 1;\n\n    /** A tiny object: it lives on the heap and has a label like an address. */\n    static final class Box {\n        final int id = nextId++;\n        int value;\n\n        Box(int value) {\n            this.value = value;\n        }\n\n        String show() {\n            return \"#\" + id + \"{value=\" + value + \"}\";\n        }\n    }\n\n    static void change(int n, Box b, int[] a) {\n        n = n + 1;\n        b.value = b.value + 1;\n        a[0] = 99;\n        b = new Box(-1);\n        System.out.println(\"inside change: n=\" + n + \" b=\" + b.show() + \" a[0]=\" + a[0]);\n    }\n\n    public static void main(String[] args) {\n        int n = 5;\n        int m = n;\n        m = 9;\n        System.out.println(\"primitives: n=\" + n + \" m=\" + m);\n\n        Box p = new Box(3);\n        Box q = p;\n        Box r = new Box(3);\n        System.out.println(\"p -> \" + p.show() + \", q -> \" + q.show() + \", r -> \" + r.show());\n        System.out.println(\"p == q: \" + (p == q) + \", p == r: \" + (p == r));\n\n        q.value = 7;\n        System.out.println(\"after q.value = 7: p -> \" + p.show() + \", r -> \" + r.show());\n        q = new Box(1);\n        System.out.println(\"after q = new Box(1): p -> \" + p.show() + \", q -> \" + q.show());\n\n        int[] x = {1, 2};\n        int[] y = x;\n        y[1] = 20;\n        System.out.println(\"x[1]=\" + x[1] + \" y[1]=\" + y[1] + \" same array: \" + (x == y));\n\n        Box[] row = new Box[3];\n        row[0] = p;\n        row[1] = r;\n        System.out.println(\"row[0] -> \" + row[0].show() + \", row[1] -> \" + row[1].show()\n                + \", row[2] -> \" + row[2]);\n\n        change(n, p, x);\n        System.out.println(\"after change: n=\" + n + \" p -> \" + p.show() + \" x[0]=\" + x[0]);\n        System.out.println(\"row[0] sees it too: \" + row[0].show());\n    }\n}\n",
+          "output": "primitives: n=5 m=9\np -> #1{value=3}, q -> #1{value=3}, r -> #2{value=3}\np == q: true, p == r: false\nafter q.value = 7: p -> #1{value=7}, r -> #2{value=3}\nafter q = new Box(1): p -> #1{value=7}, q -> #3{value=1}\nx[1]=20 y[1]=20 same array: true\nrow[0] -> #1{value=7}, row[1] -> #2{value=3}, row[2] -> null\ninside change: n=6 b=#4{value=-1} a[0]=99\nafter change: n=5 p -> #1{value=8} x[0]=99\nrow[0] sees it too: #1{value=8}\n",
+          "explanation": "Java does not show addresses, so the program gives each Box a number when it is created: #1, #2 and so on. The number is a drawing aid. It plays the part of the label on a heap box in your diagram.\n\nThe first line copies a primitive. m is a separate box holding its own 5, so changing m to 9 leaves n alone. Then p, q and r are three reference variables. p and q hold the same arrow to #1, while r points to a different Box that merely has the same value. So p == q is true and p == r is false. q.value = 7 follows the arrow and changes #1, so p sees 7 too. q = new Box(1) moves only q's arrow to a new box, #3.\n\nArrays work the same way. x and y name the same array, so y[1] = 20 shows through x. A Box[] has slots that hold arrows, and a slot that was never filled is null. The last part calls change. The copy n inside the method becomes 6 but the caller's n stays 5. The method follows the arrow in b to add 1 to #1, and it follows the arrow in a to set a[0], so the caller sees both. Then b = new Box(-1) redirects only the method's own b, so the caller's p still points at #1, which now has value 8.",
+          "walkthrough": [
+            "Give every object a number at creation so output can name it.",
+            "Copy a primitive and show that the two boxes are independent.",
+            "Copy a reference and show that two variables now reach one object.",
+            "Compare references with == and compare their contents separately.",
+            "Pass a primitive, an object and an array to a method and see what the caller observes."
+          ],
+          "trace": {
+            "columns": [
+              "Statement",
+              "Stack variables",
+              "Heap objects"
+            ],
+            "rows": [
+              [
+                "int n = 5; int m = n; m = 9;",
+                "n = 5, m = 9",
+                "-"
+              ],
+              [
+                "Box p = new Box(3); Box q = p; Box r = new Box(3);",
+                "p -> #1, q -> #1, r -> #2",
+                "#1{3}, #2{3}"
+              ],
+              [
+                "q.value = 7;",
+                "p -> #1, q -> #1, r -> #2",
+                "#1{7}, #2{3}"
+              ],
+              [
+                "q = new Box(1);",
+                "p -> #1, q -> #3, r -> #2",
+                "#1{7}, #2{3}, #3{1}"
+              ],
+              [
+                "int[] y = x; y[1] = 20;",
+                "x -> array, y -> array",
+                "one array {1, 20}"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "static int nextId = 1;",
+              "meaning": "A static field is one shared variable for the whole class, not one per object."
+            },
+            {
+              "syntax": "final int id = nextId++;",
+              "meaning": "A field initialiser runs once for each new object; nextId++ uses the old value, then adds 1."
+            },
+            {
+              "syntax": "static final class Box { ... }",
+              "meaning": "A class written inside Main, so everything stays in one file. Its instances live on the heap."
+            },
+            {
+              "syntax": "Box[] row = new Box[3];",
+              "meaning": "Creates an array of three reference slots, all null at first."
+            },
+            {
+              "syntax": "p == q",
+              "meaning": "For references, == asks whether both variables hold the same arrow."
+            }
+          ]
+        },
+        {
+          "id": "java-mark-and-sweep-model",
+          "title": "Run mark-and-sweep on a tiny heap",
+          "intro": "A model heap collects a shared object, a reachable cycle and an unreachable cycle.",
+          "language": "java",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n    /** One heap object with up to two outgoing references. */\n    static final class Obj {\n        final String name;\n        Obj left;\n        Obj right;\n        boolean marked;\n\n        Obj(String name) {\n            this.name = name;\n        }\n    }\n\n    /** A model of the heap: it knows every object, so it can sweep. */\n    static final class Heap {\n        final List<Obj> all = new ArrayList<Obj>();\n\n        Obj alloc(String name) {\n            Obj o = new Obj(name);\n            all.add(o);\n            return o;\n        }\n\n        /** Mark: follow references from a root, flagging everything reached. */\n        void mark(Obj o, StringBuilder order) {\n            if (o == null || o.marked) {\n                return;\n            }\n            o.marked = true;\n            order.append(o.name).append(' ');\n            mark(o.left, order);\n            mark(o.right, order);\n        }\n\n        /** Sweep: drop every unmarked object, then clear the marks for next time. */\n        String sweep() {\n            StringBuilder freed = new StringBuilder();\n            List<Obj> kept = new ArrayList<Obj>();\n            for (Obj o : all) {\n                if (o.marked) {\n                    o.marked = false;\n                    kept.add(o);\n                } else {\n                    freed.append(o.name).append(' ');\n                }\n            }\n            all.clear();\n            all.addAll(kept);\n            return freed.toString().trim();\n        }\n\n        void collect(String title, Obj... roots) {\n            StringBuilder order = new StringBuilder();\n            for (Obj root : roots) {\n                mark(root, order);\n            }\n            String freed = sweep();\n            System.out.println(title);\n            System.out.println(\"  marked in order: \" + order.toString().trim());\n            System.out.println(\"  freed: \" + (freed.isEmpty() ? \"nothing\" : freed));\n            System.out.println(\"  heap now has \" + all.size() + \" objects\");\n        }\n    }\n\n    /** A diamond: A refers to B and C, and both refer to D. Only A is returned. */\n    static Obj buildDiamond(Heap heap) {\n        Obj a = heap.alloc(\"A\");\n        Obj b = heap.alloc(\"B\");\n        Obj c = heap.alloc(\"C\");\n        Obj d = heap.alloc(\"D\");\n        a.left = b;\n        a.right = c;\n        b.left = d;\n        c.left = d;\n        return a;\n    }\n\n    /** A cycle: E and F refer to each other. */\n    static Obj buildCycle(Heap heap) {\n        Obj e = heap.alloc(\"E\");\n        Obj f = heap.alloc(\"F\");\n        e.left = f;\n        f.left = e;\n        return e;\n    }\n\n    /** Its local variables vanish on return, so nothing can reach these objects. */\n    static void leaveGarbage(Heap heap) {\n        heap.alloc(\"G\");\n        Obj h = heap.alloc(\"H\");\n        Obj i = heap.alloc(\"I\");\n        h.left = i;\n        i.left = h;\n    }\n\n    public static void main(String[] args) {\n        Heap heap = new Heap();\n        Obj a = buildDiamond(heap);\n        Obj e = buildCycle(heap);\n        leaveGarbage(heap);\n        System.out.println(\"heap starts with \" + heap.all.size() + \" objects\");\n        System.out.println(\"roots are variables a and e; G and the H-I pair are unreachable\");\n\n        heap.collect(\"collection 1\", a, e);\n\n        e = null;\n        heap.collect(\"collection 2 after e = null\", a);\n\n        a.right = null;\n        heap.collect(\"collection 3 after a.right = null\", a);\n    }\n}\n",
+          "output": "heap starts with 9 objects\nroots are variables a and e; G and the H-I pair are unreachable\ncollection 1\n  marked in order: A B D C E F\n  freed: G H I\n  heap now has 6 objects\ncollection 2 after e = null\n  marked in order: A B D C\n  freed: E F\n  heap now has 4 objects\ncollection 3 after a.right = null\n  marked in order: A B D\n  freed: C\n  heap now has 3 objects\n",
+          "explanation": "This is a model of the algorithm, not the real Java collector. The Heap class keeps a list of every object it has created, so that the sweep can visit them all. Real collectors find the objects by scanning memory areas.\n\nThree helper methods build the graph. buildDiamond makes A, which refers to B and C, and both of those refer to D. buildCycle makes E and F, which refer to each other. leaveGarbage makes G alone, and H and I in a cycle. When a helper returns, its local variables vanish with its frame, so nothing is left that can reach G, H or I. The only roots are the variables a and e in main.\n\nCollection 1 starts at the roots and follows references. The mark order is A, B, D, C, E, F. D is reached once, even though two objects refer to it. Everything unmarked is swept: G, H and I. H and I still refer to each other, but no root can reach them, so a cycle does not keep them alive. After e = null, collection 2 has only root a, so E and F are swept even though each still refers to the other. After a.right = null, C is no longer reachable from A, so collection 3 sweeps C, but D stays because B still reaches it.",
+          "walkthrough": [
+            "Allocate objects through the heap so it can list them later.",
+            "Build garbage inside helper methods so their locals disappear on return.",
+            "Mark: follow references from each root and flag every object reached once.",
+            "Sweep: remove the unmarked objects and clear the marks for the next collection.",
+            "Drop references and collect again to watch cycles and shared objects behave."
+          ],
+          "trace": {
+            "columns": [
+              "Collection",
+              "Roots",
+              "Marked",
+              "Freed"
+            ],
+            "rows": [
+              [
+                "1",
+                "a, e",
+                "A B D C E F",
+                "G H I"
+              ],
+              [
+                "2 (after e = null)",
+                "a",
+                "A B D C",
+                "E F"
+              ],
+              [
+                "3 (after a.right = null)",
+                "a",
+                "A B D",
+                "C"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "List<Obj> all = new ArrayList<Obj>();",
+              "meaning": "A growable list. The type argument <Obj> says every element is an Obj."
+            },
+            {
+              "syntax": "void collect(String title, Obj... roots)",
+              "meaning": "A varargs parameter: callers list any number of roots, and the method sees them as an array."
+            },
+            {
+              "syntax": "if (o == null || o.marked) return;",
+              "meaning": "A guard that stops the recursion at empty links and at objects already visited, which also stops cycles."
+            },
+            {
+              "syntax": "StringBuilder order = new StringBuilder();",
+              "meaning": "Build text piece by piece without creating a new String for each append."
+            },
+            {
+              "syntax": "for (Obj o : all) { ... }",
+              "meaning": "The enhanced for loop visits each element of the list in order."
+            }
           ]
         }
       ]
@@ -2171,6 +2386,219 @@
       ]
     },
     {
+      "id": "custom-exceptions",
+      "title": "Custom exceptions: checked or unchecked",
+      "story": "A cafe has a rule. When the cook cannot finish an order, the cook does not just shout \"problem!\" across the room. The cook hands the waiter a slip that says exactly what went wrong: \"out of milk\", with the table number, and perhaps how many cups are missing. The waiter can then do something sensible, such as offering oat milk. If the problem is that the gas supply has failed, nobody expects the waiter to fix it. That goes straight to the manager.\n\nA custom exception is such a slip: it has a specific title and the details the handler needs. The choice between checked and unchecked is the choice between two kinds of slip. A checked exception is paperwork that every waiter along the way must either deal with or pass on, and the compiler checks that they do. An unchecked exception is an emergency that skips the paperwork and goes to whoever can handle it.",
+      "principle": "The standard exceptions have general names. A custom exception names the failure in the words of your program, such as InsufficientFundsException. It can carry data the handler needs, and it lets callers catch exactly that failure and nothing else.\n\nTo write one, extend Exception for a checked exception or RuntimeException for an unchecked one. Do not extend Error or Throwable directly. End the name with Exception. Give it two constructors that pass their arguments to super: one with a String message, and one with a message and a Throwable cause. Add private final fields and getters for any data the handler needs. Throwable is serializable, so add a serialVersionUID, or the compiler will warn. Exception classes cannot be generic.\n\nExceptions can form a hierarchy. A base class such as OrderException names a family, and subclasses such as UnknownItemException name particular failures. A caller can catch the base or a subclass. Catch the more specific type first, because a catch for a parent placed before its child makes the child's clause unreachable, which is a compile error.\n\nWhen a lower layer fails, translate its exception into one of your own and pass the original as the cause: throw new OrderException(message, cause). Then getCause() still gives the root reason, and your callers do not depend on details of the lower layer. Do not throw away the cause.\n\nTo choose between checked and unchecked, ask: could a reasonable caller do something useful about this, other than stop? If so, make it checked. Examples are a missing file, a payment that falls short, and a code typed by a user that does not exist. If the failure means a bug or a broken precondition, such as a null argument, an index out of range, or a quantity of -1 passed by other code, make it unchecked. Checked exceptions have a cost. They appear in method signatures and every caller must catch or declare them, and they are awkward inside lambdas. If you make everything checked, people begin to write empty catch blocks to silence the compiler. Unchecked exceptions are easy to miss, so document them with @throws. Never use exceptions for ordinary control flow, never catch Exception when a specific type is meant, and never swallow one silently.",
+      "formula": "class InsufficientFundsException extends Exception          // checked\nclass InvalidQuantityException   extends RuntimeException   // unchecked\n\nConstructors:  (String message)    (String message, Throwable cause)\n\nThrowable\n +-- Error                      (do not extend or catch)\n +-- Exception                  <- extend this for CHECKED\n      +-- IOException\n      +-- OrderException        (your base class)\n      |     +-- UnknownItemException\n      +-- RuntimeException      <- extend this for UNCHECKED\n            +-- IllegalArgumentException\n            +-- InvalidQuantityException\n\nCan a reasonable caller recover?   yes -> checked    no -> unchecked",
+      "symbols": "The tree shows inheritance: a name below another is a subclass of it. Everything under Exception except RuntimeException and its subclasses is checked. The question at the bottom is a rule of thumb, not a law. It turns the vague idea \"is this serious?\" into the testable question \"does the caller have a useful alternative?\"\n\nThe two constructor shapes are a convention that the standard library follows too. They make it easy to add a cause later.",
+      "example": "A wallet holds 250 cents. pay(200) succeeds and leaves 50. pay(100) is short by 100 - 50 = 50, so it throws InsufficientFundsException with shortfall 50 and leaves the balance at 50. The handler tops up 50, making 100, and pay(100) now succeeds and leaves 0. A call to pay(-5) is a bug in the caller, so it throws the unchecked IllegalArgumentException.\n\nIn an order system, \"tea:2\" costs 300 x 2 = 600 cents. \"juice:1\" has no price and raises UnknownItemException. \"cake:x3\" contains the character x. The helper reports it, the higher layer wraps it in an OrderException and keeps the original as the cause. \"cake:0\" breaks the rule that a quantity is at least 1, so it raises the unchecked InvalidQuantityException.",
+      "pitfall": "Do not make every custom exception checked and then write catch (Exception e) {} to silence the compiler. Do not make a recoverable failure unchecked, so that nobody plans for it. And when you wrap an exception, always pass the original as the cause. A new exception without the cause throws away the evidence of what really went wrong.",
+      "check": {
+        "question": "One method parses a quantity typed by a user. Another receives a quantity of -1 from code that should have checked it. Which gets a checked exception and which an unchecked one?",
+        "answer": "Parsing the user's text gets a checked exception, because the program can ask the user again. Receiving -1 from other code is a bug in the caller, so it gets an unchecked IllegalArgumentException."
+      },
+      "glossary": [
+        {
+          "term": "Custom exception",
+          "meaning": "An exception class you write to name a failure in your own program's terms."
+        },
+        {
+          "term": "Checked exception",
+          "meaning": "An exception the compiler forces callers to catch or declare with throws."
+        },
+        {
+          "term": "Unchecked exception",
+          "meaning": "A RuntimeException or Error that needs no catch or throws."
+        },
+        {
+          "term": "Cause",
+          "meaning": "The earlier exception stored inside a new one, available through getCause()."
+        },
+        {
+          "term": "Exception hierarchy",
+          "meaning": "A tree of exception classes in which a subclass is a more specific failure."
+        },
+        {
+          "term": "serialVersionUID",
+          "meaning": "A version number that exception classes declare because they are serializable."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "Why do custom exception constructors call super(message)?",
+          "answer": "The message is stored in Throwable. Passing it up is what makes getMessage() return it."
+        },
+        {
+          "question": "Why must a catch for a subclass come before a catch for its parent?",
+          "answer": "Java picks the first matching clause. A parent clause first would match everything the child could, so the child clause could never run, and the compiler rejects it."
+        },
+        {
+          "question": "What do you lose if you throw a new exception inside a catch block without passing the cause?",
+          "answer": "You lose the root reason and its stack trace. A later reader sees only your summary and cannot tell which low-level failure started the problem."
+        },
+        {
+          "question": "When should an exception class have extra fields?",
+          "answer": "When the handler needs data to recover, like the shortfall in the wallet example. A handler that has to read numbers out of a message string is a sign that a field is missing."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "An exception is part of the contract of a method",
+          "body": "A checked exception appears in the signature, so adding one later breaks every caller. An unchecked exception does not appear there, so it must be written in the Javadoc with @throws. Decide early which failures belong to the contract. Many modern libraries choose unchecked exceptions for most failures and keep checked ones for situations that really need a decision."
+        },
+        {
+          "title": "Translate at layer boundaries and keep the cause",
+          "body": "A storage layer might fail with a low-level error, and the order layer turns it into an OrderException. The caller of the order layer then needs no knowledge of the storage details, and a log at the top of the program can still print the whole chain of causes. This is why both constructors, with and without a cause, are worth writing."
+        },
+        {
+          "title": "Fields make handlers smarter, but keep messages safe",
+          "body": "The shortfall field lets the handler repair the problem without parsing text. Keep such fields immutable. Do not put secrets such as passwords or full card numbers into a message, because messages end up in logs."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "java-checked-custom-exception",
+          "title": "A checked exception that carries data",
+          "intro": "The exception tells the caller how much money is missing, so the handler can repair the problem and try again.",
+          "language": "java",
+          "code": "public class Main {\n    /** Checked: the caller can often fix this, so the compiler makes callers face it. */\n    static final class InsufficientFundsException extends Exception {\n        private static final long serialVersionUID = 1L;\n        private final int shortfall;\n\n        InsufficientFundsException(String message, int shortfall) {\n            super(message);\n            this.shortfall = shortfall;\n        }\n\n        int getShortfall() {\n            return shortfall;\n        }\n    }\n\n    static final class Wallet {\n        private int cents;\n\n        Wallet(int cents) {\n            this.cents = cents;\n        }\n\n        int balance() {\n            return cents;\n        }\n\n        void topUp(int amount) {\n            cents += amount;\n        }\n\n        void pay(int price) throws InsufficientFundsException {\n            if (price <= 0) {\n                throw new IllegalArgumentException(\"price must be positive: \" + price);\n            }\n            if (price > cents) {\n                int missing = price - cents;\n                throw new InsufficientFundsException(\"need \" + missing + \" more cents\", missing);\n            }\n            cents -= price;\n        }\n    }\n\n    public static void main(String[] args) {\n        Wallet wallet = new Wallet(250);\n        try {\n            wallet.pay(200);\n            System.out.println(\"paid 200, balance \" + wallet.balance());\n            wallet.pay(100);\n            System.out.println(\"this line is skipped\");\n        } catch (InsufficientFundsException ex) {\n            System.out.println(\"caught: \" + ex.getMessage());\n            System.out.println(\"balance unchanged: \" + wallet.balance());\n            wallet.topUp(ex.getShortfall());\n            System.out.println(\"topped up \" + ex.getShortfall() + \", balance \" + wallet.balance());\n            try {\n                wallet.pay(100);\n                System.out.println(\"second try paid 100, balance \" + wallet.balance());\n            } catch (InsufficientFundsException again) {\n                System.out.println(\"still short: \" + again.getShortfall());\n            }\n        }\n\n        try {\n            wallet.pay(-5);\n        } catch (InsufficientFundsException ex) {\n            System.out.println(\"not reached: a negative price is not a funds problem\");\n        } catch (IllegalArgumentException ex) {\n            System.out.println(\"programming error: \" + ex.getMessage());\n        }\n    }\n}\n",
+          "output": "paid 200, balance 50\ncaught: need 50 more cents\nbalance unchanged: 50\ntopped up 50, balance 100\nsecond try paid 100, balance 0\nprogramming error: price must be positive: -5\n",
+          "explanation": "InsufficientFundsException extends Exception, so it is checked. Its constructor passes the message to super and keeps one extra field, shortfall, with a getter. serialVersionUID is there because exceptions are serializable and the compiler would otherwise warn.\n\nWallet.pay has two kinds of failure, and they get two kinds of exception. A price of zero or less is a mistake in the calling code, so the method throws the standard unchecked IllegalArgumentException. A price larger than the balance is a normal business situation, so the method throws the custom checked exception. The throws clause makes every caller face it. Both checks run before the balance changes, so a failed payment leaves the wallet as it was.\n\nIn main, paying 200 from 250 leaves 50. Paying 100 then fails with a shortfall of 50. The catch block prints the message, shows that the balance is still 50, uses ex.getShortfall() to top up exactly what is missing, and tries again. The second payment succeeds and the balance is 0. This is the reason for a custom exception: a plain message string would force the handler to parse text. The last try block shows the order of catch clauses. A negative price is not a funds problem, so it falls to the IllegalArgumentException clause.",
+          "walkthrough": [
+            "Define the exception with a message and one extra field for the handler.",
+            "Validate before changing state, using an unchecked exception for a caller bug and a checked one for a situation to handle.",
+            "Declare the checked exception in the throws clause of the method.",
+            "Catch it, read the data it carries and retry after repairing the problem.",
+            "Order catch clauses from the most specific type to the most general."
+          ],
+          "trace": {
+            "columns": [
+              "Action",
+              "Outcome",
+              "Balance"
+            ],
+            "rows": [
+              [
+                "pay(200)",
+                "succeeds",
+                "50"
+              ],
+              [
+                "pay(100)",
+                "throws InsufficientFundsException, shortfall 50",
+                "50"
+              ],
+              [
+                "topUp(50)",
+                "handler repairs the problem",
+                "100"
+              ],
+              [
+                "pay(100)",
+                "succeeds",
+                "0"
+              ],
+              [
+                "pay(-5)",
+                "throws IllegalArgumentException",
+                "0"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "class InsufficientFundsException extends Exception",
+              "meaning": "Extending Exception makes the new type a checked exception."
+            },
+            {
+              "syntax": "super(message);",
+              "meaning": "Pass the message up so getMessage() returns it."
+            },
+            {
+              "syntax": "void pay(int price) throws InsufficientFundsException",
+              "meaning": "The method warns every caller that this checked exception may come out."
+            },
+            {
+              "syntax": "catch (InsufficientFundsException ex) { ... } catch (IllegalArgumentException ex) { ... }",
+              "meaning": "Two handlers; Java picks the first one whose type matches."
+            },
+            {
+              "syntax": "private static final long serialVersionUID = 1L;",
+              "meaning": "A version number for serialization; it keeps the compiler's lint check quiet."
+            }
+          ]
+        },
+        {
+          "id": "java-exception-hierarchy-cause",
+          "title": "A hierarchy, a wrapped cause and an unchecked contract error",
+          "intro": "Four order lines show a specific subclass, a translated low-level failure, a contract error and finally.",
+          "language": "java",
+          "code": "public class Main {\n    /** Base type for every problem with an order line. Checked, so callers must plan for it. */\n    static class OrderException extends Exception {\n        private static final long serialVersionUID = 1L;\n\n        OrderException(String message) {\n            super(message);\n        }\n\n        OrderException(String message, Throwable cause) {\n            super(message, cause);\n        }\n    }\n\n    /** A more specific kind of order problem: callers may catch it on its own. */\n    static final class UnknownItemException extends OrderException {\n        private static final long serialVersionUID = 1L;\n        private final String code;\n\n        UnknownItemException(String code) {\n            super(\"no such item: \" + code);\n            this.code = code;\n        }\n\n        String getCode() {\n            return code;\n        }\n    }\n\n    /** Unchecked: a caller that passes a bad number has a bug, not a situation to handle. */\n    static final class InvalidQuantityException extends RuntimeException {\n        private static final long serialVersionUID = 1L;\n\n        InvalidQuantityException(int quantity) {\n            super(\"quantity must be at least 1 but was \" + quantity);\n        }\n    }\n\n    /** Low-level helper: reports the first bad character with a plain unchecked exception. */\n    static int readNumber(String text) {\n        int value = 0;\n        for (int i = 0; i < text.length(); i++) {\n            char c = text.charAt(i);\n            if (c < '0' || c > '9') {\n                throw new IllegalArgumentException(\"'\" + c + \"' is not a digit\");\n            }\n            value = value * 10 + (c - '0');\n        }\n        return value;\n    }\n\n    static int priceOf(String code) throws UnknownItemException {\n        if (code.equals(\"tea\")) {\n            return 300;\n        }\n        if (code.equals(\"cake\")) {\n            return 450;\n        }\n        throw new UnknownItemException(code);\n    }\n\n    /** Translate a low-level failure into this layer's own exception and keep the cause. */\n    static int total(String line) throws OrderException {\n        String[] parts = line.split(\":\");\n        int price = priceOf(parts[0]);\n        int quantity;\n        try {\n            quantity = readNumber(parts[1]);\n        } catch (IllegalArgumentException cause) {\n            throw new OrderException(\"bad quantity in \\\"\" + line + \"\\\"\", cause);\n        }\n        if (quantity < 1) {\n            throw new InvalidQuantityException(quantity);\n        }\n        return price * quantity;\n    }\n\n    public static void main(String[] args) {\n        String[] lines = {\"tea:2\", \"juice:1\", \"cake:x3\", \"cake:0\"};\n        for (String line : lines) {\n            try {\n                System.out.println(line + \" -> \" + total(line) + \" cents\");\n            } catch (UnknownItemException ex) {\n                System.out.println(line + \" -> unknown code \" + ex.getCode());\n            } catch (OrderException ex) {\n                System.out.println(line + \" -> \" + ex.getMessage() + \", cause: \" + ex.getCause().getMessage());\n            } catch (InvalidQuantityException ex) {\n                System.out.println(line + \" -> contract violated: \" + ex.getMessage());\n            } finally {\n                System.out.println(\"  processed \" + line);\n            }\n        }\n    }\n}\n",
+          "output": "tea:2 -> 600 cents\n  processed tea:2\njuice:1 -> unknown code juice\n  processed juice:1\ncake:x3 -> bad quantity in \"cake:x3\", cause: 'x' is not a digit\n  processed cake:x3\ncake:0 -> contract violated: quantity must be at least 1 but was 0\n  processed cake:0\n",
+          "explanation": "OrderException is the base of a small family and is checked. UnknownItemException extends it, so a caller can catch the specific kind or the whole family. InvalidQuantityException extends RuntimeException and is unchecked.\n\nreadNumber is a low-level helper. It reports a bad character with the standard IllegalArgumentException. total() sits one layer higher. It does not let that low-level exception escape. It catches it and throws an OrderException instead, passing the original as the cause. The message now speaks the language of orders, and getCause() still gives the detail about the bad character.\n\nFollow the four lines. \"tea:2\" costs 300 x 2 = 600. \"juice:1\" has no price, so priceOf throws UnknownItemException, and the first catch clause handles it. \"cake:x3\" fails in readNumber at 'x'. It is wrapped, so the OrderException clause prints the message and then the cause's message. \"cake:0\" gets past parsing but breaks the contract of total(), which says the quantity is at least 1, so total() throws the unchecked InvalidQuantityException. In a real program, a quantity typed by a user would be rejected at the point of reading with a checked exception. Reaching total() with 0 means a caller skipped that check. The finally block prints once per line, whichever route was taken. The catch order matters: UnknownItemException comes before its parent OrderException. In the other order the compiler would report that the first clause already catches it.",
+          "walkthrough": [
+            "Declare a base exception, a specific subclass and an unchecked exception for contract errors.",
+            "Throw a plain unchecked exception from a low-level helper.",
+            "Catch it one layer up and throw the layer's own exception with the original as the cause.",
+            "Catch the most specific clauses first, then the family, then the unchecked type.",
+            "Use finally for work that must happen on every route."
+          ],
+          "trace": {
+            "columns": [
+              "Line",
+              "What happens",
+              "Clause that runs"
+            ],
+            "rows": [
+              [
+                "tea:2",
+                "600 cents",
+                "none; normal return"
+              ],
+              [
+                "juice:1",
+                "priceOf throws UnknownItemException",
+                "UnknownItemException"
+              ],
+              [
+                "cake:x3",
+                "readNumber fails; total wraps it with a cause",
+                "OrderException"
+              ],
+              [
+                "cake:0",
+                "total throws InvalidQuantityException",
+                "InvalidQuantityException"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "class UnknownItemException extends OrderException",
+              "meaning": "A subclass of a custom exception; catching OrderException also catches it."
+            },
+            {
+              "syntax": "super(message, cause);",
+              "meaning": "Keep the original failure inside the new exception."
+            },
+            {
+              "syntax": "ex.getCause().getMessage()",
+              "meaning": "Read the message of the wrapped exception."
+            },
+            {
+              "syntax": "} finally { ... }",
+              "meaning": "This block runs after the try and any catch, on every route out."
+            },
+            {
+              "syntax": "line.split(\":\")",
+              "meaning": "Cut a string at every colon and return the pieces as an array of strings."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "enums-state",
       "title": "Enums and finite state models",
       "story": "A parcel can be waiting, in transit or delivered. Writing those states on loose sticky notes invites misspellings and invented labels such as \"nearly delivered-ish.\" A printed set of official tokens narrows the vocabulary. But vocabulary alone does not guarantee a sensible journey: moving straight from delivered back to waiting may still violate the process.\n\nAn enum provides the finite set of labels, while a transition rule controls movement between them. Keeping both ideas visible prevents a program from confusing type-safe state names with a fully correct state machine.",
@@ -2762,6 +3190,232 @@
             "Read the contract before predicting the output.",
             "Check a valid pair and its returned distance.",
             "Check rejection at the documented negative boundary."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "packages-uml",
+      "title": "Packages, access control and class diagrams",
+      "story": "A school has several buildings. The science building has labs, and the arts building has studios. Every room has a full address, the building plus the room name, so two buildings can each have a \"Room 12\" without confusion. The doors follow different rules. Some rooms are for the teacher who runs them only. Some are for the staff of that building. Some are also for trainee teachers who work in other buildings. The front hall is for all visitors.\n\nA campus map does not show every desk. It shows the buildings, the main rooms, and which of them connect. A class diagram is such a map for a program. You can draw it by hand before writing any code, and it lets you and your team discuss the design while it is still cheap to change.",
+      "principle": "A package groups related classes under one name. A file starts with a package statement, such as package shop.model;, and its folder must match: src/shop/model/Item.java. The full name of the class is shop.model.Item. Packages prevent name clashes, keep related classes together and control access. A file with no package statement belongs to the unnamed default package. That is fine for a small test but its classes cannot be imported. Package names are lower case, and libraries often start them with a reversed domain name.\n\nAn import statement lets you write Item instead of shop.model.Item. import shop.model.*; imports every class in that package, but not those in sub-packages. Classes in java.lang, such as String, need no import. An import loads nothing and does not change speed. It only shortens names. If two packages contain the same class name, import one and write the other one in full. To build, run javac -d out src/shop/model/Item.java src/shop/app/Main.java, which writes the compiled classes into folders under out. Run the program with java -cp out shop.app.Main.\n\nAccess modifiers control who may use a class or member. private means the same class only, with the extra rule that a nested class and its top-level class share private members. No modifier, called package-private, means the same package. protected means the same package and also subclasses anywhere. public means everyone. A top-level class can only be public or package-private. A protected member has one more rule. A subclass in another package may use it through this or through a reference of the subclass type, but not through a reference of the superclass type. As a design rule, give each member the smallest visibility that works. Keep fields private, keep helper classes package-private, and make public only what other packages must use.\n\nPackages also give an application its structure. A shop might have shop.model for the domain objects, shop.io for files and shop.app for main. Dependencies should point one way: shop.app uses shop.model, and shop.model does not import shop.app. Package-private classes hide the implementation from other packages.\n\nA class diagram has boxes in three parts: the name, the attributes and the operations. A sign shows visibility: + for public, - for private, # for protected and ~ for package. Static members are underlined. An abstract class or method is written in italics or marked {abstract}. An interface has the label <<interface>>. The lines between boxes have meanings. Generalisation (extends) is a solid line with a hollow triangle pointing at the parent. Realisation (implements) is a dashed line with a hollow triangle pointing at the interface. Association is a plain line, optionally with an arrow for the direction and numbers like 1 or 0..* for how many. Aggregation has a hollow diamond at the whole. Composition has a filled diamond and means that the part cannot exist without the whole. Dependency is a dashed arrow meaning \"uses\". A generic class shows its type parameter in the name, such as Catalog<T extends Shape>.\n\nJavadoc turns comments that start with /** into an HTML reference. The first sentence is the summary. Write @param name for each parameter, @return for the result, @throws Type with the condition, @see for a related item, @since for the version, @deprecated for something to avoid, {@code x} for code in a sentence and {@link Class#method} for a link. Say what callers need to know: units, whether null is allowed, exceptions and side effects. Generate the pages with javadoc -d docs -sourcepath src -subpackages shop.",
+      "formula": "src/\n  shop/\n    model/Item.java      package shop.model;\n    app/Main.java        package shop.app;   import shop.model.Item;\n\n+----------------------+\n| <<interface>>        |\n| Describable          |\n+----------------------+\n| +describe(): String  |\n+----------------------+\n          ^\n          :  dashed line, hollow triangle: implements\n+----------------------+       +---------------------------+\n| {abstract} Shape     |       | Catalog<T extends Shape>  |\n+----------------------+       +---------------------------+\n| -name: String        |       | -items: List<T>           |\n+----------------------+       +---------------------------+\n| +area(): int         |       | +add(item: T)             |\n| +describe(): String  |       | +largest(): T             |\n+----------------------+       | +size(): int              |\n     ^          ^              +---------------------------+\n     |          |  solid line, hollow triangle: extends\n+--------+  +----------+\n| Rect   |  | Triangle |\n+--------+  +----------+\n     ^\n     |\n+--------+\n| Square |\n+--------+\n\n+ public   - private   # protected   ~ package",
+      "symbols": "The top lines show how folders match package statements. The boxes are one design: the arrow head always points at the thing being extended or implemented. The middle compartment of a box lists attributes (fields), and the bottom compartment lists operations (methods). The text after each colon is a type, written in the UML order name: Type, which is the reverse of Java.\n\nThe note under the diagram repeats the visibility signs. Names with spaces and braces, such as {abstract}, are labels attached to a box or an operation.",
+      "example": "Suppose the file src/shop/model/Item.java declares public class Item with the line protected int price;, and the file src/shop/app/Gift.java declares class Gift extends Item in package shop.app. Inside Gift, both price and this.price compile. A method Gift.cost(Item other) that reads other.price does not compile, because other has type Item, not Gift. A method Gift.cost(Gift other) that reads other.price does compile. A class Main in shop.app that does not extend Item cannot read price at all. If price had no modifier, even Gift could not use it, since Gift is in a different package from Item.\n\nFor documentation, take a method that divides a width among n columns. Its comment can start with the summary \"Returns the width of one column.\" Then add @param n, the number of columns, at least 1. Then add @return, the width in pixels. Finally add @throws IllegalArgumentException, if n is less than 1. A reader of the generated page now knows the units and the failure case without opening the source.\n\nFor the diagram, the design has 5 classes and 1 interface, two arrows with hollow triangles on solid lines (Rect and Triangle to Shape), one more (Square to Rect), and one dashed arrow (Shape to Describable).",
+      "pitfall": "Package-private is the default, so a member with no modifier is not visible to other packages. A forgotten public on a constructor or method is a common compile error. The folder must match the package statement, or the compiler and java will not find the class. Do not make everything public just to make an error disappear, because that removes the structure. In a diagram, the triangle points at the parent, not at the child.",
+      "check": {
+        "question": "Engine in package car.parts has protected int rpm. Racer extends Engine in package car.app and has a method taking Engine e that returns e.rpm. Does it compile? And this.rpm?",
+        "answer": "e.rpm does not compile. A subclass in another package may use a protected member only through its own type, this or a Racer reference, and e is typed as the superclass Engine. this.rpm, or just rpm, compiles."
+      },
+      "glossary": [
+        {
+          "term": "Package",
+          "meaning": "A named group of classes that matches a folder and prevents name clashes."
+        },
+        {
+          "term": "Import",
+          "meaning": "A statement that lets you use a short class name; it loads nothing."
+        },
+        {
+          "term": "Package-private",
+          "meaning": "Access with no modifier: visible inside the same package only."
+        },
+        {
+          "term": "Protected",
+          "meaning": "Visible in the same package and in subclasses, with the extra rule for other packages."
+        },
+        {
+          "term": "Generalisation",
+          "meaning": "The UML relation for extends: a solid line with a hollow triangle at the parent."
+        },
+        {
+          "term": "Realisation",
+          "meaning": "The UML relation for implements: a dashed line with a hollow triangle at the interface."
+        },
+        {
+          "term": "Multiplicity",
+          "meaning": "A number or range, such as 1 or 0..*, showing how many objects take part in a link."
+        },
+        {
+          "term": "Javadoc",
+          "meaning": "The tool and comment style that turn /** */ comments into HTML documentation."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "Why must the folder match the package statement?",
+          "answer": "The compiler and the java launcher locate a class by turning its package name into a folder path. A mismatch means the class cannot be found."
+        },
+        {
+          "question": "How does an import differ from including a file?",
+          "answer": "An import only lets you use a short name. It does not copy or load any code. The class is found on the class path when it is used."
+        },
+        {
+          "question": "In a UML class diagram, in which direction does the generalisation triangle point?",
+          "answer": "Toward the parent class, the thing being extended."
+        },
+        {
+          "question": "What should the text after @throws contain?",
+          "answer": "The exception type and the condition that causes it, for example \"IllegalArgumentException if n is less than 1\"."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "Use visibility to shrink what you must keep stable",
+          "body": "Every public member is a promise to other packages. A package-private class can be renamed or rewritten without asking anyone. Tests that live in the same package can still reach package-private members. So make a member public only when another package has a real need."
+        },
+        {
+          "title": "Draw the diagram to find design problems, not to decorate",
+          "body": "A hand-drawn package diagram quickly shows a cycle, such as model importing app while app imports model. Break it by moving the shared part to a third package or by depending on an interface. Draw only the classes and links that help a decision, so the picture stays small enough to discuss."
+        },
+        {
+          "title": "Javadoc is a contract that tools can read",
+          "body": "By default the generated pages list only public and protected members, which is exactly the part that other packages rely on. A broken tag or a missing @param shows up as a warning with -Xdoclint. A precise first sentence and an @throws line for every checked or documented failure make the page useful without opening the source."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "java-visibility-in-one-file",
+          "title": "Visibility inside one file, and the full rule table",
+          "intro": "Private is enforced between top-level classes; the table shows what the other modifiers allow across packages.",
+          "language": "java",
+          "code": "/** Not public, so it is package-private: only classes in this package can see the class itself. */\nclass Vault {\n    private int secret = 7;\n    int packageLevel = 1;\n    protected int shared = 2;\n    public int open = 3;\n\n    int reveal() {\n        return secret;\n    }\n}\n\n/** A subclass. Inside one package it can use protected and package-level members. */\nclass Safe extends Vault {\n    int total() {\n        return shared + packageLevel + open;\n    }\n\n    // int bad() { return secret; }   // error: secret has private access in Vault\n}\n\npublic class Main {\n    /** Nested classes share their private members with the enclosing top-level class. */\n    static class Counter {\n        private int hidden = 5;\n    }\n\n    static final int CLASS = 1, PACKAGE = 2, SUBCLASS = 4, ANYONE = 8;\n\n    /** Who may use a member declared with each modifier (JLS 6.6), as a set of places. */\n    static int places(String modifier) {\n        switch (modifier) {\n            case \"private\":\n                return CLASS;\n            case \"(none)\":\n                return CLASS | PACKAGE;\n            case \"protected\":\n                return CLASS | PACKAGE | SUBCLASS;\n            default:\n                return CLASS | PACKAGE | SUBCLASS | ANYONE;\n        }\n    }\n\n    static String yesNo(int set, int place) {\n        return (set & place) != 0 ? \"yes\" : \"no\";\n    }\n\n    public static void main(String[] args) {\n        Vault vault = new Vault();\n        Safe safe = new Safe();\n        System.out.println(\"same package, package-private field: \" + vault.packageLevel);\n        System.out.println(\"same package, protected field: \" + vault.shared);\n        System.out.println(\"private field through a method: \" + vault.reveal());\n        // System.out.println(vault.secret);   // error: secret has private access in Vault\n        System.out.println(\"subclass uses inherited members: \" + safe.total());\n        System.out.println(\"nested private seen by the outer class: \" + new Counter().hidden);\n\n        System.out.println();\n        System.out.println(\"modifier   same class  same package  subclass elsewhere  anyone\");\n        String[] modifiers = {\"private\", \"(none)\", \"protected\", \"public\"};\n        for (String modifier : modifiers) {\n            int set = places(modifier);\n            System.out.println(String.format(\"%-10s %-11s %-13s %-19s %s\", modifier,\n                    yesNo(set, CLASS), yesNo(set, PACKAGE), yesNo(set, SUBCLASS), yesNo(set, ANYONE)));\n        }\n    }\n}\n",
+          "output": "same package, package-private field: 1\nsame package, protected field: 2\nprivate field through a method: 7\nsubclass uses inherited members: 6\nnested private seen by the outer class: 5\n\nmodifier   same class  same package  subclass elsewhere  anyone\nprivate    yes         no            no                  no\n(none)     yes         yes           no                  no\nprotected  yes         yes           yes                 no\npublic     yes         yes           yes                 yes\n",
+          "explanation": "A single file cannot hold two packages, so this program shows what it can and then prints the rules for the rest. Vault and Safe are top-level classes without the word public. That makes them package-private classes, and all of them in Main.java belong to the same package.\n\nVault has one member for each level. Main may read packageLevel, shared and open directly, because all three classes share a package. It cannot read secret. The line that tries is commented out, because the compiler would reject it with \"secret has private access in Vault\". Main reaches the value only through the method reveal(), which is the way a class offers a controlled view of a private field. Safe extends Vault and uses shared, packageLevel and open as its own members.\n\nOne more fact is shown by Counter. It is a nested class with a private field, and Main can read counter.hidden. A nested class and its enclosing top-level class can see each other's private members. This is a surprise to many people, and it does not happen between separate top-level classes.\n\nNow split the same idea across packages. Put public class Vault in src/shop/vault/Vault.java, under package shop.vault. Put Main in src/shop/app/Main.java, under package shop.app, with import shop.vault.Vault;. The class must be public so that another package can import it. Main can then use open. It cannot use packageLevel, because that member is package-private, and it cannot use shared, because Main is not a subclass. A class Safe extends Vault written in shop.app could use shared and open, but still not packageLevel or secret.\n\nThe last block prints the full rule table. Each modifier is a set of places that may use the member, held as bit flags. Private is only the same class. No modifier adds the same package. Protected adds subclasses in other packages. Public adds everyone. Each row contains the one above it, which is why the table fills from the right.",
+          "walkthrough": [
+            "Declare members at every access level inside one class.",
+            "Use the package-level and protected members from another class in the same package.",
+            "Reach the private field through a method; the direct access is commented out because it would not compile.",
+            "Show that a nested class shares its private members with the outer class.",
+            "Print the table of who may use each modifier, built from bit flags."
+          ],
+          "trace": {
+            "columns": [
+              "Modifier",
+              "Same class",
+              "Same package",
+              "Subclass in another package",
+              "Anyone"
+            ],
+            "rows": [
+              [
+                "private",
+                "yes",
+                "no",
+                "no",
+                "no"
+              ],
+              [
+                "(none)",
+                "yes",
+                "yes",
+                "no",
+                "no"
+              ],
+              [
+                "protected",
+                "yes",
+                "yes",
+                "yes",
+                "no"
+              ],
+              [
+                "public",
+                "yes",
+                "yes",
+                "yes",
+                "yes"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "class Vault { ... }",
+              "meaning": "A top-level class without public is visible only inside its package."
+            },
+            {
+              "syntax": "protected int shared = 2;",
+              "meaning": "Visible in the same package and in subclasses, even in other packages."
+            },
+            {
+              "syntax": "class Safe extends Vault",
+              "meaning": "Safe inherits the non-private members of Vault."
+            },
+            {
+              "syntax": "static final int CLASS = 1, PACKAGE = 2, SUBCLASS = 4, ANYONE = 8;",
+              "meaning": "Several constants in one declaration; each is a different bit, so they can be combined with |."
+            },
+            {
+              "syntax": "switch (modifier) { case \"private\": ... }",
+              "meaning": "A switch on a String picks the branch whose text matches."
+            }
+          ]
+        },
+        {
+          "id": "java-design-to-diagram-javadoc",
+          "title": "From a design to a class diagram and Javadoc",
+          "intro": "An interface, an abstract class, subclasses and a bounded generic class, written with documentation comments.",
+          "language": "java",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\n/**\n * Something that can describe itself in one line.\n *\n * @since 1.0\n */\ninterface Describable {\n    /**\n     * Builds the description.\n     *\n     * @return a one-line description, never {@code null}\n     */\n    String describe();\n}\n\n/**\n * A flat shape with a whole-number area.\n *\n * <p>Subclasses supply {@link #area()}; the description is built here once.\n *\n * @see Rect\n * @see Triangle\n */\nabstract class Shape implements Describable {\n    private final String name;\n\n    /**\n     * Creates a shape.\n     *\n     * @param name the label used in descriptions, not {@code null}\n     */\n    protected Shape(String name) {\n        this.name = name;\n    }\n\n    /**\n     * Computes the area.\n     *\n     * @return the area in square units, never negative\n     */\n    public abstract int area();\n\n    @Override\n    public String describe() {\n        return name + \" area=\" + area();\n    }\n}\n\n/** A rectangle. */\nclass Rect extends Shape {\n    private final int width;\n    private final int height;\n\n    /**\n     * Creates a rectangle.\n     *\n     * @param width  the width in units, at least 1\n     * @param height the height in units, at least 1\n     * @throws IllegalArgumentException if either side is less than 1\n     */\n    Rect(int width, int height) {\n        this(\"rect\", width, height);\n    }\n\n    /**\n     * Lets a subclass choose its own label.\n     *\n     * @param name   the label used in descriptions\n     * @param width  the width in units, at least 1\n     * @param height the height in units, at least 1\n     */\n    protected Rect(String name, int width, int height) {\n        super(name);\n        if (width < 1 || height < 1) {\n            throw new IllegalArgumentException(\"sides must be at least 1\");\n        }\n        this.width = width;\n        this.height = height;\n    }\n\n    @Override\n    public int area() {\n        return width * height;\n    }\n}\n\n/** A square is a rectangle whose sides match. */\nclass Square extends Rect {\n    Square(int side) {\n        super(\"square\", side, side);\n    }\n}\n\n/** A triangle given by its base and height. */\nclass Triangle extends Shape {\n    private final int base;\n    private final int height;\n\n    Triangle(int base, int height) {\n        super(\"triangle\");\n        this.base = base;\n        this.height = height;\n    }\n\n    @Override\n    public int area() {\n        return base * height / 2;\n    }\n}\n\n/**\n * A list of shapes of one kind.\n *\n * @param <T> the kind of shape stored; a Catalog&lt;Rect&gt; holds only rectangles\n */\nclass Catalog<T extends Shape> {\n    private final List<T> items = new ArrayList<T>();\n\n    /**\n     * Adds an item.\n     *\n     * @param item the shape to store\n     */\n    void add(T item) {\n        items.add(item);\n    }\n\n    /**\n     * Finds the item with the largest area.\n     *\n     * @return the largest item, or {@code null} when the catalog is empty\n     */\n    T largest() {\n        T best = null;\n        for (T item : items) {\n            if (best == null || item.area() > best.area()) {\n                best = item;\n            }\n        }\n        return best;\n    }\n\n    int size() {\n        return items.size();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Catalog<Shape> shapes = new Catalog<Shape>();\n        shapes.add(new Rect(3, 4));\n        shapes.add(new Triangle(6, 5));\n        shapes.add(new Square(4));\n        System.out.println(\"catalog holds \" + shapes.size() + \" shapes\");\n        System.out.println(\"largest: \" + shapes.largest().describe());\n\n        Catalog<Rect> rects = new Catalog<Rect>();\n        rects.add(new Rect(2, 9));\n        rects.add(new Square(3));\n        Rect widest = rects.largest();\n        System.out.println(\"largest rect: \" + widest.describe());\n\n        Describable d = new Square(5);\n        System.out.println(\"through the interface: \" + d.describe());\n        try {\n            new Rect(0, 3);\n        } catch (IllegalArgumentException ex) {\n            System.out.println(\"rejected: \" + ex.getMessage());\n        }\n        Catalog<Triangle> empty = new Catalog<Triangle>();\n        System.out.println(\"empty catalog largest: \" + empty.largest());\n    }\n}\n",
+          "output": "catalog holds 3 shapes\nlargest: square area=16\nlargest rect: rect area=18\nthrough the interface: square area=25\nrejected: sides must be at least 1\nempty catalog largest: null\n",
+          "explanation": "This program is the design in the diagram above, written in code. Describable is an interface. Shape is an abstract class that implements it. It has a private field name, a protected constructor and an abstract method area(). Rect and Triangle extend Shape. Square extends Rect. Catalog<T extends Shape> is a generic class whose type parameter must be a Shape or one of its subclasses.\n\nRead the code against the picture. Every line in the diagram is something you can find in the source: the dashed arrow is implements, the solid arrows with hollow triangles are extends, the signs in front of members are the access modifiers, and {abstract} is the keyword abstract. The generic class shows its bound in its name.\n\nCatalog<Shape> accepts a Rect, a Triangle and a Square. The areas are 12, 15 and 16, so the largest is the square. Catalog<Rect> accepts only rectangles, and largest() returns a Rect, so no cast is needed. The call through the Describable variable still runs the version of describe() from Shape, which calls the area() of the real object. Rect rejects a side of 0 with IllegalArgumentException, and an empty catalog returns null from largest(), exactly as its documentation says.\n\nThe comments that start with /** are Javadoc comments. They use @param for each parameter, @return for the result, @throws for an exception and its condition, @see for a related class, @since for the version, {@code ...} for code in the text and {@link ...} for a link. The command javadoc -package -d docs Main.java turns them into an HTML reference. The -package option is needed here because, by default, only public and protected members are listed, and most of these classes are package-private. The javadoc tool accepts this file with -Xdoclint:all and reports no problems.",
+          "walkthrough": [
+            "Write the interface and the abstract class with documentation comments.",
+            "Extend the abstract class twice, then extend a subclass once more.",
+            "Declare a generic class with a bound so that it accepts only shapes.",
+            "Use the same Catalog code with different type arguments and see what the compiler accepts.",
+            "Reject bad input with a documented exception and return null for an empty catalog."
+          ],
+          "trace": {
+            "columns": [
+              "Diagram element",
+              "Java source",
+              "Seen in the output"
+            ],
+            "rows": [
+              [
+                "dashed arrow to the interface",
+                "abstract class Shape implements Describable",
+                "through the interface: square area=25"
+              ],
+              [
+                "solid arrow with hollow triangle",
+                "class Square extends Rect",
+                "largest: square area=16"
+              ],
+              [
+                "type parameter with bound",
+                "class Catalog<T extends Shape>",
+                "Catalog<Rect> returns a Rect"
+              ],
+              [
+                "abstract operation",
+                "public abstract int area();",
+                "each subclass supplies it"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "interface Describable { String describe(); }",
+              "meaning": "An interface lists methods without bodies; classes that implement it must supply them."
+            },
+            {
+              "syntax": "abstract class Shape implements Describable",
+              "meaning": "An abstract class cannot be created with new; it may contain abstract methods."
+            },
+            {
+              "syntax": "class Catalog<T extends Shape>",
+              "meaning": "T stands for a type chosen by the user, but it must be Shape or a subclass of Shape."
+            },
+            {
+              "syntax": "Catalog<Rect> rects = new Catalog<Rect>();",
+              "meaning": "Fix T to Rect for this variable, so add and largest work with rectangles."
+            },
+            {
+              "syntax": "/** ... @param x ... @return ... */",
+              "meaning": "A documentation comment; tools read it to produce the HTML reference."
+            }
           ]
         }
       ]

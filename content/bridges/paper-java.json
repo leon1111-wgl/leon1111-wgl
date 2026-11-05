@@ -1,0 +1,770 @@
+{
+ "id": "paper-java",
+ "course": "info1113",
+ "kind": "by-hand",
+ "title": {
+  "en": "Writing Java on paper",
+  "zh": "在纸上写 Java 代码"
+ },
+ "summary": {
+  "en": "Write Java with a pen: no compiler, no autocomplete, no running. Five short lessons: run a program in your head, draw the stack and heap, memorise the skeletons, catch the slips a compiler would catch, and mark your own work.",
+  "zh": "用笔写 Java 代码：没有编译器，没有自动补全，也不能运行。五节短课：在脑子里运行程序、画栈和堆、背熟代码骨架、抓住编译器本来会抓的小错，以及给自己的答案打分。"
+ },
+ "needs": [
+  {
+   "en": "You have compiled and run one small Java program before. If not, read the Java first-steps guide first. This guide starts at the point where no computer is there to help.",
+   "zh": "你以前编译并运行过一个小的 Java 程序。如果没有，请先读 Java 入门指南。本篇从“身边没有计算机帮你检查”这一步开始。"
+  },
+  {
+   "en": "A pen or pencil, an eraser, and squared or lined paper. Tables are easier on squared paper.",
+   "zh": "一支笔或铅笔、一块橡皮，以及方格纸或横线纸。在方格纸上画表格更方便。"
+  },
+  {
+   "en": "About 20 minutes for each lesson. Do the check questions on paper, not in your head.",
+   "zh": "每课大约 20 分钟。检查题要写在纸上，不要只在脑子里想。"
+  }
+ ],
+ "lessons": [
+  {
+   "id": "read-like-a-computer",
+   "title": {
+    "en": "Read like a computer",
+    "zh": "像计算机一样读代码"
+   },
+   "goal": {
+    "en": "You can run a short Java program by hand, one line at a time, and write down every value it uses.",
+    "zh": "你能一行一行地手动运行一小段 Java 程序，并写下它用到的每一个值。"
+   },
+   "plain": {
+    "en": "When you write code on paper, nothing tells you that a line is wrong. Your only check is to run the program yourself, half in your head and half on the page. This is called a dry run: you act as the computer, with a pen, one line at a time.\n\nA computer has no idea what your program is for. It does exactly what each line says, in order, and it remembers only what is stored in variables. A variable is a named place that holds a value. While you trace, do the same. Do what the line says, not what you meant it to say.\n\nThe tool is a trace table. A trace table has one column for each variable and one row for each line that runs. Build it in four steps.\n\n1. Number the lines of the program in the margin, starting at 1.\n2. Draw the table. The first column is Line. Then one column for each variable. The last column is Note, where you write what happened, for example \"test is true\", or what the program printed.\n3. Run the program. Execution starts at the first line inside main. Each time a line runs, add a row. Write the line number, then the value of every variable after that line has finished. Copy unchanged values down from the row above, so that every row can be read on its own.\n4. Use two marks for a variable with no value. A dash (–) means the variable has not been declared yet. A question mark (?) means it is declared but nothing has been stored in it. Java refuses to compile a program that reads a question-mark variable, so on paper, reading one is a mistake you must catch yourself.\n\nFor now, write a String in its column as its text in double quotes, such as \"data\". The next lesson draws what really happens behind it.\n\nA loop line runs many times, so it gets many rows. For a for loop, add one row each time the computer reaches the test. Write the values after the update part (such as i++), and write the result of the test in Note. The last row of a loop is the visit where the test is false. The body does not run after it. A variable declared inside the for line, such as i, stops existing when the loop ends, so write a dash for it afterwards.\n\nAn if line gets one row. If its test is false, the next row is the first line after the closing brace of the if.\n\nIf the program calls a method, draw a second small table for that call, with columns for its parameters and its own variables. Number the calls (f#1, f#2). When the method returns, write the returned value in the Note column of the line that made the call.",
+    "zh": "在纸上写代码时，没有任何东西会告诉你某一行写错了。你唯一的检查办法，是自己把程序运行一遍：一半在脑子里，一半写在纸上。这叫手动跟踪（英文叫 dry run）：你扮演计算机，拿着笔，一行一行地运行程序。\n\n计算机不知道你的程序是做什么用的。它严格按每一行写的内容，按顺序执行，并且只记得变量里存着的东西。变量就是一个有名字的位置，里面存着一个值。你在跟踪时也要这样做：按这一行实际写的内容去做，而不是按你原本想写的内容去做。\n\n用的工具叫跟踪表。跟踪表里每个变量占一列，每执行一行代码占一行。分四步来做。\n\n1. 在页边给程序的每一行编号，从 1 开始。\n2. 画表格。第一列是“行号”，接着每个变量一列，最后一列叫“备注”，用来写发生了什么，例如“条件为真”，或者程序输出了什么。\n3. 开始运行。程序从 main 里的第一行开始执行。每执行一行，就加一行记录：先写行号，再写这一行执行完之后每个变量的值。没有变化的值要从上一行抄下来，这样每一行单独看也能读懂。\n4. 对没有值的变量，用两种记号。短横线（–）表示这个变量还没有声明，问号（?）表示它已经声明，但还没有存进任何值。Java 不会编译读取问号变量的程序，所以在纸上，读取问号变量是一个你必须自己抓住的错误。\n\n现在先把 String 变量在它那一列里写成带双引号的文字，例如 \"data\"。下一课会画出它背后真正发生的事。\n\n循环语句会执行很多次，所以会有很多行记录。对于 for 循环，每当计算机走到条件判断，就加一行：写下更新部分（例如 i++）之后各变量的值，并在备注里写条件判断的结果。循环的最后一行记录，是条件为假的那一次，这之后循环体不会再执行。在 for 括号里声明的变量（例如 i）在循环结束后就不存在了，所以之后要写短横线。\n\nif 语句只占一行记录。如果条件为假，下一行记录就是这个 if 右花括号之后的第一行代码。\n\n如果程序调用了方法，就为这次调用另画一张小表，列出它的参数和它自己的变量，并给每次调用编号（f#1、f#2）。方法返回时，把返回值写在发起调用的那一行的备注里。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "dry run",
+      "zh": "手动跟踪（dry run）"
+     },
+     "meaning": {
+      "en": "Running a program by hand, with a pen, without a computer.",
+      "zh": "不用计算机，拿笔手动运行一个程序。"
+     }
+    },
+    {
+     "term": {
+      "en": "trace table",
+      "zh": "跟踪表"
+     },
+     "meaning": {
+      "en": "A grid with one column per variable and one row per line that runs.",
+      "zh": "一张表格：每个变量一列，每执行一行代码一行。"
+     }
+    },
+    {
+     "term": {
+      "en": "variable",
+      "zh": "变量"
+     },
+     "meaning": {
+      "en": "A named place that holds one value, such as int count.",
+      "zh": "一个有名字的位置，存放一个值，例如 int count。"
+     }
+    },
+    {
+     "term": {
+      "en": "test",
+      "zh": "条件判断"
+     },
+     "meaning": {
+      "en": "The yes-or-no question in an if or a for, such as i < 4. Its answer is true or false.",
+      "zh": "if 或 for 里那个是或否的问题，例如 i < 4，答案是真或假。"
+     }
+    },
+    {
+     "term": {
+      "en": "method",
+      "zh": "方法"
+     },
+     "meaning": {
+      "en": "A named block of code that you can call, such as length() or charAt(i).",
+      "zh": "一段有名字、可以被调用的代码，例如 length() 或 charAt(i)。"
+     }
+    }
+   ],
+   "example": {
+    "language": "java",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        int count = 0;\n        String word = \"data\";\n        for (int i = 0; i < word.length(); i++) {\n            if (word.charAt(i) == 'a') {\n                count++;\n            }\n        }\n        System.out.println(count);\n    }\n}\n",
+    "output": "2",
+    "walk": {
+     "en": [
+      "Set up first. Number the lines 1 to 12: public class Main { is 1, public static void main is 2, int count = 0; is 3, and the last } is 12. The page does not print numbers, so count them yourself. Draw five columns: Line | word | i | count | Note. The computer starts at the first line inside main, which is line 3.",
+      "Line 3 | word = – | i = – | count = 0 | count is created with 0. word and i do not exist yet.",
+      "Line 4 | word = \"data\" | i = – | count = 0 | word is created and holds the text \"data\".",
+      "Line 5 | word = \"data\" | i = 0 | count = 0 | The for line creates i with 0. word.length() is 4, so the test 0 < 4 is true.",
+      "Line 6 | i = 0 | count = 0 | word.charAt(0) is d, not a, so the test is false. The next row is the for line again.",
+      "Line 5 | i = 1 | count = 0 | i++ makes i 1. The test 1 < 4 is true.",
+      "Line 6 | i = 1 | count = 0 | word.charAt(1) is a, so the test is true. Go into the body.",
+      "Line 7 | i = 1 | count = 1 | count++ adds 1 to count.",
+      "Line 5 | i = 2 | count = 1 | i++ makes i 2. The test 2 < 4 is true.",
+      "Line 6 | i = 2 | count = 1 | word.charAt(2) is t, so the test is false.",
+      "Line 5 | i = 3 | count = 1 | i++ makes i 3. The test 3 < 4 is true.",
+      "Line 6 | i = 3 | count = 1 | word.charAt(3) is a, so the test is true.",
+      "Line 7 | i = 3 | count = 2 | count++ makes count 2.",
+      "Line 5 | i = 4 | count = 2 | i++ makes i 4. The test 4 < 4 is false, so the loop ends.",
+      "Line 10 | i = – | count = 2 | System.out.println writes 2 and a new line. i stopped existing when the loop ended, so it gets a dash. The program prints 2."
+     ],
+     "zh": [
+      "先做准备。给代码编号 1 到 12：public class Main { 是 1，public static void main 是 2，int count = 0; 是 3，最后一个 } 是 12。页面不显示行号，你要自己数。画五列：行号 | word | i | count | 备注。计算机从 main 里的第一行开始，也就是第 3 行。",
+      "第 3 行 | word = – | i = – | count = 0 | 创建 count 并存入 0。word 和 i 还不存在。",
+      "第 4 行 | word = \"data\" | i = – | count = 0 | 创建 word，里面是文字 \"data\"。",
+      "第 5 行 | word = \"data\" | i = 0 | count = 0 | for 这一行创建 i 并存入 0。word.length() 是 4，条件 0 < 4 为真。",
+      "第 6 行 | i = 0 | count = 0 | word.charAt(0) 是 d，不是 a，条件为假。下一行记录又回到 for 那一行。",
+      "第 5 行 | i = 1 | count = 0 | i++ 使 i 变成 1。条件 1 < 4 为真。",
+      "第 6 行 | i = 1 | count = 0 | word.charAt(1) 是 a，条件为真，进入 if 内部。",
+      "第 7 行 | i = 1 | count = 1 | count++ 使 count 加 1。",
+      "第 5 行 | i = 2 | count = 1 | i++ 使 i 变成 2。条件 2 < 4 为真。",
+      "第 6 行 | i = 2 | count = 1 | word.charAt(2) 是 t，条件为假。",
+      "第 5 行 | i = 3 | count = 1 | i++ 使 i 变成 3。条件 3 < 4 为真。",
+      "第 6 行 | i = 3 | count = 1 | word.charAt(3) 是 a，条件为真。",
+      "第 7 行 | i = 3 | count = 2 | count++ 使 count 变成 2。",
+      "第 5 行 | i = 4 | count = 2 | i++ 使 i 变成 4。条件 4 < 4 为假，循环结束。",
+      "第 10 行 | i = – | count = 2 | System.out.println 输出 2 和一个换行。i 在循环结束时就不存在了，所以写短横线。程序输出 2。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "double half = 7 / 2;",
+     "why": {
+      "en": "Both 7 and 2 are ints, so Java does integer division first. 7 / 2 is 3, and Java then stores 3 as 3.0. The decimal part is already gone. Trace with the types the program has, not with the numbers you hoped for. Make at least one side a double: 7 / 2.0 is 3.5.",
+      "zh": "7 和 2 都是 int，所以 Java 先做整数除法。7 / 2 的结果是 3，然后 Java 把 3 存成 3.0，小数部分早就没有了。跟踪时要按程序里实际的类型来算，而不是按你希望的数字来算。让至少一边是 double：7 / 2.0 等于 3.5。"
+     },
+     "right": "double half = 7 / 2.0;"
+    },
+    {
+     "wrong": "String word = \"data\";\nfor (int i = 0; i <= word.length(); i++) {\n    System.out.println(word.charAt(i));\n}",
+     "why": {
+      "en": "The test uses <=, so the loop also runs with i equal to 4. But a String of length 4 has positions 0 to 3. word.charAt(4) stops the program with a StringIndexOutOfBoundsException. The last row of your trace table shows it: the position is outside the word. To visit every position, use < with length().",
+      "zh": "条件用的是 <=，所以 i 等于 4 时循环还会执行。但长度为 4 的 String 只有 0 到 3 号位置。word.charAt(4) 会让程序因 StringIndexOutOfBoundsException 而停止。跟踪表的最后一行就能看出来：这个位置在单词之外。要访问每个位置，应该在 length() 上用 <。"
+     },
+     "right": "String word = \"data\";\nfor (int i = 0; i < word.length(); i++) {\n    System.out.println(word.charAt(i));\n}"
+    },
+    {
+     "wrong": "System.out.println('a' + 1);",
+     "why": {
+      "en": "A char takes part in arithmetic as its number code. 'a' is 97, so 'a' + 1 is the int 98, and 98 is what is printed. To get the next letter, cast the sum back to char.",
+      "zh": "char 参与算术运算时，用的是它的数字编码。'a' 是 97，所以 'a' + 1 是 int 型的 98，打印出来的就是 98。要得到下一个字母，需要把和强制转换回 char。"
+     },
+     "right": "System.out.println((char) ('a' + 1));"
+    },
+    {
+     "wrong": "System.out.println(\"sum: \" + 1 + 2);",
+     "why": {
+      "en": "Java reads + from left to right. \"sum: \" + 1 is the text sum: 1, and then + 2 appends another text. The program prints sum: 12. Put the addition in round brackets so it happens first: \"sum: \" + (1 + 2) prints sum: 3.",
+      "zh": "Java 的 + 从左往右算。\"sum: \" + 1 得到文字 sum: 1，再 + 2 又接上一段文字，所以程序输出 sum: 12。把加法放进圆括号，让它先算：\"sum: \" + (1 + 2) 输出 sum: 3。"
+     },
+     "right": "System.out.println(\"sum: \" + (1 + 2));"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Make a trace table for these four lines, numbered 1 to 4: int a = 6; int b = 4; a = a % b; b = b + a; What are a and b at the end?",
+      "zh": "为下面四行代码（编号 1 到 4）做一张跟踪表：int a = 6; int b = 4; a = a % b; b = b + a; 最后 a 和 b 各是多少？"
+     },
+     "a": {
+      "en": "Line 1: a = 6, b = –. Line 2: a = 6, b = 4. Line 3: a = 2, b = 4, because 6 % 4 is 2. Line 4: a = 2, b = 6. At the end a is 2 and b is 6. Line 4 uses the new value of a.",
+      "zh": "第 1 行：a = 6，b = –。第 2 行：a = 6，b = 4。第 3 行：a = 2，b = 4，因为 6 % 4 是 2。第 4 行：a = 2，b = 6。最后 a 是 2，b 是 6。第 4 行用的是 a 的新值。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict, without running: what does for (int i = 1; i < 10; i = i * 3) System.out.print(i + \" \"); print?",
+      "zh": "不运行，直接预测：for (int i = 1; i < 10; i = i * 3) System.out.print(i + \" \"); 会输出什么？"
+     },
+     "a": {
+      "en": "It prints 1 3 9, each followed by a space. After 9 the update makes i 27, the test 27 < 10 is false, and the loop ends. The step does not have to be +1.",
+      "zh": "输出 1 3 9，每个数后面有一个空格。9 之后更新部分使 i 变成 27，条件 27 < 10 为假，循环结束。步进不一定是 +1。"
+     }
+    },
+    {
+     "q": {
+      "en": "In the worked program, what value goes in the i column on the row for line 10, and why?",
+      "zh": "在上面的完整例子里，第 10 行那一行记录中，i 这一列应该写什么？为什么？"
+     },
+     "a": {
+      "en": "A dash. i was declared in the for line, so it exists only while the loop runs. After the loop it is gone, and the code on line 10 could not use it.",
+      "zh": "写短横线。i 是在 for 那一行声明的，只在循环运行期间存在。循环结束后它就消失了，第 10 行的代码也不能使用它。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "draw-memory",
+   "title": {
+    "en": "Draw memory",
+    "zh": "画出内存"
+   },
+   "goal": {
+    "en": "You can draw the stack and the heap for a Java program at any line, with one fixed convention, and say which objects have become unreachable.",
+    "zh": "你能用一套固定的画法，画出 Java 程序在任意一行时的栈和堆，并说出哪些对象已经不可达。"
+   },
+   "plain": {
+    "en": "Java programs work with objects, and several variables can lead to the same object. You cannot see that in the code. You have to draw it. Use the same picture every time.\n\nJava keeps values in two places. Draw two columns, each with a heading: Stack and Heap.\n\nThe stack holds one frame for each method that is running right now. A frame is a box that holds that call's parameters and local variables. Draw main's frame first, at the top of the Stack column. Each call adds a new frame below it. When a method returns, cross its frame out. Everything inside it is gone.\n\nThe heap holds every object and every array. They are made with new. You never free them: Java does that for you.\n\nNow the rules for drawing things.\n\n1. A variable of a primitive type (int, double, boolean, char) is a box with its value inside, such as int n and 5.\n2. A variable of any other type holds a reference. A reference is an arrow to an object, or the value null. Draw an arrow, and also write the target's label inside the box, so you can still read it when arrows cross.\n3. Give every object a label: H1, H2, H3, in the order new is run. Write the label and the class on top, such as H1 (Box). Draw the fields of the object as boxes inside it, with their names. Draw an array as H2 (int[3]) with cells [0], [1], [2]. The cells of a new array start at 0 (numbers), false, or null (references). They are never ?.\n4. An array of objects is an array of references. new Box[2] makes one array whose two cells hold null. It does not make any Box. Each Box needs its own new.\n5. A String is an object. Draw it in the heap with its text, such as H3 (String) \"hi\". Two literals with the same text are the same object. new String(\"hi\") makes a different one.\n6. null is a reference that points at nothing. Draw a slash through the box and write null. Calling a method through null stops the program with a NullPointerException.\n\nWhat = does. a = b copies what is in b's box into a's box. For a primitive, that is the number. For a reference, that is the arrow. After Box c = a; both c and a lead to the same object, and the object is not copied. == between references asks whether the two arrows end at the same object. It does not look inside. To compare the text of two Strings, use equals.\n\nWhat a method call does. It copies each argument into a new parameter box in the new frame. Java always copies. For a reference, the copy is an arrow. So the method can change the object through the arrow, but it cannot make the caller's variable point somewhere else.\n\nWhat becomes unreachable. An object is reachable if you can get to it by following arrows from a variable in a frame that still exists. An object that no arrow leads to is unreachable. The garbage collector, the part of Java that reclaims memory, may remove it at some moment. On paper, cross the object out at the moment it becomes unreachable: when the last arrow to it is changed, or when the frame that held the last arrow is crossed out.",
+    "zh": "Java 程序处理的是对象，而且好几个变量可以通向同一个对象。这一点从代码里看不出来，必须画出来。每次都用同一种画法。\n\nJava 把值放在两个地方。把它们画成两列，每列写一个标题：栈和堆。\n\n栈为当前正在运行的每个方法放一个栈帧。栈帧是一个方框，里面放这次调用的参数和局部变量。先画 main 的栈帧，放在栈这一列的最上面。每调用一次方法，就在它下面加一个新栈帧。方法返回时，把它的栈帧划掉，里面的东西全部消失。\n\n堆放所有的对象和数组。它们都是用 new 创建的。你不需要释放它们，Java 会替你做。\n\n下面是画图的规则。\n\n1. 基本类型（int、double、boolean、char）的变量是一个方框，值写在里面，例如 int n 和 5。\n2. 其他类型的变量里存的是引用。引用要么是指向对象的箭头，要么是 null。画一支箭头，同时在方框里写上目标的标签，这样箭头交叉时你仍然能读出来。\n3. 给每个对象加标签：H1、H2、H3，按 new 被执行的顺序编号。在对象上方写标签和类名，例如 H1 (Box)。对象的字段画成里面的小方框，并写上字段名。数组画成 H2 (int[3])，带有 [0]、[1]、[2] 三个单元。新数组的单元一开始是 0（数值）、false，或者 null（引用），绝不会是 ?。\n4. 对象数组是引用的数组。new Box[2] 只创建一个数组，它的两个单元里是 null，并不会创建任何 Box。每个 Box 都需要自己的 new。\n5. String 是对象。把它画在堆里，写上它的文字，例如 H3 (String) \"hi\"。文字相同的两个字面量是同一个对象。new String(\"hi\") 会创建另一个对象。\n6. null 是不指向任何东西的引用。在方框上画一道斜线并写上 null。通过 null 调用方法，程序会因 NullPointerException 而停止。\n\n= 做了什么。a = b 把 b 方框里的内容复制到 a 的方框里。对基本类型，复制的是数值；对引用，复制的是箭头。执行 Box c = a; 之后，c 和 a 通向同一个对象，对象本身并没有被复制。引用之间的 == 问的是：两支箭头是否指向同一个对象。它不会去看对象里面。要比较两个 String 的文字，用 equals。\n\n方法调用做了什么。它把每个实参复制到新栈帧里新的参数方框中。Java 永远是复制。对引用来说，复制的是箭头。所以方法可以顺着箭头修改对象，但不能让调用者的变量指向别的地方。\n\n什么变成了不可达。如果你能从仍然存在的栈帧里的某个变量出发，顺着箭头走到一个对象，它就是可达的。没有任何箭头通向的对象是不可达的。垃圾回收器（Java 里负责回收内存的部分）可以在某个时刻把它清除。在纸上，要在对象变成不可达的那一刻把它划掉：也就是通向它的最后一支箭头被改掉，或者持有最后一支箭头的栈帧被划掉的时候。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "stack and frame",
+      "zh": "栈和栈帧"
+     },
+     "meaning": {
+      "en": "The stack holds one frame for each running method. A frame holds that call's parameters and local variables and is gone when the call returns.",
+      "zh": "栈为每个正在运行的方法放一个栈帧。栈帧里是这次调用的参数和局部变量，调用返回时就消失。"
+     }
+    },
+    {
+     "term": {
+      "en": "heap",
+      "zh": "堆"
+     },
+     "meaning": {
+      "en": "Where every object and array lives. You make them with new, and Java removes them for you.",
+      "zh": "所有对象和数组所在的地方。你用 new 创建它们，Java 会替你清除它们。"
+     }
+    },
+    {
+     "term": {
+      "en": "reference",
+      "zh": "引用"
+     },
+     "meaning": {
+      "en": "The content of a variable of an object type: an arrow to an object, or null.",
+      "zh": "对象类型变量里存的内容：一支指向对象的箭头，或者 null。"
+     }
+    },
+    {
+     "term": {
+      "en": "null",
+      "zh": "空值 null"
+     },
+     "meaning": {
+      "en": "A reference that points at nothing. Calling a method through it is an error.",
+      "zh": "不指向任何东西的引用。通过它调用方法是错误。"
+     }
+    },
+    {
+     "term": {
+      "en": "label",
+      "zh": "标签"
+     },
+     "meaning": {
+      "en": "A name such as H1 that you give to an object in your drawing.",
+      "zh": "你在图里给对象起的名字，例如 H1。"
+     }
+    },
+    {
+     "term": {
+      "en": "unreachable",
+      "zh": "不可达"
+     },
+     "meaning": {
+      "en": "An object that no arrow from a live frame leads to. The garbage collector may remove it.",
+      "zh": "没有任何来自存活栈帧的箭头通向的对象。垃圾回收器可以清除它。"
+     }
+    },
+    {
+     "term": {
+      "en": "garbage collector",
+      "zh": "垃圾回收器"
+     },
+     "meaning": {
+      "en": "The part of Java that finds unreachable objects and reclaims their memory.",
+      "zh": "Java 中负责找出不可达对象并回收其内存的部分。"
+     }
+    }
+   ],
+   "example": {
+    "language": "java",
+    "code": "public class Main {\n    static class Box {\n        int value;\n\n        Box(int value) {\n            this.value = value;\n        }\n    }\n\n    static void bump(Box b, int n) {\n        b.value = b.value + n;\n        n = 0;\n        b = null;\n        // A: draw the memory here, inside bump\n    }\n\n    public static void main(String[] args) {\n        int n = 5;\n        Box a = new Box(1);\n        Box c = a;\n        Box[] row = new Box[2];\n        row[0] = new Box(7);\n        bump(a, n);\n        System.out.println(c.value + \" \" + n + \" \" + row[0].value + \" \" + row[1]);\n        a = new Box(40);\n        c = null;\n        // B: draw the memory here\n        System.out.println(a.value);\n    }\n}\n",
+    "output": "6 5 7 null\n40",
+    "walk": {
+     "en": [
+      "Draw two columns with headings: Stack and Heap. Leave out the args parameter of main, since this program does not use it. Draw main’s frame at the top of Stack.",
+      "int n = 5; Draw a box int n holding 5. It is a primitive, so the value sits inside the box.",
+      "Box a = new Box(1); new makes an object in the heap: H1 (Box) with one field box, value. The constructor runs and sets value to 1. The variable a holds an arrow to H1; write H1 in its box.",
+      "Box c = a; copies the arrow. c holds H1 too. There is still one Box.",
+      "Box[] row = new Box[2]; makes one array object, H2 (Box[2]), with cells [0] and [1] both holding null. No Box is made. row holds an arrow to H2.",
+      "row[0] = new Box(7); makes a second Box, H3 (Box) with value 7, and puts an arrow to H3 into cell [0] of H2. Cell [1] still holds null.",
+      "bump(a, n); Draw a new frame below main’s. Its parameter b is a copy of the arrow in a, so b holds H1. Its parameter n is a copy of 5, a new box with its own 5. Then b.value = b.value + n follows the arrow: H1.value becomes 1 + 5 = 6. n = 0 changes only bump’s own n. b = null puts null into bump’s own b; main’s a still holds H1. At marker A: bump has b = null and n = 0, and H1 holds 6. Then bump returns: cross out its frame.",
+      "The println reads c.value (c leads to H1, which holds 6), n (main’s n is still 5), row[0].value (7) and row[1] (null). It prints 6 5 7 null.",
+      "a = new Box(40); makes H4 (Box) with value 40, and the arrow in a moves to H4. H1 is still reachable, because c leads to it. Then c = null; puts a slash through c. Now no arrow leads to H1: it is unreachable, so cross it out. At marker B: main has n = 5, a to H4, c = null, and row to H2. H2 has [0] to H3 and [1] null. H3 holds 7, H4 holds 40, and H1 (holding 6) is crossed out.",
+      "The last println prints 40."
+     ],
+     "zh": [
+      "画两列并写上标题：栈和堆。省略 main 的参数 args，因为这个程序没有用到它。在栈的最上面画 main 的栈帧。",
+      "int n = 5; 画一个方框 int n，里面是 5。它是基本类型，所以值直接放在方框里。",
+      "Box a = new Box(1); new 在堆里创建一个对象：H1 (Box)，里面有一个字段方框 value。构造方法运行，把 value 设为 1。变量 a 里是指向 H1 的箭头，方框里写上 H1。",
+      "Box c = a; 复制箭头。c 里也是 H1。Box 对象仍然只有一个。",
+      "Box[] row = new Box[2]; 创建一个数组对象 H2 (Box[2])，单元 [0] 和 [1] 里都是 null。并没有创建任何 Box。row 里是指向 H2 的箭头。",
+      "row[0] = new Box(7); 创建第二个 Box，H3 (Box)，value 是 7，并把指向 H3 的箭头放进 H2 的单元 [0]。单元 [1] 里仍然是 null。",
+      "bump(a, n); 在 main 的栈帧下面画一个新栈帧。参数 b 是 a 里箭头的副本，所以 b 里是 H1。参数 n 是 5 的副本，是一个新方框，里面有它自己的 5。接着 b.value = b.value + n 顺着箭头走：H1 的 value 变成 1 + 5 = 6。n = 0 只改 bump 自己的 n。b = null 只把 null 放进 bump 自己的 b，main 里的 a 仍然是 H1。在标记 A 处：bump 里 b = null、n = 0，H1 的 value 是 6。然后 bump 返回：划掉它的栈帧。",
+      "println 读取 c.value（c 通向 H1，里面是 6）、n（main 里的 n 仍然是 5）、row[0].value（7）和 row[1]（null）。输出 6 5 7 null。",
+      "a = new Box(40); 创建 H4 (Box)，value 是 40，a 里的箭头移到 H4。H1 仍然可达，因为 c 通向它。接着 c = null; 在 c 上画一道斜线。现在没有任何箭头通向 H1：它不可达，把它划掉。在标记 B 处：main 里 n = 5，a 指向 H4，c = null，row 指向 H2。H2 的 [0] 指向 H3，[1] 是 null。H3 里是 7，H4 里是 40，H1（里面是 6）被划掉。",
+      "最后一个 println 输出 40。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "String a = new String(\"hi\");\nString b = new String(\"hi\");\nboolean same = (a == b);",
+     "why": {
+      "en": "Each new String(\"hi\") makes its own object, so a and b hold arrows to two different objects, H1 and H2. == compares the arrows, so same is false even though both objects say hi. To compare the text, use a.equals(b).",
+      "zh": "每个 new String(\"hi\") 都会创建自己的对象，所以 a 和 b 里是指向两个不同对象 H1 和 H2 的箭头。== 比较的是箭头，所以即使两个对象的文字都是 hi，same 也是 false。要比较文字，用 a.equals(b)。"
+     },
+     "right": "String a = new String(\"hi\");\nString b = new String(\"hi\");\nboolean same = a.equals(b);"
+    },
+    {
+     "wrong": "int[] a = {1, 2, 3};\nint[] b = a;\nb[0] = 9;",
+     "why": {
+      "en": "int[] b = a; copies the arrow, not the array. There is one array H1 and two arrows into it, so b[0] = 9 also changes a[0]. To get a separate array, make a new object: b = a.clone() draws a second array H2 with its own cells.",
+      "zh": "int[] b = a; 复制的是箭头，不是数组。只有一个数组 H1，有两支箭头通向它，所以 b[0] = 9 也会改变 a[0]。要得到独立的数组，就要创建一个新对象：b = a.clone() 会画出带有自己单元的第二个数组 H2。"
+     },
+     "right": "int[] a = {1, 2, 3};\nint[] b = a.clone();\nb[0] = 9;"
+    },
+    {
+     "wrong": "Box[] row = new Box[2];\nrow[0].value = 3;",
+     "why": {
+      "en": "new Box[2] only makes the array. Its cells hold null, and null has no value field. Following the arrow from row[0] stops the program with a NullPointerException. Make the Box first.",
+      "zh": "new Box[2] 只创建了数组。它的单元里是 null，而 null 没有 value 字段。顺着 row[0] 的箭头走，程序会因 NullPointerException 而停止。要先创建 Box。"
+     },
+     "right": "Box[] row = new Box[2];\nrow[0] = new Box(0);\nrow[0].value = 3;"
+    },
+    {
+     "wrong": "static void reset(Box b) {\n    b = new Box(0);\n}",
+     "why": {
+      "en": "The parameter b is a copy of the caller’s arrow. b = new Box(0) points the copy at a new object H2 and leaves the caller’s arrow alone. When reset returns, nothing has changed for the caller. Go through the arrow to change the object that the caller sees.",
+      "zh": "参数 b 是调用者箭头的副本。b = new Box(0) 让副本指向新对象 H2，调用者的箭头纹丝不动。reset 返回后，调用者那边什么都没变。要顺着箭头去修改调用者能看到的那个对象。"
+     },
+     "right": "static void reset(Box b) {\n    b.value = 0;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Draw it: int[] a = {1, 2}; int[] b = a; b[0] = 7; a = new int[]{5}; What does each variable lead to? Is the first array unreachable?",
+      "zh": "画出来：int[] a = {1, 2}; int[] b = a; b[0] = 7; a = new int[]{5}; 每个变量各通向什么？第一个数组是不是不可达了？"
+     },
+     "a": {
+      "en": "The first array is H1 (int[2]). After int[] b = a, both a and b lead to H1. b[0] = 7 makes H1 hold 7 and 2. Then new int[]{5} makes H2 (int[1]) holding 5, and a moves to H2. b still leads to H1, so H1 is reachable and not crossed out. Now a[0] is 5 and b[0] is 7.",
+      "zh": "第一个数组是 H1 (int[2])。执行 int[] b = a 之后，a 和 b 都通向 H1。b[0] = 7 使 H1 里变成 7 和 2。然后 new int[]{5} 创建 H2 (int[1])，里面是 5，a 移到 H2。b 仍然通向 H1，所以 H1 可达，不用划掉。现在 a[0] 是 5，b[0] 是 7。"
+     }
+    },
+    {
+     "q": {
+      "en": "Draw it: String s = null; and then the call s.length(). What does the drawing show, and what happens?",
+      "zh": "画出来：String s = null; 然后调用 s.length()。图上是什么样子？会发生什么？"
+     },
+     "a": {
+      "en": "The box s holds null: a slash and no arrow. The call must follow an arrow to an object, and there is none. The program stops with a NullPointerException.",
+      "zh": "方框 s 里是 null：一道斜线，没有箭头。调用时要顺着箭头找到一个对象，但这里没有箭头。程序会因 NullPointerException 而停止。"
+     }
+    },
+    {
+     "q": {
+      "en": "Draw it: Box x = new Box(1); Box y = new Box(1); Box z = x; Which of x == y and x == z are true? (Box has no equals method of its own.)",
+      "zh": "画出来：Box x = new Box(1); Box y = new Box(1); Box z = x; x == y 和 x == z 哪个为真？（Box 没有自己的 equals 方法。）"
+     },
+     "a": {
+      "en": "There are two objects, H1 and H2, both holding 1. x and z lead to H1, and y leads to H2. x == y is false: the arrows end at different objects, even though the contents match. x == z is true: the arrows end at the same object.",
+      "zh": "一共有两个对象 H1 和 H2，里面都是 1。x 和 z 通向 H1，y 通向 H2。x == y 为假：虽然内容相同，但两支箭头指向不同的对象。x == z 为真：两支箭头指向同一个对象。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "syntax-to-memorise",
+   "title": {
+    "en": "Syntax to memorise",
+    "zh": "要背熟的语法"
+   },
+   "goal": {
+    "en": "You can write the eleven Java skeletons below from memory, shortest first, with every bracket and semicolon in place.",
+    "zh": "你能凭记忆写出下面十一个 Java 骨架，从最短的开始，每个括号和分号都不缺。"
+   },
+   "plain": {
+    "en": "Some code cannot be worked out on the spot. You must know its shape without looking. The eleven shapes in this lesson are the ones Java needs again and again. They are short enough to learn by heart. Learn them in this order, shortest first, and add the next one only when the last is solid.\n\n1. A class. 2. main. 3. A constructor. 4. for-each. 5. length, length() and size(). 6. String methods. 7. ArrayList. 8. HashMap. 9. try and catch. 10. Generics. 11. interface and extends.\n\nHow to memorise: cover the page and write the shape on paper. Compare it with the page, character by character. Tick it only when it is right with no peeking. Do it again tomorrow. A shape that you write correctly three days in a row is learned.\n\nThe program below contains all eleven shapes, each marked with a comment such as (4). Read it once. Then cover it and write each shape on its own, in a few lines of your own paper.\n\nThree spellings of \"how many\". An array has a field, so there are no brackets: nums.length. A String has a method, so there are brackets: word.length(). An ArrayList or a HashMap has a method called size(): names.size(). A way to remember: only the plain array has no brackets.\n\nString methods. Positions start at 0, and a String never changes: every method gives you a new value. length() is the number of characters. charAt(i) is one char. substring(from, to) takes the characters from position from up to, but not including, position to. indexOf(\"x\") is the position of the first x, or -1 when there is none. equals(other) compares the text. toUpperCase() gives a new String in capitals. contains(\"x\") says whether x occurs.\n\nArrayList: ArrayList<String> names = new ArrayList<>(); with add(x), get(i), set(i, x), remove(i), size(), contains(x). HashMap: HashMap<String, Integer> ages = new HashMap<>(); with put(key, value), get(key), containsKey(key), remove(key), size(). The types inside the angle brackets must be classes: Integer, not int. Both need an import line at the top.",
+    "zh": "有些代码没法当场推出来，你必须不看资料就知道它的形状。这一课的十一个骨架，是 Java 里反复要用的。它们都很短，可以背下来。按下面的顺序学，从最短的开始，上一个背牢了，再加下一个。\n\n1. 类。2. main。3. 构造方法。4. 增强 for（for-each）。5. length、length() 和 size()。6. String 的方法。7. ArrayList。8. HashMap。9. try 和 catch。10. 泛型。11. interface 和 extends。\n\n背诵的办法：盖住页面，在纸上默写这个骨架，再和页面逐个字符对照。只有完全对、中途没有偷看，才打勾。明天再来一遍。连续三天都能写对的骨架，才算学会。\n\n下面的程序包含全部十一个骨架，每个骨架旁边有一条形如 (4) 的注释。先读一遍，再盖住它，在你自己的纸上把每个骨架单独默写出来，每个只写几行。\n\n“有多少个”的三种写法。数组有的是字段，所以不带括号：nums.length。String 有的是方法，所以带括号：word.length()。ArrayList 或 HashMap 的方法叫 size()：names.size()。一个记法：只有朴素的数组不带括号。\n\nString 的方法。位置从 0 开始，而且 String 永远不会改变：每个方法都给你一个新值。length() 是字符个数。charAt(i) 是一个 char。substring(from, to) 取从位置 from 开始、到位置 to 之前（不含 to）的字符。indexOf(\"x\") 是第一个 x 的位置，没有就是 -1。equals(other) 比较文字。toUpperCase() 返回一个大写的新 String。contains(\"x\") 说明 x 是否出现过。\n\nArrayList：ArrayList<String> names = new ArrayList<>(); 常用 add(x)、get(i)、set(i, x)、remove(i)、size()、contains(x)。HashMap：HashMap<String, Integer> ages = new HashMap<>(); 常用 put(key, value)、get(key)、containsKey(key)、remove(key)、size()。尖括号里的类型必须是类：写 Integer，不能写 int。两者都需要在最上面写 import 行。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "skeleton",
+      "zh": "骨架"
+     },
+     "meaning": {
+      "en": "The fixed shape of a piece of code, with the details left to fill in.",
+      "zh": "一段代码固定不变的形状，细节留待填写。"
+     }
+    },
+    {
+     "term": {
+      "en": "constructor",
+      "zh": "构造方法"
+     },
+     "meaning": {
+      "en": "A special method with the class's name and no return type. It runs when new makes an object.",
+      "zh": "一种特殊的方法：与类同名，没有返回类型，在 new 创建对象时运行。"
+     }
+    },
+    {
+     "term": {
+      "en": "generic",
+      "zh": "泛型"
+     },
+     "meaning": {
+      "en": "A class or method with a type parameter such as T, which is filled in when you use it.",
+      "zh": "带有类型参数（例如 T）的类或方法，使用时再把具体类型填进去。"
+     }
+    },
+    {
+     "term": {
+      "en": "exception",
+      "zh": "异常"
+     },
+     "meaning": {
+      "en": "An error that stops normal flow. A catch block can handle it.",
+      "zh": "中断正常流程的错误。catch 块可以处理它。"
+     }
+    },
+    {
+     "term": {
+      "en": "interface",
+      "zh": "接口"
+     },
+     "meaning": {
+      "en": "A list of method names with no bodies. A class that implements it must supply them.",
+      "zh": "一组没有方法体的方法名。实现它的类必须提供这些方法。"
+     }
+    }
+   ],
+   "example": {
+    "language": "java",
+    "code": "import java.util.ArrayList;\nimport java.util.HashMap;\n\n/* (11) interface and extends */\ninterface Shape {\n    double area();\n}\n\nclass Rect implements Shape {\n    private double width;\n    private double height;\n\n    /* (3) constructor */\n    Rect(double width, double height) {\n        this.width = width;\n        this.height = height;\n    }\n\n    public double area() {\n        return width * height;\n    }\n}\n\nclass Square extends Rect {\n    Square(double side) {\n        super(side, side);\n    }\n}\n\n/* (10) generics */\nclass Box<T> {\n    private T item;\n\n    Box(T item) {\n        this.item = item;\n    }\n\n    T get() {\n        return item;\n    }\n}\n\n/* (1) a class */\npublic class Main {\n    static <T extends Comparable<T>> T larger(T a, T b) {\n        if (a.compareTo(b) >= 0) {\n            return a;\n        }\n        return b;\n    }\n\n    /* (2) main */\n    public static void main(String[] args) {\n        /* (7) ArrayList */\n        ArrayList<String> names = new ArrayList<>();\n        names.add(\"Leon\");\n        names.add(\"Mia\");\n        names.add(\"Emma\");\n\n        /* (8) HashMap */\n        HashMap<String, Integer> ages = new HashMap<>();\n        ages.put(\"Leon\", 20);\n        ages.put(\"Mia\", 22);\n\n        /* (4) for-each */\n        for (String name : names) {\n            if (ages.containsKey(name)) {\n                System.out.println(name + \" is \" + ages.get(name));\n            } else {\n                System.out.println(name + \" has no age\");\n            }\n        }\n\n        /* (5) length, length() and size() */\n        int[] nums = new int[3];\n        String word = \"banana\";\n        System.out.println(nums.length + \" \" + word.length() + \" \" + names.size());\n\n        /* (6) String methods */\n        System.out.println(word.substring(1, 3) + \" \" + word.indexOf(\"n\") + \" \" + word.charAt(0) + \" \" + word.toUpperCase() + \" \" + word.equals(\"banana\"));\n\n        Shape s = new Square(3);\n        System.out.println(s.area());\n        System.out.println(larger(\"pear\", \"apple\"));\n        Box<Integer> box = new Box<>(7);\n        System.out.println(box.get());\n\n        /* (9) try and catch */\n        try {\n            int x = Integer.parseInt(\"12a\");\n            System.out.println(x);\n        } catch (NumberFormatException e) {\n            System.out.println(\"not a number\");\n        }\n    }\n}\n",
+    "output": "Leon is 20\nMia is 22\nEmma has no age\n3 6 3\nan 2 b BANANA true\n9.0\npear\n7\nnot a number",
+    "walk": {
+     "en": [
+      "(1) A class. public class Name { ... } The word public, then class, then the name, then braces. The name must match the file name: Main goes in Main.java. A file has at most one public class. The other classes (Shape, Rect, Square, Box) have no public in front, which is fine.",
+      "(2) main. public static void main(String[] args) { ... } Write it exactly, word for word. public so the system can call it, static so no object is needed, void because it returns nothing, and String[] args for the command-line words.",
+      "(3) A constructor. ClassName(type param) { this.field = param; } It has the same name as the class and no return type, not even void. this.width = width; stores the parameter in the field of the object being built. The parameter and the field may share a name; this. picks the field.",
+      "(4) for-each. for (Type item : collection) { ... } The type of one item, a colon, then the array or collection. Here: for (String name : names). Read the colon as \"in\".",
+      "(5) length, length() and size(). nums.length is 3 (an array, no brackets). word.length() is 6 (a String, brackets). names.size() is 3 (an ArrayList, size with brackets). The line prints 3 6 3.",
+      "(6) String methods. word.substring(1, 3) is an (positions 1 and 2). word.indexOf(\"n\") is 2. word.charAt(0) is b. word.toUpperCase() is BANANA. word.equals(\"banana\") is true. The line prints an 2 b BANANA true.",
+      "(7) ArrayList. import java.util.ArrayList; at the top. ArrayList<String> names = new ArrayList<>(); then names.add(\"Leon\"). The type goes on both sides of the equals sign, but the diamond <> on the right may stay empty.",
+      "(8) HashMap. import java.util.HashMap; at the top. HashMap<String, Integer> ages = new HashMap<>(); then ages.put(\"Leon\", 20). Two types, key first and value second. ages.get(\"Emma\") would give null, because Emma was never put in; that is why the program tests containsKey first.",
+      "(9) try and catch. try { risky code } catch (ExceptionType e) { what to do }. Integer.parseInt(\"12a\") cannot read the text as a number, so it throws a NumberFormatException, the rest of the try block is skipped, and the catch block runs. The program prints not a number.",
+      "(10) Generics. A class with a type parameter: class Box<T> { private T item; ... T get() ... } T stands for any class, and Box<Integer> fills it in. A method with a bound: static <T extends Comparable<T>> T larger(T a, T b). The part in angle brackets comes before the return type. The program prints 7 and pear.",
+      "(11) interface and extends. interface Shape { double area(); } lists methods with no body. class Rect implements Shape must supply area() and mark it public. class Square extends Rect inherits the methods of Rect, and its constructor starts with super(side, side); to run Rect’s constructor. Shape s = new Square(3); is allowed, and s.area() prints 9.0."
+     ],
+     "zh": [
+      "(1) 类。public class 名字 { ... } 先写 public，再写 class，然后是名字和花括号。名字必须和文件名一致：Main 放在 Main.java 里。一个文件里最多有一个 public 类。其他的类（Shape、Rect、Square、Box）前面不写 public，这是可以的。",
+      "(2) main。public static void main(String[] args) { ... } 要一字不差地写出来。public 让系统能调用它，static 表示不需要对象，void 表示没有返回值，String[] args 是命令行传入的词。",
+      "(3) 构造方法。类名(类型 参数) { this.字段 = 参数; } 它和类同名，没有返回类型，连 void 也不写。this.width = width; 把参数存进正在创建的对象的字段里。参数和字段可以同名，this. 表示选的是字段。",
+      "(4) for-each。for (类型 元素 : 集合) { ... } 先写单个元素的类型，再写冒号，然后是数组或集合。这里是 for (String name : names)。把冒号读作“在……之中”。",
+      "(5) length、length() 和 size()。nums.length 是 3（数组，不带括号）。word.length() 是 6（String，带括号）。names.size() 是 3（ArrayList，用带括号的 size）。这一行输出 3 6 3。",
+      "(6) String 的方法。word.substring(1, 3) 是 an（位置 1 和 2）。word.indexOf(\"n\") 是 2。word.charAt(0) 是 b。word.toUpperCase() 是 BANANA。word.equals(\"banana\") 是 true。这一行输出 an 2 b BANANA true。",
+      "(7) ArrayList。最上面写 import java.util.ArrayList;。ArrayList<String> names = new ArrayList<>(); 然后 names.add(\"Leon\")。类型要写在等号两边，但右边的菱形 <> 里可以留空。",
+      "(8) HashMap。最上面写 import java.util.HashMap;。HashMap<String, Integer> ages = new HashMap<>(); 然后 ages.put(\"Leon\", 20)。有两个类型，先键后值。ages.get(\"Emma\") 会得到 null，因为从没放入过 Emma；所以程序先用 containsKey 判断。",
+      "(9) try 和 catch。try { 有风险的代码 } catch (异常类型 e) { 出错时做什么 }。Integer.parseInt(\"12a\") 无法把这段文字读成数字，于是抛出 NumberFormatException，try 块里剩下的部分被跳过，执行 catch 块。程序输出 not a number。",
+      "(10) 泛型。带类型参数的类：class Box<T> { private T item; ... T get() ... } T 代表任意一个类，Box<Integer> 把它填上。带上界的方法：static <T extends Comparable<T>> T larger(T a, T b)。尖括号部分写在返回类型之前。程序输出 7 和 pear。",
+      "(11) interface 和 extends。interface Shape { double area(); } 列出没有方法体的方法。class Rect implements Shape 必须提供 area()，并且要写 public。class Square extends Rect 继承 Rect 的方法，它的构造方法以 super(side, side); 开头，去运行 Rect 的构造方法。Shape s = new Square(3); 是允许的，s.area() 输出 9.0。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "int a = nums.length();\nint b = word.length;\nint c = names.length();",
+     "why": {
+      "en": "Each line uses the wrong one of the three spellings. An array has the field length, with no brackets. A String has the method length(), with brackets. An ArrayList has the method size(). None of these three names works on the other types.",
+      "zh": "每一行都用错了三种写法中的一种。数组有字段 length，不带括号。String 有方法 length()，带括号。ArrayList 有方法 size()。这三个名字都不能用在另外两种类型上。"
+     },
+     "right": "int a = nums.length;\nint b = word.length();\nint c = names.size();"
+    },
+    {
+     "wrong": "String word = \"banana\";\nString part = word.substring(1, 3);",
+     "why": {
+      "en": "substring(1, 3) stops before position 3, so it gives two characters, an, and not three. If you want three characters starting at position 1, the second number is 1 + 3 = 4. Count the second number as the position where you stop.",
+      "zh": "substring(1, 3) 在位置 3 之前停止，所以得到两个字符 an，而不是三个。如果你想要从位置 1 开始的三个字符，第二个数字是 1 + 3 = 4。把第二个数字当成“停下来的位置”。"
+     },
+     "right": "String word = \"banana\";\nString part = word.substring(1, 4);"
+    },
+    {
+     "wrong": "for (String name in names) {\n    System.out.println(name);\n}",
+     "why": {
+      "en": "Java has no in. The colon is the separator, and the type of the item is not optional. Write the three parts in order: type, name, colon, collection.",
+      "zh": "Java 里没有 in。分隔符是冒号，而且元素的类型不能省略。按顺序写三部分：类型、名字、冒号、集合。"
+     },
+     "right": "for (String name : names) {\n    System.out.println(name);\n}"
+    },
+    {
+     "wrong": "class Rect {\n    private double width;\n\n    public void Rect(double width) {\n        this.width = width;\n    }\n}",
+     "why": {
+      "en": "A constructor has no return type at all. With void in front, this is an ordinary method that happens to be called Rect, and the class has no constructor with a parameter. A call such as new Rect(2.0) then fails to compile. Write the name straight after any access word.",
+      "zh": "构造方法完全没有返回类型。前面加了 void，它就成了一个恰好叫 Rect 的普通方法，类里就没有带参数的构造方法了，new Rect(2.0) 这样的调用就编译不过。名字要直接跟在访问修饰词后面。"
+     },
+     "right": "class Rect {\n    private double width;\n\n    public Rect(double width) {\n        this.width = width;\n    }\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "On paper, write from memory a class Counter with one int field count, a constructor that sets it to 0, and a method increment() that adds 1. Then compare it with the skeletons.",
+      "zh": "在纸上默写一个类 Counter：有一个 int 字段 count，一个把它设为 0 的构造方法，以及一个加 1 的方法 increment()。然后和骨架对照。"
+     },
+     "a": {
+      "en": "public class Counter { private int count; public Counter() { count = 0; } public void increment() { count++; } } Check: no return type on the constructor; void on increment; braces match; a semicolon after count++ and after the field.",
+      "zh": "public class Counter { private int count; public Counter() { count = 0; } public void increment() { count++; } } 对照检查：构造方法没有返回类型；increment 用 void；花括号配对；字段后和 count++ 后有分号。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the three lines that declare an ArrayList of Strings called items, add \"pen\" to it, and print how many items it holds. Do not forget the line at the top of the file.",
+      "zh": "写出三行代码：声明一个叫 items 的 String 型 ArrayList，向里面加入 \"pen\"，并打印里面有多少个元素。别忘了文件最上面那一行。"
+     },
+     "a": {
+      "en": "import java.util.ArrayList; at the top, then ArrayList<String> items = new ArrayList<>(); items.add(\"pen\"); System.out.println(items.size()); It prints 1.",
+      "zh": "文件最上面写 import java.util.ArrayList;，然后 ArrayList<String> items = new ArrayList<>(); items.add(\"pen\"); System.out.println(items.size()); 输出 1。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a try and catch that turns the String text into an int called n, and sets n to -1 when text is not a number.",
+      "zh": "写一段 try 和 catch：把 String 变量 text 转成 int 变量 n；如果 text 不是数字，就把 n 设为 -1。"
+     },
+     "a": {
+      "en": "int n; try { n = Integer.parseInt(text); } catch (NumberFormatException e) { n = -1; } The compiler is satisfied because n gets a value on both paths.",
+      "zh": "int n; try { n = Integer.parseInt(text); } catch (NumberFormatException e) { n = -1; } 编译器能通过，因为 n 在两条路径上都被赋了值。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "handwriting-mistakes",
+   "title": {
+    "en": "Common handwriting mistakes",
+    "zh": "手写时常见的错误"
+   },
+   "goal": {
+    "en": "You can read your own Java answer a second time, as the compiler would, and catch the slips that would otherwise cost marks.",
+    "zh": "你能把自己写的 Java 答案像编译器那样再读一遍，抓住本来会丢分的小错。"
+   },
+   "plain": {
+    "en": "On a computer, the compiler stops you at the first error and tells you the line. On paper, nobody stops you, and every one of these slips costs marks even though it has nothing to do with whether you understand the problem. So you must be your own compiler.\n\nWhen your answer is finished, read it a second time. This time do not ask whether the logic is right. Ask only whether the form is right. Use this list, and tick each item with your pen.\n\n1. Every statement ends with a semicolon. There is none after a closing brace of a class, method, if or for.\n2. Every ( [ { has its partner. Count the braces in pairs.\n3. Every variable has a type before its name. String starts with a capital S.\n4. Every class from java.util has an import line.\n5. = stores a value. == asks a question about numbers and chars. For Strings, use equals.\n6. Strings use double quotes. A single char uses single quotes.\n7. A method that is not void returns a value on every path.\n8. Putting a double into an int needs a cast.\n9. Collections hold classes: Integer, not int.\n10. A local variable has a value before you read it.\n11. A method that implements an interface method is marked public.\n12. The class name matches the file name, and main is written exactly.\n\nBelow are four pairs that cost the most marks. In each pair the first block is what people write, and the second block is the repair.",
+    "zh": "在计算机上，编译器会在第一个错误处拦住你，并告诉你是哪一行。在纸上，没有人拦你，而这些小错每一个都会丢分，尽管它们和你是否理解题目毫无关系。所以你必须自己当自己的编译器。\n\n答案写完之后，再读第二遍。这一遍不要问逻辑对不对，只问形式对不对。照下面的清单，用笔逐项打勾。\n\n1. 每条语句都以分号结尾。类、方法、if、for 的右花括号后面没有分号。\n2. 每个 ( [ { 都有配对的另一半。把花括号成对地数一遍。\n3. 每个变量名前面都有类型。String 的 S 要大写。\n4. java.util 里的每个类都有 import 行。\n5. = 是存入一个值。== 对数值和 char 提出问题。比较 String 要用 equals。\n6. 字符串用双引号，单个 char 用单引号。\n7. 不是 void 的方法，在每条路径上都要返回一个值。\n8. 把 double 放进 int 需要强制转换。\n9. 集合里放的是类：写 Integer，不写 int。\n10. 局部变量在读取之前必须有值。\n11. 实现接口方法的方法要标成 public。\n12. 类名与文件名一致，main 要原样写出。\n\n下面是最容易丢分的四组错误。每组里第一块是常见的错误写法，第二块是改正后的写法。"
+   },
+   "mistakes": [
+    {
+     "wrong": "ArrayList<int> nums = new ArrayList<>();\nnums.add(5);\nint first = nums[0];",
+     "why": {
+      "en": "Two slips. The type inside the angle brackets must be a class, so int becomes Integer. And an ArrayList is not an array: square brackets do not work on it, so the first item is nums.get(0).",
+      "zh": "两处错误。尖括号里的类型必须是类，所以 int 要写成 Integer。而且 ArrayList 不是数组，不能用方括号，第一个元素是 nums.get(0)。"
+     },
+     "right": "ArrayList<Integer> nums = new ArrayList<>();\nnums.add(5);\nint first = nums.get(0);"
+    },
+    {
+     "wrong": "class Rect implements Shape {\n    double area() {\n        return 1.0;\n    }\n}",
+     "why": {
+      "en": "The methods of an interface are public automatically. A method that implements one cannot be less open, so it must also say public. Without it the compiler says it is attempting to assign weaker access privileges.",
+      "zh": "接口里的方法自动是 public。实现它的方法不能比它更封闭，所以也必须写 public。没写的话，编译器会报告说正在尝试分配更弱的访问权限。"
+     },
+     "right": "class Rect implements Shape {\n    public double area() {\n        return 1.0;\n    }\n}"
+    },
+    {
+     "wrong": "double x = 7 / 2.0;\nint half = x;\nString s = 'hi';",
+     "why": {
+      "en": "Two slips. Java will not put a double into an int by itself, because the fraction would be lost; write a cast, (int) x, if you want that. And single quotes are for one char. A String needs double quotes.",
+      "zh": "两处错误。Java 不会自己把 double 放进 int，因为小数部分会丢失；如果你确实想要这样，就写强制转换 (int) x。另外，单引号只用于单个 char，String 需要双引号。"
+     },
+     "right": "double x = 7 / 2.0;\nint half = (int) x;\nString s = \"hi\";"
+    },
+    {
+     "wrong": "static int sign(int x) {\n    if (x > 0) {\n        return 1;\n    } else if (x < 0) {\n        return -1;\n    }\n}\n\nstatic int bump() {\n    int n;\n    n++;\n    return n;\n}",
+     "why": {
+      "en": "Two slips. In sign, the compiler cannot see that x could be 0, and then nothing is returned, so it reports a missing return statement. Add a return at the end. In bump, n has no value when n++ reads it, so Java reports that the variable might not have been initialized. Give it a value where you declare it.",
+      "zh": "两处错误。在 sign 里，编译器看不出 x 可能等于 0，那种情况下什么都没有返回，所以它报告缺少 return 语句。在末尾加上 return。在 bump 里，n++ 读取 n 时它还没有值，所以 Java 报告变量可能尚未初始化。声明时就给它一个值。"
+     },
+     "right": "static int sign(int x) {\n    if (x > 0) {\n        return 1;\n    } else if (x < 0) {\n        return -1;\n    }\n    return 0;\n}\n\nstatic int bump() {\n    int n = 0;\n    n++;\n    return n;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Fix every slip (there are four): string name = 'Leon'; if (name == \"Leon\") { System.out.println(name) }",
+      "zh": "改正所有的错误（共四处）：string name = 'Leon'; if (name == \"Leon\") { System.out.println(name) }"
+     },
+     "a": {
+      "en": "1. The type is String, with a capital S. 2. Leon is a String, so it needs double quotes: \"Leon\". 3. Compare text with name.equals(\"Leon\"), not ==. 4. System.out.println(name) needs a semicolon. Correct: String name = \"Leon\"; if (name.equals(\"Leon\")) { System.out.println(name); }",
+      "zh": "1. 类型是 String，S 要大写。2. Leon 是 String，要用双引号：\"Leon\"。3. 比较文字要用 name.equals(\"Leon\")，不能用 ==。4. System.out.println(name) 后面缺分号。正确写法：String name = \"Leon\"; if (name.equals(\"Leon\")) { System.out.println(name); }"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix the collection: ArrayList<int> xs = new ArrayList<int>(); xs.add(1); System.out.println(xs.length);",
+      "zh": "改正这个集合的写法：ArrayList<int> xs = new ArrayList<int>(); xs.add(1); System.out.println(xs.length);"
+     },
+     "a": {
+      "en": "Use a class inside the angle brackets, and ask for the count with size(): ArrayList<Integer> xs = new ArrayList<>(); xs.add(1); System.out.println(xs.size()); Also write import java.util.ArrayList; at the top of the file.",
+      "zh": "尖括号里要用类，而且数量要用 size() 来取：ArrayList<Integer> xs = new ArrayList<>(); xs.add(1); System.out.println(xs.size()); 文件最上面还要写 import java.util.ArrayList;。"
+     }
+    },
+    {
+     "q": {
+      "en": "Fix the class: public class Dog { public void Dog(String name) { this.name = name; } }",
+      "zh": "改正这个类：public class Dog { public void Dog(String name) { this.name = name; } }"
+     },
+     "a": {
+      "en": "Two slips. The constructor must not have void, so it is public Dog(String name). And the class has no field name, so add private String name; inside the braces, above the constructor.",
+      "zh": "有两处错误。构造方法不能写 void，应为 public Dog(String name)。而且类里没有字段 name，要在花括号里、构造方法上面加上 private String name;。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mark-yourself",
+   "title": {
+    "en": "Mark yourself",
+    "zh": "给自己打分"
+   },
+   "goal": {
+    "en": "You can mark your own paper answer honestly against a rubric, find where the marks went, plan tomorrow's practice, and write under time.",
+    "zh": "你能对照评分标准诚实地给自己的手写答案打分，找出分数丢在哪里，安排明天的练习，并在限时下写代码。"
+   },
+   "plain": {
+    "en": "On paper, a page of writing can look finished and still be wrong. Marking yourself fixes that. You compare your answer with a rubric. A rubric is a list of lines, each worth a number of marks, each describing something that you can see in the answer. Be strict. The mark that counts is the one a stranger would give.\n\nHow to read a rubric, line by line.\n\n1. Read one line. Ask: what exactly would I see in a correct answer?\n2. Find that thing in your answer and touch it with the tip of your pen. If you can point to it, tick the line and write its marks. If you cannot point to it, the line is worth zero.\n3. Do not give half marks for \"nearly\". Give part of a line only if the rubric says how it splits.\n4. Check every path. A line such as \"handles the empty list\" is zero if only the normal case works.\n5. Add up the lines. Write the total as marks out of the maximum on the page.\n\nHow to find where the marks went. Put each lost mark into one of four boxes. Idea: I did not know how to solve it. Recall: I knew, but could not remember the syntax or the method name. Slip: a small mistake in something I did know, such as a missing semicolon or a wrong sign. Time: I ran out of time. Count each box. The biggest box tells you what to work on. Idea: reread the lesson. Recall: more cover-and-write practice. Slip: the compiler pass from the last lesson and a tiny test. Time: practise planning.\n\nWhat to do the next day. First, rewrite the same answer on a blank page without looking. Second, do a different question of the same kind. Third, mark both again. Repeat after three days and after a week. When the biggest box changes, you are improving.\n\nHow to write under time.\n\n1. Plan first. Use the first tenth of the time. Write the method header and three or four comment lines that name the steps. Do not skip this.\n2. Leave a blank line between lines of code. You will need room to insert a line you forgot.\n3. Name variables clearly: count, not c; longest, not l. Clear names stop you from mixing up two variables.\n4. Test with a tiny input, by hand. When the code is written, run it on the smallest case: one element, an empty list, a word of length 1. Then run one case that sits exactly on a boundary. This takes a minute and finds most boundary errors.\n5. Spend about one minute per mark. If you are stuck on a part, write a comment saying what you would do, move on, and come back.\n6. Leave two minutes for the compiler pass.\n\nOn the Practice page, the questions of kind Write code have a Paper mode with a timer, a model answer and a rubric with tick boxes. Use it exactly like this lesson: write on paper, then mark.",
+    "zh": "在纸上，一页写满的答案看起来像是完成了，其实可能是错的。给自己打分能解决这个问题。你拿答案去对照评分标准。评分标准是一组条目，每条值若干分，每条描述一件你能在答案里看到的东西。要严格。真正算数的分数，是一个陌生人会给你的分数。\n\n怎样逐条读评分标准。\n\n1. 读一条。问自己：一个正确的答案里，我到底会看到什么？\n2. 在你的答案里找到那样东西，用笔尖点住它。指得出来，就打勾并写下这条的分数；指不出来，这一条就是零分。\n3. “差不多”不给半分。只有评分标准写明怎么拆分时，才给一条的部分分数。\n4. 检查每一条路径。像“处理空列表”这样的条目，如果只有正常情况能工作，就是零分。\n5. 把各条加起来，把总分写成“得分/满分”的形式放在页面上。\n\n怎样找出分数丢在哪里。把每一个丢掉的分放进四个格子之一。思路：我不知道怎么解。记忆：我知道，但记不起语法或方法名。小错：在我本来会的东西上犯的小错误，例如漏了分号或写错了符号。时间：我没写完。数一数每个格子。最大的格子告诉你该练什么。思路：重读对应的课。记忆：多做“盖住再默写”。小错：用上一课的编译器检查清单，再加一个很小的测试。时间：练习先做计划。\n\n第二天要做什么。第一，在空白页上不看资料，把同一道题的答案重写一遍。第二，做一道同类型的不同题目。第三，把两份答案再各打一次分。三天后和一周后再重复。当最大的格子换了，说明你在进步。\n\n怎样在限时下写。\n\n1. 先做计划。用掉最初的十分之一时间。写出方法头，再写三四行说明步骤的注释。不要跳过这一步。\n2. 代码行之间空一行。你会需要空间补写漏掉的一行。\n3. 变量名要清楚：用 count，不要用 c；用 longest，不要用 l。名字清楚，就不会把两个变量混在一起。\n4. 用一个很小的输入手算测试。代码写完后，用最小的情况走一遍：只有一个元素、空列表、长度为 1 的单词。再走一个恰好卡在边界上的情况。这只要一分钟，却能找出大部分边界错误。\n5. 大约每分花一分钟。某一部分卡住了，就写一行注释说明你打算怎么做，然后往下写，回头再补。\n6. 留出两分钟做编译器检查。\n\n在“练习”页面里，题型为“手写代码”的题目有手写模式：有计时器、参考答案，以及可以打勾的评分标准。完全按这一课的办法用它：先在纸上写，再打分。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "rubric",
+      "zh": "评分标准"
+     },
+     "meaning": {
+      "en": "A list of lines, each worth some marks, each describing something you can point to in the answer.",
+      "zh": "一组条目，每条值若干分，每条描述一件你能在答案里指出来的东西。"
+     }
+    },
+    {
+     "term": {
+      "en": "boundary case",
+      "zh": "边界情况"
+     },
+     "meaning": {
+      "en": "A test input that sits exactly on an edge, such as a length equal to min, one element, or an empty list.",
+      "zh": "恰好落在边缘上的测试输入，例如长度恰好等于 min、只有一个元素或空列表。"
+     }
+    },
+    {
+     "term": {
+      "en": "compiler pass",
+      "zh": "编译器检查"
+     },
+     "meaning": {
+      "en": "A second reading of your answer that checks only the form: semicolons, brackets, types, imports.",
+      "zh": "把答案再读一遍，只检查形式：分号、括号、类型、import。"
+     }
+    }
+   ],
+   "example": {
+    "language": "java",
+    "code": "import java.util.ArrayList;\n\npublic class Main {\n    /* A student's answer. It has one bug. */\n    static int countLong(ArrayList<String> words, int min) {\n        int count = 0;\n        for (String w : words) {\n            if (w.length() > min) {\n                count++;\n            }\n        }\n        return count;\n    }\n\n    public static void main(String[] args) {\n        ArrayList<String> words = new ArrayList<>();\n        words.add(\"a\");\n        words.add(\"bb\");\n        words.add(\"cc\");\n        words.add(\"ddd\");\n        System.out.println(countLong(words, 2) + \" (expected 3)\");\n    }\n}\n",
+    "output": "1 (expected 3)",
+    "walk": {
+     "en": [
+      "The task: write static int countLong(ArrayList<String> words, int min), which returns how many words have at least min characters. The rubric has four lines, one mark each. (1) The header is right: static, returns int, takes the list and the number. (2) A counter starts at 0. (3) Every word is visited, and its length is read with length(). (4) The test means \"at least min\", and the counter is returned.",
+      "Mark line 1. static int countLong(ArrayList<String> words, int min) is right. Put the pen on it. +1.",
+      "Mark line 2. int count = 0; is there. +1.",
+      "Mark line 3. for (String w : words) visits every word, and w.length() reads the length. +1.",
+      "Mark line 4. The test is w.length() > min. That means more than min, not at least min. The pen has nothing to point at for \"at least\". The counter is returned, but the line asks for both. 0 marks.",
+      "Score: 3 out of 4. Now the tiny test on the boundary: min is 2 and one word has exactly 2 characters. bb and cc have length 2 and are not counted, so the method returns 1 instead of 3. The program prints 1 (expected 3). The lost mark goes in the Slip box: the idea was right, the sign was wrong. The fix is >=."
+     ],
+     "zh": [
+      "题目：写 static int countLong(ArrayList<String> words, int min)，返回长度至少为 min 的单词有多少个。评分标准有四条，每条一分。(1) 方法头正确：static，返回 int，接收列表和数字。(2) 计数器从 0 开始。(3) 访问每个单词，并用 length() 读取长度。(4) 判断条件的意思是“至少 min”，并且返回计数器。",
+      "给第 1 条打分。static int countLong(ArrayList<String> words, int min) 是对的，用笔点住它。+1。",
+      "给第 2 条打分。int count = 0; 在那里。+1。",
+      "给第 3 条打分。for (String w : words) 访问每个单词，w.length() 读取长度。+1。",
+      "给第 4 条打分。条件是 w.length() > min，意思是“多于 min”，而不是“至少 min”。笔下找不到任何“至少”的东西。虽然返回了计数器，但这一条要求两样都做到。0 分。",
+      "得分：4 分里得 3 分。现在手算一个卡在边界上的小测试：min 是 2，而且有单词的长度恰好是 2。bb 和 cc 的长度是 2，没有被计入，所以方法返回 1 而不是 3。程序输出 1 (expected 3)。丢掉的那一分放进“小错”格：思路是对的，符号写错了。改法是 >=。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "for (int i = 0; i <= words.size(); i++) {\n    System.out.println(words.get(i));\n}",
+     "why": {
+      "en": "The test i <= words.size() lets i reach words.size(), but the last valid position is words.size() - 1. The call words.get(i) then stops the program with an IndexOutOfBoundsException. A tiny test with one word finds it: size is 1, and position 1 does not exist.",
+      "zh": "条件 i <= words.size() 允许 i 等于 words.size()，但最后一个有效位置是 words.size() - 1。于是 words.get(i) 会让程序因 IndexOutOfBoundsException 而停止。用只有一个单词的小测试就能发现：size 是 1，而位置 1 不存在。"
+     },
+     "right": "for (int i = 0; i < words.size(); i++) {\n    System.out.println(words.get(i));\n}"
+    },
+    {
+     "wrong": "static int total(ArrayList<Integer> xs) {\n    for (int x : xs) {\n        int sum = 0;\n        sum = sum + x;\n    }\n    return sum;\n}",
+     "why": {
+      "en": "sum is declared inside the loop body, so it is created again on every round and is gone after the loop. The return line cannot see it, and the compiler says it cannot find the symbol. Declare the counter before the loop. Naming the plan first (counter, loop, return) would have placed it correctly.",
+      "zh": "sum 是在循环体里声明的，所以每一轮都会重新创建，循环结束后就消失了。return 那一行看不到它，编译器会说找不到符号。要把计数器声明在循环之前。如果先写好计划（计数器、循环、返回），它就会放在正确的位置。"
+     },
+     "right": "static int total(ArrayList<Integer> xs) {\n    int sum = 0;\n    for (int x : xs) {\n        sum = sum + x;\n    }\n    return sum;\n}"
+    },
+    {
+     "wrong": "static void total(ArrayList<Integer> xs) {\n    int sum = 0;\n    for (int x : xs) {\n        sum = sum + x;\n    }\n    System.out.println(sum);\n}",
+     "why": {
+      "en": "The task said the method returns the total, but this one prints it and returns nothing. The caller gets no value to use. This is a reading slip: before you write, find the words returns, prints and reads in the task and underline them.",
+      "zh": "题目说的是方法“返回”总和，这个方法却把它打印出来，什么也没有返回，调用者拿不到可用的值。这是读题的疏漏：写之前先在题目里找出“返回”“打印”“读取”这些词，并划上线。"
+     },
+     "right": "static int total(ArrayList<Integer> xs) {\n    int sum = 0;\n    for (int x : xs) {\n        sum = sum + x;\n    }\n    return sum;\n}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "A rubric line says \"uses equals to compare the Strings\". You wrote ==, and it worked when you traced it with two literals. How many marks does that line get, and why?",
+      "zh": "评分标准里有一条“用 equals 比较 String”。你写的是 ==，而且你用两个字面量跟踪时它碰巧能工作。这一条得多少分？为什么？"
+     },
+     "a": {
+      "en": "Zero. The line asks for equals, and the pen has nothing to point at. == compares arrows. It worked only because two literals with the same text are the same object. With new String(\"hi\") it would fail.",
+      "zh": "0 分。这一条要求用 equals，笔下找不到它。== 比较的是箭头。它能工作只是因为文字相同的两个字面量是同一个对象；换成 new String(\"hi\") 就会失败。"
+     }
+    },
+    {
+     "q": {
+      "en": "You have 12 minutes for a 12-mark task: write a class with a constructor and one method, and a main that tests it. Write a plan with times.",
+      "zh": "你有 12 分钟，完成一道 12 分的题：写一个带构造方法和一个方法的类，再写一个测试它的 main。写出带时间的计划。"
+     },
+     "a": {
+      "en": "1 minute: write the class header, the field, and the two method headers as comments. 4 minutes: write the class. 2 minutes: write main with one tiny test. 3 minutes: run the tiny test by hand with a trace table. 2 minutes: the compiler pass.",
+      "zh": "1 分钟：把类头、字段和两个方法头先写成注释。4 分钟：写类。2 分钟：写带一个小测试的 main。3 分钟：用跟踪表手算这个小测试。2 分钟：做编译器检查。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the tiny tests that you would run by hand on a method that returns the longest word in an ArrayList<String>.",
+      "zh": "写出你会用来手算测试“返回 ArrayList<String> 中最长单词的方法”的几个很小的输入。"
+     },
+     "a": {
+      "en": "An empty list (decide what to return and check that the code does it), a list with one word, two words of equal length (which one wins?), and a list where the longest word is last. Run each through your code with a trace table.",
+      "zh": "空列表（先决定返回什么，再检查代码是否照做）、只有一个单词的列表、两个长度相同的单词（谁胜出？），以及最长的单词在最后的列表。把每个都用跟踪表走一遍。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Practise on paper: open the Write code questions for INFO1113, set a timer, and mark yourself against the rubric.",
+   "zh": "在纸上练习：打开 INFO1113 的“手写代码”题，设好计时器，对照评分标准给自己打分。"
+  },
+  "href": "learn/#/practice/info1113?kind=write",
+  "hrefZh": "learn/#/practice/info1113?kind=write"
+ }
+}

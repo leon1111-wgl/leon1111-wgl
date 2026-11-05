@@ -43,7 +43,7 @@ for code in CODES:
    check(bool(t.get(key)),code+' '+t['id']+' missing '+key)
   check(all(t['check'].get(k) for k in ['question','answer']),code+' check malformed')
  if code=='COMP2123':
-  check(len(topics)==26,code+' topic coverage changed')
+  check(len(topics)==30,code+' topic coverage changed')
   for t in topics:
    for key,minimum in [('code_examples',1),('glossary',3),('guided_questions',3)]:
     check(len(t.get(key,[]))>=minimum,code+' '+t['id']+' insufficient '+key)
@@ -59,7 +59,7 @@ for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn') for part in f.relative_to(ROOT).parts) or f.name in ('app.js','home.js','run-ui.js','run.js','study.js','viz.js'))
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn','bridges','practice','labs') for part in f.relative_to(ROOT).parts) or f.name in ('app.js','home.js','run-ui.js','run.js','study.js','viz.js'))
   # The README, the profile cards and the homepage carry Chinese labels at the author's request.
   bilingual=bilingual or f.name=='README.md' or f.name.startswith('profile-') or f==SITE/'index.html'
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))

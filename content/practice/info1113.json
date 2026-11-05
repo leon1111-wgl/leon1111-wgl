@@ -20,7 +20,7 @@
    "model_code": "class SavingsGoal {\n    private final String name;\n    private final int target;\n    private int saved;\n\n    SavingsGoal(String name, int target) {\n        if (name == null || name.isEmpty()) {\n            throw new IllegalArgumentException(\"name required\");\n        }\n        if (target <= 0) {\n            throw new IllegalArgumentException(\"target must be positive\");\n        }\n        this.name = name;\n        this.target = target;\n        this.saved = 0;\n    }\n\n    int deposit(int amount) {\n        if (amount <= 0) {\n            throw new IllegalArgumentException(\"amount must be positive\");\n        }\n        int added = Math.min(amount, target - saved);\n        saved += added;\n        return added;\n    }\n\n    int remaining() {\n        return target - saved;\n    }\n\n    boolean isReached() {\n        return saved == target;\n    }\n\n    String getName() {\n        return name;\n    }\n}\n\npublic class Main { }\n",
    "solution": {
     "en": "The invariant is target > 0 and 0 <= saved <= target. Three things protect it.\n\n1. The fields are private, so no outside code can write to saved directly. The only way to change saved is deposit.\n2. The constructor checks its arguments before it assigns anything. A bad call throws, so no half-built or invalid object ever escapes.\n3. deposit adds Math.min(amount, target - saved). Since saved <= target before the call, target - saved is not negative, so after the call saved is still between 0 and target.\n\nReturning the amount really added lets the caller see when the goal swallowed part of a deposit. Note that name and target are final: they are set once and never change, which keeps the invariant easy to argue.",
-    "zh": "不变式是 target > 0 并且 0 <= saved <= target。有三处在保护它。\n\n1. 字段都是 private，外部代码无法直接写 saved。改变 saved 的唯一途径是 deposit。\n2. 构造器先检查参数，再赋值。参数不合法就抛出异常，所以不合法或只建好一半的对象永远不会流到外面。\n3. deposit 只加 Math.min(amount, target - saved)。调用前 saved <= target，所以 target - saved 不是负数，调用后 saved 仍然在 0 到 target 之间。\n\n返回实际加上的金额，调用者就能看出这笔存款有一部分被目标“吞掉”了。另外，name 和 target 是 final：它们只在构造时设置一次，之后不再改变，论证不变式就很简单。"
+    "zh": "不变式是 target > 0 并且 0 <= saved <= target。有三处在保护它。\n\n1. 字段都是 private，外部代码无法直接写 saved。改变 saved 的唯一途径是 deposit。\n2. 构造器先检查参数，再赋值。参数不合法就抛出异常，所以不合法或只建好一半的对象永远不会流到外面。\n3. deposit 只加 Math.min(amount, target - saved)。调用前 saved <= target，所以 target - saved 不是负数，调用后 saved 仍然在 0 到 target 之间。\n\n返回实际加上的金额，调用者就能看出这笔存款有一部分因为已到目标上限而没有被收下。另外，name 和 target 是 final：它们只在构造时设置一次，之后不再改变，论证不变式就很简单。"
    },
    "rubric": [
     {
@@ -61,8 +61,8 @@
    ],
    "mistakes": [
     {
-     "en": "Writing name = name; in the constructor. The parameter hides the field, so the field stays null. Write this.name = name;.",
-     "zh": "在构造器里写 name = name;。参数把字段遮住了，字段仍然是 null。应当写 this.name = name;。"
+     "en": "Writing name = name; in the constructor. The parameter hides the field, so the parameter is assigned to itself. A non-final field then stays null, and a final field gives the error that it was never initialised. Write this.name = name;.",
+     "zh": "在构造器里写 name = name;。参数把字段遮住了，结果是参数被赋给了它自己。非 final 的字段会一直是 null，final 字段则会因为从未初始化而报编译错误。应当写 this.name = name;。"
     },
     {
      "en": "Assigning the fields first and checking afterwards. Even if the constructor then throws, the checks are easy to get wrong or forget.",
@@ -103,8 +103,8 @@
    "starter": "class Seat {\n    // fields, constructor, equals, hashCode\n}\n\npublic class Main { }\n",
    "model_code": "class Seat {\n    private final int row;\n    private final int number;\n\n    Seat(int row, int number) {\n        this.row = row;\n        this.number = number;\n    }\n\n    @Override\n    public boolean equals(Object o) {\n        if (this == o) {\n            return true;\n        }\n        if (!(o instanceof Seat)) {\n            return false;\n        }\n        Seat other = (Seat) o;\n        return row == other.row && number == other.number;\n    }\n\n    @Override\n    public int hashCode() {\n        return 31 * row + number;\n    }\n}\n\npublic class Main { }\n",
    "solution": {
-    "en": "equals must take an Object. If you write equals(Seat other), you only add an overload. A HashSet calls equals(Object), so it would never use your method. The annotation @Override makes the compiler catch this mistake.\n\nThe body has three steps: the quick check this == o, the type check o instanceof Seat (it is false for null, so no separate null test is needed), then a cast and a field-by-field comparison.\n\nhashCode must use the same fields as equals. The contract says equal objects must have equal hash codes. HashSet first uses the hash code to pick a bucket and only then calls equals. If two equal seats had different hash codes, they would land in different buckets and the set would keep both. The formula 31 * row + number is a common simple choice. Different seats may share a hash code, which is allowed.",
-    "zh": "equals 的参数必须是 Object。如果写成 equals(Seat other)，只是多了一个重载。HashSet 调用的是 equals(Object)，永远不会用到你写的这个方法。加上 @Override，编译器就能帮你发现这类错误。\n\n方法体分三步：先用 this == o 快速判断；再用 o instanceof Seat 检查类型（对 null 结果是 false，所以不需要单独判断 null）；最后强制转换并逐个字段比较。\n\nhashCode 必须使用与 equals 相同的字段。契约要求：相等的对象必须有相等的哈希码。HashSet 先用哈希码选桶，再调用 equals。如果两个相等的座位哈希码不同，它们会落进不同的桶，集合就会把两个都留下。31 * row + number 是常见的简单写法。不同的座位可以有相同的哈希码，这是允许的。"
+    "en": "equals must take an Object. If you write equals(Seat other), you only add an overload. A HashSet calls equals(Object), so it would never use your method. The annotation @Override makes the compiler catch this mistake.\n\nThe body has three steps: the quick check this == o, the type check o instanceof Seat (it is false for null, so no separate null test is needed), then a cast and a field-by-field comparison.\n\nhashCode must use the same fields as equals. The contract says equal objects must have equal hash codes. HashSet first uses the hash code to pick a bucket and only then calls equals. If two equal seats had different hash codes, they would usually land in different buckets, and the set would keep both. The formula 31 * row + number is a common simple choice. Different seats may share a hash code, which is allowed.",
+    "zh": "equals 的参数必须是 Object。如果写成 equals(Seat other)，只是多了一个重载。HashSet 调用的是 equals(Object)，永远不会用到你写的这个方法。加上 @Override，编译器就能帮你发现这类错误。\n\n方法体分三步：先用 this == o 快速判断；再用 o instanceof Seat 检查类型（对 null 结果是 false，所以不需要单独判断 null）；最后强制转换并逐个字段比较。\n\nhashCode 必须使用与 equals 相同的字段。契约要求：相等的对象必须有相等的哈希码。HashSet 先用哈希码选桶，再调用 equals。如果两个相等的座位哈希码不同，它们通常会落进不同的桶，集合就会把两个都留下。31 * row + number 是常见的简单写法。不同的座位可以有相同的哈希码，这是允许的。"
    },
    "rubric": [
     {
@@ -146,7 +146,7 @@
    "mistakes": [
     {
      "en": "Declaring equals(Seat other). It overloads instead of overriding, so HashSet and Object-typed calls ignore it.",
-     "zh": "把方法写成 equals(Seat other)。这是重载而不是重写，HashSet 和以 Object 类型调用时都不会用到它。"
+     "zh": "把方法写成 equals(Seat other)。这是重载而不是重写，HashSet 以及任何通过 Object 类型发出的 equals 调用都不会用到它。"
     },
     {
      "en": "Overriding equals but not hashCode. Equal seats then usually get different hash codes, and the set keeps duplicates.",
@@ -263,8 +263,8 @@
    "starter": "import java.util.*;\n\npublic class Main {\n    static long ways(int n) {\n        // your code\n    }\n}\n",
    "model_code": "import java.util.*;\n\npublic class Main {\n    static long ways(int n) {\n        return ways(n, new HashMap<Integer, Long>());\n    }\n\n    private static long ways(int n, Map<Integer, Long> memo) {\n        if (n < 0) {\n            return 0;\n        }\n        if (n == 0) {\n            return 1;\n        }\n        Long known = memo.get(n);\n        if (known != null) {\n            return known;\n        }\n        long total = ways(n - 1, memo) + ways(n - 2, memo) + ways(n - 3, memo);\n        memo.put(n, total);\n        return total;\n    }\n}\n",
    "solution": {
-    "en": "Think about the last move. It was a 1-step, a 2-step or a 3-step move, so ways(n) = ways(n-1) + ways(n-2) + ways(n-3). Each term counts the ways to reach the step before that last move.\n\nBase cases: n == 0 gives 1, because there is exactly one way to be at the start: do nothing. A negative n gives 0, because you cannot climb a negative number of steps. With these two base cases, ways(1) = 1 + 0 + 0 = 1 and ways(2) = 1 + 1 + 0 = 2 come out right without being special cases.\n\nWithout a memo the call tree branches three ways at every level, so the work grows like 3 to the power n. Many subtrees repeat, for example ways(10) is computed again and again. With a memo each value of n is computed once, so there are only about n real computations. Check the memo before computing, and store the result before returning.\n\nUse long all the way. ways(60) is a number with 16 digits, so an int would overflow.",
-    "zh": "想最后一步：它要么走 1 级，要么走 2 级，要么走 3 级，所以 ways(n) = ways(n-1) + ways(n-2) + ways(n-3)。每一项数的是走到“最后一步之前那一级”的方法数。\n\n基本情况：n == 0 时返回 1，因为站在起点只有一种方式：什么都不做。n 为负数时返回 0，因为不可能爬负数级台阶。有了这两个基本情况，ways(1) = 1 + 0 + 0 = 1，ways(2) = 1 + 1 + 0 = 2 都能自然得到，不需要单独处理。\n\n没有记忆化时，调用树每层分成三支，工作量大约按 3 的 n 次方增长，而且大量子树重复，例如 ways(10) 会被一遍遍重新计算。有了记忆化，每个 n 只算一次，真正的计算大约只有 n 次。要在计算之前先查记忆表，在返回之前先把结果存进去。\n\n全程使用 long。ways(60) 是一个 16 位数，用 int 会溢出。"
+    "en": "Think about the last move. It was a 1-step, a 2-step or a 3-step move, so ways(n) = ways(n-1) + ways(n-2) + ways(n-3). Each term counts the ways to reach the step before that last move.\n\nBase cases: n == 0 gives 1, because there is exactly one way to be at the start: do nothing. A negative n gives 0, because you cannot climb a negative number of steps. With these two base cases, ways(1) = 1 + 0 + 0 = 1 and ways(2) = 1 + 1 + 0 = 2 come out right without being special cases.\n\nWithout a memo every call makes up to three more calls, so the number of calls grows exponentially with n (for n = 60 it is far beyond what any computer can do). Many subtrees repeat, for example ways(10) is computed again and again. With a memo each value of n is computed once, so there are only about n real computations. Check the memo before computing, and store the result before returning.\n\nUse long all the way. ways(60) is a number with 16 digits, so an int would overflow.",
+    "zh": "想最后一步：它要么走 1 级，要么走 2 级，要么走 3 级，所以 ways(n) = ways(n-1) + ways(n-2) + ways(n-3)。每一项数的是走到“最后一步之前那一级”的方法数。\n\n基本情况：n == 0 时返回 1，因为站在起点只有一种方式：什么都不做。n 为负数时返回 0，因为不可能爬负数级台阶。有了这两个基本情况，ways(1) = 1 + 0 + 0 = 1，ways(2) = 1 + 1 + 0 = 2 都能自然得到，不需要单独处理。\n\n没有记忆化时，每次调用最多再发起三次调用，调用次数随 n 按指数增长（n = 60 时远远超出任何计算机能完成的范围），而且大量子树重复，例如 ways(10) 会被一遍遍重新计算。有了记忆化，每个 n 只算一次，真正的计算大约只有 n 次。要在计算之前先查记忆表，在返回之前先把结果存进去。\n\n全程使用 long。ways(60) 是一个 16 位数，用 int 会溢出。"
    },
    "rubric": [
     {
@@ -305,8 +305,8 @@
    ],
    "mistakes": [
     {
-     "en": "Forgetting the base case for n == 0, so the recursion never stops adding zeros or runs off to negative n.",
-     "zh": "忘记 n == 0 的基本情况，递归永远停不下来，或者一路走到负数。"
+     "en": "Returning 0 for n <= 0 and forgetting that n == 0 must give 1. The recursion stops, but every sum is 0 + 0 + 0, so ways(n) is 0 for every n.",
+     "zh": "对 n <= 0 都返回 0，忘了 n == 0 时必须返回 1。递归能结束，但每个和都是 0 + 0 + 0，所以所有 n 的 ways(n) 都是 0。"
     },
     {
      "en": "Writing int known = memo.get(n). When n is not in the map, get returns null and unboxing it throws NullPointerException.",
@@ -465,8 +465,8 @@
    ],
    "mistakes": [
     {
-     "en": "Forgetting super(name) in a subclass constructor. The compiler reports that Staff has no default constructor.",
-     "zh": "子类构造器忘记写 super(name)。编译器会报告 Staff 没有默认构造器。"
+     "en": "Forgetting super(name) in a subclass constructor. Java then inserts super() with no arguments, and the compiler reports that no Staff constructor matches (required: String, found: no arguments).",
+     "zh": "子类构造器忘记写 super(name)。Java 会自动插入无参的 super()，编译器就会报告没有匹配的 Staff 构造器（需要 String，实际没有参数）。"
     },
     {
      "en": "Writing a body for the abstract method, or forgetting abstract on the class. A class with an abstract method must be declared abstract.",
@@ -592,8 +592,8 @@
    "starter": "import java.util.*;\n\n// 1. the checked exception class\n\nclass Shelf {\n    private final Map<String, Integer> stock = new HashMap<String, Integer>();\n\n    void add(String item, int qty) {\n        stock.put(item, count(item) + qty);\n    }\n\n    int count(String item) {\n        Integer n = stock.get(item);\n        return n == null ? 0 : n;\n    }\n\n    // 2. take\n}\n\npublic class Main {\n    // 3. order\n}\n",
    "model_code": "import java.util.*;\n\nclass OutOfStockException extends Exception {\n    private final int missing;\n\n    OutOfStockException(String message, int missing) {\n        super(message);\n        this.missing = missing;\n    }\n\n    int getMissing() {\n        return missing;\n    }\n}\n\nclass Shelf {\n    private final Map<String, Integer> stock = new HashMap<String, Integer>();\n\n    void add(String item, int qty) {\n        stock.put(item, count(item) + qty);\n    }\n\n    int count(String item) {\n        Integer n = stock.get(item);\n        return n == null ? 0 : n;\n    }\n\n    void take(String item, int qty) throws OutOfStockException {\n        int have = count(item);\n        if (have < qty) {\n            throw new OutOfStockException(item + \" is short\", qty - have);\n        }\n        stock.put(item, have - qty);\n    }\n}\n\npublic class Main {\n    static String order(Shelf shelf, String item, int qty) {\n        try {\n            shelf.take(item, qty);\n            return \"OK\";\n        } catch (OutOfStockException e) {\n            return \"SHORT \" + e.getMissing();\n        }\n    }\n}\n",
    "solution": {
-    "en": "A checked exception extends Exception (not RuntimeException). The compiler then forces every caller to either catch it or declare it. Here the class carries one extra fact, missing, so the caller can react to the size of the shortage, not only to the fact that something went wrong.\n\ntake has two jobs: check, then change. Do the check first. If it fails, throw before touching the map. That gives the guarantee that a failed call leaves the shelf unchanged. If you removed the items first and checked afterwards, a failed order would leave a wrong count behind.\n\nThe clause throws OutOfStockException in the header of take is required. Without it, the throw statement does not compile. It also forces order to deal with the exception: order catches it and turns it into a plain text result.\n\nKeep the try block small. Only the call that can throw is inside it, and the return \"OK\" follows the call, so it only runs when take did not throw.",
-    "zh": "受检查异常继承 Exception（而不是 RuntimeException）。这样编译器会强制每个调用者要么捕获它，要么声明它。这里的异常类多带了一个信息 missing，调用者就可以根据缺货的数量作出反应，而不只是知道出了问题。\n\ntake 有两件事：先检查，再修改。要先检查。如果检查失败，就在碰映射之前抛出异常。这就保证了失败的调用不会改变货架。如果先扣除、后检查，失败的订单会留下错误的数量。\n\ntake 方法头里的 throws OutOfStockException 是必须的。没有它，throw 语句无法通过编译。它也迫使 order 处理这个异常：order 捕获异常，并把它变成普通的文本结果。\n\ntry 块要小。只有可能抛出异常的那个调用在里面，return \"OK\" 紧跟在调用之后，所以只有 take 没有抛出异常时才会执行。"
+    "en": "A checked exception extends Exception (not RuntimeException). The compiler then forces every caller to either catch it or declare it. Here the class carries one extra fact, missing, so the caller can react to the size of the shortage, not only to the fact that something went wrong.\n\ntake has two jobs: check, then change. Do the check first. If it fails, throw before touching the map. That gives the guarantee that a failed call leaves the shelf unchanged. If you removed the items first and checked afterwards, a failed order would leave a wrong count behind.\n\nThe clause throws OutOfStockException in the header of take is required. Without it, the throw statement does not compile. It also forces order to deal with the exception: order catches it and turns it into a plain text result.\n\nKeep the try block small. It holds only the call that can throw, and the return \"OK\" right after it, so \"OK\" is returned only when take did not throw.",
+    "zh": "受检查异常继承 Exception（而不是 RuntimeException）。这样编译器会强制每个调用者要么捕获它，要么声明它。这里的异常类多带了一个信息 missing，调用者就可以根据缺货的数量作出反应，而不只是知道出了问题。\n\ntake 有两件事：先检查，再修改。要先检查。如果检查失败，就在碰映射之前抛出异常。这就保证了失败的调用不会改变货架。如果先扣除、后检查，失败的订单会留下错误的数量。\n\ntake 方法头里的 throws OutOfStockException 是必须的。没有它，throw 语句无法通过编译。它也迫使 order 处理这个异常：order 捕获异常，并把它变成普通的文本结果。\n\ntry 块要小：里面只有可能抛出异常的那个调用，以及紧跟其后的 return \"OK\"，所以只有 take 没有抛出异常时才会返回 \"OK\"。"
    },
    "rubric": [
     {
@@ -673,11 +673,11 @@
     "en": "Write a class Countdown that implements Iterable<Integer>, so that a for-each loop can walk through it.\n\n- The constructor is Countdown(int start).\n- A traversal gives start, start - 1, and so on, down to 1. If start is less than 1, the traversal gives nothing.\n- Each call to iterator() starts a new traversal. Two iterators made from the same Countdown must not disturb each other.\n- next() on an iterator that has run out throws NoSuchElementException.\n- On paper you may skip remove(). To run the tests in the browser, add public void remove() that throws UnsupportedOperationException (the browser's Java library has no default for it).\n\nThe line import java.util.*; is already there.",
     "zh": "请写一个实现 Iterable<Integer> 的类 Countdown，使 for-each 循环可以遍历它。\n\n- 构造器是 Countdown(int start)。\n- 一次遍历依次给出 start、start - 1，一直到 1。如果 start 小于 1，遍历什么也不给出。\n- 每次调用 iterator() 都开始一次新的遍历。同一个 Countdown 产生的两个迭代器不能互相干扰。\n- 对已经走完的迭代器调用 next()，抛出 NoSuchElementException。\n- 在纸上可以不写 remove()。如果要在浏览器里运行测试，请再加上 public void remove()，让它抛出 UnsupportedOperationException（浏览器里的 Java 库没有它的默认实现）。\n\nimport java.util.*; 这一行已经写好。"
    },
-   "starter": "import java.util.*;\n\nclass Countdown implements Iterable<Integer> {\n    // field, constructor, iterator()\n}\n\npublic class Main { }\n",
+   "starter": "import java.util.*;\n\nclass Countdown implements Iterable<Integer> {\n    // field, constructor, iterator()\n    // (the Iterator also needs remove(), see the task)\n}\n\npublic class Main { }\n",
    "model_code": "import java.util.*;\n\nclass Countdown implements Iterable<Integer> {\n    private final int start;\n\n    Countdown(int start) {\n        this.start = start;\n    }\n\n    @Override\n    public Iterator<Integer> iterator() {\n        return new Iterator<Integer>() {\n            private int current = start;\n\n            @Override\n            public boolean hasNext() {\n                return current >= 1;\n            }\n\n            @Override\n            public Integer next() {\n                if (current < 1) {\n                    throw new NoSuchElementException();\n                }\n                int value = current;\n                current--;\n                return value;\n            }\n\n            @Override\n            public void remove() {\n                throw new UnsupportedOperationException();\n            }\n        };\n    }\n}\n\npublic class Main { }\n",
    "solution": {
-    "en": "A for-each loop over an Iterable calls iterator() once, then hasNext() and next() until hasNext() is false. So the class that is walked (Countdown) and the object that remembers the position (the iterator) have different jobs.\n\nThe position must live in the iterator, not in Countdown. Here it is the field current of the anonymous Iterator object, and it starts at start every time iterator() is called. Two calls give two objects with two separate current fields, so they do not disturb each other.\n\nIf Countdown kept the position in one of its own fields and returned this as the iterator, the second iterator would see the position of the first, and a traversal could not be repeated.\n\nhasNext only looks; next looks and moves. Calling hasNext twice must not skip an element. Throwing NoSuchElementException when there is nothing left is the standard contract of Iterator.next. Both methods are public, because they implement interface methods.",
-    "zh": "对 Iterable 的 for-each 循环先调用一次 iterator()，然后不断调用 hasNext() 和 next()，直到 hasNext() 为 false。所以被遍历的类（Countdown）和记住位置的对象（迭代器）各有分工。\n\n位置必须保存在迭代器里，而不是 Countdown 里。这里它是匿名 Iterator 对象的字段 current，每次调用 iterator() 时都从 start 开始。两次调用得到两个对象、两个互相独立的 current 字段，所以它们不会互相干扰。\n\n如果 Countdown 把位置存在自己的字段里，并把 this 当作迭代器返回，那么第二个迭代器会看到第一个迭代器的位置，遍历也就不能重复进行。\n\nhasNext 只查看；next 既查看又移动。连续调用两次 hasNext 不能跳过元素。没有元素时抛出 NoSuchElementException，是 Iterator.next 的标准契约。两个方法都是 public，因为它们实现的是接口方法。"
+    "en": "A for-each loop over an Iterable calls iterator() once, then hasNext() and next() until hasNext() is false. So the class that is walked (Countdown) and the object that remembers the position (the iterator) have different jobs.\n\nThe position must live in the iterator, not in Countdown. Here it is the field current of the anonymous Iterator object, and it starts at start every time iterator() is called. Two calls give two objects with two separate current fields, so they do not disturb each other.\n\nIf Countdown kept the position in one of its own fields and returned this as the iterator, the second iterator would see the position of the first, and a traversal could not be repeated.\n\nhasNext only looks; next looks and moves. Calling hasNext twice must not skip an element. Throwing NoSuchElementException when there is nothing left is the standard contract of Iterator.next. Both methods are public, because they implement interface methods.\n\nOne detail for the browser: Java 8 gives Iterator a default remove() that throws UnsupportedOperationException. The Java library that runs in the browser on this site has no such default, so write the same method yourself to make your class compile there.",
+    "zh": "对 Iterable 的 for-each 循环先调用一次 iterator()，然后不断调用 hasNext() 和 next()，直到 hasNext() 为 false。所以被遍历的类（Countdown）和记住位置的对象（迭代器）各有分工。\n\n位置必须保存在迭代器里，而不是 Countdown 里。这里它是匿名 Iterator 对象的字段 current，每次调用 iterator() 时都从 start 开始。两次调用得到两个对象、两个互相独立的 current 字段，所以它们不会互相干扰。\n\n如果 Countdown 把位置存在自己的字段里，并把 this 当作迭代器返回，那么第二个迭代器会看到第一个迭代器的位置，遍历也就不能重复进行。\n\nhasNext 只查看；next 既查看又移动。连续调用两次 hasNext 不能跳过元素。没有元素时抛出 NoSuchElementException，是 Iterator.next 的标准契约。两个方法都是 public，因为它们实现的是接口方法。\n\n浏览器里的一个细节：Java 8 给 Iterator 提供了一个默认的 remove()，它会抛出 UnsupportedOperationException。本站在浏览器里运行的 Java 库没有这个默认实现，所以要自己写出同样的方法，类才能在那里通过编译。"
    },
    "rubric": [
     {
@@ -880,7 +880,7 @@
    ],
    "solution": {
     "en": "Two decisions happen at two different times.\n\nAt compile time the compiler chooses a signature. It looks at the declared type of the receiver (Printer or FancyPrinter) to see which methods exist, then at the declared type of the argument to see which of them fit. The runtime type of the object plays no part in this step. That is why p.show(o) picks show(Object): o is declared as Object, even though it holds a String.\n\nAt run time the JVM looks at the real class of the receiver and runs that class's version of the chosen signature. FancyPrinter overrides show(Object), so every call that picked show(Object) prints F-obj, even through the Printer variable p. FancyPrinter does not override show(String), so a call that picked show(String) runs Printer's version and prints P-str.\n\nDetails by row:\n- p.show(\"hi\"): Printer has show(Object) and show(String). The argument is a String, so the more specific show(String) wins. Printed by Printer's version: P-str.\n- p.show(5): the type Printer has no method for Integer. Without boxing nothing fits an int. With boxing, the int becomes an Integer, which fits show(Object). The override runs: F-obj.\n- f.show(5): FancyPrinter has its own show(Integer). After boxing, both show(Integer) and show(Object) fit, and Integer is more specific: F-int. Notice that show(Integer) is a new overload here, not an override.\n- f.show(\"hi\"): show(String) is inherited from Printer and is the most specific fit: P-str.",
-    "zh": "两个决定发生在两个不同的时间。\n\n编译时，编译器选择一个签名。它先看接收者的声明类型（Printer 或 FancyPrinter），知道有哪些方法；再看实参的声明类型，知道哪些方法适用。这一步与对象的运行时类型无关。所以 p.show(o) 选中 show(Object)：o 的声明类型是 Object，尽管它里面装的是 String。\n\n运行时，JVM 看接收者的真实类，并运行这个类中对应该签名的版本。FancyPrinter 重写了 show(Object)，所以凡是选中 show(Object) 的调用，即使通过 Printer 类型的变量 p，也会打印 F-obj。FancyPrinter 没有重写 show(String)，所以选中 show(String) 的调用运行的是 Printer 的版本，打印 P-str。\n\n逐行说明：\n- p.show(\"hi\")：Printer 有 show(Object) 和 show(String)。实参是 String，更具体的 show(String) 获胜，由 Printer 的版本执行：P-str。\n- p.show(5)：Printer 类型里没有适用于 Integer 的方法。不装箱时没有任何方法适合 int。装箱后 int 变成 Integer，适合 show(Object)。重写版本运行：F-obj。\n- f.show(5)：FancyPrinter 自己有 show(Integer)。装箱后 show(Integer) 和 show(Object) 都适用，Integer 更具体：F-int。注意这里的 show(Integer) 是新的重载，不是重写。\n- f.show(\"hi\")：show(String) 继承自 Printer，是最具体的匹配：P-str。"
+    "zh": "两个决定发生在两个不同的时间。\n\n编译时，编译器选择一个签名。它先看接收者的声明类型（Printer 或 FancyPrinter），知道有哪些方法；再看实参的声明类型，知道哪些方法适用。这一步与对象的运行时类型无关。所以 p.show(o) 选中 show(Object)：o 的声明类型是 Object，尽管它里面装的是 String。\n\n运行时，JVM 看接收者的真实类，并运行这个类中对应该签名的版本。FancyPrinter 重写了 show(Object)，所以凡是选中 show(Object) 的调用，即使通过 Printer 类型的变量 p，也会打印 F-obj。FancyPrinter 没有重写 show(String)，所以选中 show(String) 的调用运行的是 Printer 的版本，打印 P-str。\n\n逐行说明：\n- p.show(\"hi\")：Printer 有 show(Object) 和 show(String)。实参是 String，更具体的 show(String) 获胜，由 Printer 的版本执行：P-str。\n- p.show(5)：Printer 里没有 show(Integer)。不装箱时没有任何方法适合 int。装箱后 int 变成 Integer，适合 show(Object)。重写版本运行：F-obj。\n- f.show(5)：FancyPrinter 自己有 show(Integer)。装箱后 show(Integer) 和 show(Object) 都适用，Integer 更具体：F-int。注意这里的 show(Integer) 是新的重载，不是重写。\n- f.show(\"hi\")：show(String) 继承自 Printer，是最具体的匹配：P-str。"
    },
    "verify_language": "java",
    "verify_code": "class Printer {\n    String show(Object o) { return \"Object|P-obj\"; }\n    String show(String s) { return \"String|P-str\"; }\n}\n\nclass FancyPrinter extends Printer {\n    String show(Object o) { return \"Object|F-obj\"; }\n    String show(Integer n) { return \"Integer|F-int\"; }\n}\n\npublic class Main {\n    static void row(String label, String result) {\n        int bar = result.indexOf('|');\n        System.out.println(label + \"\\t\" + result.substring(0, bar) + \"\\t\" + result.substring(bar + 1));\n    }\n\n    public static void main(String[] args) {\n        Printer p = new FancyPrinter();\n        FancyPrinter f = new FancyPrinter();\n        Object o = \"hi\";\n        row(\"p.show(\\\"hi\\\")\", p.show(\"hi\"));\n        row(\"p.show(o)\", p.show(o));\n        row(\"p.show(5)\", p.show(5));\n        row(\"f.show(5)\", f.show(5));\n        row(\"f.show(\\\"hi\\\")\", f.show(\"hi\"));\n        row(\"f.show(o)\", f.show(o));\n    }\n}\n"
@@ -1042,8 +1042,8 @@
     "0,2"
    ],
    "solution": {
-    "en": "Follow one call at a time, and remember that a call finishes only when all the calls it started have returned.\n\nmix(3) prints \"enter 3\" and is not a base case, so it makes its first call mix(2) and waits. mix(2) prints \"enter 2\" and calls mix(1), which prints \"enter 1\", is a base case, prints \"return 1\" and returns 1. Back in mix(2), the second call mix(0) prints \"enter 0\" and \"return 0\" and returns 0. Now mix(2) has left = 1 and right = 0, so result = 1 + 0 + 1 = 2. It prints \"return 2\". Only now does mix(3) continue with its second call mix(1), which prints \"enter 1\" and \"return 1\". Then mix(3) computes 2 + 1 + 1 = 4, prints \"return 4\", and main prints the value 4.\n\nThe stack column shows the depth. It grows by one with every \"enter\" and shrinks by one when a call has printed its \"return\" and finishes. The deepest point is 3, reached inside mix(2). The second call mix(1) is made directly by mix(3), so it sits at depth 2. When \"return 1\" is printed, that call is still on the stack, so the number is still 3; the number drops only after the line.\n\nNotice the order of work: the calls make a tree. The second recursive call (n - 2) starts only after the whole first call (n - 1) is finished.",
-    "zh": "一次跟踪一个调用，并记住：一个调用必须等它启动的所有调用都返回之后，才算结束。\n\nmix(3) 打印 \"enter 3\"，它不是基本情况，所以发起第一个调用 mix(2)，然后等待。mix(2) 打印 \"enter 2\"，调用 mix(1)；mix(1) 打印 \"enter 1\"，它是基本情况，打印 \"return 1\" 并返回 1。回到 mix(2)，第二个调用 mix(0) 打印 \"enter 0\" 和 \"return 0\"，返回 0。现在 mix(2) 的 left = 1、right = 0，所以 result = 1 + 0 + 1 = 2，它打印 \"return 2\"。直到这时，mix(3) 才继续执行它的第二个调用 mix(1)，打印 \"enter 1\" 和 \"return 1\"。然后 mix(3) 算出 2 + 1 + 1 = 4，打印 \"return 4\"，最后 main 打印数值 4。\n\n栈那一列表示深度。每打印一个 \"enter\"，深度加一；一个调用打印完 \"return\" 并结束后，深度减一。最深处是 3，出现在 mix(2) 内部。第二个 mix(1) 是由 mix(3) 直接调用的，所以它的深度是 2。打印 \"return 1\" 时，这个调用仍在栈上，所以数字仍然是 3；是打印这一行之后才下降。\n\n注意工作的顺序：这些调用构成一棵树。第二个递归调用（n - 2）要等第一个递归调用（n - 1）完全结束之后才开始。"
+    "en": "Follow one call at a time, and remember that a call finishes only when all the calls it started have returned.\n\nmix(3) prints \"enter 3\" and is not a base case, so it makes its first call mix(2) and waits. mix(2) prints \"enter 2\" and calls mix(1), which prints \"enter 1\", is a base case, prints \"return 1\" and returns 1. Back in mix(2), the second call mix(0) prints \"enter 0\" and \"return 0\" and returns 0. Now mix(2) has left = 1 and right = 0, so result = 1 + 0 + 1 = 2. It prints \"return 2\". Only now does mix(3) continue with its second call mix(1), which prints \"enter 1\" and \"return 1\". Then mix(3) computes 2 + 1 + 1 = 4, prints \"return 4\", and main prints the value 4.\n\nThe stack column shows the depth. It grows by one with every \"enter\" and shrinks by one when a call has printed its \"return\" and finishes. The deepest point is 3, reached by the two calls that mix(2) makes. The second call mix(1) is made directly by mix(3), so it sits at depth 2. When \"return 1\" is printed, that call is still on the stack, so the number is still 3; the number drops only after the line.\n\nNotice the order of work: the calls make a tree. The second recursive call (n - 2) starts only after the whole first call (n - 1) is finished.",
+    "zh": "一次跟踪一个调用，并记住：一个调用必须等它启动的所有调用都返回之后，才算结束。\n\nmix(3) 打印 \"enter 3\"，它不是基本情况，所以发起第一个调用 mix(2)，然后等待。mix(2) 打印 \"enter 2\"，调用 mix(1)；mix(1) 打印 \"enter 1\"，它是基本情况，打印 \"return 1\" 并返回 1。回到 mix(2)，第二个调用 mix(0) 打印 \"enter 0\" 和 \"return 0\"，返回 0。现在 mix(2) 的 left = 1、right = 0，所以 result = 1 + 0 + 1 = 2，它打印 \"return 2\"。直到这时，mix(3) 才继续执行它的第二个调用 mix(1)，打印 \"enter 1\" 和 \"return 1\"。然后 mix(3) 算出 2 + 1 + 1 = 4，打印 \"return 4\"，最后 main 打印数值 4。\n\n栈那一列表示深度。每打印一个 \"enter\"，深度加一；一个调用打印完 \"return\" 并结束后，深度减一。最深处是 3，出现在 mix(2) 发起的两次调用里。第二个 mix(1) 是由 mix(3) 直接调用的，所以它的深度是 2。再看第 4 步：第一个 mix(1) 打印 \"return 1\" 时仍在栈上，所以数字仍然是 3；是打印这一行之后才下降。\n\n注意工作的顺序：这些调用构成一棵树。第二个递归调用（n - 2）要等第一个递归调用（n - 1）完全结束之后才开始。"
    },
    "verify_language": "java",
    "verify_code": "public class Main {\n    static int depth = 0;\n    static int step = 0;\n\n    static void log(String line) {\n        step++;\n        System.out.println(step + \"\\t\" + line + \"\\t\" + depth);\n    }\n\n    static int mix(int n) {\n        depth++;\n        log(\"enter \" + n);\n        if (n <= 1) {\n            log(\"return \" + n);\n            depth--;\n            return n;\n        }\n        int left = mix(n - 1);\n        int right = mix(n - 2);\n        int result = left + right + 1;\n        log(\"return \" + result);\n        depth--;\n        return result;\n    }\n\n    public static void main(String[] args) {\n        int r = mix(3);\n        log(\"\" + r);\n    }\n}\n"
@@ -1060,8 +1060,8 @@
     "zh": "别名与被复制的引用"
    },
    "prompt": {
-    "en": "Read the program. After each of the four statements in main, write what the four variables hold.\n\n- Write an array as its values with commas and no spaces, for example [1,2].\n- Write the StringBuilder as its text, for example hi.\n- Write the numbers as plain digits.\n\nJava passes everything by value: a method gets a copy of the argument. Think about what is copied when the argument is an array reference.",
-    "zh": "阅读程序。在 main 里的四条语句各执行完之后，写出四个变量里分别是什么。\n\n- 数组写成它的各个值，用逗号隔开，不加空格，例如 [1,2]。\n- StringBuilder 写成它的文本，例如 hi。\n- 数字写成普通数字。\n\nJava 的所有传递都是按值传递：方法得到的是实参的一个副本。想一想：当实参是数组引用时，被复制的是什么。"
+    "en": "Read the program. After each of the four statements listed in the table, write what the four variables hold.\n\n- Write an array as its values with commas and no spaces, for example [1,2].\n- Write the StringBuilder as its text, for example hi.\n- Write the numbers as plain digits.\n\nJava passes everything by value: a method gets a copy of the argument. Think about what is copied when the argument is an array reference.",
+    "zh": "阅读程序。表中列出的四条语句各执行完之后，写出四个变量里分别是什么。\n\n- 数组写成它的各个值，用逗号隔开，不加空格，例如 [1,2]。\n- StringBuilder 写成它的文本，例如 hi。\n- 数字写成普通数字。\n\nJava 的所有传递都是按值传递：方法得到的是实参的一个副本。想一想：当实参是数组引用时，被复制的是什么。"
    },
    "code": "public class Main {\n    static void change(int[] arr, int x, StringBuilder sb) {\n        arr[0] = arr[0] + 10;\n        x = x + 10;\n        sb.append(\"!\");\n        sb = new StringBuilder(\"new\");\n        sb.append(\"?\");\n        arr = new int[] {0, 0};\n        arr[1] = 99;\n    }\n\n    public static void main(String[] args) {\n        int[] data = {1, 2};\n        int n = 5;\n        StringBuilder text = new StringBuilder(\"hi\");\n        int[] alias = data;\n        change(data, n, text);\n        alias[1] = 7;\n        data = new int[] {3, 4};\n    }\n}\n",
    "columns": {
@@ -1260,8 +1260,8 @@
     "0,5"
    ],
    "solution": {
-    "en": "The list starts as [2, 4, 6, 8, 10, 12].\n\nPass 1: i = 0, v = 2. 2 % 4 is 2, not 0, so nothing is removed and sum becomes 2.\nPass 2: i = 1, v = 4. It is a multiple of 4, so the element at index 1 is removed. The list is now [2, 6, 8, 10, 12], size 5.\nPass 3: i = 2. The loop moved on to index 2, but the list shifted left, so index 2 now holds 8 (the 6 at index 1 was skipped). 8 is removed. The list is [2, 6, 10, 12], size 4.\nPass 4: i = 3, v = 12, removed. The list is [2, 6, 10], size 3.\nThen i becomes 4, and 4 < 3 is false, so the loop ends. The program prints \"2 3\".\n\nThe bug is hidden: the values 6 and 10 were never examined, so sum is 2 and not 2 + 6 + 10 = 18. Removing an element shifts the rest left, but the loop still adds 1 to i. Safe fixes: do not add 1 to i after a removal (i-- or an else branch), loop from the end towards 0, or use an Iterator and its remove method.",
-    "zh": "列表一开始是 [2, 4, 6, 8, 10, 12]。\n\n第 1 轮：i = 0，v = 2。2 % 4 是 2，不是 0，所以不删除，sum 变成 2。\n第 2 轮：i = 1，v = 4。它是 4 的倍数，所以删除下标 1 处的元素。列表变成 [2, 6, 8, 10, 12]，大小为 5。\n第 3 轮：i = 2。循环走到了下标 2，但列表整体左移了，现在下标 2 处是 8（下标 1 处的 6 被跳过了）。8 被删除。列表是 [2, 6, 10, 12]，大小为 4。\n第 4 轮：i = 3，v = 12，被删除。列表是 [2, 6, 10]，大小为 3。\n然后 i 变成 4，4 < 3 不成立，循环结束。程序打印 \"2 3\"。\n\n这里的错误很隐蔽：6 和 10 从来没有被检查过，所以 sum 是 2，而不是 2 + 6 + 10 = 18。删除一个元素会让后面的元素左移，但循环仍然把 i 加一。可靠的修法有：删除之后不要让 i 加一（用 i-- 或 else 分支）、从后往前循环到 0，或者使用 Iterator 及其 remove 方法。"
+    "en": "The list starts as [2, 4, 6, 8, 10, 12].\n\nPass 1: i = 0, v = 2. 2 % 4 is 2, not 0, so nothing is removed and sum becomes 2.\nPass 2: i = 1, v = 4. It is a multiple of 4, so the element at index 1 is removed. The list is now [2, 6, 8, 10, 12], size 5.\nPass 3: i = 2. The loop moved on to index 2, but the elements after the removed one moved left, so index 2 now holds 8 (the 6 at index 1 was skipped). 8 is removed. The list is [2, 6, 10, 12], size 4.\nPass 4: i = 3, v = 12, removed. The list is [2, 6, 10], size 3.\nThen i becomes 4, and 4 < 3 is false, so the loop ends. The program prints \"2 3\".\n\nThe bug is hidden: the values 6 and 10 were never examined, so sum is 2 and not 2 + 6 + 10 = 18. Removing an element shifts the rest left, but the loop still adds 1 to i. Safe fixes: do not add 1 to i after a removal (i-- or an else branch), loop from the end towards 0, or use an Iterator and its remove method.",
+    "zh": "列表一开始是 [2, 4, 6, 8, 10, 12]。\n\n第 1 轮：i = 0，v = 2。2 % 4 是 2，不是 0，所以不删除，sum 变成 2。\n第 2 轮：i = 1，v = 4。它是 4 的倍数，所以删除下标 1 处的元素。列表变成 [2, 6, 8, 10, 12]，大小为 5。\n第 3 轮：i = 2。循环走到了下标 2，但被删元素后面的元素都左移了一位，现在下标 2 处是 8（原来在下标 1 处的 6 被跳过了）。8 被删除。列表是 [2, 6, 10, 12]，大小为 4。\n第 4 轮：i = 3，v = 12，被删除。列表是 [2, 6, 10]，大小为 3。\n然后 i 变成 4，4 < 3 不成立，循环结束。程序打印 \"2 3\"。\n\n这里的错误很隐蔽：6 和 10 从来没有被检查过，所以 sum 是 2，而不是 2 + 6 + 10 = 18。删除一个元素会让后面的元素左移，但循环仍然把 i 加一。可靠的修法有：删除之后不要让 i 加一（用 i-- 或 else 分支）、从后往前循环到 0，或者使用 Iterator 及其 remove 方法。"
    },
    "verify_language": "java",
    "verify_code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<Integer> list = new ArrayList<Integer>();\n        for (int k = 1; k <= 6; k++) {\n            list.add(k * 2);\n        }\n        int sum = 0;\n        int pass = 0;\n        for (int i = 0; i < list.size(); i++) {\n            pass++;\n            int v = list.get(i);\n            boolean removed = false;\n            if (v % 4 == 0) {\n                list.remove(i);\n                removed = true;\n            } else {\n                sum += v;\n            }\n            System.out.println(pass + \"\\t\" + i + \"\\t\" + v + \"\\t\" + (removed ? \"yes\" : \"no\") + \"\\t\" + list.size() + \"\\t\" + sum);\n        }\n    }\n}\n"
@@ -1278,8 +1278,8 @@
     "zh": "基本类型副本与数组引用副本"
    },
    "prompt": {
-    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).",
-    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。"
+    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Leave out the parameter args of main and the array it refers to. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).",
+    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。不要画 main 的参数 args 和它指向的数组。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。"
    },
    "code": "public class Main {\n    static void bump(int n, int[] counts) {\n        n = n + 1;\n        counts[0] = counts[0] + n;\n        // HERE\n    }\n\n    public static void main(String[] args) {\n        int n = 4;\n        int[] counts = {10, 20};\n        bump(n, counts);\n        System.out.println(n + \" \" + counts[0]);\n    }\n}\n",
    "rubric": [
@@ -1381,8 +1381,8 @@
     ]
    },
    "solution": {
-    "en": "Walk through the code to the marked line.\n\nIn main: n is the primitive 4. The array {10, 20} is an object, so it goes on the heap as H1, and counts holds an arrow to it.\n\nThe call bump(n, counts) creates a new frame. Its parameters are initialised with copies. n gets the value 4, in a new box. counts gets a copy of the arrow, so it points to H1 as well. Then n = n + 1 changes only the new box (5), and counts[0] = counts[0] + n makes cell [0] equal to 10 + 5 = 15 in the one shared array.\n\nAt // HERE: main has n = 4 and counts -> H1; bump has n = 5 and counts -> H1; H1 holds 15 and 20. After bump returns, its frame disappears and the program prints \"4 15\". The primitive in main was not changed, but the array was.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
-    "zh": "沿着代码走到标记的那一行。\n\n在 main 里：n 是基本类型值 4。数组 {10, 20} 是对象，所以放在堆里，标为 H1，counts 里是指向它的箭头。\n\n调用 bump(n, counts) 会创建一个新的栈帧，它的形参用副本初始化。n 在新的格子里得到值 4。counts 得到箭头的副本，所以也指向 H1。然后 n = n + 1 只改变新格子里的值（变成 5），而 counts[0] = counts[0] + n 把唯一共享的那个数组的 [0] 格改成 10 + 5 = 15。\n\n在 // HERE：main 里 n = 4，counts -> H1；bump 里 n = 5，counts -> H1；H1 里是 15 和 20。bump 返回后它的栈帧消失，程序打印 \"4 15\"：基本类型没有变，数组却变了。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块，main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
+    "en": "Walk through the code to the marked line.\n\nIn main: n is the primitive 4. The array {10, 20} is an object, so it goes on the heap as H1, and counts holds an arrow to it.\n\nThe call bump(n, counts) creates a new frame. Its parameters are initialised with copies. n gets the value 4, in a new box. counts gets a copy of the arrow, so it points to H1 as well. Then n = n + 1 changes only the new box (5), and counts[0] = counts[0] + n makes cell [0] equal to 10 + 5 = 15 in the one shared array.\n\nAt // HERE: main has n = 4 and counts -> H1; bump has n = 5 and counts -> H1; H1 holds 15 and 20. After bump returns, its frame disappears and the program prints \"4 15\". The primitive in main was not changed, but the array was.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block (a frame) for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
+    "zh": "沿着代码走到标记的那一行。\n\n在 main 里：n 是基本类型值 4。数组 {10, 20} 是对象，所以放在堆里，标为 H1，counts 里是指向它的箭头。\n\n调用 bump(n, counts) 会创建一个新的栈帧，它的形参用副本初始化。n 在新的格子里得到值 4。counts 得到箭头的副本，所以也指向 H1。然后 n = n + 1 只改变新格子里的值（变成 5），而 counts[0] = counts[0] + n 把唯一共享的那个数组的 [0] 格改成 10 + 5 = 15。\n\n在 // HERE：main 里 n = 4，counts -> H1；bump 里 n = 5，counts -> H1；H1 里是 15 和 20。bump 返回后它的栈帧消失，程序打印 \"4 15\"：基本类型没有变，数组却变了。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块（也叫栈帧），main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
    },
    "verify_language": "java",
    "verify_code": "public class Main {\n    static int mainN;\n    static int[] mainCounts;\n\n    static void bump(int n, int[] counts) {\n        n = n + 1;\n        counts[0] = counts[0] + n;\n        System.out.println(\"main n=\" + mainN + \" bump n=\" + n + \" same=\" + (counts == mainCounts) + \" [0]=\" + counts[0] + \" [1]=\" + counts[1]);\n    }\n\n    public static void main(String[] args) {\n        int n = 4;\n        int[] counts = {10, 20};\n        mainN = n;\n        mainCounts = counts;\n        bump(n, counts);\n        System.out.println(n + \" \" + counts[0]);\n    }\n}\n",
@@ -1400,8 +1400,8 @@
     "zh": "不规则网格、被共享的行与浅复制"
    },
    "prompt": {
-    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nNote: new int[3][] makes an array of three references, all null. clone() on an array makes a new array of the same length with the same cell contents (a shallow copy).",
-    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n注意：new int[3][] 创建一个有三个引用的数组，三个引用都是 null。对数组调用 clone() 会创建一个长度相同、格子内容相同的新数组（浅复制）。"
+    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Leave out the parameter args of main and the array it refers to. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nNote: new int[3][] makes an array of three references, all null. clone() on an array makes a new array of the same length with the same cell contents (a shallow copy).",
+    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。不要画 main 的参数 args 和它指向的数组。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n注意：new int[3][] 创建一个有三个引用的数组，三个引用都是 null。对数组调用 clone() 会创建一个长度相同、格子内容相同的新数组（浅复制）。"
    },
    "code": "public class Main {\n    public static void main(String[] args) {\n        int[][] grid = new int[3][];\n        grid[0] = new int[] {1, 2};\n        grid[1] = grid[0];\n        int[][] copy = grid.clone();\n        copy[0] = new int[] {9};\n        grid[1][1] = 5;\n        // HERE\n    }\n}\n",
    "rubric": [
@@ -1415,8 +1415,8 @@
     {
      "marks": 1,
      "text": {
-      "en": "H1 is the grid array (int[][3]) with cells [0] and [1] pointing to the same row H2, and [2] = null.",
-      "zh": "H1 是 grid 数组（int[][3]），它的 [0] 和 [1] 指向同一行 H2，[2] = null。"
+      "en": "H1 is the grid array (int[3][]) with cells [0] and [1] pointing to the same row H2, and [2] = null.",
+      "zh": "H1 是 grid 数组（int[3][]），它的 [0] 和 [1] 指向同一行 H2，[2] = null。"
      }
     },
     {
@@ -1452,7 +1452,7 @@
     },
     {
      "en": "Writing 0 in grid[2]. A cell of an array of arrays is a reference and is null until you assign it.",
-     "zh": "在 grid[2] 里写 0。数组的数组中的格子是引用，赋值之前是 null。"
+     "zh": "在 grid[2] 里写 0。外层数组的格子是引用，赋值之前是 null。"
     }
    ],
    "memory": {
@@ -1475,7 +1475,7 @@
     ],
     "heap": [
      {
-      "id": "H1 (int[][3])",
+      "id": "H1 (int[3][])",
       "cells": [
        {
         "name": "[0]",
@@ -1507,7 +1507,7 @@
       ]
      },
      {
-      "id": "H3 (int[][3], the clone)",
+      "id": "H3 (int[3][], the clone)",
       "cells": [
        {
         "name": "[0]",
@@ -1537,8 +1537,8 @@
     ]
    },
    "solution": {
-    "en": "Build the picture statement by statement.\n\n1. new int[3][] creates H1, three null references.\n2. grid[0] = new int[] {1, 2} creates the row H2 and stores an arrow to it in H1[0].\n3. grid[1] = grid[0] copies that arrow into H1[1]. Both cells now point to H2.\n4. grid.clone() creates a new outer array H3 and copies each cell of H1: the arrows to H2, H2 and null. The rows are not copied, which is why a clone is called shallow.\n5. copy[0] = new int[] {9} creates the row H4 and makes H3[0] point to it. H1 is not touched.\n6. grid[1][1] = 5 follows H1[1] to H2 and changes its second cell from 2 to 5. Since H3[1] also points to H2, copy[1][1] is 5 too.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
-    "zh": "一条语句一条语句地画。\n\n1. new int[3][] 创建 H1，里面是三个 null 引用。\n2. grid[0] = new int[] {1, 2} 创建行 H2，并把指向它的箭头存入 H1[0]。\n3. grid[1] = grid[0] 把这根箭头复制到 H1[1]。现在两个格子都指向 H2。\n4. grid.clone() 创建新的外层数组 H3，并复制 H1 的每个格子：指向 H2 的箭头、指向 H2 的箭头和 null。各行没有被复制，这就是它被称为浅复制的原因。\n5. copy[0] = new int[] {9} 创建行 H4，并让 H3[0] 指向它。H1 没有被碰。\n6. grid[1][1] = 5 顺着 H1[1] 找到 H2，把它的第二个格子从 2 改成 5。因为 H3[1] 也指向 H2，所以 copy[1][1] 也是 5。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块，main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
+    "en": "Build the picture statement by statement.\n\n1. new int[3][] creates H1, three null references.\n2. grid[0] = new int[] {1, 2} creates the row H2 and stores an arrow to it in H1[0].\n3. grid[1] = grid[0] copies that arrow into H1[1]. Both cells now point to H2.\n4. grid.clone() creates a new outer array H3 and copies each cell of H1: the arrows to H2, H2 and null. The rows are not copied, which is why a clone is called shallow.\n5. copy[0] = new int[] {9} creates the row H4 and makes H3[0] point to it. H1 is not touched.\n6. grid[1][1] = 5 follows H1[1] to H2 and changes its second cell from 2 to 5. Since H3[1] also points to H2, copy[1][1] is 5 too.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block (a frame) for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
+    "zh": "一条语句一条语句地画。\n\n1. new int[3][] 创建 H1，里面是三个 null 引用。\n2. grid[0] = new int[] {1, 2} 创建行 H2，并把指向它的箭头存入 H1[0]。\n3. grid[1] = grid[0] 把这根箭头复制到 H1[1]。现在两个格子都指向 H2。\n4. grid.clone() 创建新的外层数组 H3，并复制 H1 的每个格子：指向 H2 的箭头、指向 H2 的箭头和 null。各行没有被复制，这就是它被称为浅复制的原因。\n5. copy[0] = new int[] {9} 创建行 H4，并让 H3[0] 指向它。H1 没有被碰。\n6. grid[1][1] = 5 顺着 H1[1] 找到 H2，把它的第二个格子从 2 改成 5。因为 H3[1] 也指向 H2，所以 copy[1][1] 也是 5。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块（也叫栈帧），main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
    },
    "verify_language": "java",
    "verify_code": "public class Main {\n    static String show(int[] a) {\n        if (a == null) {\n            return \"null\";\n        }\n        StringBuilder sb = new StringBuilder(\"[\");\n        for (int i = 0; i < a.length; i++) {\n            if (i > 0) {\n                sb.append(',');\n            }\n            sb.append(a[i]);\n        }\n        return sb.append(']').toString();\n    }\n\n    public static void main(String[] args) {\n        int[][] grid = new int[3][];\n        grid[0] = new int[] {1, 2};\n        grid[1] = grid[0];\n        int[][] copy = grid.clone();\n        copy[0] = new int[] {9};\n        grid[1][1] = 5;\n        System.out.println(\"grid[0]==grid[1]:\" + (grid[0] == grid[1]) + \" grid[0]=\" + show(grid[0]) + \" grid[2]=\" + show(grid[2]));\n        System.out.println(\"copy[0]=\" + show(copy[0]) + \" copy[1]==grid[1]:\" + (copy[1] == grid[1]) + \" copy[2]=\" + show(copy[2]));\n        System.out.println(\"copy==grid:\" + (copy == grid) + \" copy[0]==grid[0]:\" + (copy[0] == grid[0]));\n    }\n}\n",
@@ -1556,8 +1556,8 @@
     "zh": "节点链与不可达的对象"
    },
    "prompt": {
-    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nAlso say which object, if any, can no longer be reached from any variable on the stack, and so may be removed by the garbage collector.",
-    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n同时指出：如果有的话，哪个对象已经无法从栈上的任何变量到达，因此可以被垃圾回收器回收。"
+    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Leave out the parameter args of main and the array it refers to. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nAlso say which object, if any, can no longer be reached from any variable on the stack, and so may be removed by the garbage collector.",
+    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。不要画 main 的参数 args 和它指向的数组。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n同时指出：如果有的话，哪个对象已经无法从栈上的任何变量到达，因此可以被垃圾回收器回收。"
    },
    "code": "class Node {\n    int value;\n    Node next;\n\n    Node(int value, Node next) {\n        this.value = value;\n        this.next = next;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Node c = new Node(3, null);\n        Node b = new Node(2, c);\n        Node a = new Node(1, b);\n        Node head = a;\n        b = null;\n        a.next = c;\n        // HERE\n    }\n}\n",
    "rubric": [
@@ -1687,8 +1687,8 @@
     ]
    },
    "solution": {
-    "en": "Statement by statement:\n\n1. c = new Node(3, null): H1 with value 3 and next null.\n2. b = new Node(2, c): H2 with value 2 and next pointing to H1.\n3. a = new Node(1, b): H3 with value 1 and next pointing to H2. Objects are numbered in creation order.\n4. head = a copies the arrow. head and a both point to H3.\n5. b = null removes the arrow from b. H2 still exists on the heap, and H3.next still points to it.\n6. a.next = c changes the next field of H3 so that it points to H1 instead of H2.\n\nNow ask which objects can be reached by following arrows from the variables on the stack. c reaches H1. a and head reach H3, and H3.next reaches H1. Nothing points to H2 any more, so it is unreachable. The garbage collector is allowed to remove it. H2's own field next still holds an arrow to H1, but arrows that come out of an unreachable object do not make anything reachable.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
-    "zh": "逐条语句来看：\n\n1. c = new Node(3, null)：H1，value 为 3，next 为 null。\n2. b = new Node(2, c)：H2，value 为 2，next 指向 H1。\n3. a = new Node(1, b)：H3，value 为 1，next 指向 H2。对象按创建顺序编号。\n4. head = a 复制箭头。head 和 a 都指向 H3。\n5. b = null 去掉 b 的箭头。H2 仍然在堆上，H3.next 仍然指向它。\n6. a.next = c 修改 H3 的 next 字段，让它指向 H1 而不是 H2。\n\n现在问：顺着箭头从栈上的变量出发，能到达哪些对象？c 到达 H1。a 和 head 到达 H3，而 H3.next 到达 H1。再也没有任何东西指向 H2，所以它不可达。垃圾回收器可以回收它。H2 自己的字段 next 里仍然有一根指向 H1 的箭头，但从不可达对象出发的箭头不能使任何东西变得可达。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块，main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
+    "en": "Statement by statement:\n\n1. c = new Node(3, null): H1 with value 3 and next null.\n2. b = new Node(2, c): H2 with value 2 and next pointing to H1.\n3. a = new Node(1, b): H3 with value 1 and next pointing to H2. Objects are numbered in creation order.\n4. head = a copies the arrow. head and a both point to H3.\n5. b = null removes the arrow from b. H2 still exists on the heap, and H3.next still points to it.\n6. a.next = c changes the next field of H3 so that it points to H1 instead of H2.\n\nNow ask which objects can be reached by following arrows from the variables on the stack. c reaches H1. a and head reach H3, and H3.next reaches H1. Nothing points to H2 any more, so it is unreachable. The garbage collector is allowed to remove it. H2's own field next still holds an arrow to H1, but arrows that come out of an unreachable object do not make anything reachable.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block (a frame) for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
+    "zh": "逐条语句来看：\n\n1. c = new Node(3, null)：H1，value 为 3，next 为 null。\n2. b = new Node(2, c)：H2，value 为 2，next 指向 H1。\n3. a = new Node(1, b)：H3，value 为 1，next 指向 H2。对象按创建顺序编号。\n4. head = a 复制箭头。head 和 a 都指向 H3。\n5. b = null 去掉 b 的箭头。H2 仍然在堆上，H3.next 仍然指向它。\n6. a.next = c 修改 H3 的 next 字段，让它指向 H1 而不是 H2。\n\n现在问：顺着箭头从栈上的变量出发，能到达哪些对象？c 到达 H1。a 和 head 到达 H3，而 H3.next 到达 H1。再也没有任何东西指向 H2，所以它不可达。垃圾回收器可以回收它。H2 自己的字段 next 里仍然有一根指向 H1 的箭头，但从不可达对象出发的箭头不能使任何东西变得可达。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块（也叫栈帧），main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
    },
    "verify_language": "java",
    "verify_code": "class Node {\n    int value;\n    Node next;\n\n    Node(int value, Node next) {\n        this.value = value;\n        this.next = next;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Node c = new Node(3, null);\n        Node b = new Node(2, c);\n        Node a = new Node(1, b);\n        Node head = a;\n        Node h2 = b;\n        b = null;\n        a.next = c;\n        System.out.println(\"a==head:\" + (a == head) + \" b=\" + b);\n        System.out.println(\"head.value=\" + head.value + \" head.next==c:\" + (head.next == c) + \" c.next=\" + c.next);\n        System.out.println(\"h2.value=\" + h2.value + \" h2.next==c:\" + (h2.next == c) + \" reachable from head:\" + (head.next == h2));\n    }\n}\n",
@@ -1706,8 +1706,8 @@
     "zh": "不可变的 String 与可变的 StringBuilder"
    },
    "prompt": {
-    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nFor a String or StringBuilder object, write its text in the cell.",
-    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n对于 String 或 StringBuilder 对象，在它的格子里写出它的文本。"
+    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Leave out the parameter args of main and the array it refers to. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nFor a String or StringBuilder object, write its text in the cell. Draw only the objects that a variable points to: the literal \"c\" is used only as an argument, so leave it out.",
+    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。不要画 main 的参数 args 和它指向的数组。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n对于 String 或 StringBuilder 对象，在它的格子里写出它的文本。只画变量指向的对象：字面量 \"c\" 只是用作实参，不用画出来。"
    },
    "code": "public class Main {\n    public static void main(String[] args) {\n        String s = \"ab\";\n        String t = s;\n        s = s + \"c\";\n        StringBuilder sb = new StringBuilder(\"ab\");\n        StringBuilder sb2 = sb;\n        sb2.append(\"c\");\n        // HERE\n    }\n}\n",
    "rubric": [
@@ -1735,8 +1735,8 @@
     {
      "marks": 1,
      "text": {
-      "en": "Exactly three heap objects.",
-      "zh": "堆上恰好三个对象。"
+      "en": "Exactly three heap objects (the literal \"c\" is left out).",
+      "zh": "堆上恰好三个对象（不画字面量 \"c\"）。"
      }
     }
    ],
@@ -1813,8 +1813,8 @@
     ]
    },
    "solution": {
-    "en": "1. s = \"ab\": the literal is a String object, H1. s points to it.\n2. t = s copies the reference. s and t both point to H1.\n3. s = s + \"c\": the + builds a new String H2 with the text \"abc\". Then s is changed to point to H2. H1 is not modified (Strings cannot be). t still points to H1, so t is \"ab\".\n4. sb = new StringBuilder(\"ab\"): a new mutable object H3.\n5. sb2 = sb copies the reference. sb and sb2 both point to H3.\n6. sb2.append(\"c\") changes H3 itself to \"abc\". Because sb points to the same object, sb shows \"abc\" as well.\n\nThe contrast is the point: a change through one name is visible through the other name only for a mutable object. For a String, \"changing\" the variable means pointing it somewhere else.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
-    "zh": "1. s = \"ab\"：字面量是一个 String 对象 H1，s 指向它。\n2. t = s 复制引用。s 和 t 都指向 H1。\n3. s = s + \"c\"：+ 构造一个新的 String H2，文本是 \"abc\"。然后 s 改为指向 H2。H1 没有被修改（String 不能被修改）。t 仍然指向 H1，所以 t 是 \"ab\"。\n4. sb = new StringBuilder(\"ab\")：一个新的可变对象 H3。\n5. sb2 = sb 复制引用。sb 和 sb2 都指向 H3。\n6. sb2.append(\"c\") 直接把 H3 本身改成 \"abc\"。因为 sb 指向同一个对象，所以 sb 也显示 \"abc\"。\n\n要点正在于这个对比：只有对可变对象，通过一个名字做的修改才能从另一个名字看到。对 String 来说，“修改”变量其实是让它指向别的对象。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块，main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
+    "en": "1. s = \"ab\": the literal is a String object, H1. s points to it.\n2. t = s copies the reference. s and t both point to H1.\n3. s = s + \"c\": the + builds a new String H2 with the text \"abc\". Then s is changed to point to H2. H1 is not modified (Strings cannot be). t still points to H1, so t is \"ab\".\n4. sb = new StringBuilder(\"ab\"): a new mutable object H3.\n5. sb2 = sb copies the reference. sb and sb2 both point to H3.\n6. sb2.append(\"c\") changes H3 itself to \"abc\". Because sb points to the same object, sb shows \"abc\" as well.\n\nThe contrast is the point: a change through one name is visible through the other name only for a mutable object. For a String, \"changing\" the variable means pointing it somewhere else.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block (a frame) for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
+    "zh": "1. s = \"ab\"：字面量是一个 String 对象 H1，s 指向它。\n2. t = s 复制引用。s 和 t 都指向 H1。\n3. s = s + \"c\"：+ 构造一个新的 String H2，文本是 \"abc\"。然后 s 改为指向 H2。H1 没有被修改（String 不能被修改）。t 仍然指向 H1，所以 t 是 \"ab\"。\n4. sb = new StringBuilder(\"ab\")：一个新的可变对象 H3。\n5. sb2 = sb 复制引用。sb 和 sb2 都指向 H3。\n6. sb2.append(\"c\") 直接把 H3 本身改成 \"abc\"。因为 sb 指向同一个对象，所以 sb 也显示 \"abc\"。\n\n要点正在于这个对比：只有对可变对象，通过一个名字做的修改才能从另一个名字看到。对 String 来说，“修改”变量其实是让它指向别的对象。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块（也叫栈帧），main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
    },
    "verify_language": "java",
    "verify_code": "public class Main {\n    public static void main(String[] args) {\n        String s = \"ab\";\n        String t = s;\n        s = s + \"c\";\n        StringBuilder sb = new StringBuilder(\"ab\");\n        StringBuilder sb2 = sb;\n        sb2.append(\"c\");\n        System.out.println(\"s=\" + s + \" t=\" + t + \" sb=\" + sb + \" sb2=\" + sb2);\n        System.out.println(\"s==t:\" + (s == t) + \" sb==sb2:\" + (sb == sb2));\n    }\n}\n",
@@ -1832,8 +1832,8 @@
     "zh": "静态计数器、列表与被重新赋值的形参"
    },
    "prompt": {
-    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nFor the ArrayList, draw a block with its size and one cell for each element. Do not draw its internal array.",
-    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n对于 ArrayList，画一个块，写出它的 size，并为每个元素画一个格子。不要画它内部的数组。"
+    "en": "Draw the stack and the heap at the moment the program reaches the line marked // HERE. Show every frame, every variable, and every object with its fields or elements. Leave out the parameter args of main and the array it refers to. Label the objects H1, H2, ... in the order they are created, and draw each reference as an arrow (or write ref -> H1).\n\nFor the ArrayList, draw a block with its size and one cell for each element. Do not draw its internal array.",
+    "zh": "画出程序执行到标有 // HERE 的那一行时的栈和堆。要画出每个栈帧、每个变量，以及每个对象和它的字段或元素。不要画 main 的参数 args 和它指向的数组。按创建顺序把对象标为 H1、H2……，每个引用画成一根箭头（或写成 ref -> H1）。\n\n对于 ArrayList，画一个块，写出它的 size，并为每个元素画一个格子。不要画它内部的数组。"
    },
    "code": "import java.util.*;\n\nclass Counter {\n    static int created = 0;\n    int count;\n\n    Counter() {\n        created++;\n    }\n}\n\npublic class Main {\n    static void replace(Counter c) {\n        c = new Counter();\n        c.count = 100;\n        // HERE\n    }\n\n    public static void main(String[] args) {\n        List<Counter> list = new ArrayList<Counter>();\n        Counter x = new Counter();\n        x.count = 5;\n        list.add(x);\n        replace(x);\n    }\n}\n",
    "rubric": [
@@ -1961,8 +1961,8 @@
     ]
    },
    "solution": {
-    "en": "1. Counter.created is a static field: one box, in Static data, shared by the class. It starts at 0.\n2. In main, new ArrayList is H1 and list points to it.\n3. new Counter() creates H2. The constructor adds 1 to created, so created is 1. Then x.count = 5 sets the field of H2.\n4. list.add(x) puts a copy of the arrow into the list, so element [0] points to H2, and the size is 1. The object is not copied.\n5. replace(x) creates a frame whose parameter c is a copy of x's arrow, so for a moment c points to H2.\n6. c = new Counter() creates H3. The constructor runs again, so created is 2. The assignment changes only the local variable c, which now points to H3. x and the list still point to H2.\n7. c.count = 100 writes into H3.\n\nAt // HERE, the object H2 has not been changed. Reassigning a parameter never affects the caller's variable.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
-    "zh": "1. Counter.created 是静态字段：一个格子，放在静态数据里，由整个类共享。它一开始是 0。\n2. 在 main 里，new ArrayList 是 H1，list 指向它。\n3. new Counter() 创建 H2。构造器让 created 加 1，所以 created 是 1。然后 x.count = 5 设置 H2 的字段。\n4. list.add(x) 把箭头的副本放进列表，所以元素 [0] 指向 H2，size 为 1。对象没有被复制。\n5. replace(x) 创建一个栈帧，形参 c 是 x 的箭头的副本，所以此刻 c 指向 H2。\n6. c = new Counter() 创建 H3。构造器再次执行，所以 created 变成 2。这次赋值只改变局部变量 c，它现在指向 H3。x 和列表仍然指向 H2。\n7. c.count = 100 写入 H3。\n\n在 // HERE 处，对象 H2 没有改变。给形参重新赋值永远不会影响调用者的变量。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块，main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
+    "en": "1. Counter.created is a static field: one box, in Static data, shared by the class. It starts at 0.\n2. In main, new ArrayList is H1 and list points to it.\n3. new Counter() creates H2. The constructor adds 1 to created, so created is 1. Then x.count = 5 sets the field of H2.\n4. list.add(x) puts a copy of the arrow into the list, so element [0] points to H2, and the size is 1. The object is not copied.\n5. replace(x) creates a frame whose parameter c is a copy of x's arrow, so for a moment c points to H2.\n6. c = new Counter() creates H3. The constructor runs again, so created is 2. The assignment changes only the local variable c, which now points to H3. x and the list still point to H2.\n7. c.count = 100 writes into H3.\n\nAt // HERE, the object H2 has not been changed. Reassigning a parameter never affects the caller's variable.\n\nDrawing convention (the same in every memory question):\n1. The Stack has one block (a frame) for each method call that is still running, with main at the bottom. A block lists that call's parameters and local variables.\n2. A primitive variable (int, boolean, char, double) holds its value inside its own box.\n3. A reference variable holds a reference. We write it as ref -> H1, where H1 is the label of an object. A reference that points to nothing is written null.\n4. The Heap holds every object: arrays, Strings, StringBuilders, ArrayLists and objects of your own classes. Each object is a block with a label (H1, H2, ...) and its type. Its fields or elements are the cells inside the block.\n5. Passing an argument copies what is in the box: the value for a primitive, the reference for an object. A reference parameter is therefore a second arrow to the same object.\n6. Static fields go in Static data.",
+    "zh": "1. Counter.created 是静态字段：一个格子，放在静态数据里，由整个类共享。它一开始是 0。\n2. 在 main 里，new ArrayList 是 H1，list 指向它。\n3. new Counter() 创建 H2。构造器让 created 加 1，所以 created 是 1。然后 x.count = 5 设置 H2 的字段。\n4. list.add(x) 把箭头的副本放进列表，所以元素 [0] 指向 H2，size 为 1。对象没有被复制。\n5. replace(x) 创建一个栈帧，形参 c 是 x 的箭头的副本，所以此刻 c 指向 H2。\n6. c = new Counter() 创建 H3。构造器再次执行，所以 created 变成 2。这次赋值只改变局部变量 c，它现在指向 H3。x 和列表仍然指向 H2。\n7. c.count = 100 写入 H3。\n\n在 // HERE 处，对象 H2 没有改变。给形参重新赋值永远不会影响调用者的变量。\n\n画图约定（所有内存图题都用同一套）：\n1. 栈里为每个仍在运行的方法调用画一个块（也叫栈帧），main 在最下面。块里列出该调用的参数和局部变量。\n2. 基本类型变量（int、boolean、char、double）把值直接放在自己的格子里。\n3. 引用变量里存的是引用。我们写成 ref -> H1，其中 H1 是某个对象的标签。不指向任何对象的引用写成 null。\n4. 堆里放所有对象：数组、String、StringBuilder、ArrayList 以及你自己定义的类的对象。每个对象是一个带标签（H1、H2……）和类型的块，它的字段或元素就是块里的格子。\n5. 传递实参就是复制格子里的内容：基本类型复制值，对象复制引用。所以引用形参相当于指向同一个对象的第二根箭头。\n6. 静态字段放在“静态数据”里。"
    },
    "verify_language": "java",
    "verify_code": "import java.util.*;\n\nclass Counter {\n    static int created = 0;\n    int count;\n\n    Counter() {\n        created++;\n    }\n}\n\npublic class Main {\n    static List<Counter> mainList;\n    static Counter mainX;\n\n    static void replace(Counter c) {\n        c = new Counter();\n        c.count = 100;\n        System.out.println(\"created=\" + Counter.created + \" size=\" + mainList.size() + \" list[0].count=\" + mainList.get(0).count);\n        System.out.println(\"c.count=\" + c.count + \" c==x:\" + (c == mainX) + \" x==list[0]:\" + (mainX == mainList.get(0)));\n    }\n\n    public static void main(String[] args) {\n        List<Counter> list = new ArrayList<Counter>();\n        Counter x = new Counter();\n        x.count = 5;\n        list.add(x);\n        mainList = list;\n        mainX = x;\n        replace(x);\n    }\n}\n",
@@ -1980,8 +1980,8 @@
     "zh": "总是得 0 的百分比"
    },
    "prompt": {
-    "en": "Mia's quiz program should give 90 for 9 correct answers out of 10, and the grade \"A\". Instead it prints 0 and the grade \"C\". Only a perfect score gives the right answer.\n\nFind the bug, explain why it happens, and write the fixed method. percentCorrect must still round down, and must still return 0 when total is 0.",
-    "zh": "Mia 的测验程序，在 10 题答对 9 题时应当得到 90，等级为 \"A\"。可是它打印出 0，等级是 \"C\"。只有满分时结果才对。\n\n找出错误，解释原因，并写出修正后的方法。percentCorrect 仍然要向下取整，并且在 total 为 0 时仍然返回 0。"
+    "en": "Mia's quiz program should give 90 for 9 correct answers out of 10, and the grade \"A\". Instead it prints 0 and the grade \"C\". Only a perfect score, or a score of 0, gives the right answer.\n\nFind the bug, explain why it happens, and write the fixed method. percentCorrect must still round down, and must still return 0 when total is 0.",
+    "zh": "Mia 的测验程序，在 10 题答对 9 题时应当得到 90，等级为 \"A\"。可是它打印出 0，等级是 \"C\"。只有满分或零分时结果才对。\n\n找出错误，解释原因，并写出修正后的方法。percentCorrect 仍然要向下取整，并且在 total 为 0 时仍然返回 0。"
    },
    "code": "public class Main {\n    // Percentage of questions answered correctly, rounded down.\n    // total == 0 gives 0.\n    static int percentCorrect(int correct, int total) {\n        if (total == 0) {\n            return 0;\n        }\n        return correct / total * 100;\n    }\n\n    static String grade(int correct, int total) {\n        int p = percentCorrect(correct, total);\n        if (p >= 80) {\n            return \"A\";\n        }\n        if (p >= 50) {\n            return \"B\";\n        }\n        return \"C\";\n    }\n}\n",
    "starter": "public class Main {\n    // Percentage of questions answered correctly, rounded down.\n    // total == 0 gives 0.\n    static int percentCorrect(int correct, int total) {\n        if (total == 0) {\n            return 0;\n        }\n        return correct / total * 100;\n    }\n\n    static String grade(int correct, int total) {\n        int p = percentCorrect(correct, total);\n        if (p >= 80) {\n            return \"A\";\n        }\n        if (p >= 50) {\n            return \"B\";\n        }\n        return \"C\";\n    }\n}\n",
@@ -2080,8 +2080,8 @@
      "zh": "改成 w.equals(\"stop\")。文本比较是对了，但遇到 null 元素会抛出 NullPointerException。"
     },
     {
-     "en": "Calling w.intern() == \"stop\" and calling it fixed. It works, but it is a roundabout way to do what equals does directly.",
-     "zh": "写成 w.intern() == \"stop\" 就认为改好了。它能工作，但绕了远路，而 equals 可以直接完成这件事。"
+     "en": "Writing w.intern() == \"stop\" and calling it fixed. It compares the text for non-null words, but it still throws NullPointerException for a null element, and it is a roundabout way to do what equals does directly.",
+     "zh": "写成 w.intern() == \"stop\" 就认为改好了。它对非 null 的单词能比较文本，但遇到 null 元素仍会抛出 NullPointerException，而且绕了远路，而 equals 可以直接完成这件事。"
     },
     {
      "en": "Testing only with literals in the source. They are shared, so the bug never shows.",
@@ -2269,8 +2269,8 @@
    ],
    "mistakes": [
     {
-     "en": "Fixing equals but making hashCode use col only. Cells equal in both fields still have equal hash codes, but only if the fields used by hashCode are a subset of those compared by equals.",
-     "zh": "修正了 equals，却让 hashCode 只用 col。只有当 hashCode 使用的字段是 equals 所比较字段的子集时，才能保证相等的格子哈希码相等；要小心验证这一点。"
+     "en": "Changing only hashCode to 31 * row + col and leaving equals alone. Cells that equals calls equal then usually get different hash codes, so the set behaves unpredictably and the contract is broken.",
+     "zh": "只把 hashCode 改成 31 * row + col，而不改 equals。equals 认为相等的格子通常会得到不同的哈希码，集合的行为变得不可预测，契约也被破坏了。"
     },
     {
      "en": "Writing || instead of &&. Then two cells are equal if either number matches, and the equals relation is no longer transitive.",
@@ -2297,8 +2297,8 @@
     "zh": "本想重写、却没有重写的方法"
    },
    "prompt": {
-    "en": "Iris wrote a BoldRenderer that should replace the way Renderer shows an item. In main-like code she makes a BoldRenderer, but keeps it in a variable of type Renderer. She expects renderAll(bold, \"x\", \"y\") to give <b>x</b><b>y</b>, yet it gives [x][y], the output of the plain Renderer.\n\nFind the bug, explain why the plain version runs, and write the fixed BoldRenderer. Say what Java keyword would have helped the compiler to find the mistake.",
-    "zh": "Iris 写了一个 BoldRenderer，本意是替换 Renderer 显示条目的方式。她创建了一个 BoldRenderer，却把它放在 Renderer 类型的变量里。她期望 renderAll(bold, \"x\", \"y\") 得到 <b>x</b><b>y</b>，实际却得到 [x][y]，也就是普通 Renderer 的输出。\n\n找出错误，解释为什么运行的是普通版本，并写出修正后的 BoldRenderer。说明哪个 Java 关键字（注解）本来可以帮编译器发现这个错误。"
+    "en": "Iris wrote a BoldRenderer that should replace the way Renderer shows an item. In her main method she makes a BoldRenderer, but keeps it in a variable of type Renderer. She expects renderAll(bold, \"x\", \"y\") to give <b>x</b><b>y</b>, yet it gives [x][y], the output of the plain Renderer.\n\nFind the bug, explain why the plain version runs, and write the fixed BoldRenderer. Say which annotation would have made the compiler report the mistake.",
+    "zh": "Iris 写了一个 BoldRenderer，本意是替换 Renderer 显示条目的方式。她在自己的 main 方法里创建了一个 BoldRenderer，却把它放在 Renderer 类型的变量里。她期望 renderAll(bold, \"x\", \"y\") 得到 <b>x</b><b>y</b>，实际却得到 [x][y]，也就是普通 Renderer 的输出。\n\n找出错误，解释为什么运行的是普通版本，并写出修正后的 BoldRenderer。说明哪个 Java 注解本来可以让编译器报告这个错误。"
    },
    "code": "class Renderer {\n    String render(Object item) {\n        return \"[\" + item + \"]\";\n    }\n}\n\nclass BoldRenderer extends Renderer {\n    String render(String item) {\n        return \"<b>\" + item + \"</b>\";\n    }\n}\n\npublic class Main {\n    static String renderAll(Renderer r, String a, String b) {\n        return r.render(a) + r.render(b);\n    }\n}\n",
    "starter": "class Renderer {\n    String render(Object item) {\n        return \"[\" + item + \"]\";\n    }\n}\n\nclass BoldRenderer extends Renderer {\n    String render(String item) {\n        return \"<b>\" + item + \"</b>\";\n    }\n}\n\npublic class Main {\n    static String renderAll(Renderer r, String a, String b) {\n        return r.render(a) + r.render(b);\n    }\n}\n",
@@ -2353,8 +2353,1199 @@
    "fixed_code": "class Renderer {\n    String render(Object item) {\n        return \"[\" + item + \"]\";\n    }\n}\n\nclass BoldRenderer extends Renderer {\n    @Override\n    String render(Object item) {\n        return \"<b>\" + item + \"</b>\";\n    }\n}\n\npublic class Main {\n    static String renderAll(Renderer r, String a, String b) {\n        return r.render(a) + r.render(b);\n    }\n}\n",
    "tests": "public class Tests {\n    public static void main(String[] args) {\n        Renderer plain = new Renderer();\n        Renderer bold = new BoldRenderer();\n        System.out.println(Main.renderAll(plain, \"x\", \"y\"));\n        System.out.println(Main.renderAll(bold, \"x\", \"y\"));\n        System.out.println(bold.render(42));\n        System.out.println(new BoldRenderer().render(\"z\"));\n    }\n}\n",
    "expected": "[x][y]\n<b>x</b><b>y</b>\n<b>42</b>\n<b>z</b>\n"
+  },
+  {
+   "id": "mc-types-casting",
+   "kind": "mcq",
+   "topic": "java-execution-types",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Division, char arithmetic and printing",
+    "zh": "除法、char 运算与打印"
+   },
+   "prompt": {
+    "en": "What does this code print?",
+    "zh": "这段代码会打印什么？"
+   },
+   "code": "int a = 7;\nint b = 2;\ndouble d = a / b;\nchar c = 'a';\nc += 2;\nSystem.out.println(d + \" \" + c + \" \" + (c + 1));\n",
+   "options": [
+    {
+     "text": {
+      "en": "3.5 c d",
+      "zh": "3.5 c d"
+     },
+     "why": {
+      "en": "a / b is a division of two ints, so it gives 3 before it is stored in d. d is 3.0, not 3.5. Also, c + 1 is an int (100), not the char 'd'.",
+      "zh": "a / b 是两个 int 相除，在存进 d 之前结果已经是 3，所以 d 是 3.0，不是 3.5。另外，c + 1 是 int（100），不是字符 'd'。"
+     }
+    },
+    {
+     "text": {
+      "en": "3.0 99 100",
+      "zh": "3.0 99 100"
+     },
+     "why": {
+      "en": "c is still a char variable, so printing it shows the character 'c'. Only (c + 1) is an int.",
+      "zh": "c 仍然是 char 变量，所以打印它显示的是字符 'c'。只有 (c + 1) 是 int。"
+     }
+    },
+    {
+     "text": {
+      "en": "3.5 c 100",
+      "zh": "3.5 c 100"
+     },
+     "why": {
+      "en": "The 100 and the c are right, but d is 3.0. The division happens in int arithmetic before the assignment to a double.",
+      "zh": "100 和 c 是对的，但 d 是 3.0。除法在赋值给 double 之前就已经按 int 运算完成了。"
+     }
+    },
+    {
+     "text": {
+      "en": "3.0 c 100",
+      "zh": "3.0 c 100"
+     },
+     "why": {
+      "en": "Correct. a / b is 3 (int division), widened to 3.0. c += 2 has a built-in cast and makes c equal to 'c'. In (c + 1) the char is promoted to int, so the sum is 99 + 1 = 100.",
+      "zh": "正确。a / b 是 3（int 除法），再被扩宽成 3.0。c += 2 带有隐含的强制转换，使 c 变成 'c'。在 (c + 1) 里 char 被提升为 int，所以结果是 99 + 1 = 100。"
+     },
+     "correct": true
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "public class Main {\n    public static void main(String[] args) {\n        int a = 7;\n        int b = 2;\n        double d = a / b;\n        char c = 'a';\n        c += 2;\n        System.out.println(d + \" \" + c + \" \" + (c + 1));\n    }\n}\n",
+   "verify_output": "3.0 c 100\n"
+  },
+  {
+   "id": "mc-cast-compile",
+   "kind": "mcq",
+   "topic": "inheritance-composition",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Casting between sibling classes",
+    "zh": "兄弟类之间的强制转换"
+   },
+   "prompt": {
+    "en": "The statements below are inside main. What happens when the program is compiled?",
+    "zh": "下面的语句写在 main 里面。编译这个程序时会发生什么？"
+   },
+   "code": "class Animal {}\nclass Dog extends Animal {}\nclass Cat extends Animal {}\n\nAnimal a = new Dog();\nDog d = (Dog) a;    // line 1\nCat c = (Cat) a;    // line 2\nCat k = (Cat) d;    // line 3\n",
+   "options": [
+    {
+     "text": {
+      "en": "It compiles, and line 2 throws a ClassCastException when it runs.",
+      "zh": "它能通过编译，运行到第 2 行时抛出 ClassCastException。"
+     },
+     "why": {
+      "en": "Line 2 would indeed fail at run time, because the object is a Dog. But the program never gets that far: line 3 is rejected at compile time.",
+      "zh": "第 2 行在运行时确实会失败，因为对象是 Dog。但程序根本运行不到那里：第 3 行在编译时就被拒绝了。"
+     }
+    },
+    {
+     "text": {
+      "en": "It does not compile, because line 3 is an error.",
+      "zh": "它无法通过编译，因为第 3 行有错误。"
+     },
+     "why": {
+      "en": "Correct. d has the declared type Dog, and Dog and Cat are unrelated siblings. The compiler can prove that no Dog is a Cat, so it refuses the cast.",
+      "zh": "正确。d 的声明类型是 Dog，而 Dog 和 Cat 是互不相关的兄弟类。编译器可以证明没有任何 Dog 是 Cat，所以拒绝这个强制转换。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "It does not compile, because line 2 is an error.",
+      "zh": "它无法通过编译，因为第 2 行有错误。"
+     },
+     "why": {
+      "en": "Line 2 is a cast from Animal down to Cat. A Cat is an Animal, so the compiler allows it, because a really could hold a Cat. Only the run-time type decides.",
+      "zh": "第 2 行是从 Animal 向下转换成 Cat。Cat 是 Animal，所以编译器允许它，因为 a 确实有可能装着 Cat。只有运行时的类型才能决定结果。"
+     }
+    },
+    {
+     "text": {
+      "en": "It compiles and runs without any error.",
+      "zh": "它能通过编译，也能无错误地运行。"
+     },
+     "why": {
+      "en": "Even if it compiled, line 2 would fail: a holds a Dog, and a Dog cannot be cast to Cat.",
+      "zh": "即使它能通过编译，第 2 行也会失败：a 里装的是 Dog，而 Dog 不能强制转换成 Cat。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mc-substitutability",
+   "kind": "mcq",
+   "topic": "inheritance-composition",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Is a Square a safe Rectangle?",
+    "zh": "Square 能安全地当作 Rectangle 吗？"
+   },
+   "prompt": {
+    "en": "The method stretch is written for Rectangle. It sets width 5 and height 2 and expects the area 10. What is the best description of what happens when it is called with a Square object?",
+    "zh": "方法 stretch 是为 Rectangle 写的。它把宽设为 5、高设为 2，并期望面积是 10。用 Square 对象调用它时，下面哪个描述最合适？"
+   },
+   "code": "class Rectangle {\n    protected int w, h;\n    void setWidth(int w)   { this.w = w; }\n    void setHeight(int h)  { this.h = h; }\n    int area()             { return w * h; }\n}\n\nclass Square extends Rectangle {\n    @Override void setWidth(int w)  { this.w = w; this.h = w; }\n    @Override void setHeight(int h) { this.w = h; this.h = h; }\n}\n\nstatic int stretch(Rectangle r) {\n    r.setWidth(5);\n    r.setHeight(2);\n    return r.area();\n}\n",
+   "options": [
+    {
+     "text": {
+      "en": "It returns 10, because a Square is a Rectangle.",
+      "zh": "返回 10，因为 Square 是一种 Rectangle。"
+     },
+     "why": {
+      "en": "The compiler accepts the call, but the setters of Square also change the other side. The last call, setHeight(2), makes both sides 2.",
+      "zh": "编译器会接受这个调用，但 Square 的 setter 还会同时修改另一条边。最后一个调用 setHeight(2) 把两条边都变成了 2。"
+     }
+    },
+    {
+     "text": {
+      "en": "It does not compile, because Square overrides both setters.",
+      "zh": "无法通过编译，因为 Square 重写了两个 setter。"
+     },
+     "why": {
+      "en": "Overriding methods is normal, and these overrides have the correct signatures. The program compiles; the trouble is in its behaviour.",
+      "zh": "重写方法很正常，而且这两个重写的签名都正确。程序能通过编译，问题出在它的行为上。"
+     }
+    },
+    {
+     "text": {
+      "en": "It returns 4, but only because stretch is badly written. Square is a perfectly good subclass.",
+      "zh": "返回 4，但这只是因为 stretch 写得不好。Square 是个完全合格的子类。"
+     },
+     "why": {
+      "en": "stretch uses only what Rectangle promises. Blaming the caller does not help: the point of a subtype is that every caller of the parent type keeps working.",
+      "zh": "stretch 只使用了 Rectangle 所承诺的东西。责怪调用者没有用：子类型的意义就在于，父类型的所有调用者都能继续正常工作。"
+     }
+    },
+    {
+     "text": {
+      "en": "It returns 4. Square breaks the promise that width and height change independently, so it cannot be substituted safely for Rectangle.",
+      "zh": "返回 4。Square 破坏了“宽和高可以独立改变”这个承诺，所以不能安全地替换 Rectangle。"
+     },
+     "why": {
+      "en": "Correct. Subtyping is about behaviour, not only about the real-world \"is a\". Code written against Rectangle relies on its contract. A subclass that changes that contract makes callers fail.",
+      "zh": "正确。子类型关系看的是行为，而不只是现实世界里的“是一种”。针对 Rectangle 写的代码依赖它的契约。子类改变了这个契约，调用者就会出错。"
+     },
+     "correct": true
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "class Rectangle {\n    protected int w, h;\n    void setWidth(int w)   { this.w = w; }\n    void setHeight(int h)  { this.h = h; }\n    int area()             { return w * h; }\n}\n\nclass Square extends Rectangle {\n    @Override void setWidth(int w)  { this.w = w; this.h = w; }\n    @Override void setHeight(int h) { this.w = h; this.h = h; }\n}\n\npublic class Main {\n    static int stretch(Rectangle r) {\n        r.setWidth(5);\n        r.setHeight(2);\n        return r.area();\n    }\n\n    public static void main(String[] args) {\n        System.out.println(stretch(new Rectangle()));\n        System.out.println(stretch(new Square()));\n    }\n}\n",
+   "verify_output": "10\n4\n"
+  },
+  {
+   "id": "mc-interface-or-abstract",
+   "kind": "mcq",
+   "topic": "abstractions",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "When do you need an abstract class?",
+    "zh": "什么时候需要抽象类？"
+   },
+   "prompt": {
+    "en": "Which situation is a better fit for an abstract class than for an interface?",
+    "zh": "下面哪种情况更适合用抽象类，而不是接口？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Duck, Robot and Kite are unrelated classes, and each must offer fly().",
+      "zh": "Duck、Robot 和 Kite 是互不相关的类，每个都必须提供 fly()。"
+     },
+     "why": {
+      "en": "This is a capability shared by unrelated classes, with no shared state. An interface is the natural choice, and each class can still extend its own parent.",
+      "zh": "这是互不相关的类共有的一种能力，没有共享状态。接口是自然的选择，而且每个类仍然可以继承自己的父类。"
+     }
+    },
+    {
+     "text": {
+      "en": "A class must promise two different abilities, Printable and Savable.",
+      "zh": "一个类必须承诺具备两种不同的能力：Printable 和 Savable。"
+     },
+     "why": {
+      "en": "A class can extend only one class but can implement many interfaces, so this needs interfaces.",
+      "zh": "一个类只能继承一个类，但可以实现多个接口，所以这里需要的是接口。"
+     }
+    },
+    {
+     "text": {
+      "en": "Several shape classes share a field id and a constructor that sets it, share a finished describe() method, and each must supply its own area().",
+      "zh": "几个图形类共享字段 id 和设置它的构造器，共享一个写好的 describe() 方法，每个类还必须提供自己的 area()。"
+     },
+     "why": {
+      "en": "Correct. An abstract class can hold fields, a constructor and ready-made methods, and leave area() abstract. An interface cannot hold instance fields or a constructor.",
+      "zh": "正确。抽象类可以有字段、构造器和现成的方法，同时把 area() 留作抽象方法。接口不能有实例字段，也不能有构造器。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Callers should be able to pass a lambda where this type is expected.",
+      "zh": "调用者应当能在需要这个类型的地方传入一个 lambda。"
+     },
+     "why": {
+      "en": "A lambda can only implement a functional interface. It cannot create an instance of an abstract class.",
+      "zh": "lambda 只能实现函数式接口，不能创建抽象类的实例。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mc-generic-bound",
+   "kind": "mcq",
+   "topic": "generics",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Why does this generic method not compile?",
+    "zh": "这个泛型方法为什么无法编译？"
+   },
+   "prompt": {
+    "en": "This method does not compile. What is the reason, and what is the fix?",
+    "zh": "这个方法无法编译。原因是什么？怎样修正？"
+   },
+   "code": "static <T> T bigger(T a, T b) {\n    return a.compareTo(b) > 0 ? a : b;\n}\n",
+   "options": [
+    {
+     "text": {
+      "en": "Without a bound, the compiler knows only that T is some Object, and Object has no compareTo. Fix: declare <T extends Comparable<T>>.",
+      "zh": "没有界限时，编译器只知道 T 是某种 Object，而 Object 没有 compareTo。修正：声明为 <T extends Comparable<T>>。"
+     },
+     "why": {
+      "en": "Correct. The bound promises that every T can be compared with another T, which makes compareTo available.",
+      "zh": "正确。界限承诺每个 T 都能与另一个 T 比较，这样 compareTo 就可以使用了。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "compareTo returns an int, not a boolean. Fix: compare with == instead.",
+      "zh": "compareTo 返回 int，不是 boolean。修正：改用 == 比较。"
+     },
+     "why": {
+      "en": "Comparing the int result with 0 is exactly the right way. The compiler's complaint is about the method, not about the comparison.",
+      "zh": "把 int 结果与 0 比较正是正确的做法。编译器抱怨的是方法找不到，而不是这个比较。"
+     }
+    },
+    {
+     "text": {
+      "en": "A generic method cannot be static. Fix: make it an instance method.",
+      "zh": "泛型方法不能是 static。修正：改成实例方法。"
+     },
+     "why": {
+      "en": "Static generic methods are allowed, and they are very common. The type parameter list <T> is declared on the method itself.",
+      "zh": "静态泛型方法是允许的，而且非常常见。类型参数列表 <T> 就声明在方法本身上。"
+     }
+    },
+    {
+     "text": {
+      "en": "T must be a primitive type. Fix: write int instead of T.",
+      "zh": "T 必须是基本类型。修正：把 T 写成 int。"
+     },
+     "why": {
+      "en": "Type parameters can only stand for reference types. A primitive such as int cannot be used as T (its wrapper class Integer can).",
+      "zh": "类型参数只能代表引用类型。int 这样的基本类型不能用作 T（它的包装类 Integer 可以）。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mc-wildcard-pecs",
+   "kind": "mcq",
+   "topic": "wildcards",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Which statement compiles with wildcards?",
+    "zh": "使用通配符时哪条语句能编译？"
+   },
+   "prompt": {
+    "en": "The method copy has two wildcard parameters. Exactly one of the statements below, if it were the body of the method, compiles. Which one?",
+    "zh": "方法 copy 有两个通配符形参。下面的语句中，如果把它写成方法体，恰好有一条能够通过编译。是哪一条？"
+   },
+   "code": "static void copy(List<? extends Number> src, List<? super Number> dst) {\n    // body\n}\n",
+   "options": [
+    {
+     "text": {
+      "en": "src.add(Integer.valueOf(1));",
+      "zh": "src.add(Integer.valueOf(1));"
+     },
+     "why": {
+      "en": "src is a producer (? extends). The compiler only knows its elements are some subtype of Number, which might be Double. It cannot allow any add except null.",
+      "zh": "src 是生产者（? extends）。编译器只知道它的元素是 Number 的某个子类型，可能是 Double。除了 null 之外，它不允许任何 add。"
+     }
+    },
+    {
+     "text": {
+      "en": "Number n = dst.get(0);",
+      "zh": "Number n = dst.get(0);"
+     },
+     "why": {
+      "en": "dst is a consumer (? super). Its elements are some supertype of Number, so get can only promise an Object.",
+      "zh": "dst 是消费者（? super）。它的元素是 Number 的某个父类型，所以 get 只能保证得到 Object。"
+     }
+    },
+    {
+     "text": {
+      "en": "Integer i = src.get(0);",
+      "zh": "Integer i = src.get(0);"
+     },
+     "why": {
+      "en": "Reading from src is allowed, but what you get is a Number. It would need a cast to become an Integer.",
+      "zh": "可以从 src 读取，但读到的是 Number。要变成 Integer 需要强制转换。"
+     }
+    },
+    {
+     "text": {
+      "en": "dst.add(Double.valueOf(2.5));",
+      "zh": "dst.add(Double.valueOf(2.5));"
+     },
+     "why": {
+      "en": "Correct. Whatever the real element type is, it is Number or a supertype, so it can hold any Number. A Double is a Number. This is \"consumer super\".",
+      "zh": "正确。无论真实的元素类型是什么，它都是 Number 或其父类型，所以能容纳任何 Number。Double 是 Number。这就是“消费者用 super”。"
+     },
+     "correct": true
+    }
+   ]
+  },
+  {
+   "id": "mc-checked-unchecked",
+   "kind": "mcq",
+   "topic": "exceptions",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Which method does not compile?",
+    "zh": "哪个方法无法编译？"
+   },
+   "prompt": {
+    "en": "Exactly one of these four methods fails to compile. Which one?",
+    "zh": "这四个方法中恰好有一个无法编译。是哪一个？"
+   },
+   "code": "void a() { throw new IllegalStateException(\"x\"); }\n\nvoid b() { throw new Exception(\"y\"); }\n\nvoid c() throws Exception { throw new Exception(\"z\"); }\n\nvoid d() {\n    try { throw new Exception(\"w\"); }\n    catch (Exception e) { System.out.println(\"caught\"); }\n}\n",
+   "options": [
+    {
+     "text": {
+      "en": "a",
+      "zh": "a"
+     },
+     "why": {
+      "en": "IllegalStateException is a RuntimeException, so it is unchecked. The compiler does not require a catch or a throws clause.",
+      "zh": "IllegalStateException 是 RuntimeException，属于非受检异常。编译器不要求 catch 或 throws 声明。"
+     }
+    },
+    {
+     "text": {
+      "en": "b",
+      "zh": "b"
+     },
+     "why": {
+      "en": "Correct. Exception is a checked exception. It must be caught or declared with throws, and b does neither.",
+      "zh": "正确。Exception 是受检查异常，必须捕获或用 throws 声明，而 b 两样都没有做。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "c",
+      "zh": "c"
+     },
+     "why": {
+      "en": "The throws clause declares the checked exception, so the callers become responsible for it. The method itself compiles.",
+      "zh": "throws 子句声明了这个受检查异常，于是责任交给了调用者。方法本身能通过编译。"
+     }
+    },
+    {
+     "text": {
+      "en": "d",
+      "zh": "d"
+     },
+     "why": {
+      "en": "The checked exception is caught inside the method by the catch block, so nothing escapes and no throws clause is needed.",
+      "zh": "受检查异常在方法内部被 catch 块捕获，没有任何异常逃出去，所以不需要 throws 子句。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mc-collection-choice",
+   "kind": "mcq",
+   "topic": "collections",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "Which collection fits these three rules?",
+    "zh": "哪种集合符合这三条要求？"
+   },
+   "prompt": {
+    "en": "Leon stores the names of players. The names must stay in the order in which the players joined. The same name must never appear twice. He often asks \"is this name already in?\". Which collection is the best choice?",
+    "zh": "Leon 要保存玩家的名字。名字要保持玩家加入的先后顺序。同一个名字不能出现两次。他经常要问“这个名字已经在里面了吗？”。哪种集合最合适？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "ArrayList<String>",
+      "zh": "ArrayList<String>"
+     },
+     "why": {
+      "en": "It keeps the order, but it allows duplicates and contains scans the whole list.",
+      "zh": "它保持顺序，但允许重复，而且 contains 要扫描整个列表。"
+     }
+    },
+    {
+     "text": {
+      "en": "HashSet<String>",
+      "zh": "HashSet<String>"
+     },
+     "why": {
+      "en": "No duplicates and a fast contains, but the iteration order is not the join order.",
+      "zh": "没有重复，contains 也很快，但遍历顺序并不是加入的顺序。"
+     }
+    },
+    {
+     "text": {
+      "en": "LinkedHashSet<String>",
+      "zh": "LinkedHashSet<String>"
+     },
+     "why": {
+      "en": "Correct. It is a set (no duplicates), contains is fast on average, and it iterates in insertion order.",
+      "zh": "正确。它是集合（没有重复），contains 平均很快，并且按插入顺序遍历。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "TreeSet<String>",
+      "zh": "TreeSet<String>"
+     },
+     "why": {
+      "en": "No duplicates, but it keeps the names sorted alphabetically, not in join order.",
+      "zh": "没有重复，但它按字母顺序排序，而不是按加入顺序。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mc-lambda-capture",
+   "kind": "mcq",
+   "topic": "lambdas",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "A lambda that changes a local variable",
+    "zh": "修改局部变量的 lambda"
+   },
+   "prompt": {
+    "en": "What happens when this code is compiled and run?",
+    "zh": "编译并运行这段代码会发生什么？"
+   },
+   "code": "List<String> names = Arrays.asList(\"a\", \"bb\", \"ccc\");\nint total = 0;\nfor (String n : names) {\n    Runnable r = () -> total += n.length();\n    r.run();\n}\nSystem.out.println(total);\n",
+   "options": [
+    {
+     "text": {
+      "en": "It prints 6.",
+      "zh": "打印 6。"
+     },
+     "why": {
+      "en": "That is what the programmer hoped for, but the program does not compile, so it never runs.",
+      "zh": "这是程序员希望的结果，但程序无法通过编译，所以根本不会运行。"
+     }
+    },
+    {
+     "text": {
+      "en": "Compile error: n is a different value on each pass, so it cannot be captured.",
+      "zh": "编译错误：n 在每一轮里的值都不同，所以不能被捕获。"
+     },
+     "why": {
+      "en": "In an enhanced for loop, n is a new variable for every pass and is never reassigned inside the body, so it is effectively final. Capturing n is fine.",
+      "zh": "在增强 for 循环里，n 在每一轮都是一个新变量，循环体里也从不对它重新赋值，所以它是事实上的 final。捕获 n 没有问题。"
+     }
+    },
+    {
+     "text": {
+      "en": "Compile error: total is changed inside the lambda, but a captured local variable must be final or effectively final.",
+      "zh": "编译错误：total 在 lambda 里被修改，但被捕获的局部变量必须是 final 或事实上的 final。"
+     },
+     "why": {
+      "en": "Correct. A lambda may read a local variable of the enclosing method only if that variable is never reassigned. A common workaround is a one-element array or an AtomicInteger.",
+      "zh": "正确。只有当外围方法的局部变量从不被重新赋值时，lambda 才可以读取它。常见的变通办法是使用单元素数组或 AtomicInteger。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "It prints 0, because the lambda works on a copy of total.",
+      "zh": "打印 0，因为 lambda 操作的是 total 的副本。"
+     },
+     "why": {
+      "en": "Java does allow a lambda to read a copy of a captured value, but it refuses to let the lambda change it, precisely to avoid this confusion. The code is rejected.",
+      "zh": "Java 允许 lambda 读取被捕获值的副本，但为了避免这种混淆，不允许 lambda 修改它。这段代码会被拒绝。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "mc-static-members",
+   "kind": "mcq",
+   "topic": "classes-invariants",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "A static counter and an instance field",
+    "zh": "静态计数器与实例字段"
+   },
+   "prompt": {
+    "en": "What does this code print?",
+    "zh": "这段代码会打印什么？"
+   },
+   "code": "class Ticket {\n    static int issued = 0;\n    final int number;\n\n    Ticket() {\n        issued++;\n        number = issued;\n    }\n}\n\n// in main:\nnew Ticket();\nnew Ticket();\nTicket t = new Ticket();\nSystem.out.println(t.number + \" \" + Ticket.issued);\n",
+   "options": [
+    {
+     "text": {
+      "en": "1 3",
+      "zh": "1 3"
+     },
+     "why": {
+      "en": "number is an instance field, but its value was copied from issued at the moment of construction. For the third ticket issued was 3.",
+      "zh": "number 是实例字段，但它的值是在构造那一刻从 issued 复制来的。第三张票构造时 issued 是 3。"
+     }
+    },
+    {
+     "text": {
+      "en": "3 3",
+      "zh": "3 3"
+     },
+     "why": {
+      "en": "Correct. issued exists once for the whole class and is 3 after three constructions. The third ticket copied 3 into its own final field number.",
+      "zh": "正确。issued 对整个类只有一份，三次构造之后是 3。第三张票把 3 复制进了自己的 final 字段 number。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "3 1",
+      "zh": "3 1"
+     },
+     "why": {
+      "en": "issued is shared. It is not reset for each object, so it is 3 and not 1.",
+      "zh": "issued 是共享的，不会为每个对象重置，所以它是 3，不是 1。"
+     }
+    },
+    {
+     "text": {
+      "en": "1 1",
+      "zh": "1 1"
+     },
+     "why": {
+      "en": "This would be right if every Ticket had its own issued. A static field belongs to the class and is shared by all objects.",
+      "zh": "如果每个 Ticket 都有自己的 issued，这个答案才对。静态字段属于类，由所有对象共享。"
+     }
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "class Ticket {\n    static int issued = 0;\n    final int number;\n\n    Ticket() {\n        issued++;\n        number = issued;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        new Ticket();\n        new Ticket();\n        Ticket t = new Ticket();\n        System.out.println(t.number + \" \" + Ticket.issued);\n    }\n}\n",
+   "verify_output": "3 3\n"
+  },
+  {
+   "id": "mc-scanner-newline",
+   "kind": "mcq",
+   "topic": "text-io",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "nextInt followed by nextLine",
+    "zh": "nextInt 之后紧跟 nextLine"
+   },
+   "prompt": {
+    "en": "A Scanner named in reads this input. Line 1 is the text 42. Line 2 is the text hello world. The code runs:\n\nint n = in.nextInt();\nString line = in.nextLine();\n\nWhat is the value of line?",
+    "zh": "名为 in 的 Scanner 读取下面的输入。第 1 行是文本 42，第 2 行是文本 hello world。运行的代码是：\n\nint n = in.nextInt();\nString line = in.nextLine();\n\nline 的值是什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "\"\" (the empty string)",
+      "zh": "\"\"（空字符串）"
+     },
+     "why": {
+      "en": "Correct. The line break after 42 is still unread. nextLine consumes it and returns the empty text before it. To read the next line, call nextLine once more.",
+      "zh": "正确。42 后面的换行符仍未被读取。nextLine 消耗掉它，并返回它前面的空文本。要读取下一行，需要再调用一次 nextLine。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "\"hello world\"",
+      "zh": "\"hello world\""
+     },
+     "why": {
+      "en": "nextInt reads only the token 42 and stops right before the line break. nextLine then returns the rest of the current line, which is empty.",
+      "zh": "nextInt 只读取词法项 42，停在换行符之前。nextLine 随后返回当前行剩下的部分，也就是空的。"
+     }
+    },
+    {
+     "text": {
+      "en": "\"42\"",
+      "zh": "\"42\""
+     },
+     "why": {
+      "en": "42 has already been consumed by nextInt.",
+      "zh": "42 已经被 nextInt 读走了。"
+     }
+    },
+    {
+     "text": {
+      "en": "It throws InputMismatchException.",
+      "zh": "抛出 InputMismatchException。"
+     },
+     "why": {
+      "en": "nextInt succeeded because 42 is a valid integer. The exception comes from nextInt when the next token is not a number.",
+      "zh": "nextInt 成功了，因为 42 是合法的整数。InputMismatchException 是在下一个词法项不是数字时由 nextInt 抛出的。"
+     }
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner in = new Scanner(\"42\\nhello world\\n\");\n        int n = in.nextInt();\n        String line = in.nextLine();\n        System.out.println(\"[\" + line + \"]\");\n    }\n}\n",
+   "verify_output": "[]\n"
+  },
+  {
+   "id": "mc-data-stream-bytes",
+   "kind": "mcq",
+   "topic": "binary-io",
+   "language": "java",
+   "marks": 2,
+   "title": {
+    "en": "What bytes does DataOutputStream write?",
+    "zh": "DataOutputStream 会写出哪些字节？"
+   },
+   "prompt": {
+    "en": "A program writes to a DataOutputStream: writeInt(258), then writeShort(7). How many bytes are written, and what are they, as unsigned decimal numbers? (Hint: 258 = 1 * 256 + 2.)",
+    "zh": "一个程序向 DataOutputStream 写入：先 writeInt(258)，再 writeShort(7)。一共写出多少个字节？这些字节（按无符号十进制数）是什么？（提示：258 = 1 * 256 + 2。）"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "6 bytes: 0, 0, 1, 2, 0, 7",
+      "zh": "6 个字节：0, 0, 1, 2, 0, 7"
+     },
+     "why": {
+      "en": "Correct. An int is 4 bytes and a short is 2 bytes. DataOutputStream always writes the most significant byte first (big-endian).",
+      "zh": "正确。int 占 4 个字节，short 占 2 个字节。DataOutputStream 总是先写最高位字节（大端序）。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "6 bytes: 2, 1, 0, 0, 7, 0",
+      "zh": "6 个字节：2, 1, 0, 0, 7, 0"
+     },
+     "why": {
+      "en": "The count is right, but this is little-endian order. DataOutputStream does not use it.",
+      "zh": "个数是对的，但这是小端序。DataOutputStream 不使用它。"
+     }
+    },
+    {
+     "text": {
+      "en": "4 bytes: the characters 2, 5, 8 and 7",
+      "zh": "4 个字节：字符 2、5、8 和 7"
+     },
+     "why": {
+      "en": "A data stream writes binary values, not digits as text. A PrintWriter would write text.",
+      "zh": "数据流写出的是二进制值，而不是文本形式的数字。写文本要用 PrintWriter。"
+     }
+    },
+    {
+     "text": {
+      "en": "5 bytes: 258 needs only 2 bytes, so it is stored short",
+      "zh": "5 个字节：258 只需要 2 个字节，所以按短的方式存储"
+     },
+     "why": {
+      "en": "The width is fixed by the method, not by the value. writeInt always writes exactly 4 bytes.",
+      "zh": "宽度由方法决定，而不是由值决定。writeInt 总是恰好写出 4 个字节。"
+     }
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "import java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        ByteArrayOutputStream bytes = new ByteArrayOutputStream();\n        DataOutputStream out = new DataOutputStream(bytes);\n        out.writeInt(258);\n        out.writeShort(7);\n        out.flush();\n        byte[] b = bytes.toByteArray();\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < b.length; i++) {\n            if (i > 0) {\n                sb.append(\", \");\n            }\n            sb.append(b[i] & 0xFF);\n        }\n        System.out.println(b.length + \": \" + sb);\n    }\n}\n",
+   "verify_output": "6: 0, 0, 1, 2, 0, 7\n"
+  },
+  {
+   "id": "sh-junit-discount",
+   "kind": "short",
+   "topic": "testing-contracts",
+   "language": "java",
+   "marks": 6,
+   "minutes": 10,
+   "title": {
+    "en": "Write JUnit tests from a contract",
+    "zh": "根据契约编写 JUnit 测试"
+   },
+   "prompt": {
+    "en": "The method below is already written and lives in class Main. You do not see its body. You only have its contract. Write a JUnit 5 test class for it, on paper or as text (this site cannot run JUnit).\n\nUse at least six test methods. Each one is a method marked with @Test and uses assertEquals(expected, actual) or assertThrows. Cover: a normal case, both ends of the rate range, a case where the discount is not a whole number of cents, and the invalid inputs. Work out every expected value by hand from the contract. Do not run the method to find them. Give each test method a name that says what it checks.",
+    "zh": "下面的方法已经写好，放在类 Main 中。你看不到它的方法体，只有它的契约。请为它写一个 JUnit 5 测试类，写在纸上或写成文本都可以（本站不能运行 JUnit）。\n\n至少写六个测试方法。每个方法都用 @Test 标注，并使用 assertEquals(expected, actual) 或 assertThrows。要覆盖：一个普通情形、费率范围的两个端点、折扣不是整数分的情形，以及非法输入。每个预期值都要根据契约手算出来，不要运行方法去得到它们。每个测试方法的名字要能说明它检查什么。"
+   },
+   "code": "/**\n * Returns the price in cents after a percentage discount.\n * rate is a whole percent from 0 to 100.\n * The discount is cents * rate / 100, rounded down.\n * The customer pays the price minus the discount.\n * Throws IllegalArgumentException if cents is negative\n * or if rate is below 0 or above 100.\n */\nstatic int discounted(int cents, int rate)\n",
+   "solution": {
+    "en": "A model answer. Every expected value comes from the contract, and the arithmetic is shown in the comments.\n\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass DiscountTest {\n    @Test\n    void typicalDiscount() {\n        // discount = 1000 * 25 / 100 = 250, pays 750\n        assertEquals(750, Main.discounted(1000, 25));\n    }\n\n    @Test\n    void rateZeroChangesNothing() {\n        assertEquals(100, Main.discounted(100, 0));\n    }\n\n    @Test\n    void rateHundredIsFree() {\n        assertEquals(0, Main.discounted(100, 100));\n    }\n\n    @Test\n    void discountRoundsDown() {\n        // discount = 5 * 50 / 100 = 2.5, rounded down to 2, pays 3\n        assertEquals(3, Main.discounted(5, 50));\n        // discount = 99 * 10 / 100 = 9.9, rounded down to 9, pays 90\n        assertEquals(90, Main.discounted(99, 10));\n    }\n\n    @Test\n    void tinyPriceWithBigRate() {\n        // discount = 1 * 99 / 100 = 0.99, rounded down to 0, pays 1\n        assertEquals(1, Main.discounted(1, 99));\n    }\n\n    @Test\n    void freeItemStaysFree() {\n        assertEquals(0, Main.discounted(0, 50));\n    }\n\n    @Test\n    void negativePriceIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> Main.discounted(-1, 10));\n    }\n\n    @Test\n    void rateAboveHundredIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> Main.discounted(100, 101));\n    }\n\n    @Test\n    void negativeRateIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> Main.discounted(100, -1));\n    }\n}\n\nWhy these tests: a good set follows the contract. The typical case checks the main formula. The rates 0 and 100 are the boundaries of the allowed range, where off-by-one mistakes live. The rounding tests use values where cents * rate is not a multiple of 100, because only then does the rule \"rounded down\" matter. The invalid inputs sit just outside the range: -1 for the price, -1 and 101 for the rate, which are the first bad values on each side.\n\nNotes: assertEquals takes the expected value first, which matters for the failure message. Each test checks one idea, so a failure points at one cause. Deriving expected values by running the code would only prove that the code agrees with itself.",
+    "zh": "参考答案。每个预期值都来自契约，计算过程写在注释里。\n\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass DiscountTest {\n    @Test\n    void typicalDiscount() {\n        // 折扣 = 1000 * 25 / 100 = 250，应付 750\n        assertEquals(750, Main.discounted(1000, 25));\n    }\n\n    @Test\n    void rateZeroChangesNothing() {\n        assertEquals(100, Main.discounted(100, 0));\n    }\n\n    @Test\n    void rateHundredIsFree() {\n        assertEquals(0, Main.discounted(100, 100));\n    }\n\n    @Test\n    void discountRoundsDown() {\n        // 折扣 = 5 * 50 / 100 = 2.5，向下取整为 2，应付 3\n        assertEquals(3, Main.discounted(5, 50));\n        // 折扣 = 99 * 10 / 100 = 9.9，向下取整为 9，应付 90\n        assertEquals(90, Main.discounted(99, 10));\n    }\n\n    @Test\n    void tinyPriceWithBigRate() {\n        // 折扣 = 1 * 99 / 100 = 0.99，向下取整为 0，应付 1\n        assertEquals(1, Main.discounted(1, 99));\n    }\n\n    @Test\n    void freeItemStaysFree() {\n        assertEquals(0, Main.discounted(0, 50));\n    }\n\n    @Test\n    void negativePriceIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> Main.discounted(-1, 10));\n    }\n\n    @Test\n    void rateAboveHundredIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> Main.discounted(100, 101));\n    }\n\n    @Test\n    void negativeRateIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> Main.discounted(100, -1));\n    }\n}\n\n为什么选这些测试：好的测试集合要紧扣契约。普通情形检查主要公式。费率 0 和 100 是允许范围的边界，差一错误就出在那里。取整测试选用 cents * rate 不是 100 的倍数的值，因为只有这时“向下取整”这条规则才起作用。非法输入紧贴范围之外：价格取 -1，费率取 -1 和 101，它们是两侧第一个不合法的值。\n\n说明：assertEquals 的第一个参数是预期值，这会影响失败时的提示信息。每个测试只检查一个想法，所以失败时能指向一个原因。如果通过运行代码来得到预期值，只能证明代码与它自己一致。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "At least six separate methods marked @Test; assertions use assertEquals(expected, actual) with the expected value first, and assertThrows for exceptions.",
+      "zh": "至少六个独立的 @Test 方法；断言使用 assertEquals(expected, actual)，预期值在前，并用 assertThrows 检查异常。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "A normal case with a correct hand-computed value (for example 1000 and 25 gives 750).",
+      "zh": "一个普通情形，预期值手算正确（例如 1000 和 25 得到 750）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Both boundary rates 0 and 100 are tested, with the right results (price unchanged, and 0).",
+      "zh": "测试了两个边界费率 0 和 100，结果正确（价格不变，以及 0）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "A rounding case with a correct expected value, such as 99 cents at 10 percent giving 90 (the discount 9.9 is rounded down to 9).",
+      "zh": "一个取整的情形，预期值正确，例如 99 分打 10% 折得到 90（折扣 9.9 向下取整为 9）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Invalid inputs use assertThrows(IllegalArgumentException.class, ...) for a negative price and for a rate below 0 and above 100.",
+      "zh": "对负的价格、小于 0 的费率和大于 100 的费率，用 assertThrows(IllegalArgumentException.class, ...) 检查非法输入。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Test names describe the behaviour, each test checks one idea, and the expected values come from the contract, not from running the code.",
+      "zh": "测试名称描述所检查的行为，每个测试只检查一个想法，预期值来自契约而不是运行代码。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Computing the expected value by calling the method itself, as in assertEquals(Main.discounted(100, 10), Main.discounted(100, 10)). Such a test can never fail.",
+     "zh": "用方法自己来计算预期值，例如 assertEquals(Main.discounted(100, 10), Main.discounted(100, 10))。这样的测试永远不会失败。"
+    },
+    {
+     "en": "Putting the actual value first in assertEquals. The test still passes or fails correctly, but a failure message then reports expected and actual the wrong way round.",
+     "zh": "把实际值放在 assertEquals 的第一个参数。测试的通过与失败仍然正确，但失败时的提示会把预期值和实际值说反。"
+    },
+    {
+     "en": "Testing only round numbers such as 1000 and 50. They hide the rounding rule.",
+     "zh": "只测 1000 和 50 这样的整数。它们会掩盖取整规则。"
+    },
+    {
+     "en": "Checking an exception with try/catch and no fail() call after the call. If nothing is thrown, the test silently passes. assertThrows avoids this.",
+     "zh": "用 try/catch 检查异常，却没有在调用之后写 fail()。如果没有抛出异常，测试会悄悄通过。用 assertThrows 可以避免这个问题。"
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "public class Main {\n    static int discounted(int cents, int rate) {\n        if (cents < 0 || rate < 0 || rate > 100) {\n            throw new IllegalArgumentException();\n        }\n        return cents - cents * rate / 100;\n    }\n\n    static String t(int cents, int rate) {\n        try {\n            return \"\" + discounted(cents, rate);\n        } catch (IllegalArgumentException e) {\n            return \"IAE\";\n        }\n    }\n\n    public static void main(String[] args) {\n        System.out.println(t(1000, 25));\n        System.out.println(t(100, 0));\n        System.out.println(t(100, 100));\n        System.out.println(t(5, 50));\n        System.out.println(t(99, 10));\n        System.out.println(t(1, 99));\n        System.out.println(t(0, 50));\n        System.out.println(t(-1, 10));\n        System.out.println(t(100, 101));\n        System.out.println(t(100, -1));\n    }\n}\n",
+   "verify_output": "750\n100\n0\n3\n90\n1\n0\nIAE\nIAE\nIAE\n"
+  },
+  {
+   "id": "sh-anon-to-lambda",
+   "kind": "short",
+   "topic": "lambdas",
+   "language": "java",
+   "marks": 5,
+   "minutes": 8,
+   "title": {
+    "en": "From an anonymous class to a lambda",
+    "zh": "把匿名类改写成 lambda"
+   },
+   "prompt": {
+    "en": "The code below sorts a list of words by length, and alphabetically among words of the same length.\n\n(a) Rewrite the call to Collections.sort so that it uses a lambda instead of the anonymous class. (2 marks)\n(b) What property of Comparator makes a lambda possible here? (1 mark)\n(c) Give one difference between an anonymous class and a lambda, and say what they have in common for the local variables of the surrounding method. (2 marks)",
+    "zh": "下面的代码先按长度、长度相同时按字母顺序对一个单词列表排序。\n\n(a) 改写 Collections.sort 这个调用，用 lambda 代替匿名类。（2 分）\n(b) Comparator 的什么特性使这里可以使用 lambda？（1 分）\n(c) 说出匿名类与 lambda 的一个区别，并说明它们对外围方法的局部变量有什么共同点。（2 分）"
+   },
+   "code": "List<String> words = new ArrayList<String>(Arrays.asList(\"pear\", \"fig\", \"apple\", \"kiwi\", \"date\"));\n\nCollections.sort(words, new Comparator<String>() {\n    @Override\n    public int compare(String a, String b) {\n        if (a.length() != b.length()) {\n            return a.length() - b.length();\n        }\n        return a.compareTo(b);\n    }\n});\n",
+   "solution": {
+    "en": "(a) A lambda keeps only the parameter list and the body:\n\nCollections.sort(words, (a, b) -> {\n    if (a.length() != b.length()) {\n        return a.length() - b.length();\n    }\n    return a.compareTo(b);\n});\n\nThe parameter types are inferred from Comparator<String>. The body is a block, so it needs braces and a return statement. The result of sorting [pear, fig, apple, kiwi, date] is [fig, date, kiwi, pear, apple].\n\n(b) Comparator is a functional interface: it has exactly one abstract method, compare. (It also declares equals, but that is a method of Object, so it does not count.) The target type tells the compiler which method the lambda implements, so the lambda does not need to name the interface or the method.\n\n(c) Differences (one is enough):\n- Inside an anonymous class, this means the anonymous object. Inside a lambda, this means the enclosing object, because a lambda is not a new object scope.\n- An anonymous class is a class: it can declare fields, several methods and a constructor-like initialiser, and it can extend an abstract class. A lambda can only implement the single abstract method of a functional interface.\nIn common: both can read local variables of the surrounding method only if those variables are final or effectively final (never reassigned).",
+    "zh": "(a) lambda 只保留参数列表和方法体：\n\nCollections.sort(words, (a, b) -> {\n    if (a.length() != b.length()) {\n        return a.length() - b.length();\n    }\n    return a.compareTo(b);\n});\n\n参数类型由 Comparator<String> 推断出来。方法体是一个代码块，所以需要花括号和 return 语句。对 [pear, fig, apple, kiwi, date] 排序的结果是 [fig, date, kiwi, pear, apple]。\n\n(b) Comparator 是函数式接口：它恰好有一个抽象方法 compare。（它还声明了 equals，但那是 Object 的方法，所以不计入。）目标类型告诉编译器 lambda 实现的是哪个方法，所以 lambda 不需要写出接口名和方法名。\n\n(c) 区别（写出一个即可）：\n- 在匿名类里，this 指匿名对象本身。在 lambda 里，this 指外围对象，因为 lambda 不会形成新的对象作用域。\n- 匿名类是一个类：它可以声明字段、多个方法和初始化块，也可以继承抽象类。lambda 只能实现函数式接口的那一个抽象方法。\n共同点：两者都只能读取外围方法中 final 或事实上的 final（从不重新赋值）的局部变量。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "The lambda has the form (a, b) -> { ... } with the same comparison logic, a block body and return statements, and no anonymous class or method name.",
+      "zh": "lambda 的形式是 (a, b) -> { ... }，比较逻辑相同，使用代码块和 return 语句，并且没有匿名类和方法名。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Says Comparator is a functional interface (one abstract method, compare).",
+      "zh": "指出 Comparator 是函数式接口（只有一个抽象方法 compare）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives a correct difference, such as the meaning of this, or that an anonymous class can have fields and several methods.",
+      "zh": "给出一个正确的区别，例如 this 的含义，或匿名类可以有字段和多个方法。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "States that both can only use local variables that are final or effectively final.",
+      "zh": "说明两者都只能使用 final 或事实上的 final 的局部变量。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Writing (a, b) -> a.length() - b.length() and dropping the alphabetical tie-break. The lambda must keep the same logic.",
+     "zh": "写成 (a, b) -> a.length() - b.length()，丢掉了按字母顺序的并列处理。lambda 必须保留相同的逻辑。"
+    },
+    {
+     "en": "Using a block body without return statements, or an expression body with braces. A block needs return; a single expression does not.",
+     "zh": "使用代码块方法体却没有 return 语句，或者在表达式方法体外加花括号。代码块需要 return，单个表达式不需要。"
+    },
+    {
+     "en": "Saying a lambda is just shorter syntax with no other difference. The meaning of this differs, and a lambda cannot implement an abstract class.",
+     "zh": "说 lambda 只是更短的写法，没有别的区别。this 的含义不同，而且 lambda 不能实现抽象类。"
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> words = new ArrayList<String>(Arrays.asList(\"pear\", \"fig\", \"apple\", \"kiwi\", \"date\"));\n        Collections.sort(words, new Comparator<String>() {\n            @Override\n            public int compare(String a, String b) {\n                if (a.length() != b.length()) {\n                    return a.length() - b.length();\n                }\n                return a.compareTo(b);\n            }\n        });\n        System.out.println(words);\n        List<String> other = new ArrayList<String>(Arrays.asList(\"pear\", \"fig\", \"apple\", \"kiwi\", \"date\"));\n        Collections.sort(other, (a, b) -> {\n            if (a.length() != b.length()) {\n                return a.length() - b.length();\n            }\n            return a.compareTo(b);\n        });\n        System.out.println(other);\n    }\n}\n",
+   "verify_output": "[fig, date, kiwi, pear, apple]\n[fig, date, kiwi, pear, apple]\n"
+  },
+  {
+   "id": "sh-read-stack-trace",
+   "kind": "short",
+   "topic": "debugging-documentation",
+   "language": "java",
+   "marks": 5,
+   "minutes": 8,
+   "title": {
+    "en": "Reading a stack trace",
+    "zh": "阅读栈跟踪"
+   },
+   "prompt": {
+    "en": "Noah ran the program below and got the stack trace under it. The numbers on the left of the code are line numbers; they are not part of the program.\n\n(a) Which exception was thrown, in which method, and on which line? (1 mark)\n(b) Write the chain of method calls that led to it, starting from main. (1 mark)\n(c) Which expression on that line produced the exception, and what must the value have been? (1 mark)\n(d) Is the mistake in the code at the line where the exception was thrown? Say where the bad value got in, and explain why the trace does not show it. (1 mark)\n(e) Suggest one fix and say where you would put it. (1 mark)",
+    "zh": "Noah 运行了下面的程序，得到了代码下方的栈跟踪。代码左边的数字是行号，不属于程序本身。\n\n(a) 抛出了哪个异常？在哪个方法里？在第几行？（1 分）\n(b) 写出导致它的方法调用链，从 main 开始。（1 分）\n(c) 那一行里是哪个表达式引发了异常？它的值一定是什么？（1 分）\n(d) 错误是否就在抛出异常的那一行？说明坏值是从哪里进来的，并解释为什么栈跟踪没有显示它。（1 分）\n(e) 提出一个修正办法，并说明你会把它放在哪里。（1 分）"
+   },
+   "code": " 1 | import java.util.*;\n 2 |\n 3 | class Roster {\n 4 |     private final List<String> names = new ArrayList<String>();\n 5 |\n 6 |     void add(String name) {\n 7 |         names.add(name);\n 8 |     }\n 9 |\n10 |     int nameLength(int index) {\n11 |         return names.get(index).length();\n12 |     }\n13 |\n14 |     int longest() {\n15 |         int best = 0;\n16 |         for (int i = 0; i < names.size(); i++) {\n17 |             best = Math.max(best, nameLength(i));\n18 |         }\n19 |         return best;\n20 |     }\n21 | }\n22 |\n23 | public class Main {\n24 |     public static void main(String[] args) {\n25 |         Roster r = new Roster();\n26 |         r.add(\"Leon\");\n27 |         r.add(null);\n28 |         System.out.println(r.longest());\n29 |     }\n30 | }\n\nException in thread \"main\" java.lang.NullPointerException\n        at Roster.nameLength(Main.java:11)\n        at Roster.longest(Main.java:17)\n        at Main.main(Main.java:28)\n",
+   "solution": {
+    "en": "(a) java.lang.NullPointerException, thrown in the method nameLength of class Roster, on line 11. The first line below the exception name is the place where it happened.\n\n(b) Read the frames from the top downwards. Each frame was called by the one below it: nameLength (line 11) was called by longest at line 17, and longest was called by main at line 28. So the chain is main -> longest -> nameLength.\n\n(c) names.get(index).length(): the call length() was made on the value that names.get(index) returned. A NullPointerException on a method call means that value was null, so the element at that index is null. The loop reached index 1.\n\n(d) No. Line 11 is only where the program finally tripped. The null went into the list on line 27, with r.add(null), and add stored it without a check. The trace lists the calls that are active when the error happens. It cannot show an earlier line that has already finished. To find the real cause, ask \"where did this null come from?\" and look for the code that put it there.\n\n(e) Decide what the contract of Roster is. Names should never be null, so the best fix is at the place where the bad value enters: in add, check \"if (name == null) throw new IllegalArgumentException(\"name required\");\". Then the program fails on line 27, right at the mistake, with a clear message. A weaker fix is to skip nulls inside nameLength, which hides the problem but leaves nulls in the data.",
+    "zh": "(a) java.lang.NullPointerException，在类 Roster 的方法 nameLength 中抛出，位于第 11 行。异常名称下面的第一行就是它发生的位置。\n\n(b) 从上往下读各个栈帧。每个栈帧都是由它下面那个调用的：nameLength（第 11 行）是由第 17 行的 longest 调用的，longest 是由第 28 行的 main 调用的。所以调用链是 main -> longest -> nameLength。\n\n(c) names.get(index).length()：对 names.get(index) 返回的值调用了 length()。方法调用时出现 NullPointerException，说明这个值是 null，也就是该下标处的元素是 null。循环走到了下标 1。\n\n(d) 不是。第 11 行只是程序最终绊倒的地方。null 是在第 27 行通过 r.add(null) 放进列表的，而 add 没有做任何检查就存了下来。栈跟踪列出的是错误发生时仍然活动的调用，它不能显示已经执行完的更早的代码行。要找到真正的原因，就要问“这个 null 是从哪里来的”，然后去找放进它的代码。\n\n(e) 先确定 Roster 的契约。名字不应该是 null，所以最好的修正放在坏值进入的地方：在 add 里检查 \"if (name == null) throw new IllegalArgumentException(\"name required\");\"。这样程序会在第 27 行、也就是错误发生的地方失败，并带有清楚的信息。较弱的办法是在 nameLength 里跳过 null：这只是掩盖问题，null 仍然留在数据里。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "(a) NullPointerException, in Roster.nameLength, line 11.",
+      "zh": "(a) NullPointerException，在 Roster.nameLength，第 11 行。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(b) main -> longest -> nameLength (read from the bottom frame upwards), with or without the line numbers 28, 17, 11.",
+      "zh": "(b) main -> longest -> nameLength（从最下面的栈帧往上读出调用链），带不带行号 28、17、11 都可以。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(c) names.get(index) returned null, so length() was called on null (the element at index 1).",
+      "zh": "(c) names.get(index) 返回了 null，所以在 null 上调用了 length()（下标 1 处的元素）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(d) The null was added earlier by r.add(null) at line 27; the trace shows only the active calls at the moment of failure.",
+      "zh": "(d) null 是更早在第 27 行由 r.add(null) 加入的；栈跟踪只显示失败那一刻仍然活动的调用。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(e) A sensible fix with its location: reject null in add (best), or guard against null where it is used.",
+      "zh": "(e) 一个合理的修正及其位置：在 add 里拒绝 null（最好），或在使用处防范 null。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Taking the bottom frame as the place where the exception was thrown, and saying it was thrown in main. The top frame is where it was thrown.",
+     "zh": "把最下面的栈帧当成抛出异常的地方，说异常是在 main 里抛出的。最上面的栈帧才是抛出异常的地方。"
+    },
+    {
+     "en": "Fixing line 11 only, for example with a try/catch around it. The null stays in the data and will cause the next surprise.",
+     "zh": "只修改第 11 行，例如在它外面套 try/catch。null 仍然留在数据里，下一次还会带来意外。"
+    },
+    {
+     "en": "Blaming longest because it appears in the trace. It only called nameLength with a valid index.",
+     "zh": "因为 longest 出现在栈跟踪里就怪它。它只是用合法的下标调用了 nameLength。"
+    }
+   ],
+   "verify_language": "java",
+   "verify_code": "import java.util.*;\n\nclass Roster {\n    private final List<String> names = new ArrayList<String>();\n\n    void add(String name) {\n        names.add(name);\n    }\n\n    int nameLength(int index) {\n        return names.get(index).length();\n    }\n\n    int longest() {\n        int best = 0;\n        for (int i = 0; i < names.size(); i++) {\n            best = Math.max(best, nameLength(i));\n        }\n        return best;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Roster r = new Roster();\n        r.add(\"Leon\");\n        r.add(null);\n        try { System.out.println(r.longest()); } catch (NullPointerException e) { System.out.println(e.getClass().getName()); for (StackTraceElement s : e.getStackTrace()) { System.out.println(s.getClassName() + \".\" + s.getMethodName() + \":\" + s.getLineNumber()); } }\n    }\n}\n",
+   "verify_output": "java.lang.NullPointerException\nRoster.nameLength:11\nRoster.longest:17\nMain.main:28\n"
+  },
+  {
+   "id": "sh-class-diagram-words",
+   "kind": "short",
+   "topic": "application-design",
+   "language": "java",
+   "marks": 6,
+   "minutes": 10,
+   "title": {
+    "en": "Describe a class diagram in words",
+    "zh": "用文字描述类图"
+   },
+   "prompt": {
+    "en": "Iris is designing a small music club program. The facts are:\n\n- A Track has a title and a length in seconds.\n- A Playlist has a name and an ordered list of tracks. The same track can appear in many playlists, and a track still exists when a playlist is deleted.\n- A Member has a name and owns any number of playlists. A playlist belongs to exactly one member and is deleted together with that member.\n- A Player is anything that can play a track. There are two kinds: SpeakerPlayer and HeadphonePlayer. A Member plays a playlist by being given a Player; the member does not keep the player.\n\nDescribe the UML class diagram for this design in words, as you would explain it to someone who cannot see the picture. Name each class with its main attributes and operations. Say which classes are interfaces. Name every relationship, with its kind (association, aggregation, composition, dependency or implementation) and its multiplicities. Finally, say how each relationship would appear in Java code.",
+    "zh": "Iris 在设计一个小型音乐俱乐部程序。已知事实如下：\n\n- Track 有标题和以秒为单位的时长。\n- Playlist 有名称和一个有序的曲目列表。同一首曲目可以出现在许多播放列表里，播放列表被删除后，曲目仍然存在。\n- Member 有名字，拥有任意多个播放列表。一个播放列表恰好属于一个会员，并且随该会员一起被删除。\n- Player 是任何能播放曲目的东西。有两种：SpeakerPlayer 和 HeadphonePlayer。会员播放播放列表时，需要传给它一个 Player；会员并不保存这个 Player。\n\n请用文字描述这个设计的 UML 类图，就像向看不到图的人解释一样。说出每个类及其主要属性和操作。指出哪些类是接口。说明每一个关系，包括它的种类（关联、聚合、组合、依赖或实现）和多重性。最后说明每个关系在 Java 代码里会怎样体现。"
+   },
+   "solution": {
+    "en": "Classes (name: attributes; operations):\n- Track: title, seconds.\n- Playlist: name, tracks; add(Track), getTracks().\n- Member: name, playlists; createPlaylist(String name), play(Playlist, Player).\n- Player: an interface, written with the stereotype <<interface>>; it has one operation, play(Track).\n- SpeakerPlayer and HeadphonePlayer: classes that implement Player; each has play(Track).\n\nRelationships:\n1. SpeakerPlayer and HeadphonePlayer both implement Player. In UML this is a dashed line with a hollow triangle arrowhead pointing at Player. In Java: class SpeakerPlayer implements Player.\n2. Member to Playlist is composition: a filled diamond at the Member end. One Member owns 0 or more playlists (multiplicity 0..*), and each Playlist belongs to exactly 1 Member. The playlist lives and dies with its member. In Java: Member has a field List<Playlist> playlists, and creates the playlists.\n3. Playlist to Track is aggregation (a hollow diamond at the Playlist end) or a plain association with a multiplicity: a Playlist refers to 0..* Tracks, and a Track can be in many playlists. The tracks exist independently. In Java: Playlist has a field List<Track> tracks, and the tracks are passed in from outside, not created for ever by the playlist.\n4. Member to Player is a dependency, drawn as a dashed arrow from Member to Player. The member only uses a Player as a parameter of play(Playlist, Player) and does not keep it, so there is no field. In Java: the type Player appears in the parameter list of play. Because the parameter has the interface type, any SpeakerPlayer or HeadphonePlayer can be passed in.\n\nThe design point: Member depends on the interface, not on the two concrete classes, so a new kind of player can be added without changing Member.",
+    "zh": "类（名称：属性；操作）：\n- Track：title、seconds。\n- Playlist：name、tracks；add(Track)、getTracks()。\n- Member：name、playlists；createPlaylist(String name)、play(Playlist, Player)。\n- Player：是接口，用构造型 <<interface>> 标注；它有一个操作 play(Track)。\n- SpeakerPlayer 和 HeadphonePlayer：实现 Player 的类；每个都有 play(Track)。\n\n关系：\n1. SpeakerPlayer 和 HeadphonePlayer 都实现 Player。UML 里画成带空心三角形箭头、指向 Player 的虚线。Java 里写成 class SpeakerPlayer implements Player。\n2. Member 到 Playlist 是组合：Member 一端画实心菱形。一个 Member 拥有 0 个或多个播放列表（多重性 0..*），每个 Playlist 恰好属于 1 个 Member。播放列表与它的会员同生共死。Java 里：Member 有一个字段 List<Playlist> playlists，并由它创建播放列表。\n3. Playlist 到 Track 是聚合（Playlist 一端画空心菱形），或者带多重性的普通关联：一个 Playlist 引用 0..* 个 Track，而一个 Track 可以出现在很多播放列表里。曲目是独立存在的。Java 里：Playlist 有一个字段 List<Track> tracks，曲目由外部传入，而不是由播放列表一直负责创建。\n4. Member 到 Player 是依赖，画成从 Member 指向 Player 的虚线箭头。会员只是把 Player 用作 play(Playlist, Player) 的参数，并不保存它，所以没有字段。Java 里：类型 Player 出现在 play 的参数列表里。因为参数是接口类型，所以可以传入任何 SpeakerPlayer 或 HeadphonePlayer。\n\n设计要点：Member 依赖接口，而不是两个具体类，所以增加新的播放器种类时不需要修改 Member。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Lists the five classes with sensible attributes and operations (Track: title, seconds; Playlist: name, tracks; Member: name, playlists; Player: play).",
+      "zh": "列出五个类，并给出合理的属性和操作（Track：title、seconds；Playlist：name、tracks；Member：name、playlists；Player：play）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Player is an interface (<<interface>>), and SpeakerPlayer and HeadphonePlayer implement it (dashed line, hollow triangle).",
+      "zh": "Player 是接口（<<interface>>），SpeakerPlayer 和 HeadphonePlayer 实现它（虚线、空心三角形）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Member to Playlist is composition (filled diamond at Member) with multiplicities 1 to 0..*.",
+      "zh": "Member 到 Playlist 是组合（Member 一端实心菱形），多重性是 1 对 0..*。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Playlist to Track is aggregation or association with multiplicity 0..*, and the answer says tracks live on independently.",
+      "zh": "Playlist 到 Track 是聚合或带多重性 0..* 的关联，并说明曲目独立存在。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Member to Player is a dependency (dashed arrow), because Player is only a parameter of play, with no field.",
+      "zh": "Member 到 Player 是依赖（虚线箭头），因为 Player 只是 play 的参数，没有字段。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains the Java code: implements, List<Playlist> and List<Track> fields, and Player as a method parameter type.",
+      "zh": "说明对应的 Java 代码：implements、List<Playlist> 和 List<Track> 字段、以及把 Player 用作方法的参数类型。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Drawing Member to Player as a field. The facts say the member does not keep the player, so it is a dependency.",
+     "zh": "把 Member 到 Player 画成字段。已知事实说会员并不保存 Player，所以这是依赖。"
+    },
+    {
+     "en": "Using composition between Playlist and Track. A track must survive when the playlist is deleted, so the owner relationship does not hold.",
+     "zh": "在 Playlist 和 Track 之间用组合。播放列表被删除后曲目必须仍然存在，所以“拥有”关系不成立。"
+    },
+    {
+     "en": "Drawing inheritance (a solid line) from SpeakerPlayer to an interface. A class implements an interface, which uses a dashed line.",
+     "zh": "从 SpeakerPlayer 向接口画继承（实线）。类实现接口，应当用虚线。"
+    },
+    {
+     "en": "Leaving out the multiplicities, so the diagram does not say how many playlists a member has.",
+     "zh": "漏掉多重性，图就没有说明一个会员有多少个播放列表。"
+    }
+   ]
+  },
+  {
+   "id": "sh-choose-collection",
+   "kind": "short",
+   "topic": "collections",
+   "language": "java",
+   "marks": 6,
+   "minutes": 10,
+   "title": {
+    "en": "Choose the collection and justify it",
+    "zh": "选择集合并说明理由"
+   },
+   "prompt": {
+    "en": "For each situation, name one collection class from java.util (with its type arguments) and justify the choice in one or two sentences. Name the operations that matter and say how fast they are, or why another common choice is worse.\n\n(a) A coffee counter. Customers join at the back of the line and are served from the front, first come first served.\n(b) A lookup from a student number (an int) to the student's name. The program does a very large number of lookups, and the students are added now and then.\n(c) A program reads a long text and must print each distinct word once, in alphabetical order, at the end.",
+    "zh": "对下面每种情形，写出 java.util 中的一个集合类（带类型参数），并用一两句话说明选择的理由。要指出哪些操作重要、它们有多快，或者说明为什么另一个常见的选择更差。\n\n(a) 咖啡柜台。顾客在队尾加入，从队首接受服务，先来先服务。\n(b) 一个从学号（int）到学生姓名的查找表。程序要做大量的查找，学生只是偶尔添加。\n(c) 程序读入一篇很长的文本，最后要把每个不同的单词按字母顺序各打印一次。"
+   },
+   "solution": {
+    "en": "(a) ArrayDeque<String> used as a Queue (a LinkedList<String> would also work). The two operations that matter are adding at the back (offer) and removing from the front (poll), and both take constant time in an ArrayDeque (amortised: the array is occasionally resized). An ArrayList would be worse: remove(0) has to shift every other element one place, which takes time proportional to the length of the line.\n\n(b) HashMap<Integer, String>. The key is the student number and the value is the name. get and put take constant time on average, which suits a huge number of lookups. A List of student objects would need a scan of the whole list for every lookup.\n\n(c) TreeSet<String>. A set keeps each word only once, so duplicates are dropped automatically. A TreeSet keeps its elements in sorted order, so iterating at the end gives the words in alphabetical order with no extra work. Each add costs time proportional to log n. A HashSet<String> is also acceptable if you then copy it into a list and sort it once, because adding is cheaper on average. A HashSet alone is wrong, because its iteration order is not sorted.",
+    "zh": "(a) ArrayDeque<String>，当作 Queue 使用（LinkedList<String> 也可以）。重要的两个操作是在队尾添加（offer）和从队首移除（poll），在 ArrayDeque 里两者都是常数时间（摊还意义上的：数组偶尔会扩容）。ArrayList 会更差：remove(0) 要把其余每个元素都移动一位，耗时与队伍长度成正比。\n\n(b) HashMap<Integer, String>。键是学号，值是姓名。get 和 put 平均是常数时间，适合大量查找。如果用学生对象的 List，每次查找都要扫描整个列表。\n\n(c) TreeSet<String>。集合每个单词只保留一次，所以重复项会自动去掉。TreeSet 让元素保持有序，所以最后遍历时直接得到按字母顺序排列的单词，不需要额外工作。每次 add 的耗时与 log n 成正比。如果之后把 HashSet<String> 复制到列表里排一次序，也可以接受，因为它平均添加得更快。单独使用 HashSet 则是错的，因为它的遍历顺序不是有序的。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "(a) A queue type (ArrayDeque, LinkedList or Queue) with first-in-first-out use.",
+      "zh": "(a) 选用队列类型（ArrayDeque、LinkedList 或 Queue），先进先出地使用。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(a) Justifies it with the two end operations being cheap, or says that removing from the front of an ArrayList is slow.",
+      "zh": "(a) 理由是两端的操作都很便宜，或者指出从 ArrayList 的前端删除很慢。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(b) A map from student number to name (HashMap<Integer, String>).",
+      "zh": "(b) 选用从学号到姓名的映射（HashMap<Integer, String>）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(b) Justifies it with fast lookup by key (constant time on average) compared with scanning a list.",
+      "zh": "(b) 理由是按键查找很快（平均常数时间），而列表需要扫描。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(c) A set type, so that duplicates disappear (TreeSet, or HashSet followed by a sort).",
+      "zh": "(c) 选用集合类型使重复项消失（TreeSet，或 HashSet 加一次排序）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "(c) Gets the alphabetical order from a sorted structure (TreeSet) or a final sort, and explains that a HashSet alone gives no order.",
+      "zh": "(c) 通过有序结构（TreeSet）或最后一次排序得到字母顺序，并说明单独的 HashSet 没有顺序。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Choosing a List for all three situations. A list allows duplicates for (c) and needs a scan for (b).",
+     "zh": "三种情形都选 List。(c) 里列表允许重复，(b) 里列表需要扫描。"
+    },
+    {
+     "en": "Choosing a Stack for (a). A stack removes the most recent item first, which is the opposite of first come first served.",
+     "zh": "(a) 选用 Stack。栈先移除最近加入的元素，与先来先服务正好相反。"
+    },
+    {
+     "en": "Choosing HashSet for (c) and saying it keeps the words alphabetical. A HashSet has no defined order.",
+     "zh": "(c) 选 HashSet 并说它会保持字母顺序。HashSet 没有规定的顺序。"
+    },
+    {
+     "en": "Giving a choice without a reason. The task asks for the operations that matter.",
+     "zh": "只给出选择，不给理由。题目要求指出哪些操作重要。"
+    }
+   ]
   }
  ],
- "papers": [],
+ "papers": [
+  {
+   "id": "diagnostic-a",
+   "type": "diagnostic",
+   "minutes": 20,
+   "title": {
+    "en": "Java diagnostic: eight quick checks",
+    "zh": "Java 诊断：八道快速检查题"
+   },
+   "questions": [
+    "mc-types-casting",
+    "tr-string-identity",
+    "mc-static-members",
+    "mc-interface-or-abstract",
+    "mc-collection-choice",
+    "mc-wildcard-pecs",
+    "mc-checked-unchecked",
+    "mc-lambda-capture"
+   ],
+   "note": {
+    "en": "About 20 minutes. Seven multiple-choice questions and one trace table, taken from all stages of the course. They mark themselves, so use the result to see which chapters to revise first. This is an original practice paper made for this site. It is not a guide to the format of any real exam.",
+    "zh": "约 20 分钟。七道选择题和一张跟踪表，取自课程的各个阶段，由系统自动评分。请根据结果判断应当先复习哪些章节。这是为本站原创的练习卷，不代表任何真实考试的格式。"
+   }
+  },
+  {
+   "id": "mock-a",
+   "type": "mock",
+   "minutes": 90,
+   "title": {
+    "en": "Java mock paper: mixed questions",
+    "zh": "Java 模拟卷：综合题"
+   },
+   "questions": [
+    "mc-cast-compile",
+    "mc-substitutability",
+    "mc-generic-bound",
+    "mc-scanner-newline",
+    "mc-data-stream-bytes",
+    "tr-overload-override",
+    "tr-recursion-order",
+    "me-ragged-grid",
+    "me-node-chain",
+    "bg-string-identity",
+    "bg-remove-while-iterating",
+    "sh-junit-discount",
+    "sh-anon-to-lambda",
+    "sh-read-stack-trace",
+    "wr-seat-equals",
+    "wr-bounded-generics",
+    "wr-countdown-iterator",
+    "wr-staff-abstract"
+   ],
+   "note": {
+    "en": "About 90 minutes, roughly one mark a minute. It mixes multiple choice, trace tables, memory diagrams, bug fixing, short answers and code writing. Do the multiple-choice and trace questions first, then spend most of your time on the code. Mark the written answers against the rubrics afterwards. This is an original practice paper made for this site. It is not a guide to the format of any real exam.",
+    "zh": "约 90 分钟，大致每分钟一分。题型包括选择题、跟踪表、内存图、找错题、简答题和代码编写。先做选择题和跟踪表，再把大部分时间留给写代码。完成后对照评分标准给手写答案评分。这是为本站原创的练习卷，不代表任何真实考试的格式。"
+   }
+  },
+  {
+   "id": "paper-a",
+   "type": "paper",
+   "minutes": 45,
+   "title": {
+    "en": "Java pen-and-paper practice",
+    "zh": "Java 手写练习卷"
+   },
+   "questions": [
+    "tr-aliasing-params",
+    "tr-list-remove-loop",
+    "me-static-counter",
+    "bg-override-signature",
+    "bg-cell-equals",
+    "wr-version-comparable",
+    "wr-out-of-stock"
+   ],
+   "note": {
+    "en": "About 45 minutes, to be written by hand on paper with no computer. Do not run anything: predict, draw and write, then reveal the answers and tick the rubric. Afterwards you may type your code into the box and run the tests to see what you missed. This is an original practice paper made for this site. It is not a guide to the format of any real exam.",
+    "zh": "约 45 分钟，在纸上手写，不使用电脑。不要运行任何东西：先预测、画图和写代码，再揭晓答案并对照评分标准打勾。之后可以把你的代码输入到框里运行测试，看看遗漏了什么。这是为本站原创的练习卷，不代表任何真实考试的格式。"
+   }
+  }
+ ],
  "labs": []
 }

@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,re
 ROOT=Path(__file__).resolve().parents[1]
-CODES={'INFO1113':23,'COMP2017':24,'COMP2123':26,'COMP2022':24,'COMP3308':24}
+CODES={'INFO1113':26,'COMP2017':27,'COMP2123':30,'COMP2022':27,'COMP3308':26}
 
 def validate_courses():
  errors=[];counts={'topics':0,'examples':0,'problems':0,'insights':0}

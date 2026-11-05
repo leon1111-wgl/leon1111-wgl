@@ -1,0 +1,241 @@
+{
+ "id": "java-coverage",
+ "course": "info1113",
+ "minutes": 40,
+ "tools": [
+  "javac",
+  "JUnit 5",
+  "JaCoCo"
+ ],
+ "title": {
+  "en": "What the tests never ran: JaCoCo coverage",
+  "zh": "测试从未运行到的部分：JaCoCo 覆盖率"
+ },
+ "summary": {
+  "en": "Run the Inventory tests under the JaCoCo agent, build a report with the CLI, find the untested branches, then see why 100% coverage still does not prove the code correct.",
+  "zh": "在 JaCoCo agent 下运行 Inventory 的测试，用命令行工具生成报告，找出未测试的分支，再弄清为什么 100% 覆盖率仍然不能证明代码正确。"
+ },
+ "scenario": {
+  "en": "Mia has finished the Inventory boundary tests from the last lab and wants to know what they leave out. Jack, who reviews the change, asks a fair question: \"Nine tests pass. What fraction of the class do they run?\" The team has no coverage tool in the build yet, and no one wants to adopt a plugin before seeing what it reports.\n\nYou will use JaCoCo directly, with the Java agent and the command-line report, on the same tests. The job has two halves. First, find the code that no test reaches, and decide which of it deserves a test. Second, learn what the number does not say, because the fastest way to raise it is also the fastest way to make it meaningless.",
+  "zh": "Mia 完成了上一个实验里 Inventory 的边界测试，想知道它们漏掉了什么。负责评审这次改动的 Jack 问了一个合理的问题：“九个测试通过了，它们运行了这个类的多大一部分？”团队的构建里还没有覆盖率工具，在看到它报告什么之前，也没有人想引入某个插件。\n\n你将直接使用 JaCoCo，配合 Java agent 和命令行报告，针对同样的测试进行操作。任务分两半。第一，找出没有任何测试走到的代码，并判断其中哪些值得写测试。第二，弄清这个数字没有说明什么，因为提高它的最快办法，也是让它失去意义的最快办法。"
+ },
+ "show": [
+  "src/shop/Inventory.java",
+  "test/shop/InventoryTest.java",
+  "cover.sh",
+  "uncovered.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Run the tests under the JaCoCo agent",
+    "zh": "在 JaCoCo agent 下运行测试"
+   },
+   "body": {
+    "en": "A Java agent is a jar the JVM loads before your program, and it may rewrite classes as they load. The JaCoCo agent adds a small probe to the bytecode of each method and branch, and records which probes ran. `-javaagent:path=options` loads it: `destfile=jacoco.exec` names the binary file it writes when the JVM exits, and `includes=shop.*` limits instrumentation to our package, so JUnit's own classes are not counted.\n\nWith `-jar`, the `-cp` option is ignored, so the compiled classes reach the launcher through `--class-path`. The source is compiled into `out/main` and the tests into `out/test`, in separate folders. That matters in the next step: the report must see exactly the classes under test, and not the test classes.\n\nThe tests behave as before: nine pass. The new thing is that `jacoco.exec` now exists. It is a binary log of which probes ran, and is not readable by itself.",
+    "zh": "Java agent 是 JVM 在运行你的程序之前加载的 jar，它可以在类加载时改写类。JaCoCo agent 会在每个方法和分支的字节码里加入一个小探针，并记录哪些探针运行过。`-javaagent:路径=选项` 加载它：`destfile=jacoco.exec` 指定 JVM 退出时写出的二进制文件，`includes=shop.*` 把插桩限制在我们的包内，这样 JUnit 自己的类不会被统计进去。\n\n使用 `-jar` 时 `-cp` 选项会被忽略，所以编译后的类通过 `--class-path` 交给启动器。源代码编译到 `out/main`，测试编译到 `out/test`，放在不同的文件夹里。这在下一步很重要：报告必须看到恰好是被测试的那些类，而不是测试类。\n\n测试的表现和以前一样：九个通过。新出现的是 `jacoco.exec` 这个文件，它是记录哪些探针运行过的二进制日志，本身无法阅读。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/shop/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/shop/*.java && java \"-javaagent:$LAB_TOOLS/jacocoagent.jar=destfile=jacoco.exec,includes=shop.*\" -jar $LAB_TOOLS/junit.jar execute --class-path out/main:out/test --select-class shop.InventoryTest --disable-banner --disable-ansi-colors --details=summary && test -s jacoco.exec && echo \"jacoco.exec written\"",
+   "contains": [
+    "9 tests successful",
+    "jacoco.exec written"
+   ],
+   "lines": 20
+  },
+  {
+   "title": {
+    "en": "Build the report with the command-line tool",
+    "zh": "用命令行工具生成报告"
+   },
+   "body": {
+    "en": "`jacococli.jar report` joins three things: the execution data (`jacoco.exec`), the class files that ran (`--classfiles out/main`, which must be the same build; JaCoCo warns when they differ), and the sources (`--sourcefiles src`) so lines can be shown. It writes any of `--csv`, `--xml` and `--html`; the HTML folder is for people (open `report-html/index.html`), the CSV and XML for scripts.\n\nThe `awk` command prints seven CSV columns as a table. A **class** row counts bytecode **instructions**, **branches** (each outcome of an `if`, `&&`, `||` or `?:`) and source **lines**, each as missed and covered. `InsufficientStockException` is fully covered because the tests read its three fields. `Inventory` is not: 17 instructions, 3 branches and 2 lines were never run.",
+    "zh": "`jacococli.jar report` 把三样东西合在一起：执行数据（`jacoco.exec`）、运行过的类文件（`--classfiles out/main`，必须是同一次构建；不同时 JaCoCo 会发出警告），以及源代码（`--sourcefiles src`），以便显示具体的行。它可以写出 `--csv`、`--xml` 和 `--html` 中的任意几种；HTML 文件夹给人看（打开 `report-html/index.html`），CSV 和 XML 给脚本用。\n\n`awk` 命令把 CSV 的七列打印成表格。每个**类**一行，分别统计字节码**指令**、**分支**（`if`、`&&`、`||` 或 `?:` 的每个结果）和源代码**行**，每项给出未覆盖与已覆盖的数量。`InsufficientStockException` 完全被覆盖，因为测试读取了它的三个字段。`Inventory` 则不是：有 17 条指令、3 个分支和 2 行从未运行。"
+   },
+   "command": "java -jar $LAB_TOOLS/jacococli.jar report jacoco.exec --classfiles out/main --sourcefiles src --csv report.csv --xml report.xml --html report-html && awk -F, '{printf \"%-28s %5s %5s %5s %5s %5s %5s\\n\", $3, $4, $5, $6, $7, $8, $9}' report.csv",
+   "contains": [
+    "Analyzing",
+    "Inventory",
+    "INSTRUCTION_MISSED"
+   ],
+   "lines": 14
+  },
+  {
+   "title": {
+    "en": "Find the untested branches",
+    "zh": "找出未测试的分支"
+   },
+   "body": {
+    "en": "uncovered.py reads `report.xml` and prints the totals plus each line that has a missed instruction or branch, with the source text. Two guards in `add` are listed:\n\n- `sku == null || sku.trim().isEmpty()` has four outcomes, and the tests reach two of them. The `throw` inside is never executed. No test passes a null or blank sku.\n- `current > Integer.MAX_VALUE - qty` is the overflow guard: it was only ever false. Its `throw` is never executed either.\n\nNot every missed line deserves a test, so decide with the contract. These two guards stop silent corruption: without the second one, stock wraps to a negative number. Both deserve tests. A defensive `else` that can never happen would not.",
+    "zh": "uncovered.py 读取 `report.xml`，打印总数，以及每一个有未覆盖指令或分支的行和它的源代码。`add` 里有两个保护被列出：\n\n- `sku == null || sku.trim().isEmpty()` 有四种结果，测试只走到其中两种。里面的 `throw` 从未执行，没有任何测试传入 null 或空白的 sku。\n- `current > Integer.MAX_VALUE - qty` 是溢出保护：它只出现过 false 的情况，里面的 `throw` 同样从未执行。\n\n并非每个未覆盖的行都值得写测试，要根据约定来判断。这两个保护都是为了阻止悄无声息的数据损坏：没有第二个保护，库存会回绕成负数。两者都值得写测试。而一个根本不可能发生的防御性 `else` 则不值得。"
+   },
+   "command": "python3 uncovered.py report.xml src",
+   "contains": [
+    "branches missed",
+    "never executed",
+    "ArithmeticException"
+   ]
+  },
+  {
+   "title": {
+    "en": "Add a test that asserts the overflow guard",
+    "zh": "添加断言溢出保护的测试"
+   },
+   "body": {
+    "en": "The new test fills the stock to one below the maximum, asks for two more, expects `ArithmeticException`, and checks the stock did not change. The check on the last line is what makes it a test of behaviour: a guard that throws after already modifying the stock would still pass `assertThrows` alone.\n\ncover.sh bundles the commands from the last two steps: the agent run, the report, and the list of misses. The overflow lines vanish from the list. The blank-sku guard remains.",
+    "zh": "新测试先把库存加到比最大值小 1，再要求多加两件，期望得到 `ArithmeticException`，并检查库存没有变化。最后一行的检查才使它成为对行为的测试：如果某个保护在已经修改了库存之后才抛出异常，单独的 `assertThrows` 仍然会通过。\n\ncover.sh 把前两步的命令合在一起：运行 agent、生成报告、列出遗漏。溢出相关的行从列表里消失了，空白 sku 的保护仍然留着。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/shop/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/shop/*.java && sh cover.sh",
+   "contains": [
+    "10 tests successful",
+    "blank"
+   ],
+   "lines": 28,
+   "patch": {
+    "file": "test/shop/InventoryTest.java",
+    "from": "    // TODO: cover the guards in add() that the coverage report lists.\n",
+    "to": "    @Test\n    void addBeyondIntMaxIsRejectedAndKeepsStock() {\n        inv.add(\"BOLT-M6\", Integer.MAX_VALUE - 1);\n        assertThrows(ArithmeticException.class, () -> inv.add(\"BOLT-M6\", 2));\n        assertEquals(Integer.MAX_VALUE - 1, inv.stockOf(\"BOLT-M6\"));\n    }\n\n    // TODO: cover the blank-sku guard in add().\n"
+   }
+  },
+  {
+   "title": {
+    "en": "The fastest way to 100%",
+    "zh": "最快到达 100% 的办法"
+   },
+   "body": {
+    "en": "Here is a test written to turn the report green. It calls `add` with a null and a blank sku, and swallows the exception it expects. It runs both guards, and every line and branch is now covered: the report says nothing is missed.\n\nNotice what the test does not say. It passes if the exception is thrown. It also passes if nothing is thrown, and if something else happens that does not escape. It executes the code without checking anything. A coverage target that nobody reviews produces tests like this one.",
+    "zh": "下面是一个为了让报告变绿而写的测试。它用 null 和空白的 sku 调用 `add`，并吞掉它预期的异常。它运行了两个保护，所有的行和分支现在都被覆盖：报告显示没有遗漏。\n\n注意这个测试没有说什么。抛出异常时它通过；什么也没抛出时它同样通过；发生其他不逃逸的事情时它也通过。它执行了代码，却没有检查任何东西。没有人评审的覆盖率指标，就会产生这样的测试。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/shop/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/shop/*.java && sh cover.sh",
+   "contains": [
+    "11 tests successful",
+    "nothing missed"
+   ],
+   "lines": 28,
+   "patch": {
+    "file": "test/shop/InventoryTest.java",
+    "from": "    // TODO: cover the blank-sku guard in add().\n",
+    "to": "    @Test\n    void blankSkuIsHandled() {\n        try {\n            inv.add(null, 1);\n        } catch (IllegalArgumentException expected) {\n            // fine\n        }\n        try {\n            inv.add(\"  \", 1);\n        } catch (IllegalArgumentException expected) {\n            // fine\n        }\n    }\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Break the code and keep the green bar",
+    "zh": "破坏代码，绿色依旧"
+   },
+   "body": {
+    "en": "Now simulate a later careless edit: the `throw` for a blank sku is replaced by a `return`, so `add(\" \", 1)` is silently ignored instead of rejected. This is a real behaviour change, the kind a reviewer would reject on sight.\n\nRerun. Every test still passes, and coverage is still 100%: the `return` line is executed, and the branch outcomes are the same. The report cannot tell the difference, because it measures what ran, not what was checked.",
+    "zh": "现在模拟之后一次粗心的修改：空白 sku 的 `throw` 被换成了 `return`，于是 `add(\" \", 1)` 被悄悄忽略，而不是被拒绝。这是真实的行为变化，评审者一眼就会拒绝的那种。\n\n重新运行。所有测试仍然通过，覆盖率仍然是 100%：`return` 这一行被执行了，分支结果也相同。报告分不出区别，因为它衡量的是运行过什么，而不是检查过什么。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/shop/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/shop/*.java && sh cover.sh",
+   "contains": [
+    "11 tests successful",
+    "nothing missed"
+   ],
+   "lines": 28,
+   "patch": {
+    "file": "src/shop/Inventory.java",
+    "from": "            throw new IllegalArgumentException(\"sku must not be blank\");\n",
+    "to": "            return;                     // careless edit: a blank sku is now ignored\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Replace the weak test with one that asserts",
+    "zh": "把弱测试换成真正断言的测试"
+   },
+   "body": {
+    "en": "The strong version uses `assertThrows` for both inputs and checks that nothing was stored. Coverage is exactly as before, and the suite now fails with \"but nothing was thrown\", which names the problem. Coverage did not catch the bug. The assertion did. Without the `set -e` in cover.sh the report would still be produced; it stops at the failure here so you see the failure first.",
+    "zh": "强测试对两种输入都使用 `assertThrows`，并检查没有存入任何东西。覆盖率与之前完全一样，而测试集现在会失败，并给出 “but nothing was thrown”，指明问题所在。发现缺陷的不是覆盖率，而是断言。如果 cover.sh 里没有 `set -e`，报告仍然会生成；这里在失败处停止，是为了让你先看到失败。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/shop/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/shop/*.java && sh cover.sh",
+   "exit": 1,
+   "contains": [
+    "nothing was thrown",
+    "1 tests failed"
+   ],
+   "lines": 30,
+   "patch": {
+    "file": "test/shop/InventoryTest.java",
+    "from": "    @Test\n    void blankSkuIsHandled() {\n        try {\n            inv.add(null, 1);\n        } catch (IllegalArgumentException expected) {\n            // fine\n        }\n        try {\n            inv.add(\"  \", 1);\n        } catch (IllegalArgumentException expected) {\n            // fine\n        }\n    }\n",
+    "to": "    @Test\n    void blankSkuIsRejected() {\n        assertThrows(IllegalArgumentException.class, () -> inv.add(null, 1));\n        assertThrows(IllegalArgumentException.class, () -> inv.add(\"  \", 1));\n        assertEquals(0, inv.stockOf(\"  \"));\n    }\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Restore the guard",
+    "zh": "恢复保护"
+   },
+   "body": {
+    "en": "Put the `throw` back. The strong test passes, and coverage is 100% for a reason this time: the lines were executed, and the outcome of each was asserted. Keep this one.",
+    "zh": "把 `throw` 放回去。强测试通过，而且这次 100% 的覆盖率有了依据：这些行被执行了，每个结果也都被断言了。请保留这个测试。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/shop/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/shop/*.java && sh cover.sh",
+   "contains": [
+    "11 tests successful",
+    "nothing missed"
+   ],
+   "lines": 28,
+   "patch": {
+    "file": "src/shop/Inventory.java",
+    "from": "            return;                     // careless edit: a blank sku is now ignored\n",
+    "to": "            throw new IllegalArgumentException(\"sku must not be blank\");\n"
+   }
+  }
+ ],
+ "review": [
+  {
+   "en": "Which lines and branches does the report list as missed, and for each: is it behaviour the contract promises (write a test) or code that cannot happen (delete or document it)?",
+   "zh": "报告把哪些行和分支列为未覆盖？对每一个：它是约定承诺的行为（写测试），还是不可能发生的代码（删除或写明原因）？"
+  },
+  {
+   "en": "Does each new test assert an outcome (a return value, an exception type, unchanged state), or does it only call the code? Delete a test that cannot fail.",
+   "zh": "每个新测试是否断言了一个结果（返回值、异常类型、状态不变），还是只调用了代码？删除一个不可能失败的测试。"
+  },
+  {
+   "en": "Is there a `catch` block in a test with no `fail()` after the call and no assertion inside? That test passes when nothing is thrown.",
+   "zh": "测试里有没有一个 `catch` 块，调用之后没有 `fail()`、块里也没有断言？这样的测试在什么都没抛出时也会通过。"
+  },
+  {
+   "en": "Is branch coverage read alongside line coverage? A line with `&&` or `||` can be executed while half of its outcomes never run.",
+   "zh": "是否把分支覆盖率和行覆盖率一起看？一行含有 `&&` 或 `||` 时，这一行可能被执行了，而它一半的结果从未运行。"
+  },
+  {
+   "en": "Does the report use the same class files that the tests ran against, and does it exclude generated code and test classes?",
+   "zh": "报告使用的类文件是否就是测试运行时的那一批，是否排除了生成的代码和测试类？"
+  },
+  {
+   "en": "Is the target a gate on a total (which hides one untested module) or a check that coverage did not drop on the changed lines?",
+   "zh": "指标是针对总数的门槛（会掩盖一个未测试的模块），还是检查被改动的行覆盖率没有下降？"
+  },
+  {
+   "en": "Which inputs does the suite never try even though every line runs? Coverage does not measure missing cases, only missing execution.",
+   "zh": "即使每一行都运行了，测试集还有哪些输入从未尝试过？覆盖率衡量的是没有执行，不是缺少用例。"
+  },
+  {
+   "en": "Would the suite fail if a guard were deleted or inverted? Try it once by hand, as in the steps above.",
+   "zh": "如果删除或反转某个保护，测试集会失败吗？像上面的步骤那样手工试一次。"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**What the number measures.** Coverage records that a line or branch was executed during the run. It says nothing about whether the result was checked, whether the right inputs were chosen, or whether the code does what the contract says. The original six tests in the previous lab executed both outcomes of the buggy comparison, `qty >= current`, and a report on them would have shown that branch as covered; the bug was found by an input, the exact stock, not by a coverage gap. Use coverage as a map of unexplored code, and not as a certificate. A low number is a reliable warning, and a high number is only weak evidence.\n\n**Gates and targets.** A rule such as \"build fails below 80%\" is easy to adopt and easy to game: the weak test above is how the number gets met. Gating on changed lines (the diff must be covered) is harder to game and puts the pressure where the new risk is. Putting the number on a dashboard without a gate is cheaper and invites less cheating. Whatever you choose, review the assertions in the tests as well as the number.\n\n**Line, branch and others.** Line coverage is coarse, because one line can contain several decisions. Branch coverage is stricter; JaCoCo also reports method and cyclomatic complexity. Condition coverage is stricter still (every sub-condition both true and false), and JaCoCo does not report it. Mutation testing goes further: a tool changes the code (`>` to `>=`, delete a call) and checks that some test fails. It measures the thing coverage can't, whether the tests check anything, at the price of long runs and false alarms from changes that do not alter behaviour.\n\n**Instrumentation costs.** The agent adds probes at load time, so it slows execution slightly and changes timing in concurrent code. Offline instrumentation exists but is rarely needed. Coverage is per JVM run: merge several `.exec` files to combine suites. Classes that are never loaded do not appear unless you pass their class files to the report, which is why the report is built from `out/main` and not from what ran.\n\n**When to skip a line.** Generated code, trivial getters, and `main` methods that only wire things together are common exclusions. A better exclusion is to move logic out of the code that cannot be tested easily. Exclude by pattern, in one place, with a comment, so the number still means something.",
+  "zh": "**这个数字衡量什么。** 覆盖率记录的是：某一行或某个分支在这次运行中被执行过。它不说明结果是否被检查，是否选对了输入，也不说明代码是否做到了约定要求的事。上一个实验里最初的六个测试执行了有缺陷的比较 `qty >= current` 的两种结果，对它们生成的报告会把该分支显示为已覆盖；缺陷是被一个输入（恰好等于库存）找到的，而不是被覆盖率的缺口找到的。把覆盖率当作未探索代码的地图，不要当作证书。低数字是可靠的警告，高数字只是微弱的证据。\n\n**门槛与目标。** 像“低于 80% 就让构建失败”这样的规则很容易采用，也很容易被钻空子：上面的弱测试就是达到数字的方式。以被改动的行为门槛（diff 必须被覆盖）更难被钻空子，也把压力放在新增风险所在的地方。只把数字放上仪表盘而不设门槛，成本更低，也更少诱发作弊。无论怎么选，都要像看数字一样评审测试里的断言。\n\n**行覆盖、分支覆盖及其他。** 行覆盖比较粗，因为一行可以包含多个判断。分支覆盖更严格；JaCoCo 还报告方法数和圈复杂度。条件覆盖更严格（每个子条件都要出现 true 和 false），JaCoCo 不报告它。变异测试走得更远：工具改动代码（把 `>` 改成 `>=`，删掉一次调用），检查是否有测试失败。它衡量覆盖率衡量不了的东西，也就是测试到底检查了什么，代价是运行时间长，以及由不改变行为的改动引起的误报。\n\n**插桩的代价。** agent 在类加载时加入探针，因此执行会稍慢，也会改变并发代码的时序。也存在离线插桩，但很少需要。覆盖率是按一次 JVM 运行记录的：合并多个 `.exec` 文件可以合并多个测试集。从未被加载的类不会出现，除非你把它们的类文件交给报告，这就是报告基于 `out/main` 生成、而不是基于运行过的类生成的原因。\n\n**什么时候可以跳过一行。** 生成的代码、简单的 getter，以及只负责把东西接在一起的 `main` 方法，是常见的排除对象。更好的排除方式，是把逻辑从难以测试的代码里挪出来。按模式在一个地方排除，并加上注释，这样数字才仍然有意义。"
+ },
+ "done": [
+  {
+   "en": "You can run the tests with the JaCoCo agent, build a CSV/XML/HTML report with the CLI, and find the lines that never ran.",
+   "zh": "你能用 JaCoCo agent 运行测试，用命令行工具生成 CSV/XML/HTML 报告，并找到从未运行的行。"
+  },
+  {
+   "en": "The suite ends at 100% line and branch coverage with `assertThrows` tests for both guards.",
+   "zh": "测试集在两个保护都有 `assertThrows` 测试的情况下，行覆盖率和分支覆盖率达到 100%。"
+  },
+  {
+   "en": "You can explain in one sentence why the weak test and the broken guard still showed 100%.",
+   "zh": "你能用一句话解释为什么弱测试和被破坏的保护仍然显示 100%。"
+  },
+  {
+   "en": "You can name two things a coverage number cannot tell you.",
+   "zh": "你能说出覆盖率数字无法告诉你的两件事。"
+  }
+ ]
+}

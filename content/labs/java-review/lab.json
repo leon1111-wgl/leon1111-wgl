@@ -1,0 +1,202 @@
+{
+ "id": "java-review",
+ "course": "info1113",
+ "minutes": 45,
+ "tools": [
+  "javac",
+  "JUnit 5",
+  "code review"
+ ],
+ "title": {
+  "en": "Review an order-processing change from its stack trace",
+  "zh": "从堆栈跟踪出发评审一次订单处理改动"
+ },
+ "summary": {
+  "en": "Read a ConcurrentModificationException and a NullPointerException from a small order program, write your review comments before looking at the fix, then confirm each one with a test.",
+  "zh": "阅读一个小型订单程序抛出的 ConcurrentModificationException 和 NullPointerException，在看修复之前先写出你的评审意见，再用测试逐条确认。"
+ },
+ "scenario": {
+  "en": "Emma opened a pull request that adds two features to an order book: a purge of unpaid orders that have passed their deadline, and a daily summary line for each remaining order. She ran it once and it crashed. She has pasted the stack trace into the pull request and asked you for a review.\n\nA good review of a crash is more than \"use an iterator\". You read the trace as evidence, trace it back to the line that is actually wrong, look for the other problems the same mistake could hide, and write comments the author can act on. You will write your own comments first, then compare with a reviewer's, then fix the code in the order the evidence demands, with tests that fail before each change and pass after. The review checklist at the end is the output you will reuse.",
+  "zh": "Emma 提交了一个拉取请求，给订单簿加了两个功能：清除已过截止时间的未付款订单，以及为每个剩余订单生成每日汇总行。她运行了一次，程序崩溃了。她把堆栈跟踪贴进了拉取请求，请你评审。\n\n对崩溃的好评审不只是一句“用迭代器”。你要把堆栈跟踪当作证据来读，顺着它找到真正出错的那一行，检查同一个错误还可能藏着哪些其他问题，并写出作者能照着去改的意见。你会先写自己的意见，再与一位评审者的意见对照，然后按证据要求的顺序修复代码，每次改动前后都用测试验证：改动前失败，改动后通过。最后得到的评审清单是你可以反复使用的成果。"
+ },
+ "show": [
+  "src/orders/OrderBook.java",
+  "src/orders/Customer.java",
+  "src/orders/Main.java"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Run it and read the stack trace",
+    "zh": "运行并阅读堆栈跟踪"
+   },
+   "body": {
+    "en": "`javac` compiles the sources to `out/main`, and `java -cp out/main orders.Main` runs the class `orders.Main` with that folder on the class path. The program prints nothing useful before it dies. Read the trace from the top:\n\n1. The first line is the exception type, `java.util.ConcurrentModificationException`, and its message (here there is none). The type tells you which rule was broken: a collection was changed while it was being traversed.\n2. The next `at` lines are the call stack when it was thrown, innermost first. The first two are inside the JDK, in `ArrayList$Itr`. The JDK noticed the problem, and it is not where the bug is.\n3. The first line that names your own code is `orders.OrderBook.purgeExpired(OrderBook.java:...)`. Start there. The line below it is the caller, `Main.main`.\n\nThe exit status is 1 because the exception was not caught.",
+    "zh": "`javac` 把源代码编译到 `out/main`，`java -cp out/main orders.Main` 在这个文件夹位于类路径的情况下运行类 `orders.Main`。程序在崩溃之前没有任何有用的输出。从上往下读这份跟踪：\n\n1. 第一行是异常类型 `java.util.ConcurrentModificationException` 及其消息（这里没有消息）。类型告诉你打破了哪条规则：集合在被遍历时被修改了。\n2. 接下来的 `at` 行是抛出时的调用栈，最内层在前。前两行在 JDK 内部，即 `ArrayList$Itr`。JDK 发现了问题，但缺陷并不在那里。\n3. 第一行出现你自己代码名字的是 `orders.OrderBook.purgeExpired(OrderBook.java:...)`，从这里开始。它下面一行是调用者 `Main.main`。\n\n因为异常没有被捕获，退出状态为 1。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/orders/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/orders/*.java && java -cp out/main orders.Main",
+   "exit": 1,
+   "contains": [
+    "ConcurrentModificationException",
+    "orders.OrderBook.purgeExpired",
+    "orders.Main.main"
+   ]
+  },
+  {
+   "title": {
+    "en": "Match the trace to the code",
+    "zh": "把堆栈跟踪对上代码"
+   },
+   "body": {
+    "en": "`grep -n -A8` prints the matching line with its number and eight lines after it. The trace line number points at the `for (Order order : orders)` line, not at `orders.remove(order)`, which is two lines below. That is a common surprise: the exception is thrown by the iterator's `next()` on the following pass, and the loop header is where `next()` is called. The mistake is the `remove` call. The list changed behind the iterator's back, so its modification counter no longer matched.\n\nThink about the data too. After the first expired order is removed, the loop calls `hasNext()`, which still says yes, then `next()`, which throws. If the removed order had been second to last, `hasNext()` would have said no and the loop would have ended quietly, with the last order never examined.",
+    "zh": "`grep -n -A8` 打印匹配的行及其行号，以及后面八行。跟踪里的行号指向 `for (Order order : orders)` 这一行，而不是它下面两行的 `orders.remove(order)`。这是个常见的意外：异常是迭代器在下一轮的 `next()` 里抛出的，而循环头正是调用 `next()` 的地方。真正的错误是 `remove` 调用：列表在迭代器背后被改了，它的修改计数就对不上了。\n\n也想一想数据。第一个过期订单被移除后，循环调用 `hasNext()`，它仍然说有，然后 `next()` 抛出异常。如果被移除的订单是倒数第二个，`hasNext()` 会说没有，循环就悄悄结束了，最后一个订单从未被检查。"
+   },
+   "command": "grep -n -A8 \"public int purgeExpired\" src/orders/OrderBook.java",
+   "contains": [
+    "orders.remove(order)"
+   ]
+  },
+  {
+   "title": {
+    "en": "Write your review comments first",
+    "zh": "先写下你自己的评审意见"
+   },
+   "body": {
+    "en": "Stop and write before you read on. Open a text file and write one comment for each question below. Use this shape so the author can act on it: `[blocker|major|minor|nit] File.java:line, what is wrong, why it matters, what to do instead`.\n\n1. Walk through the loop in your head. What happens to `orders` on the first expired order, and what does the iterator do next?\n2. `Customer.getEmail()` has a comment in the source. What does it say, and which line of `OrderBook` ignores it?\n3. List five inputs you would use to test `purgeExpired`. Which one fails without any exception?\n4. Who else could call `add` while the purge is running?\n5. What happens to the orders that are deleted? Could anyone find out later?\n6. Is there anything in the names, comments or the shape of the code you would ask the author to change?\n\nKeep a separate list of what you would praise. A review that only finds faults teaches the author to hide code.",
+    "zh": "先停下来写，再往下读。打开一个文本文件，为下面每个问题写一条意见。使用这种格式，作者才能照着去改：`[blocker|major|minor|nit] 文件名.java:行号，什么地方有问题，为什么重要，应该怎么改`。\n\n1. 在脑子里把循环走一遍。遇到第一个过期订单时，`orders` 会发生什么，迭代器接下来做什么？\n2. `Customer.getEmail()` 在源码里有一条注释。它说了什么，`OrderBook` 的哪一行无视了它？\n3. 列出五个你会用来测试 `purgeExpired` 的输入。哪一个会在没有任何异常的情况下失败？\n4. 清除正在运行时，还有谁可能调用 `add`？\n5. 被删除的订单会怎么样？以后有人能查到吗？\n6. 在命名、注释或代码结构上，有没有你想让作者修改的地方？\n\n另外单独列出你想表扬的地方。只挑错误的评审会教会作者把代码藏起来。"
+   }
+  },
+  {
+   "title": {
+    "en": "Compare with a reviewer’s comments",
+    "zh": "与一位评审者的意见对照"
+   },
+   "body": {
+    "en": "Here is what one reviewer wrote. Compare it with yours, and note what you missed.\n\n1. **[blocker] OrderBook.java, `purgeExpired`.** The loop removes from `orders` while iterating over it. That throws `ConcurrentModificationException` on the next pass, and for some data (adjacent expired orders, or an expired second-to-last) it silently skips orders. Use `Iterator.remove()`, or `orders.removeIf(...)`.\n2. **[blocker] OrderBook.java, `summaryLines`.** `getEmail()` is documented as null for a guest checkout, and `.toLowerCase()` on it will throw `NullPointerException`. The first run did not get this far. Decide what a guest line should say, and test it.\n3. **[major] Tests.** Neither method has a test. Please add: empty book, nothing expired, everything expired, two adjacent expired orders, an order that expires exactly at `now`, and a guest customer.\n4. **[major, question] Threading.** If the purge runs on a timer thread while requests call `add`, an iterator fix is not enough: `ArrayList` is not thread-safe. What is the intended threading contract? If concurrent, guard the list or use a concurrent collection.\n5. **[major, question] Data loss.** The purge deletes customers' orders silently. Should it log the ids, or write an audit record? Is the deadline from the business rules?\n6. **[minor] Cost.** `orders.remove(order)` searches the list again from the start for every removal, on top of the traversal. Removing through the iterator avoids that.\n7. **[minor] Readability.** `order.getCustomer().getEmail().toLowerCase()` has three dereferences in one expression. On JDK 8 the trace will not say which one was null. Use local variables when a value can be absent.\n8. **[praise]** `purgeExpired(long now)` takes the time as a parameter instead of reading the clock, which makes it testable. Please keep that.",
+    "zh": "下面是一位评审者写的意见。把它与你的对照，记下你漏掉的地方。\n\n1. **[blocker] OrderBook.java，`purgeExpired`。** 循环在遍历 `orders` 的同时从中删除元素。这会在下一轮抛出 `ConcurrentModificationException`；对某些数据（相邻的过期订单，或倒数第二个过期）还会悄悄跳过订单。请使用 `Iterator.remove()` 或 `orders.removeIf(...)`。\n2. **[blocker] OrderBook.java，`summaryLines`。** `getEmail()` 的文档说访客结账时为 null，而对它调用 `.toLowerCase()` 会抛出 `NullPointerException`。第一次运行还没有走到这里。请决定访客那一行该写什么，并为它写测试。\n3. **[major] 测试。** 两个方法都没有测试。请补上：空订单簿、没有过期、全部过期、两个相邻的过期订单、恰好在 `now` 过期的订单，以及访客客户。\n4. **[major，提问] 线程。** 如果清除在定时器线程上运行，而请求同时调用 `add`，只改迭代器还不够：`ArrayList` 不是线程安全的。预期的线程约定是什么？如果有并发，请给列表加保护，或使用并发集合。\n5. **[major，提问] 数据丢失。** 清除会悄悄删除客户的订单。是否应该记录订单号，或写一条审计记录？截止时间是否来自业务规则？\n6. **[minor] 开销。** `orders.remove(order)` 在遍历之外，每删除一个元素还要从头再搜索一遍列表。通过迭代器删除可以避免。\n7. **[minor] 可读性。** `order.getCustomer().getEmail().toLowerCase()` 在一个表达式里有三次解引用。在 JDK 8 上，堆栈跟踪不会说是哪一个为 null。当某个值可能不存在时，请使用局部变量。\n8. **[表扬]** `purgeExpired(long now)` 把时间作为参数传入，而不是读取时钟，这使它可测试。请保持。"
+   }
+  },
+  {
+   "title": {
+    "en": "Ask for the tests and watch them fail",
+    "zh": "要求补上测试，看着它们失败"
+   },
+   "body": {
+    "en": "The tests in test/orders ask for the cases from comment 3. Each of them is useful in a different way. Run them before changing anything:\n\n- `purgeRemovesEveryExpiredOrder` and `purgeKeepsOrdersThatHaveNotExpired` reproduce the crash.\n- `adjacentExpiredOrdersAreAllRemoved` does not crash. It fails with `expected: <2> but was: <1>`: the loop skipped an order and nobody noticed. This is the failure the stack trace would never have shown.\n- `summaryShowsGuestWithoutEmail` fails because it purges first. It will fail for another reason after the first fix.\n- The empty-book test and the lowercasing test pass now. They protect behaviour that already works, and will tell you if the fix breaks it.\n\nFour fail and two pass, so the suite is a reliable record of the review comments.",
+    "zh": "test/orders 里的测试覆盖了意见 3 里的各种情形，每一个的作用都不同。在改动任何东西之前先运行它们：\n\n- `purgeRemovesEveryExpiredOrder` 和 `purgeKeepsOrdersThatHaveNotExpired` 复现了崩溃。\n- `adjacentExpiredOrdersAreAllRemoved` 不会崩溃，它失败时显示 `expected: <2> but was: <1>`：循环跳过了一个订单，而没有人察觉。这是堆栈跟踪永远不会显示的失败。\n- `summaryShowsGuestWithoutEmail` 失败是因为它先执行了清除。修复第一个问题之后，它会因为另一个原因失败。\n- 空订单簿的测试和转小写的测试现在是通过的。它们保护已经正确的行为，修复一旦破坏它们就会提醒你。\n\n四个失败、两个通过，这套测试因此成为这些评审意见的可靠记录。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/orders/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/orders/*.java && java -jar $LAB_TOOLS/junit.jar execute --class-path out/main:out/test --select-class orders.OrderBookTest --disable-banner --disable-ansi-colors --details=tree --details-theme=ascii",
+   "exit": 1,
+   "contains": [
+    "4 tests failed",
+    "ConcurrentModificationException",
+    "expected: <2> but was: <1>"
+   ],
+   "lines": 30
+  },
+  {
+   "title": {
+    "en": "Fix the traversal, then meet the next crash",
+    "zh": "修复遍历，然后遇到下一个崩溃"
+   },
+   "body": {
+    "en": "The patch uses an `Iterator` and its own `remove()`, the sanctioned way to delete during a traversal. It tells the list about the change, so the iterator's counter stays in step. It also removes the second search. Run `Main` again: the purge works (`purged 2 expired orders, 3 left`), and the next problem surfaces, a `NullPointerException` in `summaryLines`. Exactly comment 2.\n\nThe trace names `OrderBook.summaryLines`, but not which of the three calls on that line returned null. On JDK 8 an NPE carries no message. JDK 15 and later describe the null call in the message, but you can't count on that where you deploy. Splitting the chain into locals puts the answer in the trace line number.",
+    "zh": "补丁使用 `Iterator` 和它自己的 `remove()`，这是遍历过程中删除元素的正式方式。它会把变化通知列表，使迭代器的计数保持同步，同时也去掉了第二次搜索。再运行一次 `Main`：清除成功了（`purged 2 expired orders, 3 left`），下一个问题浮出水面，`summaryLines` 里的 `NullPointerException`，正是意见 2。\n\n跟踪指出了 `OrderBook.summaryLines`，但没有说那一行的三次调用里是哪一个返回了 null。在 JDK 8 上，NPE 不带消息。JDK 15 及之后的版本会在消息里描述为 null 的那次调用，但你不能指望部署环境也是这样。把调用链拆成局部变量，就能让行号本身给出答案。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/orders/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/orders/*.java && java -cp out/main orders.Main",
+   "exit": 1,
+   "contains": [
+    "purged 2 expired orders, 3 left",
+    "NullPointerException",
+    "orders.OrderBook.summaryLines"
+   ],
+   "patch": {
+    "file": "src/orders/OrderBook.java",
+    "from": "import java.util.ArrayList;\nimport java.util.List;\n\n/** The orders waiting for payment. */\npublic class OrderBook {\n    private final List<Order> orders = new ArrayList<Order>();\n\n    public void add(Order order) {\n        orders.add(order);\n    }\n\n    public int size() {\n        return orders.size();\n    }\n\n    /** The ids of the orders still in the book, in the order they were added. */\n    public List<String> ids() {\n        List<String> ids = new ArrayList<String>();\n        for (Order order : orders) {\n            ids.add(order.getId());\n        }\n        return ids;\n    }\n\n    /** Removes every order that expired at or before now. Returns how many were removed. */\n    public int purgeExpired(long now) {\n        int removed = 0;\n        for (Order order : orders) {\n            if (order.isExpired(now)) {\n                orders.remove(order);\n                removed++;\n            }\n        }\n",
+    "to": "import java.util.ArrayList;\nimport java.util.Iterator;\nimport java.util.List;\n\n/** The orders waiting for payment. */\npublic class OrderBook {\n    private final List<Order> orders = new ArrayList<Order>();\n\n    public void add(Order order) {\n        orders.add(order);\n    }\n\n    public int size() {\n        return orders.size();\n    }\n\n    /** The ids of the orders still in the book, in the order they were added. */\n    public List<String> ids() {\n        List<String> ids = new ArrayList<String>();\n        for (Order order : orders) {\n            ids.add(order.getId());\n        }\n        return ids;\n    }\n\n    /** Removes every order that expired at or before now. Returns how many were removed. */\n    public int purgeExpired(long now) {\n        int removed = 0;\n        for (Iterator<Order> it = orders.iterator(); it.hasNext(); ) {\n            if (it.next().isExpired(now)) {\n                it.remove();\n                removed++;\n            }\n        }\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Fix the null and confirm everything",
+    "zh": "修复空指针并确认全部结果"
+   },
+   "body": {
+    "en": "The patch reads the nullable value once into a local, and chooses the text for a guest. Now run the tests and the program. All six tests pass, including the guest line, the adjacent-orders case and the two that already passed. `Main` prints the summary with `<no email on file>` for the guest.\n\nEach review comment now has a failing test behind it, a change that fixed it and a passing run. Comments 4 and 5 (threads and data loss) need decisions from the author, not code in this patch. A review ends with those as open questions.",
+    "zh": "补丁把可能为 null 的值读入局部变量一次，并为访客选择显示的文字。现在运行测试和程序：六个测试全部通过，包括访客那一行、相邻订单的情形，以及之前就通过的两个。`Main` 打印出汇总，访客一行显示 `<no email on file>`。\n\n每条评审意见现在都有一个失败的测试作依据，有一次修好它的改动，以及一次通过的运行。意见 4 和 5（线程与数据丢失）需要作者来做决定，而不是在这个补丁里写代码。评审以这些未解决的问题作结。"
+   },
+   "command": "mkdir -p out/main out/test && javac -cp $LAB_TOOLS/junit.jar -d out/main src/orders/*.java && javac -cp $LAB_TOOLS/junit.jar:out/main -d out/test test/orders/*.java && java -jar $LAB_TOOLS/junit.jar execute --class-path out/main:out/test --select-class orders.OrderBookTest --disable-banner --disable-ansi-colors --details=tree --details-theme=ascii && java -cp out/main orders.Main",
+   "contains": [
+    "6 tests successful",
+    "0 tests failed",
+    "A-103 Guest <no email on file> x5"
+   ],
+   "lines": 26,
+   "patch": {
+    "file": "src/orders/OrderBook.java",
+    "from": "            String email = order.getCustomer().getEmail().toLowerCase();\n            lines.add(order.getId() + \" \" + order.getCustomer().getName() + \" <\" + email + \"> x\" + order.getUnits());\n",
+    "to": "            String email = order.getCustomer().getEmail();\n            String contact = email == null ? \"no email on file\" : email.toLowerCase();\n            lines.add(order.getId() + \" \" + order.getCustomer().getName() + \" <\" + contact + \"> x\" + order.getUnits());\n"
+   }
+  }
+ ],
+ "review": [
+  {
+   "en": "Is a collection ever modified while a for-each loop is traversing it? Removal must go through `Iterator.remove()` or `removeIf`, and a loop that \"works\" on the author's data may skip elements on other data.",
+   "zh": "集合是否会在 for-each 循环遍历它的同时被修改？删除必须通过 `Iterator.remove()` 或 `removeIf`；在作者的数据上“能跑”的循环，在别的数据上可能跳过元素。"
+  },
+  {
+   "en": "For every value that can be null, is the null case documented, handled where it is read, and covered by a test? Chained calls such as `a().b().c()` hide which link was null.",
+   "zh": "对每一个可能为 null 的值，null 的情形是否有文档、在读取处被处理、并有测试覆盖？像 `a().b().c()` 这样的调用链会让人看不出是哪一环为 null。"
+  },
+  {
+   "en": "Read the stack trace from the top to the first frame in your own code, and check whether the reported line is the cause or only where the problem was noticed.",
+   "zh": "把堆栈跟踪从上读到你自己代码的第一个帧，并确认报告的那一行是原因所在，还是仅仅是发现问题的地方。"
+  },
+  {
+   "en": "Does every new method have tests for empty input, one element, all elements matching, none matching, adjacent matches, and the value exactly at the boundary?",
+   "zh": "每个新方法是否都有这些测试：空输入、一个元素、全部匹配、没有匹配、相邻匹配，以及恰好在边界上的值？"
+  },
+  {
+   "en": "Does a test exist that fails without throwing (wrong count, missing element)? Crash tests alone miss silent wrong answers.",
+   "zh": "是否存在不抛异常也会失败的测试（数量错误、元素缺失）？只测崩溃会漏掉悄悄出错的答案。"
+  },
+  {
+   "en": "Which threads can reach this object? If more than one, is the contract written down, and is the structure safe for it (lock, concurrent collection or confinement)?",
+   "zh": "哪些线程能访问这个对象？如果不止一个，约定是否写明，数据结构是否满足（加锁、并发集合或线程封闭）？"
+  },
+  {
+   "en": "Does destructive code (delete, purge, overwrite) log what it removed or leave an audit trail, and is the rule that triggers it from a stated requirement?",
+   "zh": "具有破坏性的代码（删除、清除、覆盖）是否记录了它删除的内容或留有审计记录，触发它的规则是否来自明确的需求？"
+  },
+  {
+   "en": "Does the code read the clock, random numbers or environment itself, or take them as parameters? Parameters keep it testable.",
+   "zh": "代码是自己读取时钟、随机数或环境，还是把它们作为参数传入？参数能让代码保持可测试。"
+  },
+  {
+   "en": "Is each comment actionable: severity, location, the problem, why it matters and a suggestion? Are open questions marked as questions, and is there some praise?",
+   "zh": "每条意见是否可执行：严重程度、位置、问题、为什么重要和建议？未决问题是否标明是提问，有没有表扬？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**Which fix for the loop.** `Iterator.remove()` is explicit and shows the mechanism. `orders.removeIf(order -> order.isExpired(now))` is shorter, runs in one pass, and cannot be written wrongly, but it needs the count by comparing sizes before and after (`before - orders.size()`) and it hides the loop from a reader who does not know the method. Copying the list before iterating (`new ArrayList<>(orders)`) also works and is the least clever, but pays in memory and in a second structure to keep in sync. Choosing a different collection (`CopyOnWriteArrayList`) makes iteration safe against concurrent change: the same loop would not throw, and would visit every order in the snapshot it started with. The price is that every write copies the whole array, which is fine for a rarely changed list and wrong for a busy one.\n\n**What a ConcurrentModificationException means.** The name suggests two threads, but the usual cause is one thread. The check is a best-effort modification counter in the iterator: it catches many mistakes, and is not guaranteed to catch all of them, so you must never depend on it as a safety net, and the quiet case above shows why. When two threads really are involved, there is no cheap detection: the failure might be an exception, a lost element or a corrupted structure.\n\n**Null handling.** Java 8's `Optional<String>` would force callers to face the missing email, at the price of an object and a style some teams avoid in fields and parameters. A null object (an empty-string address, or `Customer.guest()`) removes the check at the cost of a value that can be mistaken for real data. Annotations (`@Nullable`) document and let tools check, but they are not part of the standard library. Whatever is chosen, make it one convention throughout the code base, and put the decision in the type or the Javadoc.\n\n**How much to review.** A thorough review of a small change costs more than a skim, and finds problems far cheaper than production does. Reviewing is a social act too: questions, praise and severity labels keep the author on your side. Insisting on tests in the same change doubles the speed at which the next reviewer understands the intent. Automatic checks (a compiler with `-Xlint`, a static analyser such as SpotBugs or Error Prone, a formatter) should carry the mechanical comments so that human reviewers can spend their attention on design and risk.",
+  "zh": "**循环该怎么修。** `Iterator.remove()` 明确，并且展示了机制。`orders.removeIf(order -> order.isExpired(now))` 更短、一趟完成、也不会写错，但要通过比较前后的大小（`before - orders.size()`）才能得到数量，并且对不熟悉这个方法的读者来说隐藏了循环。遍历之前先复制列表（`new ArrayList<>(orders)`）同样可行，而且最不取巧，但要付出内存代价，还多了一个需要保持同步的结构。换用不同的集合（`CopyOnWriteArrayList`）可以让遍历不受并发修改的影响：同样的循环不会抛异常，并且会访问开始遍历时快照中的每个订单。代价是每次写入都要复制整个数组，对很少改动的列表没问题，对繁忙的列表则不合适。\n\n**ConcurrentModificationException 意味着什么。** 名字让人想到两个线程，但通常的原因是同一个线程。这个检查是迭代器里尽力而为的修改计数：它能抓住许多错误，但不保证抓住全部，所以绝不能把它当作安全网来依赖，上面那个安静的情形就说明了原因。当真的涉及两个线程时，没有廉价的检测办法：失败可能表现为异常、丢失元素或数据结构损坏。\n\n**空值处理。** Java 8 的 `Optional<String>` 会迫使调用者面对缺失的邮箱，代价是多一个对象，而且有些团队不喜欢在字段和参数里使用这种风格。空对象（空字符串地址或 `Customer.guest()`）免去了检查，代价是出现一个可能被误认为真实数据的值。注解（`@Nullable`）可以起到文档作用并让工具检查，但它们不属于标准库。无论怎么选，都要在整个代码库里统一为一种约定，并把这个决定写进类型或 Javadoc。\n\n**评审到什么程度。** 对一个小改动做彻底评审，比粗略浏览花的时间多，但发现问题的成本远低于在生产环境里发现。评审也是一种社交行为：提问、表扬和严重程度标签能让作者站在你这一边。坚持在同一个改动里附上测试，能让下一位评审者理解意图的速度提高一倍。自动检查（带 `-Xlint` 的编译器、SpotBugs 或 Error Prone 这样的静态分析器、格式化工具）应当负责那些机械性的意见，这样人工评审者就可以把注意力放在设计和风险上。"
+ },
+ "done": [
+  {
+   "en": "You wrote your own review comments before reading the reviewer's, and can say which ones you missed.",
+   "zh": "你在阅读评审者的意见之前写出了自己的意见，并能说出漏掉了哪几条。"
+  },
+  {
+   "en": "You can read a stack trace from the exception type to the first frame in your own code, and explain why the reported line was not the cause.",
+   "zh": "你能从异常类型一直读到自己代码里的第一个帧，并解释为什么报告的那一行并不是原因。"
+  },
+  {
+   "en": "All six tests pass, and `Main` prints the summary, including the guest line.",
+   "zh": "六个测试全部通过，`Main` 打印出汇总，包括访客那一行。"
+  },
+  {
+   "en": "You have a review checklist for collections, nulls, tests, threads and destructive operations that you could use on the next pull request.",
+   "zh": "你有一份涵盖集合、空值、测试、线程和破坏性操作的评审清单，可以用在下一个拉取请求上。"
+  }
+ ]
+}

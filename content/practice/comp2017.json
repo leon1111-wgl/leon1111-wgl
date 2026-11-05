@@ -10,7 +10,7 @@
     "zh": "带上限的字符串长度"
    },
    "marks": 4,
-   "minutes": 6,
+   "minutes": 4,
    "language": "c",
    "prompt": {
     "en": "Write `size_t text_len(const char *s, size_t max)`.\n\nIt returns the number of characters in `s` before the first '\\0'. It must never look at more than `max` characters. If there is no '\\0' among the first `max` characters, return `max`.\n\nAssume `s` is not NULL. Do not call library functions.",
@@ -71,7 +71,7 @@
     "zh": "把字符串复制进小缓冲区"
    },
    "marks": 6,
-   "minutes": 9,
+   "minutes": 7,
    "language": "c",
    "prompt": {
     "en": "Write `size_t copy_text(char *dst, size_t cap, const char *src)`.\n\n`dst` points to a buffer of `cap` bytes. Copy as many characters of `src` as fit, and always leave `dst` ending in '\\0' when `cap > 0`. When `cap` is 0, write nothing at all.\n\nReturn the length of `src` (the number of characters before its '\\0'), even if the copy was cut short. A caller can then detect a cut copy by testing `result >= cap`.\n\nAssume `dst` and `src` are not NULL. Do not use `strcpy`, `strncpy` or `strlen`.",
@@ -82,8 +82,8 @@
     {
      "marks": 2,
      "text": {
-      "en": "Never writes at or past `dst[cap - 1]`: the copy stops one byte early to keep room for the terminator.",
-      "zh": "绝不写到 `dst[cap - 1]` 及其之后：复制提前一个字节停止，为终止符留位置。"
+      "en": "Never copies a character to `dst[cap - 1]` or beyond: the copy stops one byte early so the terminator fits.",
+      "zh": "复制的字符绝不写到 `dst[cap - 1]` 及其之后：复制提前一个字节停止，给终止符留位置。"
      }
     },
     {
@@ -146,7 +146,7 @@
     "zh": "原地反转字符串"
    },
    "marks": 5,
-   "minutes": 7,
+   "minutes": 6,
    "language": "c",
    "prompt": {
     "en": "Write `void reverse_text(char *s)`.\n\n`s` points to a writable, '\\0'-terminated string. Reverse the characters before the '\\0' in place, using no second buffer. The '\\0' must stay where it is.\n\nFor example \"stressed\" becomes \"desserts\". The empty string and a one-character string stay unchanged.",
@@ -214,7 +214,7 @@
     "zh": "通过指针交换"
    },
    "marks": 4,
-   "minutes": 6,
+   "minutes": 4,
    "language": "c",
    "prompt": {
     "en": "Write two functions.\n\n1. `void swap_int(int *a, int *b)` swaps the two integers the pointers point to. It must also work when `a` and `b` are the same pointer: the value must stay unchanged.\n2. `void sort2(int *lo, int *hi)` makes `*lo <= *hi` true. It swaps the two values only if they are out of order, and it must call `swap_int`.\n\nAssume the pointers are not NULL.",
@@ -275,7 +275,7 @@
     "zh": "用指针遍历数组"
    },
    "marks": 5,
-   "minutes": 8,
+   "minutes": 6,
    "language": "c",
    "prompt": {
     "en": "A range is given by two pointers: `begin` points to the first element and `end` points one past the last element. The range is empty when `begin == end`.\n\nWrite two functions that walk the range with a pointer. Do not use an index variable or `p[i]`.\n\n1. `long sum_range(const int *begin, const int *end)` returns the sum of all elements, as a `long`.\n2. `const int *first_over(const int *begin, const int *end, int limit)` returns a pointer to the first element that is greater than `limit`, or `end` if there is none.",
@@ -343,7 +343,7 @@
     "zh": "在堆上复制并拼接字符串"
    },
    "marks": 6,
-   "minutes": 10,
+   "minutes": 7,
    "language": "c",
    "prompt": {
     "en": "Write two functions that return a new heap string. The caller will free it.\n\n1. `char *dup_text(const char *s)` returns a copy of `s`, or NULL if `malloc` fails.\n2. `char *join_dash(const char *a, const char *b)` returns a new string that is `a`, then one '-', then `b`. For \"ab\" and \"cde\" the result is \"ab-cde\". It returns NULL if `malloc` fails.\n\nAllocate exactly the size you need, count the terminator, and do not change `a`, `b` or `s`. You may use `strlen`, `memcpy` and `malloc`.",
@@ -425,7 +425,7 @@
     "zh": "可增长的 int 数组"
    },
    "marks": 9,
-   "minutes": 14,
+   "minutes": 10,
    "language": "c",
    "prompt": {
     "en": "The struct below holds a growable array: `data` points to a heap block with room for `cap` ints, and `len` of them are in use.\n\nWrite three functions.\n\n1. `void vec_init(IntVec *v)` makes an empty vector: no block, `len` and `cap` both 0.\n2. `bool vec_push(IntVec *v, int x)` appends `x`. When the block is full (`len == cap`), grow it with `realloc` first: to 4 ints if `cap` is 0, otherwise to twice the old capacity. If `realloc` fails, return false and leave the vector exactly as it was. Return true on success.\n3. `void vec_free(IntVec *v)` frees the block and leaves the vector empty again.\n\nAssume `v` is not NULL and the sizes never overflow.",
@@ -519,7 +519,7 @@
     "zh": "按值和按指针使用结构体"
    },
    "marks": 8,
-   "minutes": 12,
+   "minutes": 9,
    "language": "c",
    "prompt": {
     "en": "A `Player` has a name stored inside the struct (room for 7 characters plus the '\\0') and a score:\n\n    typedef struct { char name[8]; int score; } Player;\n\nWrite three functions.\n\n1. `void player_init(Player *p, const char *name, int score)` copies at most 7 characters of `name` into `p->name`, always ends it with '\\0', and stores the score.\n2. `Player player_bumped(Player p, int bonus)` returns a copy of the player whose score is `bonus` higher. The caller's original must not change.\n3. `int best_index(const Player *list, size_t n)` returns the index of the highest score. If several players tie, return the first of them. Return -1 when `n` is 0.\n\nDo not use `strcpy` or `strncpy`.",
@@ -598,7 +598,7 @@
     "zh": "链表：插入、查找、删除、释放"
    },
    "marks": 12,
-   "minutes": 18,
+   "minutes": 13,
    "language": "c",
    "prompt": {
     "en": "A singly linked list of ints uses this node type. An empty list is a head pointer equal to NULL. Every node is allocated with `malloc`.\n\n    typedef struct node { int value; struct node *next; } Node;\n\nWrite four functions.\n\n1. `bool push_front(Node **head, int value)` adds a new node at the front. Return false (and change nothing) if `malloc` fails.\n2. `Node *find(Node *head, int value)` returns the first node holding `value`, or NULL.\n3. `bool remove_first(Node **head, int value)` unlinks and frees the first node holding `value` and returns true. If there is none, return false. It must work for the first node, a middle node and the last node, and for an empty list.\n4. `void free_list(Node **head)` frees every node and sets `*head` to NULL.",
@@ -712,7 +712,7 @@
     "zh": "统计、检测与打包位"
    },
    "marks": 7,
-   "minutes": 10,
+   "minutes": 8,
    "language": "c",
    "prompt": {
     "en": "Write three functions on 32-bit unsigned values. Bit 0 is the least significant bit.\n\n1. `int popcount32(uint32_t x)` returns how many bits of `x` are 1.\n2. `bool is_pow2(uint32_t x)` is true when `x` is a power of two (1, 2, 4, 8, ...). Zero is not.\n3. `uint32_t set_field(uint32_t word, unsigned lo, unsigned width, uint32_t value)` returns `word` with bits `lo` to `lo + width - 1` replaced by the low `width` bits of `value`. All other bits stay unchanged. Assume `1 <= width <= 31` and `lo + width <= 32`.\n\nFor example `set_field(0xFFFFFFFF, 4, 8, 0xA5)` is `0xFFFFFA5F`.",
@@ -774,8 +774,8 @@
      "zh": "把 0 当成 2 的幂。`0 & (0 - 1)` 等于 0，只用位技巧会得出“是”。"
     },
     {
-     "en": "Forgetting to cast `value` before shifting, or shifting by `lo` twice.",
-     "zh": "移位之前没有处理 `value`，或者对 `lo` 移了两次。"
+     "en": "Forgetting to mask the shifted value, so high bits of `value` spill into neighbouring fields; or shifting by `lo` twice.",
+     "zh": "没有对移位后的 `value` 做掩码，`value` 的高位会溢出到相邻字段；或者对 `lo` 移了两次。"
     }
    ],
    "tests": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d %d %d %d\\n\", popcount32(0), popcount32(0xFFu), popcount32(0x80000001u), popcount32(0xFFFFFFFFu));\n    printf(\"%d %d %d %d %d\\n\", is_pow2(0), is_pow2(1), is_pow2(64), is_pow2(96), is_pow2(0x80000000u));\n    printf(\"%08X\\n\", (unsigned)set_field(0xFFFFFFFFu, 4, 8, 0xA5u));\n    printf(\"%08X\\n\", (unsigned)set_field(0u, 0, 3, 13u));\n    printf(\"%08X\\n\", (unsigned)set_field(0x12345678u, 28, 4, 0xFu));\n    printf(\"%08X\\n\", (unsigned)set_field(0x12345678u, 8, 8, 0u));\n    return 0;\n}\n",
@@ -791,7 +791,7 @@
     "zh": "在数组中移动的指针"
    },
    "marks": 5,
-   "minutes": 6,
+   "minutes": 5,
    "language": "c",
    "prompt": {
     "en": "Two pointers move through the array `a`. After each statement, fill in how far each pointer is from the start of the array (`p - a` and `q - a`, in elements) and the int each pointer points to.\n\nThe first row (the state after the declarations) is filled in for you.",
@@ -887,7 +887,7 @@
     "zh": "递增的是指针还是它指向的值"
    },
    "marks": 5,
-   "minutes": 6,
+   "minutes": 5,
    "language": "c",
    "prompt": {
     "en": "After each statement, fill in: the distance `p - a` in elements, the values of `a[1]` and `a[2]`, and \"newest value\", which is the value just stored in `x`, `y`, `z` or `a[2]` by that statement.\n\nRemember the precedence: postfix `++` binds tighter than `*`, and prefix `++` and `*` group right to left. The first row is filled in.",
@@ -969,7 +969,7 @@
     "zh": "原地扫描并修改字符串"
    },
    "marks": 5,
-   "minutes": 7,
+   "minutes": 5,
    "language": "c",
    "prompt": {
     "en": "The array `s` holds the 7 characters c, 0, d, e, -, 4, 2 followed by the terminator. The loop visits one character per row.\n\nFor each value of `i`, fill in the character `s[i]` after the loop body has run, then the values of `digits` and `letters` after that iteration. A digit is replaced by '#'. Both counters start at 0.",
@@ -1051,7 +1051,7 @@
     "zh": "作用于链表的递归函数"
    },
    "marks": 5,
-   "minutes": 7,
+   "minutes": 5,
    "language": "c",
    "prompt": {
     "en": "The four nodes below hold 4, 9, 2 and 7 in that order, and the last node's `next` is NULL. The function `alt` calls itself on the next node.\n\nThe rows are the calls in the order they START. For each call, fill in `n->v`, the value it returns, and the order in which the call FINISHES (1 means the first call to return). The row for `alt(NULL)` is partly filled in.",
@@ -1123,7 +1123,7 @@
     "zh": "带指针成员的结构体复制"
    },
    "marks": 5,
-   "minutes": 8,
+   "minutes": 5,
    "language": "c",
    "prompt": {
     "en": "A `Unit` has an int `hp` and a pointer `shield` to an int. After each statement, fill in the values of `a.hp`, `b.hp` and `s`.\n\nRemember: assigning a struct copies every member, including the pointer, but not the thing the pointer points to. The first row is filled in.",
@@ -1209,7 +1209,7 @@
     "zh": "一条进程链"
    },
    "marks": 6,
-   "minutes": 8,
+   "minutes": 6,
    "language": "c",
    "prompt": {
     "en": "Assume every `fork` succeeds and `wait` returns after the child has finished.\n\nName the processes: P0 is the original process, P1 is the child that P0 creates, P2 is the child that P1 creates, and so on. Every process runs the same loop and the same `printf`.\n\nFor each process, fill in how many times it calls `fork()`, which value of `i` it prints, and at which line of the combined output its line appears (1 means the first line printed). The first row is partly filled in.",
@@ -1276,7 +1276,7 @@
     "zh": "每个子进程处理自己的副本"
    },
    "marks": 5,
-   "minutes": 8,
+   "minutes": 5,
    "language": "c",
    "prompt": {
     "en": "Assume every `fork` succeeds. A child finishes with `_exit(total)`, and the parent reads that value back with `WEXITSTATUS`. The parent waits for each child before the next loop iteration.\n\nFor each value of `k`, fill in: the parent's `total` just before the fork, the exit status of the child, and the parent's `total` after the `waitpid` line. The first row is partly filled in.",
@@ -1337,7 +1337,7 @@
     "zh": "运行时选择的函数指针"
    },
    "marks": 4,
-   "minutes": 6,
+   "minutes": 4,
    "language": "c",
    "prompt": {
     "en": "`fold` applies the function it is given to an accumulator and each element in turn. In `main`, the table holds three functions and `init` holds the starting accumulator for each.\n\nFor each value of `k`, fill in the accumulator after the first element, after the second element, and the value that `main` prints. The first row is partly filled in.",
@@ -1398,16 +1398,16 @@
     "zh": "局部变量、数组和指向指针的指针"
    },
    "marks": 6,
-   "minutes": 8,
+   "minutes": 6,
    "language": "c",
    "code": "#include <stdio.h>\n\nstatic void bump(int *target, int by) {\n    *target += by;\n    /* HERE */\n}\n\nint main(void) {\n    int x = 4;\n    int y = 9;\n    int row[3] = {1, 2, 3};\n    int *p = &x;\n    int *q = row + 1;\n    int **pp = &q;\n    bump(*pp, y - 6);\n    printf(\"%d %d\\n\", *p, row[1]);\n    return 0;\n}\n",
    "prompt": {
-    "en": "Draw the stack, the heap and the static data at the moment execution reaches the comment HERE. Label heap blocks H1, H2, ... in the order the allocations run, and show each pointer as the label or variable it points to.\n\nThere is no heap and there are no literals here, so only the stack matters. Show both frames.",
-    "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。\n\n这里没有堆，也没有字面量，所以只需要画栈。两个栈帧都要画出来。"
+    "en": "Draw the stack, the heap and the static data at the moment execution reaches the comment HERE. Label heap blocks H1, H2, ... in the order the allocations run, and show each pointer as the label or variable it points to.\n\nThere is no heap block and no literal that a pointer refers to, so only the stack matters. Show both frames.",
+    "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。\n\n这里没有堆块，也没有被指针指向的字面量，所以只需要画栈。两个栈帧都要画出来。"
    },
    "solution": {
-    "en": "Work through main first. x is 4 and y is 9. row holds 1, 2, 3. p points to x. q points to row[1]. pp points to q, so pp is a pointer to a pointer.\n\nThe call bump(*pp, y - 6) is evaluated in main: *pp is q, so target receives the address of row[1], and y - 6 is 3, so by is 3. Inside bump, `*target += by` changes the int that target points to, which is row[1] in main's frame. So row[1] becomes 2 + 3 = 5 before the line HERE. The value of x does not change.\n\nThe pointer target is a copy of q, not a copy of the number 2. That is why the change shows up in main. The frame of bump sits after the frame of main, because it is the newest call.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals (read-only), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
-    "zh": "先看 main。x 是 4，y 是 9。row 保存 1、2、3。p 指向 x，q 指向 row[1]，pp 指向 q，所以 pp 是指向指针的指针。\n\n调用 bump(*pp, y - 6) 的实参在 main 中求值：*pp 就是 q，所以 target 收到 row[1] 的地址；y - 6 等于 3，所以 by 是 3。在 bump 里，`*target += by` 修改的是 target 所指向的 int，也就是 main 栈帧里的 row[1]。因此到达 HERE 这一行时，row[1] 已经变成 2 + 3 = 5。x 的值没有变。\n\n指针 target 是 q 的副本，而不是数字 2 的副本，所以修改在 main 中可见。bump 的栈帧画在 main 之后，因为它是最新的调用。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：字符串字面量（只读）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
+    "en": "Work through main first. x is 4 and y is 9. row holds 1, 2, 3. p points to x. q points to row[1]. pp points to q, so pp is a pointer to a pointer.\n\nThe call bump(*pp, y - 6) is evaluated in main: *pp is q, so target receives the address of row[1], and y - 6 is 3, so by is 3. Inside bump, `*target += by` changes the int that target points to, which is row[1] in main's frame. So row[1] becomes 2 + 3 = 5 before the line HERE. The value of x does not change.\n\nThe pointer target is a copy of q, not a copy of the number 2. That is why the change shows up in main. The frame of bump sits after the frame of main, because it is the newest call.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals that a pointer in the program refers to (read-only; format strings of printf are not drawn), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
+    "zh": "先看 main。x 是 4，y 是 9。row 保存 1、2、3。p 指向 x，q 指向 row[1]，pp 指向 q，所以 pp 是指向指针的指针。\n\n调用 bump(*pp, y - 6) 的实参在 main 中求值：*pp 就是 q，所以 target 收到 row[1] 的地址；y - 6 等于 3，所以 by 是 3。在 bump 里，`*target += by` 修改的是 target 所指向的 int，也就是 main 栈帧里的 row[1]。因此到达 HERE 这一行时，row[1] 已经变成 2 + 3 = 5。x 的值没有变。\n\n指针 target 是 q 的副本，而不是数字 2 的副本，所以修改在 main 中可见。bump 的栈帧画在 main 之后，因为它是最新的调用。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：程序中有指针指向的字符串字面量（只读；printf 的格式字符串不用画）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
    },
    "rubric": [
     {
@@ -1530,7 +1530,7 @@
     "zh": "两个堆上的数组"
    },
    "marks": 6,
-   "minutes": 8,
+   "minutes": 6,
    "language": "c",
    "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    size_t n = 3;\n    int *a = malloc(n * sizeof *a);\n    if (a == NULL) {\n        return 1;\n    }\n    a[0] = 7;\n    a[1] = 8;\n    int *b = calloc(2, sizeof *b);\n    if (b == NULL) {\n        free(a);\n        return 1;\n    }\n    b[1] = a[1] + 1;\n    /* HERE */\n    printf(\"%d %d %d\\n\", a[0], a[1], b[1]);\n    free(a);\n    free(b);\n    return 0;\n}\n",
    "prompt": {
@@ -1538,8 +1538,8 @@
     "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。"
    },
    "solution": {
-    "en": "main has three variables: n = 3, and the pointers a and b. The values live in the heap, not in main.\n\nmalloc ran first, so its block is H1: an int[3]. Only a[0] and a[1] were written, so the third cell was never given a value. malloc does not clear memory, so that cell is uninitialised and is drawn as ?. Reading it would give an unpredictable value.\n\ncalloc ran second, so its block is H2: an int[2]. calloc sets every byte to zero, so b[0] is 0. Then b[1] = a[1] + 1 = 9.\n\na points to H1 and b points to H2. Nothing has been freed yet at the line HERE.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals (read-only), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
-    "zh": "main 中有三个变量：n = 3，以及指针 a 和 b。真正的数据在堆上，不在 main 里。\n\nmalloc 先执行，所以它的块是 H1：一个 int[3]。只写了 a[0] 和 a[1]，第三个格子从来没有被赋值。malloc 不会清零，所以那个格子是未初始化的，画成 ?。读取它得到的值不可预测。\n\ncalloc 后执行，所以它的块是 H2：一个 int[2]。calloc 会把每个字节置为 0，所以 b[0] 是 0。然后 b[1] = a[1] + 1 = 9。\n\na 指向 H1，b 指向 H2。在 HERE 这一行，还没有释放任何东西。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：字符串字面量（只读）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
+    "en": "main has three variables: n = 3, and the pointers a and b. The values live in the heap, not in main.\n\nmalloc ran first, so its block is H1: an int[3]. Only a[0] and a[1] were written, so the third cell was never given a value. malloc does not clear memory, so that cell is uninitialised and is drawn as ?. Reading it would give an unpredictable value.\n\ncalloc ran second, so its block is H2: an int[2]. calloc sets every byte to zero, so b[0] is 0. Then b[1] = a[1] + 1 = 9.\n\na points to H1 and b points to H2. Nothing has been freed yet at the line HERE.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals that a pointer in the program refers to (read-only; format strings of printf are not drawn), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
+    "zh": "main 中有三个变量：n = 3，以及指针 a 和 b。真正的数据在堆上，不在 main 里。\n\nmalloc 先执行，所以它的块是 H1：一个 int[3]。只写了 a[0] 和 a[1]，第三个格子从来没有被赋值。malloc 不会清零，所以那个格子是未初始化的，画成 ?。读取它得到的值不可预测。\n\ncalloc 后执行，所以它的块是 H2：一个 int[2]。calloc 会把每个字节置为 0，所以 b[0] 是 0。然后 b[1] = a[1] + 1 = 9。\n\na 指向 H1，b 指向 H2。在 HERE 这一行，还没有释放任何东西。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：程序中有指针指向的字符串字面量（只读；printf 的格式字符串不用画）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
    },
    "rubric": [
     {
@@ -1658,7 +1658,7 @@
     "zh": "拥有文本的结构体"
    },
    "marks": 6,
-   "minutes": 9,
+   "minutes": 6,
    "language": "c",
    "code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct {\n    char *name;\n    int age;\n} Person;\n\nstatic char *copy_text(const char *s) {\n    char *r = malloc(strlen(s) + 1);\n    if (r == NULL) {\n        exit(1);\n    }\n    strcpy(r, s);\n    return r;\n}\n\nint main(void) {\n    Person leon;\n    leon.name = copy_text(\"Leon\");\n    leon.age = 20;\n    Person twin = leon;\n    twin.age = 21;\n    Person *boxed = malloc(sizeof *boxed);\n    if (boxed == NULL) {\n        exit(1);\n    }\n    *boxed = twin;\n    /* HERE */\n    printf(\"%s %d\\n\", boxed->name, boxed->age);\n    free(leon.name);\n    free(boxed);\n    return 0;\n}\n",
    "prompt": {
@@ -1666,8 +1666,8 @@
     "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。\n\n结构体的每个成员各画一个格子，写成 变量.成员（例如 leon.age）。在 HERE 时 copy_text 已经返回了。"
    },
    "solution": {
-    "en": "The literal \"Leon\" is read-only text in static data. copy_text allocated the first heap block, H1, with 5 chars: L, e, o, n and the terminator, and copied the literal into it. So leon.name holds H1.\n\n`Person twin = leon` copies every member, so twin.name is a copy of the pointer. It is the same address H1, not a new text. There is only one text block. twin.age is a separate int, which is why it can be 21 while leon.age stays 20.\n\nThe second malloc made H2, a block the size of a Person. `*boxed = twin` copies both members into it: name is H1 again and age is 21. The variable boxed holds H2.\n\nThree pointers now lead to the same text H1. That is why the program frees leon.name once, and why freeing twin.name or boxed->name as well would be a double free.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals (read-only), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
-    "zh": "字面量 \"Leon\" 是静态数据里的只读文本。copy_text 分配了第一个堆块 H1，共 5 个 char：L、e、o、n 和终止符，并把字面量复制进去。所以 leon.name 保存的是 H1。\n\n`Person twin = leon` 复制每个成员，所以 twin.name 是指针的副本，仍然是同一个地址 H1，不是新的文本。文本块只有一份。twin.age 是独立的 int，所以它可以是 21，而 leon.age 仍然是 20。\n\n第二次 malloc 得到 H2，大小等于一个 Person。`*boxed = twin` 把两个成员都复制进去：name 还是 H1，age 是 21。变量 boxed 保存 H2。\n\n现在有三个指针通向同一份文本 H1。所以程序只对 leon.name 释放一次；如果再释放 twin.name 或 boxed->name，就是重复释放。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：字符串字面量（只读）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
+    "en": "The literal \"Leon\" is read-only text in static data. copy_text allocated the first heap block, H1, with 5 chars: L, e, o, n and the terminator, and copied the literal into it. So leon.name holds H1.\n\n`Person twin = leon` copies every member, so twin.name is a copy of the pointer. It is the same address H1, not a new text. There is only one text block. twin.age is a separate int, which is why it can be 21 while leon.age stays 20.\n\nThe second malloc made H2, a block the size of a Person. `*boxed = twin` copies both members into it: name is H1 again and age is 21. The variable boxed holds H2.\n\nThree pointers now lead to the same text H1. That is why the program frees leon.name once, and why freeing twin.name or boxed->name as well would be a double free.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals that a pointer in the program refers to (read-only; format strings of printf are not drawn), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
+    "zh": "字面量 \"Leon\" 是静态数据里的只读文本。copy_text 分配了第一个堆块 H1，共 5 个 char：L、e、o、n 和终止符，并把字面量复制进去。所以 leon.name 保存的是 H1。\n\n`Person twin = leon` 复制每个成员，所以 twin.name 是指针的副本，仍然是同一个地址 H1，不是新的文本。文本块只有一份。twin.age 是独立的 int，所以它可以是 21，而 leon.age 仍然是 20。\n\n第二次 malloc 得到 H2，大小等于一个 Person。`*boxed = twin` 把两个成员都复制进去：name 还是 H1，age 是 21。变量 boxed 保存 H2。\n\n现在有三个指针通向同一份文本 H1。所以程序只对 leon.name 释放一次；如果再释放 twin.name 或 boxed->name，就是重复释放。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：程序中有指针指向的字符串字面量（只读；printf 的格式字符串不用画）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
    },
    "rubric": [
     {
@@ -1816,7 +1816,7 @@
     "zh": "第三次插入进行中的链表"
    },
    "marks": 6,
-   "minutes": 10,
+   "minutes": 6,
    "language": "c",
    "code": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct node {\n    int value;\n    struct node *next;\n} Node;\n\nstatic void push_front(Node **head, int value) {\n    Node *n = malloc(sizeof *n);\n    if (n == NULL) {\n        exit(1);\n    }\n    n->value = value;\n    n->next = *head;\n    /* HERE */\n    *head = n;\n}\n\nint main(void) {\n    Node *head = NULL;\n    push_front(&head, 5);\n    push_front(&head, 8);\n    push_front(&head, 2);\n    printf(\"%d\\n\", head->value);\n    while (head != NULL) {\n        Node *dead = head;\n        head = head->next;\n        free(dead);\n    }\n    return 0;\n}\n",
    "prompt": {
@@ -1824,8 +1824,8 @@
     "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。\n\n这次 HERE 位于 push_front 内部，是它的第三次调用，所以要画出 main 的栈帧和这次调用的栈帧。每个节点画成一个堆块，里面有 value 和 next 两个格子。"
    },
    "solution": {
-    "en": "The three calls allocate three nodes, numbered in call order: H1 for the value 5, H2 for 8 and H3 for 2.\n\nThe first call made H1 with next = NULL (the list was empty). The second made H2 with next = H1, and moved head to H2. So when the third call starts, main's head holds H2, and the list is H2 -> H1.\n\nAt HERE the third call has built its new node H3 with value 2 and next = H2, but `*head = n` has not run yet. So main's head still holds H2 at this moment, and the new node is only reachable from n.\n\npush_front's parameter head is a Node **. It holds the address of main's variable head, so it points to the variable (not to a node). That is how the function can change main's head. The parameter value is 2.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals (read-only), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
-    "zh": "三次调用分配三个节点，按调用顺序编号：H1 保存 5，H2 保存 8，H3 保存 2。\n\n第一次调用创建 H1，next = NULL（当时链表为空）。第二次调用创建 H2，next = H1，并让 head 指向 H2。所以第三次调用开始时，main 的 head 保存的是 H2，链表是 H2 -> H1。\n\n到达 HERE 时，第三次调用已经建好新节点 H3，value 为 2，next = H2，但 `*head = n` 还没有执行。所以此刻 main 的 head 仍然是 H2，新节点只能通过 n 找到。\n\npush_front 的参数 head 是 Node **。它保存的是 main 中变量 head 的地址，所以指向的是那个变量（而不是某个节点）。函数正是借此修改 main 的 head。参数 value 是 2。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：字符串字面量（只读）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
+    "en": "The three calls allocate three nodes, numbered in call order: H1 for the value 5, H2 for 8 and H3 for 2.\n\nThe first call made H1 with next = NULL (the list was empty). The second made H2 with next = H1, and moved head to H2. So when the third call starts, main's head holds H2, and the list is H2 -> H1.\n\nAt HERE the third call has built its new node H3 with value 2 and next = H2, but `*head = n` has not run yet. So main's head still holds H2 at this moment, and the new node is only reachable from n.\n\npush_front's parameter head is a Node **. It holds the address of main's variable head, so it points to the variable (not to a node). That is how the function can change main's head. The parameter value is 2.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals that a pointer in the program refers to (read-only; format strings of printf are not drawn), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
+    "zh": "三次调用分配三个节点，按调用顺序编号：H1 保存 5，H2 保存 8，H3 保存 2。\n\n第一次调用创建 H1，next = NULL（当时链表为空）。第二次调用创建 H2，next = H1，并让 head 指向 H2。所以第三次调用开始时，main 的 head 保存的是 H2，链表是 H2 -> H1。\n\n到达 HERE 时，第三次调用已经建好新节点 H3，value 为 2，next = H2，但 `*head = n` 还没有执行。所以此刻 main 的 head 仍然是 H2，新节点只能通过 n 找到。\n\npush_front 的参数 head 是 Node **。它保存的是 main 中变量 head 的地址，所以指向的是那个变量（而不是某个节点）。函数正是借此修改 main 的 head。参数 value 是 2。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：程序中有指针指向的字符串字面量（只读；printf 的格式字符串不用画）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
    },
    "rubric": [
     {
@@ -1972,7 +1972,7 @@
     "zh": "字符串字面量、字符数组与静态数据"
    },
    "marks": 6,
-   "minutes": 8,
+   "minutes": 6,
    "language": "c",
    "code": "#include <stdio.h>\n\nint counter = 3;\n\nint main(void) {\n    char word[] = \"hey\";\n    const char *lit = \"hey\";\n    char *w = word;\n    static int calls = 0;\n    w[0] = 'k';\n    calls++;\n    /* HERE */\n    printf(\"%s %s %d %d\\n\", word, lit, counter, calls);\n    return 0;\n}\n",
    "prompt": {
@@ -1980,8 +1980,8 @@
     "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。\n\n这里没有堆，但有静态数据。全局变量、静态局部变量和字面量都要画在静态数据区。"
    },
    "solution": {
-    "en": "Three kinds of storage appear here.\n\nStatic data holds the global counter (3), the static local calls (0 at start, 1 after calls++) and the string literal \"hey\". Static variables exist for the whole run, even though calls is only visible inside main. The literal is read-only text.\n\n`char word[] = \"hey\"` makes an array on the stack with 4 cells and copies the characters into it: h, e, y, and the terminator. The array is a separate object from the literal. So `w[0] = 'k'` (w points to word) changes the stack array to k, e, y, \\0, and the literal still reads \"hey\".\n\n`const char *lit = \"hey\"` makes only a pointer on the stack. It points to the literal in static data. Writing through lit would be undefined behaviour, because the literal is read-only.\n\nThe program prints: key hey 3 1.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals (read-only), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
-    "zh": "这里出现三种存储。\n\n静态数据区保存全局变量 counter（3）、静态局部变量 calls（开始为 0，执行 calls++ 之后为 1）以及字符串字面量 \"hey\"。静态变量在整个运行期间一直存在，尽管 calls 只在 main 里可见。字面量是只读文本。\n\n`char word[] = \"hey\"` 在栈上建一个 4 格的数组，并把字符复制进去：h、e、y 和终止符。这个数组与字面量是两个不同的对象。所以 `w[0] = 'k'`（w 指向 word）把栈上的数组改成 k、e、y、\\0，而字面量仍然是 \"hey\"。\n\n`const char *lit = \"hey\"` 在栈上只有一个指针，它指向静态数据区中的字面量。通过 lit 去写会导致未定义行为，因为字面量是只读的。\n\n程序输出：key hey 3 1。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：字符串字面量（只读）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
+    "en": "Three kinds of storage appear here.\n\nStatic data holds the global counter (3), the static local calls (0 at start, 1 after calls++) and the string literal \"hey\". Static variables exist for the whole run, even though calls is only visible inside main. The literal is read-only text.\n\n`char word[] = \"hey\"` makes an array on the stack with 4 cells and copies the characters into it: h, e, y, and the terminator. The array is a separate object from the literal. So `w[0] = 'k'` (w points to word) changes the stack array to k, e, y, \\0, and the literal still reads \"hey\".\n\n`const char *lit = \"hey\"` makes only a pointer on the stack. It points to the literal in static data. Writing through lit would be undefined behaviour, because the literal is read-only.\n\nThe program prints: key hey 3 1.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals that a pointer in the program refers to (read-only; format strings of printf are not drawn), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
+    "zh": "这里出现三种存储。\n\n静态数据区保存全局变量 counter（3）、静态局部变量 calls（开始为 0，执行 calls++ 之后为 1）以及字符串字面量 \"hey\"。静态变量在整个运行期间一直存在，尽管 calls 只在 main 里可见。字面量是只读文本。\n\n`char word[] = \"hey\"` 在栈上建一个 4 格的数组，并把字符复制进去：h、e、y 和终止符。这个数组与字面量是两个不同的对象。所以 `w[0] = 'k'`（w 指向 word）把栈上的数组改成 k、e、y、\\0，而字面量仍然是 \"hey\"。\n\n`const char *lit = \"hey\"` 在栈上只有一个指针，它指向静态数据区中的字面量。通过 lit 去写会导致未定义行为，因为字面量是只读的。\n\n程序输出：key hey 3 1。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：程序中有指针指向的字符串字面量（只读；printf 的格式字符串不用画）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
    },
    "rubric": [
     {
@@ -2094,7 +2094,7 @@
     "zh": "指向已释放内存的指针"
    },
    "marks": 6,
-   "minutes": 8,
+   "minutes": 6,
    "language": "c",
    "code": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int *p = malloc(sizeof *p);\n    if (p == NULL) {\n        return 1;\n    }\n    *p = 41;\n    int *q = p;\n    int *r = malloc(sizeof *r);\n    if (r == NULL) {\n        free(p);\n        return 1;\n    }\n    *r = 7;\n    printf(\"%d %d\\n\", *q, *r);\n    free(p);\n    p = NULL;\n    /* HERE */\n    printf(\"%d\\n\", *r);\n    free(r);\n    return 0;\n}\n",
    "prompt": {
@@ -2102,8 +2102,8 @@
     "zh": "画出程序执行到注释 HERE 那一刻的栈、堆和静态数据。堆块按分配实际执行的先后标为 H1、H2……，每个指针都标明它所指向的标签或变量。\n\n已经释放的块必须仍然留在图里，并标注（freed）。"
    },
    "solution": {
-    "en": "Allocation order gives the labels: the first malloc is H1 (value 41), the second is H2 (value 7). At the start q is a copy of p, so both p and q hold H1.\n\n`free(p)` gives the block H1 back to the allocator. It does not change the pointer variables. Then `p = NULL` changes only p. The variable q still holds the old address H1, and H1 is no longer valid memory. That is a dangling pointer. It looks like a normal pointer, but reading or writing through q would be undefined behaviour, and freeing it again would be a double free.\n\nSo at HERE: p is NULL, q is H1 (dangling), r is H2. The block H1 stays in the drawing, marked (freed); its cell is drawn as ? because the old value 41 must not be relied on. The block H2 is live and still holds 7. Setting one pointer to NULL does not protect the other copies.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals (read-only), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
-    "zh": "分配顺序决定标签：第一个 malloc 是 H1（值 41），第二个是 H2（值 7）。一开始 q 是 p 的副本，所以 p 和 q 都保存 H1。\n\n`free(p)` 把块 H1 还给分配器，但不会改变指针变量。随后 `p = NULL` 只改变 p。变量 q 仍然保存旧地址 H1，而 H1 已经不是有效的内存。这就是悬空指针。它看起来和普通指针一样，但通过 q 读或写都是未定义行为，再次释放它则是重复释放。\n\n所以在 HERE：p 是 NULL，q 是 H1（悬空），r 是 H2。块 H1 仍然留在图里，标注（freed）；它的格子画成 ?，因为不能再依赖旧值 41。块 H2 仍然有效，保存 7。把一个指针置为 NULL，并不能保护其他副本。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：字符串字面量（只读）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
+    "en": "Allocation order gives the labels: the first malloc is H1 (value 41), the second is H2 (value 7). At the start q is a copy of p, so both p and q hold H1.\n\n`free(p)` gives the block H1 back to the allocator. It does not change the pointer variables. Then `p = NULL` changes only p. The variable q still holds the old address H1, and H1 is no longer valid memory. That is a dangling pointer. It looks like a normal pointer, but reading or writing through q would be undefined behaviour, and freeing it again would be a double free.\n\nSo at HERE: p is NULL, q is H1 (dangling), r is H2. The block H1 stays in the drawing, marked (freed); its cell is drawn as ? because the old value 41 must not be relied on. The block H2 is live and still holds 7. Setting one pointer to NULL does not protect the other copies.\n\nDrawing convention (the same in every memory question):\n- Stack: one box per active call, main first and the newest call last. Each variable is a cell with its name and its current value. An array on the stack shows one cell per element. Uninitialised cells show ?.\n- A pointer cell holds what it points to: H1, H2 (heap blocks, numbered in the order the malloc/calloc calls run), &name (the address of a variable or element), or the literal's text. Draw an arrow, or write the label in the cell.\n- Heap: one box per block with its label, type and size. A freed block stays in the drawing and is marked (freed).\n- Static data: string literals that a pointer in the program refers to (read-only; format strings of printf are not drawn), global variables and static locals, each with its name or text.\n- Show the state at the marked line only.",
+    "zh": "分配顺序决定标签：第一个 malloc 是 H1（值 41），第二个是 H2（值 7）。一开始 q 是 p 的副本，所以 p 和 q 都保存 H1。\n\n`free(p)` 把块 H1 还给分配器，但不会改变指针变量。随后 `p = NULL` 只改变 p。变量 q 仍然保存旧地址 H1，而 H1 已经不是有效的内存。这就是悬空指针。它看起来和普通指针一样，但通过 q 读或写都是未定义行为，再次释放它则是重复释放。\n\n所以在 HERE：p 是 NULL，q 是 H1（悬空），r 是 H2。块 H1 仍然留在图里，标注（freed）；它的格子画成 ?，因为不能再依赖旧值 41。块 H2 仍然有效，保存 7。把一个指针置为 NULL，并不能保护其他副本。\n\n绘图约定（每一道内存图题都使用同一套）：\n- 栈：每个正在执行的调用画一个框，main 在最前，最新的调用在最后。每个变量是一个带名字和当前值的格子。栈上的数组每个元素一格。未初始化的格子写 ?。\n- 指针格子里写它所指向的东西：H1、H2（堆块，按 malloc/calloc 实际执行的先后编号）、&名字（变量或元素的地址），或字面量的文字。可以画箭头，也可以直接在格子里写标签。\n- 堆：每个块一个框，写上标签、类型和大小。已释放的块仍然留在图里，并标注（freed）。\n- 静态数据：程序中有指针指向的字符串字面量（只读；printf 的格式字符串不用画）、全局变量和静态局部变量，各写上名字或文字。\n- 只画标记行那一刻的状态。"
    },
    "rubric": [
     {
@@ -2207,8 +2207,1717 @@
    "verify_code": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    int *p = malloc(sizeof *p);\n    if (p == NULL) {\n        return 1;\n    }\n    *p = 41;\n    int *q = p;\n    int *r = malloc(sizeof *r);\n    if (r == NULL) {\n        free(p);\n        return 1;\n    }\n    *r = 7;\n    printf(\"%d %d\\n\", *q, *r);\n    free(p);\n    p = NULL;\n    printf(\"%d %d\\n\", p == NULL, *r);\n    free(r);\n    return 0;\n}\n",
    "verify_language": "c",
    "verify_output": "41 7\n1 7\n"
+  },
+  {
+   "id": "bug-sum-first-n",
+   "kind": "bug",
+   "topic": "pointers-arrays",
+   "title": {
+    "en": "The sum of the first n values is too big",
+    "zh": "前 n 个数之和偏大"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "language": "c",
+   "code": "#include <stddef.h>\n\nlong sum_first(const int *a, size_t n) {\n    long total = 0;\n    for (size_t i = 0; i <= n; i++) {\n        total += a[i];\n    }\n    return total;\n}\n",
+   "prompt": {
+    "en": "`sum_first(a, n)` should return the sum of the first `n` elements of `a`. The caller's array is longer than `n`.\n\nLeon tests it with the array {1, 2, 3, 4, 1000, 2000} and n = 4. The function returns 1010, but the correct answer is 10.\n\nFind the bug, explain why the result is 1010, and write the corrected function.",
+    "zh": "`sum_first(a, n)` 应该返回数组 `a` 前 `n` 个元素之和。调用者的数组比 `n` 更长。\n\nLeon 用数组 {1, 2, 3, 4, 1000, 2000} 和 n = 4 测试。函数返回 1010，但正确答案是 10。\n\n找出错误，解释为什么结果是 1010，并写出修正后的函数。"
+   },
+   "solution": {
+    "en": "The loop condition is `i <= n`. The first n elements have indexes 0 to n - 1, so the loop must stop before i reaches n. With `<=` it also adds a[n], one element too many.\n\nIn the test, n = 4 and a[4] is 1000, so the result is 1 + 2 + 3 + 4 + 1000 = 1010. With n = 0 the function still adds a[0], and with n = 1 it adds a[0] and a[1].\n\nThe fix is `i < n`. Note why the test array is longer than n: it hides how dangerous the bug is. If the array had exactly n elements, a[n] would be outside it, and reading it is undefined behaviour. This is an off-by-one error: a count n gives valid indexes 0 .. n - 1.",
+    "zh": "循环条件写成了 `i <= n`。前 n 个元素的下标是 0 到 n - 1，所以循环必须在 i 到达 n 之前停止。用 `<=` 会多加一个 a[n]。\n\n测试中 n = 4，a[4] 是 1000，所以结果是 1 + 2 + 3 + 4 + 1000 = 1010。当 n = 0 时，函数仍然会加上 a[0]；当 n = 1 时，会加上 a[0] 和 a[1]。\n\n修正方法是改成 `i < n`。注意测试数组比 n 长，这掩盖了这个错误的危险性。如果数组恰好只有 n 个元素，a[n] 就在数组之外，读取它是未定义行为。这是典型的差一错误：n 个元素对应的有效下标是 0 .. n - 1。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Names the loop condition `i <= n` as the bug: it visits index n, one element too many.",
+      "zh": "指出循环条件 `i <= n` 是错误所在：它会访问下标 n，多了一个元素。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains the 1010: 1 + 2 + 3 + 4 plus a[4] = 1000.",
+      "zh": "解释 1010 的来源：1 + 2 + 3 + 4 再加上 a[4] = 1000。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Gives a corrected loop `i < n` (or an equivalent pointer loop up to `a + n`).",
+      "zh": "给出修正后的循环 `i < n`（或等价的指针循环，终点为 `a + n`）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Notes that with an array of exactly n elements the old code reads out of bounds, which is undefined behaviour.",
+      "zh": "指出如果数组恰好只有 n 个元素，原代码会越界读取，这是未定义行为。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Changing the start to `i = 1`. That skips a[0] and still reads a[n].",
+     "zh": "把起点改成 `i = 1`。这样会漏掉 a[0]，仍然会读到 a[n]。"
+    },
+    {
+     "en": "Using `i < n - 1`. This drops the last wanted element, and wraps around when n is 0 with an unsigned type.",
+     "zh": "改成 `i < n - 1`。这样会丢掉最后一个需要的元素，并且 n 为 0 时无符号数会回绕。"
+    },
+    {
+     "en": "Blaming the caller for passing an array longer than n. The function is meant to handle that.",
+     "zh": "怪调用者传了比 n 长的数组。函数本来就应该能处理这种情况。"
+    }
+   ],
+   "fixed_code": "#include <stddef.h>\n\nlong sum_first(const int *a, size_t n) {\n    long total = 0;\n    for (size_t i = 0; i < n; i++) {\n        total += a[i];\n    }\n    return total;\n}\n",
+   "tests": "#include <stdio.h>\n\nint main(void) {\n    int data[6] = {1, 2, 3, 4, 1000, 2000};\n    printf(\"%ld\\n\", sum_first(data, 4));\n    printf(\"%ld\\n\", sum_first(data, 0));\n    printf(\"%ld\\n\", sum_first(data, 1));\n    return 0;\n}\n",
+   "expected": "10\n0\n1\n"
+  },
+  {
+   "id": "bug-sizeof-pointer",
+   "kind": "bug",
+   "topic": "strings-parsing",
+   "title": {
+    "en": "Names are cut after 7 characters",
+    "zh": "名字在第 7 个字符后被截断"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "language": "c",
+   "code": "#include <stddef.h>\n\n#define NAME_CAP ((size_t)16)\n\n/* dst points to a field of NAME_CAP bytes */\nvoid copy_name(char *dst, const char *src) {\n    size_t i = 0;\n    while (src[i] != '\\0' && i < sizeof(dst) - 1) {\n        dst[i] = src[i];\n        i++;\n    }\n    dst[i] = '\\0';\n}\n",
+   "prompt": {
+    "en": "Every field that holds a name is an array of `NAME_CAP` (16) bytes. `copy_name` should copy up to 15 characters of `src` and always end the field with '\\0'.\n\nMia tests it with \"Iris-Leon-Mia-Jack-Noah\". The result has only 7 characters (on a machine where a pointer is 8 bytes), but 15 are expected. Short names look fine.\n\nFind the bug, explain it, and write the corrected function.",
+    "zh": "每个保存名字的字段都是 `NAME_CAP`（16）字节的数组。`copy_name` 应该最多复制 `src` 的 15 个字符，并且总是以 '\\0' 结尾。\n\nMia 用 \"Iris-Leon-Mia-Jack-Noah\" 测试。结果只有 7 个字符（在指针为 8 字节的机器上），但期望是 15 个。短名字看起来没有问题。\n\n找出错误，解释原因，并写出修正后的函数。"
+   },
+   "solution": {
+    "en": "Inside `copy_name`, dst is a `char *`. Whatever array the caller passed, the parameter is only a pointer, so `sizeof(dst)` is the size of a pointer: 8 bytes on a typical 64-bit machine (4 on a 32-bit one), not 16. The bound `sizeof(dst) - 1` is therefore 7, and the copy stops after 7 characters.\n\nNames shorter than 7 characters never reach the bound, which is why short names looked fine. The program is wrong on any machine, but the amount depends on the pointer size.\n\nAn array loses its size information when it is passed to a function. The function must be told the size: use the constant NAME_CAP (as in the fix), or add a size parameter. `sizeof` gives the array size only where the array itself is visible.",
+    "zh": "在 `copy_name` 里，dst 是 `char *`。不管调用者传入的是什么数组，参数本身只是一个指针，所以 `sizeof(dst)` 是指针的大小：典型的 64 位机器上是 8 字节（32 位机器上是 4），而不是 16。因此边界 `sizeof(dst) - 1` 是 7，复制在 7 个字符之后就停止了。\n\n短于 7 个字符的名字不会碰到这个边界，所以短名字看起来没有问题。这个程序在任何机器上都是错的，只是错的程度取决于指针的大小。\n\n数组传给函数时会丢失大小信息。必须另外告诉函数大小：像修正版那样使用常量 NAME_CAP，或者增加一个大小参数。`sizeof` 只有在能直接看到数组本身的地方才能给出数组的大小。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Identifies `sizeof(dst)` as the size of a pointer (not of the 16-byte field).",
+      "zh": "指出 `sizeof(dst)` 是指针的大小，而不是 16 字节字段的大小。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains that an array parameter is a pointer inside the function, so its size is lost.",
+      "zh": "解释数组参数在函数内部就是指针，所以大小信息丢失。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Corrects the bound to `NAME_CAP - 1` (or passes the size as a parameter).",
+      "zh": "把边界改正为 `NAME_CAP - 1`（或者把大小作为参数传入）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains why short names hid the bug.",
+      "zh": "解释为什么短名字掩盖了这个错误。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Replacing `sizeof(dst)` with `strlen(dst)`. dst has no terminator yet, so the length is unpredictable.",
+     "zh": "把 `sizeof(dst)` 换成 `strlen(dst)`。dst 还没有终止符，长度不可预测。"
+    },
+    {
+     "en": "Writing `sizeof(*dst)`. That is the size of one char, which is 1.",
+     "zh": "写成 `sizeof(*dst)`。那是一个 char 的大小，即 1。"
+    },
+    {
+     "en": "Hard-coding the guess 16 inside the loop instead of using the named constant, so the two can drift apart.",
+     "zh": "在循环里直接写死 16，而不用命名常量，这样两处数字以后可能不一致。"
+    },
+    {
+     "en": "Forgetting the `- 1` after the fix, which leaves no room for the terminator.",
+     "zh": "修正后忘了 `- 1`，没有给终止符留位置。"
+    }
+   ],
+   "fixed_code": "#include <stddef.h>\n\n#define NAME_CAP ((size_t)16)\n\n/* dst points to a field of NAME_CAP bytes */\nvoid copy_name(char *dst, const char *src) {\n    size_t i = 0;\n    while (src[i] != '\\0' && i < NAME_CAP - 1) {\n        dst[i] = src[i];\n        i++;\n    }\n    dst[i] = '\\0';\n}\n",
+   "tests": "#include <stdio.h>\n#include <string.h>\n\nstatic void run(const char *name) {\n    char field[NAME_CAP];\n    memset(field, '#', sizeof field);\n    copy_name(field, name);\n    printf(\"[%s] %zu\\n\", field, strlen(field));\n}\n\nint main(void) {\n    run(\"Mia\");\n    run(\"Iris-Leon-Mia-Jack-Noah\");\n    run(\"abcdefghijklmnop\");\n    return 0;\n}\n",
+   "expected": "[Mia] 3\n[Iris-Leon-Mia-J] 15\n[abcdefghijklmno] 15\n"
+  },
+  {
+   "id": "bug-assign-not-compare",
+   "kind": "bug",
+   "topic": "structured-data",
+   "title": {
+    "en": "Every push is refused",
+    "zh": "每次 push 都被拒绝"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "language": "c",
+   "code": "#include <stdbool.h>\n#include <stddef.h>\n\n#define STACK_MAX 4\n\ntypedef struct {\n    int items[STACK_MAX];\n    size_t len;\n} Stack;\n\nbool stack_full(Stack *s) {\n    return s->len = STACK_MAX;\n}\n\nbool stack_push(Stack *s, int v) {\n    if (stack_full(s)) {\n        return false;\n    }\n    s->items[s->len] = v;\n    s->len++;\n    return true;\n}\n",
+   "prompt": {
+    "en": "A stack holds up to 4 ints. After `stack_push` is called four times on an empty stack, every call has returned false, and `s.len` reads 4.\n\nFind the bug, explain how it produces this behaviour, and write the corrected code. Say also what small change to the parameter type would have made the compiler reject the typo.",
+    "zh": "一个栈最多保存 4 个 int。对一个空栈调用四次 `stack_push` 之后，每次都返回了 false，而且 `s.len` 的值是 4。\n\n找出错误，解释它为什么会造成这种现象，并写出修正后的代码。同时说明：把参数类型做怎样的小改动，编译器就会拒绝这个笔误。"
+   },
+   "solution": {
+    "en": "In `stack_full`, the expression `s->len = STACK_MAX` is an assignment, not a comparison. It stores 4 into s->len, and the value of an assignment is the value stored, so the value of the expression is 4. Converting it to the bool return type gives true.\n\nSo every call of `stack_push` first calls `stack_full`, which sets len to 4 and answers \"full\". The push is refused, and len is left at 4 by the side effect of the check. That matches both symptoms.\n\nThe fix is `==`. A function that only asks a question should not be able to change anything, so declare the parameter `const Stack *`: with that, writing `s->len = ...` is a compile error (\"cannot assign ... const\"), and the typo cannot reach a test.",
+    "zh": "在 `stack_full` 中，表达式 `s->len = STACK_MAX` 是赋值而不是比较。它把 4 存入 s->len，而赋值表达式的值就是被存入的值，所以这个表达式的值是 4。把它转换成返回类型 bool，结果为真。\n\n因此每次调用 `stack_push` 都会先调用 `stack_full`，后者把 len 设为 4 并回答“已满”。push 被拒绝，而 len 因为检查函数的副作用停在了 4。这正好解释了两个现象。\n\n修正方法是使用 `==`。只用来提问的函数不应该能改变任何东西，所以把参数声明为 `const Stack *`：这样写 `s->len = ...` 会产生编译错误（“cannot assign ... const”），笔误就不会漏到测试阶段。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Finds `=` in `stack_full` where `==` was meant.",
+      "zh": "找出 `stack_full` 中该写 `==` 的地方写成了 `=`。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Explains both effects: it overwrites `len` with 4, and the assignment's value (4) is true, so the function says full.",
+      "zh": "解释两个效果：它把 `len` 覆盖成 4，并且赋值表达式的值（4）为真，所以函数回答“已满”。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Writes the corrected comparison `s->len == STACK_MAX`.",
+      "zh": "写出修正后的比较 `s->len == STACK_MAX`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Suggests `const Stack *` so the compiler rejects writes through the pointer.",
+      "zh": "提出使用 `const Stack *`，让编译器拒绝通过该指针写入。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Fixing `stack_push` instead, for example testing `s->len < STACK_MAX` there. The bad helper stays and can break other code.",
+     "zh": "去改 `stack_push`，例如在那里改成判断 `s->len < STACK_MAX`。有问题的辅助函数还在，会破坏其他代码。"
+    },
+    {
+     "en": "Assuming the compiler would have warned. A bare assignment after `return` compiles without any warning here; only `const` on the parameter (or a test) catches it.",
+     "zh": "以为编译器一定会给出警告。这里 `return` 后面直接写赋值，编译时没有任何警告；只有给参数加 `const`（或者做测试）才能发现它。"
+    },
+    {
+     "en": "Thinking that the function returns 0 or 1 only from a comparison. In C an assignment also has a value.",
+     "zh": "以为只有比较才会得到 0 或 1。在 C 中赋值表达式同样有值。"
+    }
+   ],
+   "fixed_code": "#include <stdbool.h>\n#include <stddef.h>\n\n#define STACK_MAX 4\n\ntypedef struct {\n    int items[STACK_MAX];\n    size_t len;\n} Stack;\n\nbool stack_full(const Stack *s) {\n    return s->len == STACK_MAX;\n}\n\nbool stack_push(Stack *s, int v) {\n    if (stack_full(s)) {\n        return false;\n    }\n    s->items[s->len] = v;\n    s->len++;\n    return true;\n}\n",
+   "tests": "#include <stdio.h>\n\nint main(void) {\n    Stack s = {{0}, 0};\n    for (int i = 1; i <= 5; i++) {\n        printf(\"%d\", stack_push(&s, i * 10));\n    }\n    printf(\"\\nlen=%zu top=%d\\n\", s.len, s.items[s.len - 1]);\n    return 0;\n}\n",
+   "expected": "11110\nlen=4 top=40\n"
+  },
+  {
+   "id": "bug-missing-break",
+   "kind": "bug",
+   "topic": "representation-control",
+   "title": {
+    "en": "Addition behaves like subtraction",
+    "zh": "加法表现得像减法"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "language": "c",
+   "code": "int apply(char op, int a, int b) {\n    int r = 0;\n    switch (op) {\n    case '+':\n        r = a + b;\n    case '-':\n        r = a - b;\n        break;\n    case '*':\n        r = a * b;\n        break;\n    default:\n        r = 0;\n        break;\n    }\n    return r;\n}\n",
+   "prompt": {
+    "en": "`apply(op, a, b)` should compute `a + b` for '+', `a - b` for '-', `a * b` for '*', and 0 for any other character.\n\nJack calls `apply('+', 7, 2)` and gets 5 instead of 9. The other operators work.\n\nFind the bug, explain it, and write the corrected function.",
+    "zh": "`apply(op, a, b)` 应该在 op 为 '+' 时计算 `a + b`，为 '-' 时计算 `a - b`，为 '*' 时计算 `a * b`，其他字符返回 0。\n\nJack 调用 `apply('+', 7, 2)`，得到的是 5 而不是 9。其他运算符都正常。\n\n找出错误，解释原因，并写出修正后的函数。"
+   },
+   "solution": {
+    "en": "A `case` label is only an entry point. After the statements of the matching case, execution carries on into the next case unless a `break` (or return) stops it. This is called fall-through.\n\nFor '+', the code computes r = 9, but there is no `break`, so it falls into the '-' case and computes r = 7 - 2 = 5. The second assignment overwrites the first, and the function returns 5.\n\nThe other cases are fine because each ends with `break`. The fix is to add `break;` after `r = a + b;`. Fall-through is sometimes wanted (for example to share one body between two labels), but then it should be marked with a comment. Compilers can warn about it with a flag such as -Wimplicit-fallthrough.",
+    "zh": "`case` 标签只是一个入口。匹配的 case 中的语句执行完之后，如果没有 `break`（或 return）阻止，程序会继续执行下一个 case。这叫做贯穿（fall-through）。\n\n对于 '+'，代码先算出 r = 9，但没有 `break`，于是继续进入 '-' 这一支，算出 r = 7 - 2 = 5。第二次赋值覆盖了第一次，函数返回 5。\n\n其他分支没有问题，因为每个都以 `break` 结束。修正方法是在 `r = a + b;` 之后加上 `break;`。有时确实需要贯穿（例如两个标签共用一段代码），但那时应当用注释标明。编译器可以用 -Wimplicit-fallthrough 这类选项对此发出警告。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Finds the missing `break` after the '+' case.",
+      "zh": "指出 '+' 分支之后缺少 `break`。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Explains fall-through: execution continues into the '-' case and its assignment overwrites r.",
+      "zh": "解释贯穿：程序继续进入 '-' 分支，其赋值覆盖了 r。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives the corrected function with `break;` added.",
+      "zh": "给出加上 `break;` 的修正函数。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains why only '+' is wrong: the other cases end with break.",
+      "zh": "解释为什么只有 '+' 出错：其他分支都以 break 结束。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Reordering the cases so that '+' comes last. That moves the problem instead of fixing it.",
+     "zh": "调整分支顺序，把 '+' 放到最后。这只是把问题移走，并没有解决。"
+    },
+    {
+     "en": "Replacing the switch by `if (op = '+')`, which assigns instead of comparing.",
+     "zh": "改成 `if (op = '+')`，那是赋值而不是比较。"
+    },
+    {
+     "en": "Adding `return r;` inside the '-' case only. The '+' case still falls into it.",
+     "zh": "只在 '-' 分支里加 `return r;`。'+' 分支仍然会落进去。"
+    }
+   ],
+   "fixed_code": "int apply(char op, int a, int b) {\n    int r = 0;\n    switch (op) {\n    case '+':\n        r = a + b;\n        break;\n    case '-':\n        r = a - b;\n        break;\n    case '*':\n        r = a * b;\n        break;\n    default:\n        r = 0;\n        break;\n    }\n    return r;\n}\n",
+   "tests": "#include <stdio.h>\n\nint main(void) {\n    printf(\"%d %d %d %d\\n\", apply('+', 7, 2), apply('-', 7, 2), apply('*', 7, 2), apply('?', 7, 2));\n    return 0;\n}\n",
+   "expected": "9 5 14 0\n"
+  },
+  {
+   "id": "bug-queue-tail",
+   "kind": "bug",
+   "topic": "linked-structures",
+   "title": {
+    "en": "A queue that loses its middle",
+    "zh": "丢掉中间元素的队列"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "language": "c",
+   "code": "#include <stdbool.h>\n#include <stddef.h>\n#include <stdlib.h>\n\ntypedef struct node {\n    int value;\n    struct node *next;\n} Node;\n\ntypedef struct {\n    Node *head;\n    Node *tail;\n} Queue;\n\nbool enqueue(Queue *q, int value) {\n    Node *n = malloc(sizeof *n);\n    if (n == NULL) {\n        return false;\n    }\n    n->value = value;\n    n->next = NULL;\n    if (q->tail == NULL) {\n        q->head = n;\n        q->tail = n;\n    } else {\n        q->tail->next = n;\n    }\n    return true;\n}\n\nbool dequeue(Queue *q, int *out) {\n    if (q->head == NULL) {\n        return false;\n    }\n    Node *dead = q->head;\n    *out = dead->value;\n    q->head = dead->next;\n    if (q->head == NULL) {\n        q->tail = NULL;\n    }\n    free(dead);\n    return true;\n}\n",
+   "prompt": {
+    "en": "A queue keeps a pointer to the first node (`head`) and the last node (`tail`) so that `enqueue` takes constant time. The queue is empty when both are NULL.\n\nNoah enqueues 1, 2 and 3 and then prints the queue. It shows [1 3] instead of [1 2 3].\n\nFind the bug, explain what goes wrong with the nodes, and write the corrected `enqueue`.",
+    "zh": "队列保存指向第一个节点的指针（`head`）和指向最后一个节点的指针（`tail`），这样 `enqueue` 只需常数时间。当两者都是 NULL 时队列为空。\n\nNoah 依次入队 1、2、3，然后打印队列，显示的是 [1 3] 而不是 [1 2 3]。\n\n找出错误，解释节点出了什么问题，并写出修正后的 `enqueue`。"
+   },
+   "solution": {
+    "en": "The tail pointer must always name the last node. `enqueue` links the new node after the old last node, but only sets `q->tail = n` when the queue was empty. In the else branch the tail is not moved.\n\nTrace it. After enqueue(1): head = tail = node 1. enqueue(2) sets node1->next = node 2, but tail still points to node 1. enqueue(3) then does tail->next = node 3, which overwrites node1->next. The list is now 1 -> 3, and node 2 is unreachable. It was never freed, so it is also leaked.\n\nThe fix is to move `q->tail = n;` out of the if, so that it runs in both cases. The invariant is: the queue is empty exactly when head and tail are both NULL, and otherwise tail is the last node. `dequeue` keeps this invariant by resetting the tail when the last node is removed.",
+    "zh": "tail 指针必须始终指向最后一个节点。`enqueue` 把新节点接在原来的最后一个节点之后，但只有在队列为空时才设置 `q->tail = n`。在 else 分支里没有移动 tail。\n\n来跟踪一下。enqueue(1) 之后：head = tail = 节点 1。enqueue(2) 设置 node1->next = 节点 2，但 tail 仍然指向节点 1。enqueue(3) 接着执行 tail->next = 节点 3，覆盖了 node1->next。链表变成 1 -> 3，节点 2 无法再被访问到。它从未被释放，因此还造成了内存泄漏。\n\n修正方法是把 `q->tail = n;` 从 if 里面移出来，让两种情况都执行。不变式是：队列为空当且仅当 head 和 tail 都是 NULL，否则 tail 就是最后一个节点。`dequeue` 在取走最后一个节点时重置 tail，从而维持这个不变式。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Finds that `q->tail` is not updated in the non-empty branch of `enqueue`.",
+      "zh": "指出 `enqueue` 的非空分支中没有更新 `q->tail`。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Explains the effect: tail stays on node 1, so later nodes overwrite its next link and node 2 is lost (and leaked).",
+      "zh": "解释后果：tail 一直停在节点 1，后面的节点覆盖它的 next，节点 2 丢失（并泄漏）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Corrects the code so `q->tail = n` runs in both cases.",
+      "zh": "修正代码，让 `q->tail = n` 在两种情况下都执行。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "States the invariant: head and tail are both NULL exactly when the queue is empty, otherwise tail is the last node.",
+      "zh": "说明不变式：队列为空当且仅当 head 和 tail 都是 NULL，否则 tail 是最后一个节点。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Walking the whole list from head on every enqueue to find the real last node. It works but costs O(n) and hides the missing update.",
+     "zh": "每次 enqueue 都从 head 遍历整个链表找真正的最后节点。这样能工作，但需要 O(n)，并且掩盖了缺少的更新。"
+    },
+    {
+     "en": "Moving `q->head = n` out of the if as well. That breaks every enqueue after the first.",
+     "zh": "把 `q->head = n` 也移到 if 外面。这样第一次之后的每次 enqueue 都会出错。"
+    },
+    {
+     "en": "Fixing `dequeue` instead. It already resets the tail correctly.",
+     "zh": "去修改 `dequeue`。它已经正确地重置了 tail。"
+    }
+   ],
+   "fixed_code": "#include <stdbool.h>\n#include <stddef.h>\n#include <stdlib.h>\n\ntypedef struct node {\n    int value;\n    struct node *next;\n} Node;\n\ntypedef struct {\n    Node *head;\n    Node *tail;\n} Queue;\n\nbool enqueue(Queue *q, int value) {\n    Node *n = malloc(sizeof *n);\n    if (n == NULL) {\n        return false;\n    }\n    n->value = value;\n    n->next = NULL;\n    if (q->tail == NULL) {\n        q->head = n;\n    } else {\n        q->tail->next = n;\n    }\n    q->tail = n;\n    return true;\n}\n\nbool dequeue(Queue *q, int *out) {\n    if (q->head == NULL) {\n        return false;\n    }\n    Node *dead = q->head;\n    *out = dead->value;\n    q->head = dead->next;\n    if (q->head == NULL) {\n        q->tail = NULL;\n    }\n    free(dead);\n    return true;\n}\n",
+   "tests": "#include <stdio.h>\n\nstatic void show(const Queue *q) {\n    printf(\"[\");\n    for (const Node *p = q->head; p != NULL; p = p->next) {\n        printf(\"%d%s\", p->value, p->next != NULL ? \" \" : \"\");\n    }\n    printf(\"]\\n\");\n}\n\nint main(void) {\n    Queue q = {NULL, NULL};\n    enqueue(&q, 1);\n    enqueue(&q, 2);\n    enqueue(&q, 3);\n    show(&q);\n    int v;\n    while (dequeue(&q, &v)) {\n        printf(\"%d\\n\", v);\n    }\n    enqueue(&q, 9);\n    show(&q);\n    return 0;\n}\n",
+   "expected": "[1 2 3]\n1\n2\n3\n[9]\n"
+  },
+  {
+   "id": "bug-chomp-terminator",
+   "kind": "bug",
+   "topic": "strings-parsing",
+   "title": {
+    "en": "The last letter disappears",
+    "zh": "最后一个字母不见了"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "language": "c",
+   "code": "#include <string.h>\n\nvoid chomp(char *line) {\n    line[strlen(line) - 1] = '\\0';\n}\n",
+   "prompt": {
+    "en": "`chomp(line)` should remove one trailing newline character from `line`, if the string ends with one. Strings without a trailing newline must stay unchanged, and the empty string must be safe.\n\nEmma calls `chomp` on \"abc\\n\" and gets \"abc\". On \"abc\" (no newline) she gets \"ab\".\n\nFind the bug, explain it (also for the empty string), and write the corrected function.",
+    "zh": "`chomp(line)` 应该在字符串以换行符结尾时，删除一个结尾的换行符。没有结尾换行符的字符串必须保持不变，空字符串也必须安全。\n\nEmma 对 \"abc\\n\" 调用 `chomp`，得到 \"abc\"。对 \"abc\"（没有换行符）调用，得到的却是 \"ab\"。\n\n找出错误，解释原因（包括空字符串的情况），并写出修正后的函数。"
+   },
+   "solution": {
+    "en": "The function overwrites the last character with '\\0' without looking at what it is. For \"abc\\n\" that last character is the newline, so the result is right. For \"abc\" the last character is 'c', and it is destroyed, giving \"ab\". Text that arrives without a final newline is common: a last line in a file, or a line that fgets cut because the buffer was full.\n\nFor the empty string, strlen(line) is 0 and `strlen(line) - 1` is computed in the unsigned type size_t, so it wraps to a huge number. The write then goes far outside the array, which is undefined behaviour.\n\nThe fix tests first: only when the length is greater than 0 and the last character really is '\\n' is the terminator moved one place left. Otherwise nothing changes. The rule is: never assume the last character is a newline, and never subtract from an unsigned length without checking it is not zero.",
+    "zh": "这个函数不检查最后一个字符是什么，就直接把它改写成 '\\0'。对 \"abc\\n\" 来说最后一个字符正是换行符，所以结果正确。对 \"abc\" 来说最后一个字符是 'c'，它被破坏了，得到 \"ab\"。没有结尾换行符的文本很常见：文件的最后一行，或者缓冲区已满、被 fgets 截断的一行。\n\n对于空字符串，strlen(line) 是 0，而 `strlen(line) - 1` 是用无符号类型 size_t 计算的，会回绕成一个巨大的数。这次写入会落到数组之外很远的地方，是未定义行为。\n\n修正方法是先检查：只有长度大于 0 并且最后一个字符确实是 '\\n' 时，才把终止符左移一位，否则什么都不改。规则是：永远不要假定最后一个字符是换行符，也不要在不确定长度非零的情况下对无符号长度做减法。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Finds that the last character is overwritten without checking that it is a newline.",
+      "zh": "指出最后一个字符被直接覆盖，没有检查它是不是换行符。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains the \"ab\" result: the letter c is destroyed.",
+      "zh": "解释 \"ab\" 的来源：字母 c 被破坏了。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains the empty string: `strlen - 1` wraps around in unsigned arithmetic and the write is out of bounds.",
+      "zh": "解释空字符串的情况：`strlen - 1` 在无符号运算中回绕，写入越界。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Gives a correct fix: checks `n > 0` and `line[n - 1] == '\\n'` before writing the terminator.",
+      "zh": "给出正确的修正：在写入终止符之前检查 `n > 0` 和 `line[n - 1] == '\\n'`。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Using `line[strlen(line)] = '\\0'`. That writes the terminator where it already is and removes nothing.",
+     "zh": "用 `line[strlen(line)] = '\\0'`。这只是在终止符原来的位置再写一次，什么也没删。"
+    },
+    {
+     "en": "Checking `line[n - 1] == '\\n'` before checking `n > 0`. For the empty string this still reads before the array.",
+     "zh": "先检查 `line[n - 1] == '\\n'` 再检查 `n > 0`。对空字符串，这仍然会读到数组之前。"
+    },
+    {
+     "en": "Looking for a newline with `strchr` and ignoring where it is. A newline in the middle must not be removed.",
+     "zh": "用 `strchr` 找换行符却不管它的位置。中间的换行符不应该被删除。"
+    }
+   ],
+   "fixed_code": "#include <string.h>\n\nvoid chomp(char *line) {\n    size_t n = strlen(line);\n    if (n > 0 && line[n - 1] == '\\n') {\n        line[n - 1] = '\\0';\n    }\n}\n",
+   "tests": "#include <stdio.h>\n\nint main(void) {\n    char a[] = \"abc\\n\";\n    char b[] = \"abc\";\n    char c[] = \"\\n\";\n    char d[] = \"\";\n    chomp(a);\n    chomp(b);\n    chomp(c);\n    printf(\"[%s]\\n[%s]\\n[%s]\\n\", a, b, c);\n    fflush(stdout);\n    chomp(d);\n    printf(\"[%s]\\n\", d);\n    return 0;\n}\n",
+   "expected": "[abc]\n[abc]\n[]\n[]\n"
+  },
+  {
+   "id": "mcq-fork-values",
+   "kind": "mcq",
+   "topic": "process-fork",
+   "title": {
+    "en": "Two forks in a row",
+    "zh": "连续两次 fork"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Assume every `fork` succeeds. Each process prints one line when it reaches the `printf`. Ignore the order of the lines. Which lines are printed?",
+    "zh": "假设每次 `fork` 都成功。每个进程执行到 `printf` 时打印一行。不考虑各行的先后顺序。会打印出哪些行？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Four lines: 0, 1, 2 and 3.",
+      "zh": "四行：0、1、2 和 3。"
+     },
+     "why": {
+      "en": "The first fork makes 2 processes. Each of them runs the second fork, so there are 4 processes. n starts at 0. The child of the first fork has n = 1. The children of the second fork add 2. The four values are 0, 1, 2 and 3.",
+      "zh": "第一次 fork 之后有 2 个进程。每个进程都会执行第二次 fork，所以一共有 4 个进程。n 开始是 0。第一次 fork 的子进程 n = 1。第二次 fork 的子进程再加 2。四个值是 0、1、2、3。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Three lines: 0, 1 and 2.",
+      "zh": "三行：0、1 和 2。"
+     },
+     "why": {
+      "en": "This counts one new process per fork call. But the child of the first fork also executes the second fork, so the count doubles each time.",
+      "zh": "这是按“每次 fork 调用增加一个进程”来数的。但第一次 fork 的子进程也会执行第二次 fork，所以进程数每次翻倍。"
+     }
+    },
+    {
+     "text": {
+      "en": "Four lines, all showing 0.",
+      "zh": "四行，全部显示 0。"
+     },
+     "why": {
+      "en": "Each process has its own copy of n, but each copy is changed inside that process. A child that runs `n = 1` or `n += 2` prints its own changed value.",
+      "zh": "每个进程都有自己的 n，但每个副本是在该进程内部被修改的。执行了 `n = 1` 或 `n += 2` 的子进程打印的是它自己修改后的值。"
+     }
+    },
+    {
+     "text": {
+      "en": "Two lines: 0 and 3.",
+      "zh": "两行：0 和 3。"
+     },
+     "why": {
+      "en": "This keeps only the first and the last process. Every process that exists at the `printf` prints a line, including the two in the middle.",
+      "zh": "这只保留了第一个和最后一个进程。到达 `printf` 的每个进程都会打印一行，中间的两个也不例外。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Draw the process tree. The original process P gets a positive pid from the first fork and keeps n = 0. Its first child C1 gets 0 from the first fork and sets n = 1. Then both of them run the second fork. The new child of P gets 0 from it, so n = 0 + 2 = 2. The new child of C1 has n = 1 + 2 = 3. P and C1 themselves keep 0 and 1. That is four processes with the values 0, 1, 2 and 3.",
+    "zh": "画出进程树。原始进程 P 在第一次 fork 中得到一个正的 pid，n 保持 0。它的第一个子进程 C1 在第一次 fork 中得到 0，并设 n = 1。然后这两个进程都执行第二次 fork。P 的新子进程在第二次 fork 中得到 0，所以 n = 0 + 2 = 2。C1 的新子进程 n = 1 + 2 = 3。P 和 C1 自己分别保持 0 和 1。一共四个进程，值为 0、1、2、3。"
+   },
+   "code": "#include <stdio.h>\n#include <unistd.h>\n\nint main(void) {\n    int n = 0;\n    pid_t a = fork();\n    if (a == 0) {\n        n = 1;\n    }\n    pid_t b = fork();\n    if (b == 0) {\n        n += 2;\n    }\n    printf(\"%d\\n\", n);\n    return 0;\n}\n",
+   "language": "c",
+   "verify_code": "#define _POSIX_C_SOURCE 200809L\n#include <stdio.h>\n#include <unistd.h>\n\nint main(void) {\n    int fd[2];\n    if (pipe(fd) != 0) {\n        return 1;\n    }\n    pid_t root = getpid();\n    int n = 0;\n    pid_t a = fork();\n    if (a == 0) {\n        n = 1;\n    }\n    pid_t b = fork();\n    if (b == 0) {\n        n += 2;\n    }\n    unsigned char c = (unsigned char)n;\n    if (write(fd[1], &c, 1) != 1) {\n        return 1;\n    }\n    if (getpid() != root) {\n        return 0;\n    }\n    close(fd[1]);\n    int count[8] = {0};\n    unsigned char got;\n    while (read(fd[0], &got, 1) == 1) {\n        count[got]++;\n    }\n    const char *sep = \"\";\n    for (int v = 0; v < 8; v++) {\n        for (int k = 0; k < count[v]; k++) {\n            printf(\"%s%d\", sep, v);\n            sep = \" \";\n        }\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+   "verify_output": "0 1 2 3\n",
+   "verify_language": "c"
+  },
+  {
+   "id": "mcq-wait-reap",
+   "kind": "mcq",
+   "topic": "exec-wait",
+   "title": {
+    "en": "One wait for three children",
+    "zh": "三个子进程只调用一次 wait"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "A parent creates three children with `fork`. Each child calls `_exit` straight away. After the loop the parent calls `wait(&st)` once, then does other work for a long time. All three children have already exited when `wait` is called.\n\nWhich statement is correct?",
+    "zh": "父进程用 `fork` 创建三个子进程，每个子进程立刻调用 `_exit`。循环之后父进程只调用一次 `wait(&st)`，然后继续做很长时间的其他工作。调用 `wait` 时三个子进程都已经退出。\n\n下面哪个说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "`wait` returns one child's status. The other two stay as zombies until the parent waits for them again (or exits).",
+      "zh": "`wait` 只返回一个子进程的状态。另外两个会一直保持僵尸状态，直到父进程再次等待它们（或者父进程退出）。"
+     },
+     "why": {
+      "en": "Each call to `wait` collects one terminated child. A terminated child that nobody has waited for keeps its process-table entry as a zombie. To reap all three, call `wait` three times, or loop until it returns -1.",
+      "zh": "每调用一次 `wait` 只回收一个已终止的子进程。没有人等待的已终止子进程会保留进程表项，成为僵尸。要回收三个，就调用三次 `wait`，或者循环到它返回 -1。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "`wait` collects all three children at once.",
+      "zh": "`wait` 一次回收所有三个子进程。"
+     },
+     "why": {
+      "en": "`wait` is not a bulk operation. It returns the pid of one child per call.",
+      "zh": "`wait` 不是批量操作，每次调用只返回一个子进程的 pid。"
+     }
+    },
+    {
+     "text": {
+      "en": "The other two children are killed when `wait` returns.",
+      "zh": "`wait` 返回时，另外两个子进程会被杀死。"
+     },
+     "why": {
+      "en": "They have already exited, and `wait` never kills anything. Their entries simply stay until someone collects them.",
+      "zh": "它们本来就已经退出了，而且 `wait` 从不杀死任何进程。它们的表项只是留在那里，直到有人回收。"
+     }
+    },
+    {
+     "text": {
+      "en": "`wait` blocks until the parent itself is finished.",
+      "zh": "`wait` 会一直阻塞，直到父进程自己结束。"
+     },
+     "why": {
+      "en": "`wait` blocks only until a child has terminated. Here children have already terminated, so it returns at once.",
+      "zh": "`wait` 只会阻塞到有子进程终止为止。这里子进程早已终止，所以它立即返回。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "A zombie is a process that has finished, whose parent has not yet read its exit status. It uses no CPU or memory except the process-table entry, but it holds a pid. A long-running parent that forks many children and forgets to wait slowly fills the table.",
+    "zh": "僵尸进程是指已经结束、但父进程还没有读取其退出状态的进程。它除了进程表项之外不占用 CPU 和内存，但仍然占着一个 pid。如果一个长期运行的父进程创建了很多子进程却不等待它们，进程表会被慢慢占满。"
+   }
+  },
+  {
+   "id": "mcq-exec-noreturn",
+   "kind": "mcq",
+   "topic": "exec-wait",
+   "title": {
+    "en": "What follows a successful exec",
+    "zh": "exec 成功之后会发生什么"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Assume `/bin/echo` exists and can run, and `execl` succeeds. What does this program write to standard output?",
+    "zh": "假设 `/bin/echo` 存在并且可以运行，`execl` 调用成功。这个程序向标准输出写出什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "A, then B",
+      "zh": "A，然后 B"
+     },
+     "why": {
+      "en": "A is written and flushed first. Then `execl` replaces the program by echo, which writes B. The new program never returns to the old code, so C is never reached.",
+      "zh": "先写出并刷新 A。然后 `execl` 用 echo 取代当前程序，echo 写出 B。新程序不会回到旧代码，所以 C 永远执行不到。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "A, then B, then C",
+      "zh": "A，然后 B，然后 C"
+     },
+     "why": {
+      "en": "This treats execl as an ordinary function call. When it succeeds, it does not return; the old program image is gone.",
+      "zh": "这是把 execl 当成了普通函数调用。成功时它不会返回，旧的程序映像已经没有了。"
+     }
+    },
+    {
+     "text": {
+      "en": "A, then C",
+      "zh": "A，然后 C"
+     },
+     "why": {
+      "en": "That is what happens only if execl fails and returns -1. Here it succeeds.",
+      "zh": "只有当 execl 失败并返回 -1 时才是这样。这里它成功了。"
+     }
+    },
+    {
+     "text": {
+      "en": "Only B",
+      "zh": "只有 B"
+     },
+     "why": {
+      "en": "The A was flushed before the exec, so it has already left the program. Only unflushed data in the old buffers would be lost.",
+      "zh": "在 exec 之前已经刷新了 A，它已经离开了程序。只有旧缓冲区里尚未刷新的数据才会丢失。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "exec does not create a process. It replaces the code, data and stack of the calling process with a new program, keeping the pid and the open file descriptors (except those marked close-on-exec). On success there is nothing to return to. Code after exec runs only when exec failed, so it usually reports the error and exits.",
+    "zh": "exec 并不创建新进程。它用新程序替换调用进程的代码、数据和栈，同时保留 pid 和已打开的文件描述符（标记了 close-on-exec 的除外）。成功时没有任何地方可以返回。exec 之后的代码只有在 exec 失败时才会运行，所以通常用来报告错误并退出。"
+   },
+   "code": "#include <stdio.h>\n#include <unistd.h>\n\nint main(void) {\n    printf(\"A\\n\");\n    fflush(stdout);\n    execl(\"/bin/echo\", \"echo\", \"B\", (char *)NULL);\n    printf(\"C\\n\");\n    return 0;\n}\n",
+   "language": "c",
+   "verify_code": "#define _POSIX_C_SOURCE 200809L\n#include <stdio.h>\n#include <unistd.h>\n\nint main(void) {\n    printf(\"A\\n\");\n    fflush(stdout);\n    execl(\"/bin/echo\", \"echo\", \"B\", (char *)NULL);\n    printf(\"C\\n\");\n    return 0;\n}\n",
+   "verify_output": "A\nB\n",
+   "verify_language": "c"
+  },
+  {
+   "id": "mcq-pipe-eof",
+   "kind": "mcq",
+   "topic": "pipes-fifos",
+   "title": {
+    "en": "A reader that never sees end of file",
+    "zh": "永远等不到文件结束的读者"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "The parent creates a pipe, then forks. The child closes `fd[1]` and reads from `fd[0]` in a loop until `read` returns 0. The parent writes \"hi\", and then calls `wait(NULL)` for the child. The parent never closes `fd[1]`.\n\nWhat happens?",
+    "zh": "父进程创建一个管道，然后 fork。子进程关闭 `fd[1]`，循环从 `fd[0]` 读取，直到 `read` 返回 0。父进程写入 \"hi\"，然后调用 `wait(NULL)` 等待子进程。父进程从未关闭 `fd[1]`。\n\n会发生什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The program hangs: the child waits for end of file, the parent waits for the child.",
+      "zh": "程序卡住：子进程等待文件结束，父进程等待子进程。"
+     },
+     "why": {
+      "en": "End of file on a pipe appears only when every write end is closed. The parent still holds one, so after \"hi\" the child's read blocks for ever, and the parent's wait blocks for the child.",
+      "zh": "管道的文件结束只有在所有写端都关闭后才会出现。父进程仍然持有一个写端，所以读完 \"hi\" 之后，子进程的 read 会永远阻塞，父进程的 wait 又在等子进程。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "The child reads \"hi\", then `read` returns 0 because the parent has written everything.",
+      "zh": "子进程读到 \"hi\" 之后 `read` 返回 0，因为父进程已经写完了。"
+     },
+     "why": {
+      "en": "A pipe does not know that the writer has finished writing. It only knows whether write ends are still open.",
+      "zh": "管道并不知道写入方是否已经写完。它只知道是否还有写端处于打开状态。"
+     }
+    },
+    {
+     "text": {
+      "en": "`read` returns -1 with the error EPIPE.",
+      "zh": "`read` 返回 -1，错误码是 EPIPE。"
+     },
+     "why": {
+      "en": "EPIPE is reported to a writer when no read end is open. A reader sees 0 at end of file, or blocks.",
+      "zh": "EPIPE 是在没有读端时报告给写入方的。读者在文件结束时看到的是 0，否则就阻塞。"
+     }
+    },
+    {
+     "text": {
+      "en": "The parent is killed by SIGPIPE when it calls `wait`.",
+      "zh": "父进程调用 `wait` 时被 SIGPIPE 杀死。"
+     },
+     "why": {
+      "en": "SIGPIPE is sent when a process writes to a pipe with no reader. Calling `wait` writes nothing, and the child holds a read end anyway.",
+      "zh": "SIGPIPE 是在向没有读者的管道写入时发出的。调用 `wait` 并不写入任何东西，而且子进程还持有读端。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Rule: after fork, each process closes the pipe ends it does not use. Here the parent should call `close(fd[1])` after writing, so the last write end disappears and the child's read returns 0.",
+    "zh": "规则：fork 之后，每个进程都要关闭自己不用的管道端。这里父进程应当在写完之后调用 `close(fd[1])`，这样最后一个写端就消失了，子进程的 read 才会返回 0。"
+   },
+   "code": "int fd[2];\npipe(fd);\nif (fork() == 0) {\n    close(fd[1]);\n    char buf[16];\n    while (read(fd[0], buf, sizeof buf) > 0) {\n        /* use the bytes */\n    }\n    _exit(0);\n}\nwrite(fd[1], \"hi\", 2);\nwait(NULL);\n",
+   "language": "c",
+   "verify_code": "#define _POSIX_C_SOURCE 200809L\n#include <errno.h>\n#include <fcntl.h>\n#include <stdio.h>\n#include <unistd.h>\n\nint main(void) {\n    int fd[2];\n    char buf[8];\n    if (pipe(fd) != 0) {\n        return 1;\n    }\n    if (write(fd[1], \"hi\", 2) != 2) {\n        return 1;\n    }\n    fcntl(fd[0], F_SETFL, O_NONBLOCK);\n    printf(\"%d\\n\", (int)read(fd[0], buf, sizeof buf));\n    ssize_t r = read(fd[0], buf, sizeof buf);\n    printf(\"%s\\n\", (r == -1 && errno == EAGAIN) ? \"block\" : \"other\");\n    close(fd[1]);\n    printf(\"%d\\n\", (int)read(fd[0], buf, sizeof buf));\n    return 0;\n}\n",
+   "verify_output": "2\nblock\n0\n",
+   "verify_language": "c"
+  },
+  {
+   "id": "mcq-signal-coalesce",
+   "kind": "mcq",
+   "topic": "signals",
+   "title": {
+    "en": "Three signals while blocked",
+    "zh": "阻塞期间收到三个信号"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "A process installs a handler for SIGUSR1 that adds 1 to `hits`. It blocks SIGUSR1 with `sigprocmask`, then the signal is sent to the process three times (here with `raise`). Finally it unblocks SIGUSR1 and prints `hits`.\n\nWhat is printed?",
+    "zh": "进程为 SIGUSR1 安装了一个处理函数，处理函数让 `hits` 加 1。进程先用 `sigprocmask` 阻塞 SIGUSR1，然后这个信号被发送给该进程三次（这里用 `raise`）。最后进程解除对 SIGUSR1 的阻塞，并打印 `hits`。\n\n打印的是什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "1",
+      "zh": "1"
+     },
+     "why": {
+      "en": "A blocked standard signal is only marked as pending. Pending is a set, not a counter, so three sends leave one mark. After unblocking, the handler runs once. (POSIX leaves repeated delivery of a blocked standard signal implementation-defined; Linux and macOS deliver it once.)",
+      "zh": "被阻塞的标准信号只是被标记为未决。未决信号集是一个集合而不是计数器，三次发送只留下一个标记。解除阻塞后，处理函数只运行一次。（POSIX 对被阻塞的标准信号重复发送是否多次递送没有规定，由实现决定；Linux 和 macOS 只递送一次。）"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "3",
+      "zh": "3"
+     },
+     "why": {
+      "en": "This assumes that signals queue up like messages. Standard signals do not; real-time signals can.",
+      "zh": "这是假定信号像消息一样排队。标准信号不会排队，实时信号才可以。"
+     }
+    },
+    {
+     "text": {
+      "en": "0",
+      "zh": "0"
+     },
+     "why": {
+      "en": "Signals that arrive while blocked are not discarded. They stay pending and are delivered when the signal is unblocked.",
+      "zh": "阻塞期间到达的信号不会被丢弃。它们保持未决，解除阻塞后会被递送。"
+     }
+    },
+    {
+     "text": {
+      "en": "The result is undefined: handlers may not be called after being blocked.",
+      "zh": "结果未定义：被阻塞过的信号不能再调用处理函数。"
+     },
+     "why": {
+      "en": "Blocking and unblocking is the standard way to defer a handler safely. Nothing is undefined here.",
+      "zh": "阻塞再解除阻塞正是安全推迟处理函数的标准方法。这里没有任何未定义行为。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Use this to remember: a signal is a flag, not a message. If you need to count events, the handler can only record that something happened, and the main code must then look at the real state (for example, wait for children in a loop). Blocking signals around a critical section is how you stop a handler from running at a bad moment.",
+    "zh": "记住：信号是一个标志，而不是一条消息。如果需要统计事件次数，处理函数只能记录“发生了某件事”，主流程再去检查真实状态（例如在循环里等待子进程）。在临界区周围阻塞信号，可以避免处理函数在不合适的时刻运行。"
+   },
+   "verify_code": "#define _POSIX_C_SOURCE 200809L\n#include <signal.h>\n#include <stdio.h>\n\nstatic volatile sig_atomic_t hits = 0;\n\nstatic void on_usr1(int sig) {\n    (void)sig;\n    hits++;\n}\n\nint main(void) {\n    struct sigaction sa;\n    sigset_t set;\n    sa.sa_handler = on_usr1;\n    sigemptyset(&sa.sa_mask);\n    sa.sa_flags = 0;\n    sigaction(SIGUSR1, &sa, NULL);\n    sigemptyset(&set);\n    sigaddset(&set, SIGUSR1);\n    sigprocmask(SIG_BLOCK, &set, NULL);\n    raise(SIGUSR1);\n    raise(SIGUSR1);\n    raise(SIGUSR1);\n    sigprocmask(SIG_UNBLOCK, &set, NULL);\n    printf(\"%d\\n\", (int)hits);\n    return 0;\n}\n",
+   "verify_output": "1\n",
+   "verify_language": "c"
+  },
+  {
+   "id": "mcq-condvar-while",
+   "kind": "mcq",
+   "topic": "condition-variables",
+   "title": {
+    "en": "Why a while loop around the wait",
+    "zh": "为什么 wait 外面要用 while 循环"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Several consumer threads run this code to take one item from a shared counter `count`. Producers increase `count` under the same mutex and call `pthread_cond_signal`.\n\nWhy is the wait inside `while (count == 0)` and not inside `if (count == 0)`?",
+    "zh": "多个消费者线程运行下面的代码，从共享计数器 `count` 中取走一个项目。生产者在同一个互斥锁下增加 `count`，并调用 `pthread_cond_signal`。\n\n为什么 wait 要放在 `while (count == 0)` 里，而不是 `if (count == 0)` 里？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "When `pthread_cond_wait` returns, the condition may be false again: the wake-up may be spurious, or another consumer may have taken the item first. The thread must test again while holding the mutex.",
+      "zh": "`pthread_cond_wait` 返回时条件可能又变回假：唤醒可能是虚假的，也可能另一个消费者先把项目取走了。线程必须在持有互斥锁的情况下重新检查。"
+     },
+     "why": {
+      "en": "A wake-up only says \"the condition might be true\". The thread must lock the mutex again to return, and by then the state may have changed. Re-checking in a loop makes the code correct in every case.",
+      "zh": "唤醒只表示“条件可能为真”。线程必须重新获得互斥锁才能返回，而此时状态可能已经变了。在循环里重新检查，才能保证各种情况下代码都正确。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "`pthread_cond_wait` releases the mutex only on the first iteration, so a loop is needed to release it again.",
+      "zh": "`pthread_cond_wait` 只在第一次迭代时释放互斥锁，所以需要循环来再次释放。"
+     },
+     "why": {
+      "en": "Each call to `pthread_cond_wait` atomically unlocks the mutex and sleeps, and locks it again before returning. The loop has nothing to do with that.",
+      "zh": "每次调用 `pthread_cond_wait` 都会原子地解锁并睡眠，返回前再重新加锁。循环与此无关。"
+     }
+    },
+    {
+     "text": {
+      "en": "A `while` loop is faster than `if` because it avoids the system call.",
+      "zh": "`while` 循环比 `if` 快，因为它避免了系统调用。"
+     },
+     "why": {
+      "en": "The loop adds no speed. It can make the thread call `pthread_cond_wait` more than once.",
+      "zh": "循环不会更快，反而可能让线程多次调用 `pthread_cond_wait`。"
+     }
+    },
+    {
+     "text": {
+      "en": "`pthread_cond_signal` wakes every waiting thread, so each of them must loop until it can run alone.",
+      "zh": "`pthread_cond_signal` 会唤醒所有等待的线程，所以每个线程都要循环，直到可以独自运行。"
+     },
+     "why": {
+      "en": "`pthread_cond_signal` wakes at least one waiter (`pthread_cond_broadcast` wakes all). Even with one woken thread, the loop is still needed for the reasons above.",
+      "zh": "`pthread_cond_signal` 至少唤醒一个等待者（`pthread_cond_broadcast` 才唤醒全部）。即使只唤醒一个线程，前面所说的原因也使循环必不可少。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "The standard pattern is: lock; while (!predicate) wait; use the shared state; unlock. The predicate is the truth; the signal is only a hint.",
+    "zh": "标准写法是：加锁；while (!条件) wait；使用共享状态；解锁。真正的依据是条件本身，信号只是一个提示。"
+   },
+   "code": "pthread_mutex_lock(&m);\nwhile (count == 0) {\n    pthread_cond_wait(&cv, &m);\n}\ncount--;\npthread_mutex_unlock(&m);\n",
+   "language": "c"
+  },
+  {
+   "id": "mcq-deadlock-order",
+   "kind": "mcq",
+   "topic": "deadlock-progress",
+   "title": {
+    "en": "Which change makes the deadlock impossible",
+    "zh": "哪种改动可以彻底避免死锁"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Thread 1 locks A, then B, does its work, then unlocks both. Thread 2 locks B, then A, does its work, then unlocks both. The work needs both mutexes held. Sometimes the program hangs.\n\nWhich change makes the deadlock impossible while keeping the work protected?",
+    "zh": "线程 1 先锁 A，再锁 B，做完工作后解锁两者。线程 2 先锁 B，再锁 A，做完工作后解锁两者。工作需要同时持有两个互斥锁。程序有时会卡住。\n\n下面哪种改动能在保持工作受保护的前提下彻底避免死锁？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Change thread 2 to lock A first and then B, so both threads use the same global order.",
+      "zh": "把线程 2 改成先锁 A 再锁 B，让两个线程使用同一个全局顺序。"
+     },
+     "why": {
+      "en": "With one fixed order, a cycle of waiting threads cannot form. Whoever holds A is the only one that may ask for B, and B's holder never waits for A.",
+      "zh": "有了统一的固定顺序，就不可能形成等待环。持有 A 的线程才可能去申请 B，而持有 B 的线程不会再等 A。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Insert a one-second `sleep` before each second lock.",
+      "zh": "在每个线程的第二次加锁之前插入一秒 `sleep`。"
+     },
+     "why": {
+      "en": "Sleeping changes the timing, not the structure. Both threads can still end up holding one lock each; it only becomes less likely.",
+      "zh": "sleep 只改变时间，不改变结构。两个线程仍然可能各持有一个锁，只是概率变小了。"
+     }
+    },
+    {
+     "text": {
+      "en": "Make each thread unlock its first mutex before taking the second one.",
+      "zh": "让每个线程在获取第二个互斥锁之前先释放第一个。"
+     },
+     "why": {
+      "en": "That removes hold-and-wait, but the work then runs without the first mutex held, so the shared state is no longer protected.",
+      "zh": "这样确实消除了“持有并等待”，但工作就在没有持有第一个锁的情况下运行，共享状态也就不再受保护。"
+     }
+    },
+    {
+     "text": {
+      "en": "Use `pthread_mutex_trylock` for the second lock and run the work anyway if it fails.",
+      "zh": "第二次加锁用 `pthread_mutex_trylock`，失败了也照样执行工作。"
+     },
+     "why": {
+      "en": "Running the work without the lock breaks mutual exclusion and brings back data races.",
+      "zh": "没有持有锁就执行工作，会破坏互斥，并重新引入数据竞争。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "A deadlock needs four things at once: mutual exclusion, hold-and-wait, no preemption, and a circular wait. A fixed lock order breaks the circular wait, which is the cheapest condition to break. If you must lock mutexes in a data-dependent order (for example two accounts), sort them first, for example by address or id.",
+    "zh": "死锁需要同时满足四个条件：互斥、持有并等待、不可抢占、循环等待。固定的加锁顺序打破的是循环等待，这是代价最小的做法。如果必须按依赖于数据的顺序加锁（例如两个账户），就先排序，例如按地址或编号。"
+   }
+  },
+  {
+   "id": "mcq-header-definition",
+   "kind": "mcq",
+   "topic": "compilation-linkage",
+   "title": {
+    "en": "A function defined in a header",
+    "zh": "定义在头文件里的函数"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "The header `util.h` contains this definition, with no `static` and no `inline`:\n\n    int twice(int x) { return 2 * x; }\n\nBoth `a.c` and `b.c` include `util.h` and call `twice`. Each file compiles without error on its own. The two object files are then linked into one program.\n\nWhat happens?",
+    "zh": "头文件 `util.h` 中有下面这个定义，没有 `static`，也没有 `inline`：\n\n    int twice(int x) { return 2 * x; }\n\n`a.c` 和 `b.c` 都包含 `util.h` 并调用 `twice`。每个文件单独编译都没有错误。然后两个目标文件被链接成一个程序。\n\n会发生什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The linker reports that `twice` is defined more than once.",
+      "zh": "链接器报告 `twice` 被定义了多次。"
+     },
+     "why": {
+      "en": "#include pastes the header text into each source file, so each object file contains its own external definition of `twice`. A program may have only one definition of an external function.",
+      "zh": "#include 把头文件的文字粘贴进每个源文件，所以每个目标文件都包含一份 `twice` 的外部定义。一个程序中同一个外部函数只能有一个定义。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "The program links and each file gets its own private copy of `twice`.",
+      "zh": "程序链接成功，每个文件都有自己私有的 `twice`。"
+     },
+     "why": {
+      "en": "Only a `static` function would be private to its file. Without `static` the name has external linkage, and the two copies clash.",
+      "zh": "只有 `static` 函数才是文件私有的。没有 `static` 时这个名字具有外部链接，两份定义会冲突。"
+     }
+    },
+    {
+     "text": {
+      "en": "The compiler reports a redefinition error when it compiles `b.c`.",
+      "zh": "编译 `b.c` 时编译器报告重复定义错误。"
+     },
+     "why": {
+      "en": "Each .c file is compiled separately, and in each of them `twice` appears once. The clash only becomes visible when the objects are combined.",
+      "zh": "每个 .c 文件是单独编译的，在其中 `twice` 都只出现一次。只有把目标文件合在一起时冲突才会显现。"
+     }
+    },
+    {
+     "text": {
+      "en": "The program links, and each call reaches one of the two copies at random.",
+      "zh": "程序链接成功，每次调用随机落到两份副本之一。"
+     },
+     "why": {
+      "en": "The linker never links two definitions of one external name. There is no random choice.",
+      "zh": "链接器不会接受同一个外部名字的两个定义，也不存在随机选择。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Put declarations in headers and definitions in exactly one .c file. If a small function must live in a header, make it `static` (or `static inline`): then each translation unit has its own private copy and the linker sees no clash.",
+    "zh": "头文件中放声明，定义只放在一个 .c 文件里。如果一个小函数必须放在头文件里，就把它写成 `static`（或 `static inline`）：这样每个翻译单元都有自己的私有副本，链接器就看不到冲突。"
+   },
+   "verify_code": "import pathlib\nimport shutil\nimport subprocess\nimport tempfile\n\nCC = shutil.which('clang') or shutil.which('cc')\n\n\ndef build(header):\n    with tempfile.TemporaryDirectory() as tmp:\n        d = pathlib.Path(tmp)\n        (d / 'util.h').write_text(header)\n        (d / 'a.c').write_text('#include \"util.h\"\\nint a_val(void) { return twice(2); }\\n')\n        (d / 'b.c').write_text('#include \"util.h\"\\nint b_val(void) { return twice(3); }\\n')\n        (d / 'main.c').write_text('#include <stdio.h>\\nint a_val(void);\\nint b_val(void);\\nint main(void) { printf(\"%d %d\\\\n\", a_val(), b_val()); return 0; }\\n')\n        for name in ('a', 'b', 'main'):\n            done = subprocess.run([CC, '-std=c11', '-c', name + '.c', '-o', name + '.o'], cwd=d, capture_output=True, text=True)\n            assert done.returncode == 0, done.stderr\n        done = subprocess.run([CC, 'a.o', 'b.o', 'main.o', '-o', 'prog'], cwd=d, capture_output=True, text=True)\n        if done.returncode != 0:\n            return 'link error'\n        return subprocess.run(['./prog'], cwd=d, capture_output=True, text=True).stdout.strip()\n\n\nprint('plain:', build('int twice(int x) { return 2 * x; }\\n'))\nprint('static:', build('static int twice(int x) { return 2 * x; }\\n'))\n",
+   "verify_output": "plain: link error\nstatic: 4 6\n",
+   "verify_language": "python"
+  },
+  {
+   "id": "mcq-macro-precedence",
+   "kind": "mcq",
+   "topic": "preprocessing",
+   "title": {
+    "en": "A macro with half its parentheses",
+    "zh": "只加了一半括号的宏"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "What does this program print?",
+    "zh": "这个程序输出什么？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "60",
+      "zh": "60"
+     },
+     "why": {
+      "en": "The preprocessor only replaces text. `60 / SQUARE(3)` becomes `60 / (3) * (3)`. Division and multiplication group from left to right: (60 / 3) * 3 = 60.",
+      "zh": "预处理器只做文本替换。`60 / SQUARE(3)` 变成 `60 / (3) * (3)`。除法和乘法从左向右结合：(60 / 3) * 3 = 60。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "6",
+      "zh": "6"
+     },
+     "why": {
+      "en": "This is what a function would give: 60 / (3 * 3). A macro does not wrap its result in parentheses unless you write them.",
+      "zh": "这是函数调用会得到的结果：60 / (3 * 3)。宏不会自动给结果加括号，除非你自己写上。"
+     }
+    },
+    {
+     "text": {
+      "en": "20",
+      "zh": "20"
+     },
+     "why": {
+      "en": "This stops after 60 / 3. The multiplication by (3) still follows.",
+      "zh": "这只算到 60 / 3。后面还要乘以 (3)。"
+     }
+    },
+    {
+     "text": {
+      "en": "The program does not compile.",
+      "zh": "程序无法编译。"
+     },
+     "why": {
+      "en": "The expanded text `60 / (3) * (3)` is perfectly valid C.",
+      "zh": "展开后的文字 `60 / (3) * (3)` 是完全合法的 C 代码。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Parenthesise each use of a parameter and the whole replacement text: `#define SQUARE(x) ((x) * (x))`. With that, `60 / SQUARE(3)` expands to `60 / ((3) * (3))`, which is 6. Even then, a call like `SQUARE(i++)` evaluates its argument twice, so avoid side effects in macro arguments.",
+    "zh": "给参数的每次使用加括号，并给整个替换文字加括号：`#define SQUARE(x) ((x) * (x))`。这样 `60 / SQUARE(3)` 展开为 `60 / ((3) * (3))`，结果是 6。即使这样，`SQUARE(i++)` 这样的调用也会对参数求值两次，所以宏的参数不要有副作用。"
+   },
+   "code": "#include <stdio.h>\n\n#define SQUARE(x) (x) * (x)\n\nint main(void) {\n    printf(\"%d\\n\", 60 / SQUARE(3));\n    return 0;\n}\n",
+   "language": "c",
+   "verify_code": "#include <stdio.h>\n\n#define SQUARE(x) (x) * (x)\n\nint main(void) {\n    printf(\"%d\\n\", 60 / SQUARE(3));\n    return 0;\n}\n",
+   "verify_output": "60\n",
+   "verify_language": "c"
+  },
+  {
+   "id": "mcq-ub-which",
+   "kind": "mcq",
+   "topic": "representation-control",
+   "title": {
+    "en": "Which line is well defined",
+    "zh": "哪一行的行为是有定义的"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Assume `int` is 32 bits. Exactly one of the following code fragments has fully defined behaviour. Which one?",
+    "zh": "假设 `int` 是 32 位。下面的代码片段中，只有一个的行为是完全有定义的。是哪一个？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "`unsigned u = 0; u = u - 1;`",
+      "zh": "`unsigned u = 0; u = u - 1;`"
+     },
+     "why": {
+      "en": "Unsigned arithmetic wraps modulo 2^32, by definition. The result is UINT_MAX.",
+      "zh": "无符号运算按定义是对 2^32 取模回绕的。结果是 UINT_MAX。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "`int i = INT_MAX; i = i + 1;`",
+      "zh": "`int i = INT_MAX; i = i + 1;`"
+     },
+     "why": {
+      "en": "Signed overflow is undefined behaviour. The compiler may assume it never happens.",
+      "zh": "有符号整数溢出是未定义行为。编译器可以假定它永远不会发生。"
+     }
+    },
+    {
+     "text": {
+      "en": "`int a[3] = {1, 2, 3}; int v = a[3];`",
+      "zh": "`int a[3] = {1, 2, 3}; int v = a[3];`"
+     },
+     "why": {
+      "en": "Valid indexes are 0 to 2. Reading a[3] is outside the array.",
+      "zh": "合法下标是 0 到 2。读取 a[3] 超出了数组范围。"
+     }
+    },
+    {
+     "text": {
+      "en": "`char *s = \"hi\"; s[0] = 'H';`",
+      "zh": "`char *s = \"hi\"; s[0] = 'H';`"
+     },
+     "why": {
+      "en": "Changing a string literal is undefined behaviour; the literal may be in read-only memory. `char s[] = \"hi\";` would be fine.",
+      "zh": "修改字符串字面量是未定义行为，字面量可能位于只读内存中。写成 `char s[] = \"hi\";` 才没有问题。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Undefined behaviour is not \"an error you will see\". The program may appear to work, give a wrong answer, or crash, and a different compiler or optimisation level may change that. Learn the usual sources: signed overflow, out-of-bounds access, using a freed or uninitialised pointer, writing to a literal, and data races.",
+    "zh": "未定义行为并不是“你一定会看到的错误”。程序可能看起来正常，也可能给出错误答案或崩溃，换一个编译器或优化级别结果还可能不同。要记住常见的来源：有符号溢出、越界访问、使用已释放或未初始化的指针、写字符串字面量，以及数据竞争。"
+   },
+   "verify_code": "#include <limits.h>\n#include <stdio.h>\n\nint main(void) {\n    unsigned u = 0;\n    u = u - 1;\n    printf(\"%d\\n\", u == UINT_MAX);\n    return 0;\n}\n",
+   "verify_output": "1\n",
+   "verify_language": "c"
+  },
+  {
+   "id": "mcq-thread-arg",
+   "kind": "mcq",
+   "topic": "thread-lifecycle",
+   "title": {
+    "en": "Passing the loop variable to threads",
+    "zh": "把循环变量传给线程"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Each thread runs `worker`, which reads `*(int *)arg` and prints it. The main thread then joins all three threads.\n\nWhat is wrong with this program?",
+    "zh": "每个线程运行 `worker`，它读取 `*(int *)arg` 并打印。主线程随后等待所有三个线程结束。\n\n这个程序有什么问题？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "All three threads receive the address of the same variable `i`, which the loop keeps changing and which stops existing when the loop ends. A thread may read the wrong value or a dead variable.",
+      "zh": "三个线程收到的是同一个变量 `i` 的地址，而循环不断修改它，循环结束后它就不再存在了。线程可能读到错误的值，或者读到已经不存在的变量。"
+     },
+     "why": {
+      "en": "pthread_create passes the pointer itself, not a copy of what it points to. Each thread needs storage that is its own and lives until the thread has read it, for example an array `int ids[3]`.",
+      "zh": "pthread_create 传递的是指针本身，而不是它所指内容的副本。每个线程需要属于自己、并且在线程读取完之前一直存在的存储，例如数组 `int ids[3]`。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Nothing: `pthread_create` copies the argument, so each thread has its own `i`.",
+      "zh": "没有问题：`pthread_create` 会复制参数，所以每个线程都有自己的 `i`。"
+     },
+     "why": {
+      "en": "It copies the pointer value (the address), not the int. All copies lead to the same variable.",
+      "zh": "它复制的是指针的值（地址），而不是那个 int。所有副本都指向同一个变量。"
+     }
+    },
+    {
+     "text": {
+      "en": "`pthread_create` cannot take the address of a local variable; the argument must be a global.",
+      "zh": "`pthread_create` 不能接受局部变量的地址，参数必须是全局变量。"
+     },
+     "why": {
+      "en": "The address of a local variable is allowed, as long as the variable is still alive when the thread uses it. Here it is not.",
+      "zh": "局部变量的地址是允许的，前提是线程使用时这个变量还活着。这里的问题正是它活不到那时。"
+     }
+    },
+    {
+     "text": {
+      "en": "The joins must come before the creates, or the threads never start.",
+      "zh": "`pthread_join` 必须放在 `pthread_create` 之前，否则线程不会启动。"
+     },
+     "why": {
+      "en": "A thread starts when it is created. Join only waits for it to finish.",
+      "zh": "线程在创建时就启动了。join 只是等待它结束。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Two rules for thread arguments: the object must outlive the thread's use of it, and each thread must get its own object if it is going to read different data. A heap-allocated argument that the thread frees, or an array indexed by thread number, both follow these rules.",
+    "zh": "线程参数的两条规则：被传递的对象必须比线程使用它的时间活得更久；如果线程要读取不同的数据，每个线程都必须拿到属于自己的对象。由线程自己释放的堆上参数，或者按线程编号索引的数组，都符合这两条规则。"
+   },
+   "code": "void *worker(void *arg) {\n    printf(\"%d\\n\", *(int *)arg);\n    return NULL;\n}\n\n/* in main */\npthread_t t[3];\nfor (int i = 0; i < 3; i++) {\n    pthread_create(&t[i], NULL, worker, &i);\n}\nfor (int i = 0; i < 3; i++) {\n    pthread_join(t[i], NULL);\n}\n",
+   "language": "c"
+  },
+  {
+   "id": "mcq-amdahl",
+   "kind": "mcq",
+   "topic": "parallel-performance",
+   "title": {
+    "en": "Speedup when part of the work is serial",
+    "zh": "部分工作无法并行时的加速比"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "On one core a program takes 100 seconds. 25 of those seconds are spent in a part that cannot be run in parallel. The other 75 seconds scale perfectly over any number of cores. Ignore all overhead.\n\nWhat is the best speedup on 4 cores, to two decimal places?",
+    "zh": "一个程序在单核上运行需要 100 秒，其中 25 秒花在无法并行的部分上。其余 75 秒可以完美地扩展到任意多个核心。忽略所有开销。\n\n在 4 个核心上，最好的加速比是多少（保留两位小数）？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "2.29",
+      "zh": "2.29"
+     },
+     "why": {
+      "en": "Time on 4 cores = 25 + 75 / 4 = 43.75 seconds. Speedup = 100 / 43.75 = 2.29.",
+      "zh": "4 核时间 = 25 + 75 / 4 = 43.75 秒。加速比 = 100 / 43.75 = 2.29。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "4.00",
+      "zh": "4.00"
+     },
+     "why": {
+      "en": "That would need all of the program to speed up. The serial 25 seconds stay 25 seconds.",
+      "zh": "那需要整个程序都被加速。串行的 25 秒仍然是 25 秒。"
+     }
+    },
+    {
+     "text": {
+      "en": "3.00",
+      "zh": "3.00"
+     },
+     "why": {
+      "en": "This subtracts one core for the serial part. Amdahl's law divides only the parallel time, it does not remove a core.",
+      "zh": "这是为串行部分减去了一个核心。阿姆达尔定律只把并行时间除以核心数，并不是去掉一个核心。"
+     }
+    },
+    {
+     "text": {
+      "en": "1.33",
+      "zh": "1.33"
+     },
+     "why": {
+      "en": "This is 100 / 75: it drops the 25 serial seconds instead of keeping them, and never divides the 75 parallel seconds by 4.",
+      "zh": "这是 100 / 75：它把 25 秒的串行部分去掉了，却没有把 75 秒的并行部分除以 4。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Speedup = 1 / (s + (1 - s) / p), where s = 0.25 is the serial fraction and p = 4. This gives 1 / (0.25 + 0.1875) = 2.29. With unlimited cores the speedup tends to 1 / s = 4, never more. The serial part, not the number of cores, sets the limit.",
+    "zh": "加速比 = 1 / (s + (1 - s) / p)，其中串行比例 s = 0.25，核心数 p = 4。得到 1 / (0.25 + 0.1875) = 2.29。核心数无限多时，加速比趋向 1 / s = 4，不可能更高。决定上限的是串行部分，而不是核心数。"
+   },
+   "verify_code": "print(round(1 / (0.25 + 0.75 / 4), 2))\n",
+   "verify_output": "2.29\n",
+   "verify_language": "python"
+  },
+  {
+   "id": "short-transfer-locks",
+   "kind": "short",
+   "topic": "data-races-mutexes",
+   "title": {
+    "en": "A lock protocol for bank transfers",
+    "zh": "银行转账的加锁协议"
+   },
+   "marks": 8,
+   "minutes": 8,
+   "prompt": {
+    "en": "A bank program keeps its accounts in an array. Account `i` is `accounts[i]`, with a `balance` and its own mutex `lock`. Many threads call `transfer(from, to, amount)` at the same time.\n\nThe rules: a balance is never read or written without its lock; the total money never changes; a balance never goes below 0 (a transfer that would do that is refused and changes nothing).\n\n(a) Describe the locking protocol that `transfer` follows: which locks it takes, in which order, and what it does while it holds them.\n(b) Explain why two transfers running at the same moment, 0 to 1 and 1 to 0, cannot deadlock under your protocol.\n(c) What special case must `transfer` handle when `from` equals `to`, and why?",
+    "zh": "一个银行程序把账户放在数组里。账户 `i` 是 `accounts[i]`，有一个 `balance` 和它自己的互斥锁 `lock`。很多线程同时调用 `transfer(from, to, amount)`。\n\n规则：不持有锁就不能读写余额；总金额不能改变；余额不能小于 0（会导致这种结果的转账要被拒绝，并且什么都不改）。\n\n（a）描述 `transfer` 遵循的加锁协议：取哪些锁、按什么顺序取、持有锁时做什么。\n（b）解释在你的协议下，同时进行的两笔转账（0 转 1 和 1 转 0）为什么不会死锁。\n（c）当 `from` 等于 `to` 时，`transfer` 必须处理什么特殊情况，为什么？"
+   },
+   "solution": {
+    "en": "(a) Protocol. 1. If from == to, return without locking anything (see (c)). 2. Let first be the smaller of the two ids and second the larger. Lock accounts[first].lock, then accounts[second].lock. 3. While holding both locks, check that accounts[from].balance >= amount. If not, unlock both and report failure. Otherwise subtract amount from the source and add it to the destination. 4. Unlock both locks and report success.\n\nBoth locks are held across the check and the update. If the lock were dropped between them, another thread could change the balance after the check and the account could go negative (a check-then-act race). Holding both also means no other thread can see the money \"in the air\", so the total looks constant.\n\n(b) Every thread takes the lock of the smaller id first. Transfer 0 to 1 and transfer 1 to 0 both ask for account 0 first. Whoever gets it then asks for account 1, which nobody holds while waiting for account 0, so it succeeds. The other one simply waits for account 0. A deadlock needs a cycle: one thread holds a larger id and waits for a smaller one. Under a fixed order no thread ever does that, so there is no cycle. The deadlock condition that is broken is the circular wait.\n\n(c) For from == to the protocol would lock the same mutex twice. A normal (non-recursive) mutex locked twice by the same thread deadlocks or is undefined. So the function must detect it and return (the transfer is a no-op), or lock only once.",
+    "zh": "（a）协议。1. 如果 from == to，不加任何锁直接返回（见（c））。2. 令 first 为两个编号中较小的，second 为较大的。先锁 accounts[first].lock，再锁 accounts[second].lock。3. 持有两把锁时，检查 accounts[from].balance >= amount。不满足就解锁两把锁并报告失败；满足就从源账户减去 amount，加到目标账户。4. 解开两把锁并报告成功。\n\n检查和更新期间两把锁一直被持有。如果在两者之间放掉锁，别的线程可能在检查之后改变余额，账户就可能变成负数（先检查后执行的竞争）。同时持有两把锁还意味着其他线程看不到“悬在半空”的钱，总金额看起来始终不变。\n\n（b）每个线程都先取编号较小的账户的锁。0 转 1 和 1 转 0 都先申请账户 0。拿到它的线程接着申请账户 1，而账户 1 并没有被谁持有着去等账户 0，所以申请成功。另一个线程只是在等账户 0。死锁需要一个环：某个线程持有较大编号的锁，却在等较小编号的锁。在固定顺序下没有线程会这样做，所以不存在环。被打破的死锁条件是循环等待。\n\n（c）当 from == to 时，协议会对同一个互斥锁加锁两次。普通（非递归）互斥锁被同一个线程锁两次，会死锁或者行为未定义。所以函数必须检测这种情况并直接返回（转账相当于什么都不做，是空操作），或者只加一次锁。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "One lock per account, and both locks are held across the balance check and the update (no gap between check and act).",
+      "zh": "每个账户一把锁，并且余额检查和更新期间两把锁都被持有（检查与执行之间没有空隙）。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "A fixed global order: always lock the smaller id first, then the larger.",
+      "zh": "固定的全局顺序：总是先锁编号较小的，再锁较大的。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Refuses the transfer when the balance is too small, unlocking both locks and changing nothing.",
+      "zh": "余额不足时拒绝转账，解开两把锁，且不改变任何东西。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Argues that no circular wait can form: all threads acquire in increasing id order, and 0-to-1 and 1-to-0 both start with account 0.",
+      "zh": "论证不可能出现循环等待：所有线程都按编号递增的顺序申请，0 转 1 与 1 转 0 都从账户 0 开始。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Handles from == to without locking the same mutex twice.",
+      "zh": "处理 from == to 的情况，不会对同一个互斥锁加锁两次。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Locking `from` first and `to` second. Two opposite transfers then lock in opposite orders and can deadlock.",
+     "zh": "先锁 `from` 再锁 `to`。两个方向相反的转账会以相反的顺序加锁，可能死锁。"
+    },
+    {
+     "en": "Unlocking between the check and the update. Another thread can drain the account in the gap.",
+     "zh": "在检查和更新之间解锁。别的线程可以在这个空隙里把账户取空。"
+    },
+    {
+     "en": "Forgetting to unlock on the refusal path, so the accounts stay locked for ever.",
+     "zh": "拒绝转账的路径上忘了解锁，账户就永远被锁住。"
+    },
+    {
+     "en": "Using one global lock and claiming it is a per-account protocol. It is correct but serialises all transfers.",
+     "zh": "用一把全局锁，却说这是按账户加锁的协议。它是正确的，但会让所有转账串行执行。"
+    }
+   ]
+  },
+  {
+   "id": "short-static-buffer-race",
+   "kind": "short",
+   "topic": "thread-safe-design",
+   "title": {
+    "en": "A helper that shares one buffer",
+    "zh": "共享同一个缓冲区的辅助函数"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "prompt": {
+    "en": "Mia writes this helper. Two threads run at the same time: thread 1 executes `puts(describe(1))` and thread 2 executes `puts(describe(2))`.\n\n(a) Give one interleaving of the two threads after which the program prints \"item #2\" twice. Say what is shared.\n(b) Mia wraps the `snprintf` call inside `describe` in a mutex. Does that fix the problem? Explain.\n(c) Redesign the function so that it is safe to call from many threads. Give the new prototype and say who owns the memory.",
+    "zh": "Mia 写了下面这个辅助函数。两个线程同时运行：线程 1 执行 `puts(describe(1))`，线程 2 执行 `puts(describe(2))`。\n\n（a）给出一种两个线程的交错执行顺序，使得程序两次都打印 \"item #2\"。说明共享的是什么。\n（b）Mia 把 `describe` 里的 `snprintf` 调用用互斥锁包起来。这样能解决问题吗？请解释。\n（c）重新设计这个函数，使它可以被许多线程安全调用。给出新的函数原型，并说明谁拥有这块内存。"
+   },
+   "solution": {
+    "en": "(a) The shared object is the static array buf: there is only one copy, no matter how many threads call the function. Interleaving: thread 1 runs snprintf, so buf holds \"item #1\", and describe returns the pointer buf. Before thread 1 reaches puts, thread 2 runs snprintf and overwrites buf with \"item #2\". Now thread 1 calls puts(buf), then thread 2 calls puts(buf). Both print \"item #2\". If a write is half done when the other thread reads, the output can even be garbled. Unsynchronised access to the same object by two threads, where one writes, is a data race, and the behaviour is undefined.\n\n(b) No. The mutex only protects the snprintf call. It is released when snprintf finishes, but the caller still holds the pointer buf and reads it afterwards, with no lock. The returned pointer lets the shared state escape from the protected region. The problem is the interface, not a missing lock inside.\n\n(c) Make the storage belong to the caller. For example `void describe_r(int n, char *out, size_t cap)` writes into a buffer that the calling thread owns (for example a local array on its own stack). Each thread uses its own buffer, so nothing is shared. Other valid designs: return a freshly malloc'd string and let the caller free it, or keep the static buffer but make it thread-local (`_Thread_local`), which gives each thread its own copy that stays valid until that thread's next call. The first design is the clearest, because ownership and lifetime are visible in the prototype.",
+    "zh": "（a）共享的对象是静态数组 buf：不管有多少线程调用这个函数，它都只有一份。交错顺序：线程 1 执行 snprintf，buf 里是 \"item #1\"，函数返回指针 buf。在线程 1 执行到 puts 之前，线程 2 执行 snprintf，把 buf 覆盖成 \"item #2\"。随后线程 1 调用 puts(buf)，线程 2 也调用 puts(buf)。两次都打印 \"item #2\"。如果一个写入进行到一半时另一个线程来读，输出甚至可能是乱码。两个线程对同一个对象进行无同步的访问且其中一个在写，就是数据竞争，行为未定义。\n\n（b）不能。互斥锁只保护 snprintf 这一次调用。snprintf 结束时锁就被释放了，而调用者仍然持有指针 buf，并在之后没有加锁的情况下读取它。返回的指针让共享状态逃出了受保护的区域。问题出在接口设计上，而不是函数内部少了一把锁。\n\n（c）让存储归调用者所有。例如 `void describe_r(int n, char *out, size_t cap)`，把结果写进调用线程自己拥有的缓冲区（例如它自己栈上的局部数组）。每个线程使用自己的缓冲区，就没有任何东西被共享。其他可行的设计：返回一个新 malloc 的字符串，由调用者 free；或者保留静态缓冲区但把它改成线程局部的（`_Thread_local`），这样每个线程有自己的一份，在该线程下一次调用之前一直有效。第一种设计最清楚，因为所有权和生命周期在原型里就看得见。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Names the shared object (the one static buffer) and gives a valid interleaving: both writes happen before either puts.",
+      "zh": "指出共享对象（那一个静态缓冲区），并给出有效的交错顺序：两次写入都发生在任何一次 puts 之前。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Calls it a data race on mutable static state, with undefined behaviour or wrong output.",
+      "zh": "指出这是对可变静态状态的数据竞争，行为未定义或输出错误。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains why a mutex inside the function is not enough: the returned pointer is used after the lock is released.",
+      "zh": "解释为什么函数内部加锁还不够：返回的指针在锁释放之后才被使用。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Gives a redesign without shared storage: caller-owned buffer, heap string returned to the caller, or a thread-local buffer.",
+      "zh": "给出不共享存储的重新设计：调用者拥有的缓冲区、返回给调用者的堆字符串，或线程局部缓冲区。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Saying `volatile` or a smaller buffer fixes it. Neither stops two threads sharing one array.",
+     "zh": "说加 `volatile` 或缩小缓冲区就能解决。两者都不能阻止两个线程共用一个数组。"
+    },
+    {
+     "en": "Thinking the problem only occurs on a multi-core machine. A thread switch between snprintf and puts causes it on one core too.",
+     "zh": "以为只有多核机器上才会出问题。在 snprintf 和 puts 之间发生线程切换，单核上同样会出错。"
+    },
+    {
+     "en": "Locking inside describe and calling it done. The pointer leaves the protected region.",
+     "zh": "只在 describe 内部加锁就认为结束了。指针已经离开了受保护的区域。"
+    },
+    {
+     "en": "Redesigning but still returning a pointer into a static array.",
+     "zh": "重新设计了，却仍然返回指向静态数组的指针。"
+    }
+   ],
+   "code": "#include <stdio.h>\n\nconst char *describe(int n) {\n    static char buf[32];\n    snprintf(buf, sizeof buf, \"item #%d\", n);\n    return buf;\n}\n",
+   "language": "c"
+  },
+  {
+   "id": "short-leak-hunt",
+   "kind": "short",
+   "topic": "allocation-ownership",
+   "title": {
+    "en": "Find every leak and the double free",
+    "zh": "找出所有泄漏和重复释放"
+   },
+   "marks": 7,
+   "minutes": 7,
+   "prompt": {
+    "en": "The program below reads the first line of a file into a new heap string. Assume the files open or fail to open at random, and that `malloc` and `fgets` can fail too.\n\n(a) List every line where memory or a file handle is leaked, or where memory is freed twice. For each, say which resource is affected.\n(b) Write a corrected `read_first_line` in which every path releases what it acquired.\n(c) State the ownership rule that `main` must follow for the string it receives.",
+    "zh": "下面的程序把一个文件的第一行读进新的堆字符串。假设文件可能打开成功也可能失败，并且 `malloc` 和 `fgets` 也可能失败。\n\n（a）列出所有发生内存或文件句柄泄漏、或者内存被重复释放的行。每一处都要说明受影响的是哪个资源。\n（b）写出修正后的 `read_first_line`，使每条路径都会释放自己获得的资源。\n（c）说明 `main` 对收到的字符串必须遵守的所有权规则。"
+   },
+   "solution": {
+    "en": "(a) Line 12: `return NULL` after `malloc` failed. The file handle f is still open: leaked. Line 15: `return NULL` after `fgets` failed. Both the block buf and the file handle f are leaked. Line 25: `name` is overwritten with a new result while the first string is still in it. If the first call succeeded, that block can no longer be reached and is leaked. Line 28: if the second call succeeded, the second `free(name)` frees a block that is already freed: a double free, which is undefined behaviour (if `name` is NULL, `free` does nothing).\n\n(b) Release on every path:\n\nchar *read_first_line(const char *path) {\n    FILE *f = fopen(path, \"r\");\n    if (f == NULL) {\n        return NULL;\n    }\n    char *buf = malloc(64);\n    if (buf == NULL) {\n        fclose(f);\n        return NULL;\n    }\n    if (fgets(buf, 64, f) == NULL) {\n        free(buf);\n        fclose(f);\n        return NULL;\n    }\n    fclose(f);\n    buf[strcspn(buf, \"\\n\")] = '\\0';\n    return buf;\n}\n\nThe idea: on each early return, release everything acquired so far, in the reverse order of acquiring. (A single exit label with goto is a good alternative for longer functions.)\n\n(c) The function returns a heap string, so the caller owns it. The caller must free it exactly once, before the variable that holds it is reused, and should set the pointer to NULL after freeing (free(NULL) is harmless). In main: free the first name before the second assignment, and call free only once for the second.",
+    "zh": "（a）第 12 行：`malloc` 失败之后 `return NULL`。文件句柄 f 仍然是打开的：泄漏。第 15 行：`fgets` 失败之后 `return NULL`。内存块 buf 和文件句柄 f 都泄漏了。第 25 行：`name` 里还保存着第一个字符串，就被新的结果覆盖了。如果第一次调用成功，那个内存块就再也找不到了，造成泄漏。第 28 行：如果第二次调用成功，第二个 `free(name)` 释放了已经释放的内存块：重复释放，是未定义行为（如果 `name` 是 NULL，`free` 什么都不做）。\n\n（b）每条路径都要释放：\n\nchar *read_first_line(const char *path) {\n    FILE *f = fopen(path, \"r\");\n    if (f == NULL) {\n        return NULL;\n    }\n    char *buf = malloc(64);\n    if (buf == NULL) {\n        fclose(f);\n        return NULL;\n    }\n    if (fgets(buf, 64, f) == NULL) {\n        free(buf);\n        fclose(f);\n        return NULL;\n    }\n    fclose(f);\n    buf[strcspn(buf, \"\\n\")] = '\\0';\n    return buf;\n}\n\n思路：每个提前返回的地方，都要按获取的相反顺序释放到目前为止获得的所有资源。（对较长的函数，用单一出口标签加 goto 也是很好的做法。）\n\n（c）函数返回的是堆字符串，所以调用者拥有它。调用者必须恰好释放一次，并且要在保存它的变量被重新使用之前释放；释放之后最好把指针置为 NULL（free(NULL) 是无害的）。在 main 里：给 name 赋第二个值之前先释放第一个字符串，并且对第二个字符串只调用一次 free。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Line 12: leaks the open file handle.",
+      "zh": "第 12 行：泄漏了打开的文件句柄。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Line 15: leaks both buf and the file handle.",
+      "zh": "第 15 行：buf 和文件句柄都泄漏了。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Line 25: the first string is lost when `name` is overwritten.",
+      "zh": "第 25 行：覆盖 `name` 时丢失了第一个字符串。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Line 28: double free when the second call succeeded, undefined behaviour.",
+      "zh": "第 28 行：第二次调用成功时会重复释放，未定义行为。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Corrected function releases (fclose, free) on every failure path, and on success returns buf with the file closed.",
+      "zh": "修正后的函数在每条失败路径上都释放资源（fclose、free），成功时关闭文件并返回 buf。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "States the ownership rule: the caller owns the returned string, frees it once, and before reusing the variable.",
+      "zh": "说明所有权规则：调用者拥有返回的字符串，只释放一次，并且在复用变量之前释放。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Adding `free(buf)` on the success path before returning it. The caller would then receive a dangling pointer.",
+     "zh": "在成功路径上返回 buf 之前加了 `free(buf)`。调用者会拿到悬空指针。"
+    },
+    {
+     "en": "Freeing in the wrong order, or freeing a resource that was never acquired on that path (for example `free(buf)` when malloc failed).",
+     "zh": "释放的顺序不对，或者释放了该路径上从未获得的资源（例如 malloc 失败时还去 `free(buf)`）。"
+    },
+    {
+     "en": "Leaving out `fclose` on the failing paths because \"the program ends anyway\". Long-running programs run out of handles.",
+     "zh": "失败路径上不写 `fclose`，理由是“程序反正要结束”。长期运行的程序会耗尽文件句柄。"
+    },
+    {
+     "en": "Setting `name = NULL` without freeing first, which hides the leak instead of fixing it.",
+     "zh": "没有先释放就把 `name = NULL`，这只是掩盖了泄漏而没有修复它。"
+    }
+   ],
+   "code": " 1  #include <stdio.h>\n 2  #include <stdlib.h>\n 3  #include <string.h>\n 4  \n 5  char *read_first_line(const char *path) {\n 6      FILE *f = fopen(path, \"r\");\n 7      if (f == NULL) {\n 8          return NULL;\n 9      }\n10      char *buf = malloc(64);\n11      if (buf == NULL) {\n12          return NULL;\n13      }\n14      if (fgets(buf, 64, f) == NULL) {\n15          return NULL;\n16      }\n17      buf[strcspn(buf, \"\\n\")] = '\\0';\n18      fclose(f);\n19      return buf;\n20  }\n21  \n22  int main(void) {\n23      char *name = read_first_line(\"a.txt\");\n24      puts(name != NULL ? name : \"(none)\");\n25      name = read_first_line(\"b.txt\");\n26      puts(name != NULL ? name : \"(none)\");\n27      free(name);\n28      free(name);\n29      return 0;\n30  }\n",
+   "language": "c"
+  },
+  {
+   "id": "short-makefile",
+   "kind": "short",
+   "topic": "compilation-linkage",
+   "title": {
+    "en": "A Makefile for three source files",
+    "zh": "三个源文件的 Makefile"
+   },
+   "marks": 6,
+   "minutes": 6,
+   "prompt": {
+    "en": "A project has these files: `main.c` (includes `list.h` and `util.h`), `list.c` (includes `list.h`), `util.c` (includes `util.h`), and the two headers.\n\nWrite a Makefile that builds the program `tool` with these rules:\n- Compile with `cc -std=c11 -Wall -Wextra -g`, with the options kept in a variable.\n- Each object file is built from its own .c file and is rebuilt when that .c file or any header it includes changes.\n- `make` with no argument builds `tool`.\n- `make clean` removes the object files and `tool`. It must still work if a file named `clean` exists.\n\nThen explain in one or two sentences why an object file must list its headers as prerequisites.",
+    "zh": "一个项目包含这些文件：`main.c`（包含 `list.h` 和 `util.h`）、`list.c`（包含 `list.h`）、`util.c`（包含 `util.h`），以及两个头文件。\n\n写一个 Makefile，按下面的规则构建程序 `tool`：\n- 用 `cc -std=c11 -Wall -Wextra -g` 编译，编译选项放在一个变量里。\n- 每个目标文件由自己的 .c 文件生成，并且在该 .c 文件或它包含的任何头文件改变时重新生成。\n- 直接运行 `make`（不带参数）会构建 `tool`。\n- `make clean` 删除目标文件和 `tool`。即使存在名为 `clean` 的文件，它也必须能工作。\n\n然后用一两句话解释，为什么目标文件必须把它的头文件列为依赖。"
+   },
+   "solution": {
+    "en": "CC = cc\nCFLAGS = -std=c11 -Wall -Wextra -g\nOBJS = main.o list.o util.o\n\ntool: $(OBJS)\n\t$(CC) $(CFLAGS) -o tool $(OBJS)\n\nmain.o: main.c list.h util.h\n\t$(CC) $(CFLAGS) -c main.c\n\nlist.o: list.c list.h\n\t$(CC) $(CFLAGS) -c list.c\n\nutil.o: util.c util.h\n\t$(CC) $(CFLAGS) -c util.c\n\n.PHONY: clean\nclean:\n\trm -f $(OBJS) tool\n\nThe first rule in the file (tool) is the default target, so plain `make` builds it. The command lines must start with a tab character, not spaces. The option -c compiles one file to an object file without linking; the final rule links the objects into the program.\n\nWhy headers: make decides what to rebuild by comparing file times. A header is pasted into the source file by the preprocessor, so a change in util.h changes what main.c and util.c compile to. If util.h is not listed, make sees main.o as up to date and keeps an object built with the old declarations, which can give wrong behaviour that no compile error reveals. `.PHONY: clean` tells make that clean is a command name, not a file, so the rule runs even if a file called clean exists.",
+    "zh": "CC = cc\nCFLAGS = -std=c11 -Wall -Wextra -g\nOBJS = main.o list.o util.o\n\ntool: $(OBJS)\n\t$(CC) $(CFLAGS) -o tool $(OBJS)\n\nmain.o: main.c list.h util.h\n\t$(CC) $(CFLAGS) -c main.c\n\nlist.o: list.c list.h\n\t$(CC) $(CFLAGS) -c list.c\n\nutil.o: util.c util.h\n\t$(CC) $(CFLAGS) -c util.c\n\n.PHONY: clean\nclean:\n\trm -f $(OBJS) tool\n\n文件中的第一条规则（tool）是默认目标，所以直接运行 `make` 会构建它。命令行必须以制表符（Tab）开头，不能用空格。选项 -c 表示只把一个文件编译成目标文件而不链接；最后那条规则把目标文件链接成程序。\n\n为什么要列出头文件：make 通过比较文件的修改时间来决定重建什么。头文件会被预处理器粘贴进源文件，所以 util.h 的改动会改变 main.c 和 util.c 的编译结果。如果没有列出 util.h，make 会认为 main.o 是最新的，继续使用按旧声明编译出来的目标文件，可能产生错误的行为，而且没有任何编译错误提示。`.PHONY: clean` 告诉 make：clean 是命令的名字而不是文件，所以即使存在名为 clean 的文件，这条规则也会执行。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Variables for the compiler and its options (CC, CFLAGS) used in the commands.",
+      "zh": "用变量保存编译器及其选项（CC、CFLAGS），并在命令中使用。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "`tool` depends on the three object files and has a link command; it is the first rule.",
+      "zh": "`tool` 依赖三个目标文件，并有链接命令；它是第一条规则。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Each object rule uses `-c` and lists its .c file and headers correctly: main.o needs list.h and util.h; list.o needs list.h; util.o needs util.h.",
+      "zh": "每条目标文件规则使用 `-c`，并正确列出 .c 文件和头文件：main.o 需要 list.h 和 util.h；list.o 需要 list.h；util.o 需要 util.h。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "`clean` removes the objects and `tool`, and is declared `.PHONY`.",
+      "zh": "`clean` 删除目标文件和 `tool`，并声明为 `.PHONY`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains that a header change must trigger a rebuild, or make keeps stale objects.",
+      "zh": "解释头文件变化必须触发重建，否则 make 会保留过期的目标文件。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Starting command lines with spaces. Make requires a tab and reports \"missing separator\".",
+     "zh": "命令行用空格开头。Make 要求使用制表符，否则报 “missing separator”。"
+    },
+    {
+     "en": "Listing only the .c file as a prerequisite. Editing a header then does not rebuild anything.",
+     "zh": "只把 .c 文件列为依赖。修改头文件后什么都不会重建。"
+    },
+    {
+     "en": "Compiling and linking in one command per object (leaving out `-c`) so the link fails with undefined or duplicate main.",
+     "zh": "每个目标文件都在一条命令里既编译又链接（漏了 `-c`），链接时出现 main 未定义或重复。"
+    },
+    {
+     "en": "Forgetting `.PHONY: clean`, so a file named clean stops the target from running.",
+     "zh": "忘了 `.PHONY: clean`，一旦有名为 clean 的文件，这个目标就不再运行。"
+    }
+   ]
+  },
+  {
+   "id": "short-read-warnings",
+   "kind": "short",
+   "topic": "debugging-evidence",
+   "title": {
+    "en": "Reading three compiler warnings",
+    "zh": "阅读三条编译器警告"
+   },
+   "marks": 7,
+   "minutes": 7,
+   "prompt": {
+    "en": "The file below, `sum.c`, is compiled with `clang -Wall -Wextra -std=c11 -c sum.c`. The compiler prints these three warnings (shortened):\n\nsum.c:8:27: warning: format specifies type 'int' but the argument has type 'long' [-Wformat]\nsum.c:9:1: warning: non-void function does not return a value [-Wreturn-type]\nsum.c:6:9: warning: variable 'total' is uninitialized when used here [-Wuninitialized]\n\nFor each warning: say in plain words what the compiler is telling you, what can go wrong when the program runs, and how to fix it. Then say whether a build with no warnings proves that the program is correct.",
+    "zh": "下面的文件 `sum.c` 用 `clang -Wall -Wextra -std=c11 -c sum.c` 编译。编译器输出了这三条警告（已缩短）：\n\nsum.c:8:27: warning: format specifies type 'int' but the argument has type 'long' [-Wformat]\nsum.c:9:1: warning: non-void function does not return a value [-Wreturn-type]\nsum.c:6:9: warning: variable 'total' is uninitialized when used here [-Wuninitialized]\n\n对每条警告：用通俗的话说明编译器在告诉你什么、程序运行时可能出什么问题、如何修复。然后说明没有任何警告的构建是否能证明程序正确。"
+   },
+   "solution": {
+    "en": "1. -Wformat (line 8). The format %d promises an int, but the argument total is a long. printf reads the wrong number of bytes for the argument, so it may print a wrong number (or worse, misread the arguments that follow). Fix: use %ld for a long.\n\n2. -Wreturn-type (line 9). The function is declared to return a long, but control reaches the closing brace with no return statement. If the caller uses the result, that is undefined behaviour. Fix: add `return total;` at the end (and, if the print is only for debugging, remove it).\n\n3. -Wuninitialized (line 6). A local variable without an initialiser has an indeterminate value. The statement total += v[i] reads that value on the first iteration, so the sum starts from garbage and the result is unpredictable. Fix: write long total = 0;.\n\nA warning-free build proves little. Warnings come from the compiler's checks on the source, which can only find some mistakes. Logic errors (wrong loop bound, wrong algorithm), most memory errors and data races compile cleanly. Warnings are cheap evidence, so build with -Wall -Wextra and fix them, even use -Werror in a project, and then test and use tools such as a sanitizer for the rest.",
+    "zh": "1. -Wformat（第 8 行）。格式 %d 承诺参数是 int，但实际参数 total 是 long。printf 会按错误的字节数读取这个参数，可能打印出错误的数字（更糟时还会读错后面的参数）。修复：对 long 使用 %ld。\n\n2. -Wreturn-type（第 9 行）。函数声明返回 long，但执行流到达结束的大括号时没有 return 语句。如果调用者使用了返回值，就是未定义行为。修复：在末尾加上 `return total;`（如果这行打印只是调试用的，可以删掉）。\n\n3. -Wuninitialized（第 6 行）。没有初始化的局部变量的值是不确定的。语句 total += v[i] 在第一次迭代时就读取这个值，所以求和是从垃圾值开始的，结果不可预测。修复：写成 long total = 0;。\n\n没有警告的构建几乎不能证明什么。警告来自编译器对源代码的检查，这些检查只能发现一部分错误。逻辑错误（循环边界错、算法错）、大多数内存错误和数据竞争都能干净地通过编译。警告是代价很低的证据，所以编译时要开 -Wall -Wextra 并修掉警告，项目中甚至可以用 -Werror，然后再用测试和 sanitizer 等工具检查其余的问题。"
+   },
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "-Wformat: %d versus long; wrong output or misread arguments; use %ld.",
+      "zh": "-Wformat：%d 与 long 不匹配；输出错误或参数被读错；改用 %ld。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "-Wreturn-type: falls off the end of a non-void function, undefined if the value is used; add `return total;`.",
+      "zh": "-Wreturn-type：非 void 函数没有返回就走到末尾，使用返回值时行为未定义；加上 `return total;`。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "-Wuninitialized: total starts indeterminate, the sum is garbage; initialise to 0.",
+      "zh": "-Wuninitialized：total 初始值不确定，求和结果是垃圾值；初始化为 0。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Says a clean build does not prove correctness (logic errors, memory errors and races are not caught) and that warnings should still be fixed.",
+      "zh": "指出没有警告并不能证明正确（逻辑错误、内存错误和数据竞争查不出来），但警告仍应修复。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Silencing a warning with a cast instead of fixing the cause, for example casting total to int and losing digits.",
+     "zh": "用类型转换压掉警告而不是修复原因，例如把 total 转成 int 而丢失数位。"
+    },
+    {
+     "en": "Reading only the first warning and stopping. Later lines may point at the real cause.",
+     "zh": "只看第一条警告就停下来。后面的几行可能才指出真正的原因。"
+    },
+    {
+     "en": "Believing that the warning in line 9 means the closing brace is the problem. The problem is the missing return value.",
+     "zh": "以为第 9 行的警告说明那个大括号有问题。真正的问题是缺少返回值。"
+    }
+   ],
+   "code": " 1  #include <stdio.h>\n 2  \n 3  long total_of(const int *v, int n) {\n 4      long total;\n 5      for (int i = 0; i < n; i++) {\n 6          total += v[i];\n 7      }\n 8      printf(\"sum is %d\\n\", total);\n 9  }\n10  \n11  int main(void) {\n12      int v[3] = {4, 5, 6};\n13      total_of(v, 3);\n14      return 0;\n15  }\n",
+   "language": "c"
+  },
+  {
+   "id": "short-read-sanitizer",
+   "kind": "short",
+   "topic": "debugging-evidence",
+   "title": {
+    "en": "Reading an AddressSanitizer report",
+    "zh": "阅读 AddressSanitizer 报告"
+   },
+   "marks": 7,
+   "minutes": 7,
+   "prompt": {
+    "en": "The program below was built with `clang -g -fsanitize=address`. Running it printed this report (shortened; the numbers are addresses):\n\n==2018==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000098 ...\nWRITE of size 9 at 0x602000000098 thread T0\n    #0 0x103435b74 in strcpy+0x510 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x4db74)\n    #1 0x102b83d8c in copy_text asan.c:7\n    #2 0x102b83d2c in main asan.c:12\n\n0x602000000098 is located 0 bytes after 8-byte region [0x602000000090,0x602000000098)\nallocated by thread T0 here:\n    #0 0x10343cc04 in malloc+0x94 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x54c04)\n    #1 0x102b83d7c in copy_text asan.c:6\n    #2 0x102b83d2c in main asan.c:12\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ... in strcpy+0x510\n\n(a) What kind of error is it, and what operation caused it?\n(b) Which line of the source performed the bad write, and which line allocated the block?\n(c) How large is the block, and how many bytes did the write try to store? Why do these two numbers explain \"0 bytes after\"?\n(d) Fix the bug.\n(e) Why might the program seem to work correctly without the sanitizer?",
+    "zh": "下面的程序用 `clang -g -fsanitize=address` 构建。运行时打印了这份报告（已缩短；数字是地址）：\n\n==2018==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000098 ...\nWRITE of size 9 at 0x602000000098 thread T0\n    #0 0x103435b74 in strcpy+0x510 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x4db74)\n    #1 0x102b83d8c in copy_text asan.c:7\n    #2 0x102b83d2c in main asan.c:12\n\n0x602000000098 is located 0 bytes after 8-byte region [0x602000000090,0x602000000098)\nallocated by thread T0 here:\n    #0 0x10343cc04 in malloc+0x94 (libclang_rt.asan_osx_dynamic.dylib:arm64e+0x54c04)\n    #1 0x102b83d7c in copy_text asan.c:6\n    #2 0x102b83d2c in main asan.c:12\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ... in strcpy+0x510\n\n（a）这是哪一类错误，由什么操作引起？\n（b）源代码中哪一行执行了错误的写入，哪一行分配了这个内存块？\n（c）这个内存块有多大，这次写入打算存多少字节？这两个数字为什么能解释“0 bytes after”？\n（d）修复这个 bug。\n（e）为什么没有 sanitizer 时程序可能看起来一切正常？"
+   },
+   "solution": {
+    "en": "(a) A heap-buffer-overflow: the program wrote (WRITE) past the end of a heap block. The operation was strcpy.\n\n(b) Read the call stack from the top. Frame #0 is inside the library function strcpy; the first frame in our own code is #1: copy_text at asan.c line 7, which is the strcpy call, called from main at line 12. The second stack (\"allocated by\") shows the block was created by malloc in copy_text at asan.c line 6.\n\n(c) The block is 8 bytes (the region [0x...090, 0x...098)). The text \"Leon-Mia\" has 8 characters, and strcpy copies 9 bytes: the 8 characters plus the terminator. The ninth byte falls just outside the block, at the first address after it, so the report says \"0 bytes after\".\n\n(d) The bug is that malloc(strlen(s)) forgets the terminator. Fix: char *copy = malloc(strlen(s) + 1); and check that it is not NULL before copying. (strdup does the sizing and the copy for you; you still check its result for NULL.)\n\n(e) Without the sanitizer, malloc usually rounds block sizes up (for example to a multiple of 8 or 16), so one extra byte lands in padding that nobody uses. The write still breaks the rules, but nothing visible happens. With another string length, or another allocator, the same code overwrites a neighbouring block or crashes later, far from the cause. Undefined behaviour does not promise a crash.",
+    "zh": "（a）这是 heap-buffer-overflow（堆缓冲区溢出）：程序对堆块末尾之外进行了写入（WRITE）。引起它的操作是 strcpy。\n\n（b）调用栈要从上往下读。帧 #0 在库函数 strcpy 内部；我们自己代码里的第一帧是 #1：asan.c 第 7 行的 copy_text，也就是 strcpy 调用，它由 main 在第 12 行调用。第二份栈（“allocated by”）显示这个内存块是 copy_text 在 asan.c 第 6 行通过 malloc 创建的。\n\n（c）内存块是 8 字节（区间 [0x...090, 0x...098)）。文本 \"Leon-Mia\" 有 8 个字符，而 strcpy 要复制 9 个字节：8 个字符加终止符。第九个字节落在块外面，正好是块之后的第一个地址，所以报告写的是“0 bytes after”。\n\n（d）错误在于 malloc(strlen(s)) 忘了终止符。修复：char *copy = malloc(strlen(s) + 1); 并且在复制之前检查它不是 NULL。（strdup 替你完成大小计算和复制，但你仍然要检查它的返回值是否为 NULL。）\n\n（e）没有 sanitizer 时，malloc 通常会把块的大小向上取整（例如取整到 8 或 16 的倍数），所以多出来的一个字节落在没人使用的填充区里。这次写入仍然违反了规则，但看不到任何后果。换一个字符串长度或换一个分配器，同样的代码就会覆盖相邻的块，或者在离原因很远的地方崩溃。未定义行为并不保证会崩溃。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Identifies a heap-buffer-overflow caused by a write in strcpy.",
+      "zh": "指出这是由 strcpy 中的写入引起的堆缓冲区溢出。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Finds the bad write in copy_text at line 7 (frame #1, the first frame in the program's own code).",
+      "zh": "找到出错的写入在 copy_text 的第 7 行（帧 #1，程序自己代码中的第一帧）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Finds the allocation at line 6 (malloc in copy_text).",
+      "zh": "找到分配发生在第 6 行（copy_text 中的 malloc）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains the numbers: 8-byte block, 9 bytes written (8 characters plus the terminator), so the last byte is just after the block.",
+      "zh": "解释这些数字：块为 8 字节，写入 9 字节（8 个字符加终止符），所以最后一个字节正好在块之后。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names the root cause: size computed as strlen(s) without + 1.",
+      "zh": "指出根本原因：大小只算了 strlen(s)，没有加 1。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives the fix: malloc(strlen(s) + 1), with a NULL check (or strdup).",
+      "zh": "给出修复：malloc(strlen(s) + 1)，并检查 NULL（或使用 strdup）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains why it can seem fine without the sanitizer: allocator padding, and undefined behaviour does not promise a crash.",
+      "zh": "解释为什么没有 sanitizer 时看起来正常：分配器有填充，而且未定义行为不保证崩溃。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Reading frame #0 as the line to fix. It is inside the library; the error is in the call from our code, frame #1.",
+     "zh": "把帧 #0 当成要修改的那一行。它在库函数内部，错误出在我们代码中的调用，也就是帧 #1。"
+    },
+    {
+     "en": "Increasing the malloc size by a guess (for example +8) and not understanding why 9 bytes are needed.",
+     "zh": "凭猜测把 malloc 的大小加上一个数（例如 +8），却不明白为什么需要 9 字节。"
+    },
+    {
+     "en": "Concluding that the program is fine because it printed \"Leon-Mia\" correctly when run without ASan.",
+     "zh": "因为不用 ASan 运行时正确打印了 \"Leon-Mia\"，就断定程序没问题。"
+    }
+   ],
+   "code": " 1  #include <stdio.h>\n 2  #include <stdlib.h>\n 3  #include <string.h>\n 4  \n 5  static char *copy_text(const char *s) {\n 6      char *copy = malloc(strlen(s));\n 7      strcpy(copy, s);\n 8      return copy;\n 9  }\n10  \n11  int main(void) {\n12      char *name = copy_text(\"Leon-Mia\");\n13      printf(\"%s\\n\", name);\n14      free(name);\n15      return 0;\n16  }\n",
+   "language": "c"
   }
  ],
- "papers": [],
+ "papers": [
+  {
+   "id": "diagnostic",
+   "type": "diagnostic",
+   "title": {
+    "en": "Diagnostic: C, processes and threads",
+    "zh": "诊断测验：C、进程与线程"
+   },
+   "minutes": 20,
+   "questions": [
+    "mcq-ub-which",
+    "trace-pointer-moves",
+    "mcq-macro-precedence",
+    "mcq-header-definition",
+    "mcq-fork-values",
+    "mcq-pipe-eof",
+    "mcq-condvar-while",
+    "mcq-amdahl"
+   ],
+   "note": {
+    "en": "About 20 minutes, spread over all four stages of the course: C objects and data, building and running programs, communication and synchronisation, and parallel performance. Almost everything is marked for you, so it shows quickly which chapters need work. This is an original practice quiz written for this site. It is not a guide to the format, length or content of any real exam.",
+    "zh": "大约 20 分钟，覆盖课程的四个阶段：C 对象与数据、构建与运行程序、通信与同步、并行性能。几乎全部题目都会自动判分，所以能很快看出哪些章节需要加强。这是为本站原创的练习测验，并不是任何真实考试的格式、时长或内容的指南。"
+   }
+  },
+  {
+   "id": "mock",
+   "type": "mock",
+   "title": {
+    "en": "Mock paper: C, processes and threads",
+    "zh": "模拟试卷：C、进程与线程"
+   },
+   "minutes": 90,
+   "questions": [
+    "mcq-ub-which",
+    "mcq-fork-values",
+    "mcq-wait-reap",
+    "mcq-signal-coalesce",
+    "mcq-deadlock-order",
+    "mcq-amdahl",
+    "trace-string-scan",
+    "trace-struct-copy",
+    "trace-fork-chain",
+    "mem-literal-array",
+    "mem-list-push",
+    "bounded-copy",
+    "list-push-find-remove",
+    "bit-tricks",
+    "bug-queue-tail",
+    "short-transfer-locks",
+    "short-makefile"
+   ],
+   "note": {
+    "en": "About 90 minutes and 85 marks, mixed kinds: six multiple choice, three trace tables, two memory diagrams, three functions to write, one bug to find and two short answers. Do the writing questions on paper first and type them in afterwards to run the tests. This is an original practice paper written for this site. It is not a guide to the format, length or marking of any real exam.",
+    "zh": "大约 90 分钟、85 分，题型混合：六道选择题、三道跟踪表、两道内存图、三个要写的函数、一道找错题和两道简答题。写代码的题先在纸上做，之后再敲进去运行测试。这是为本站原创的练习试卷，并不是任何真实考试的格式、时长或评分方式的指南。"
+   }
+  },
+  {
+   "id": "paper",
+   "type": "paper",
+   "title": {
+    "en": "Handwriting paper: tables, diagrams and C functions",
+    "zh": "手写练习：跟踪表、内存图与 C 函数"
+   },
+   "minutes": 45,
+   "questions": [
+    "trace-post-increment",
+    "trace-fork-copies",
+    "mem-struct-pointer",
+    "bug-missing-break",
+    "swap-pointers",
+    "player-structs",
+    "int-vector-push"
+   ],
+   "note": {
+    "en": "About 45 minutes of work with pen and paper: two trace tables, one memory diagram, one bug to find, and three C functions to write. No notes, no compiler. Mark yourself with the rubrics afterwards. This is an original practice paper written for this site. It is not a guide to the format, length or marking of any real exam.",
+    "zh": "大约 45 分钟的纸笔练习：两道跟踪表、一道内存图、一道找错题和三个要写的 C 函数。不看笔记，不用编译器。做完后按评分标准给自己打分。这是为本站原创的练习试卷，并不是任何真实考试的格式、时长或评分方式的指南。"
+   }
+  }
+ ],
  "labs": []
 }

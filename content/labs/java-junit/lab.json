@@ -1,0 +1,172 @@
+{
+ "id": "java-junit",
+ "course": "info1113",
+ "minutes": 30,
+ "tools": [
+  "javac",
+  "JUnit 5"
+ ],
+ "title": {
+  "en": "Boundary tests find a real bug in a stock class",
+  "zh": "边界测试在库存类里找到一个真实缺陷"
+ },
+ "summary": {
+  "en": "Write JUnit 5 tests with assertEquals and assertThrows for an inventory class, run them with the console launcher, and let a boundary test expose an off-by-one that the typical tests miss.",
+  "zh": "为库存类编写使用 assertEquals 和 assertThrows 的 JUnit 5 测试，用控制台启动器运行，让边界测试暴露出典型测试漏掉的差一错误。"
+ },
+ "scenario": {
+  "en": "Noah's team keeps a small Inventory class that a warehouse screen calls when pickers take items off the shelf. It has six unit tests, written the way most first tests are: add some stock, take some away, try to take too much. They all pass, and the class has been in use for a month.\n\nA picker reports that taking the last desks of a model fails with \"only 10 in stock\", although 10 are exactly what they need. You are asked to cover the class's boundaries in tests before anyone touches the code, and to let the tests, not a guess, tell you what is wrong.",
+  "zh": "Noah 的团队有一个小的 Inventory 类，仓库屏幕在拣货员从货架取货时会调用它。它有六个单元测试，写法和大多数最初的测试一样：加一些库存，取走一些，再试着取走过多。它们全部通过，这个类已经用了一个月。\n\n一位拣货员报告：取走某款桌子的最后几件时失败了，提示“only 10 in stock”，而他们要的恰好就是 10 件。你的任务是在任何人改代码之前，先用测试覆盖这个类的各个边界，让测试而不是猜测来告诉你哪里出了问题。"
+ },
+ "show": [
+  "src/shop/Inventory.java",
+  "test/shop/InventoryTest.java"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Compile and run the tests that exist",
+    "zh": "编译并运行现有测试"
+   },
+   "body": {
+    "en": "`javac -cp $LAB_TOOLS/junit.jar` compiles with the JUnit API on the class path (`-cp`), and `-d out` writes the `.class` files into the `out` folder. `$LAB_TOOLS/junit.jar` is the JUnit Console Launcher, a single jar that holds the Jupiter API, the engine and a command-line runner; it needs no Maven or Gradle.\n\nTo run the tests: `java -jar $LAB_TOOLS/junit.jar execute` starts the launcher. `--class-path out` says where the compiled classes are, and `--select-class shop.InventoryTest` picks the test class. `--details=tree` prints every test and its result, and the other options keep the text plain, with no banner, colours or box-drawing characters. The exit status is 0 when all tests pass, and 1 when any fail, which is what a build server reads.\n\nAll six pass. Read the test file, then notice what it never asks: nothing takes exactly what is in stock.",
+    "zh": "`javac -cp $LAB_TOOLS/junit.jar` 在类路径（`-cp`）里带上 JUnit API 来编译，`-d out` 把 `.class` 文件写入 `out` 文件夹。`$LAB_TOOLS/junit.jar` 是 JUnit 控制台启动器（Console Launcher），一个 jar 里包含 Jupiter API、测试引擎和命令行运行器，不需要 Maven 或 Gradle。\n\n运行测试：`java -jar $LAB_TOOLS/junit.jar execute` 启动启动器。`--class-path out` 指明编译后的类在哪里，`--select-class shop.InventoryTest` 选择测试类。`--details=tree` 打印每个测试及其结果，其余选项让文字保持朴素：没有横幅、颜色或制表框字符。全部通过时退出状态为 0，有失败时为 1，这正是构建服务器读取的内容。\n\n六个测试全部通过。读一下测试文件，注意它从不问的问题：没有任何测试取走恰好等于库存的数量。"
+   },
+   "command": "mkdir -p out && javac -cp $LAB_TOOLS/junit.jar -d out src/shop/*.java test/shop/*.java && java -jar $LAB_TOOLS/junit.jar execute --class-path out --select-class shop.InventoryTest --disable-banner --disable-ansi-colors --details=tree --details-theme=ascii",
+   "contains": [
+    "6 tests successful",
+    "0 tests failed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Add boundary tests",
+    "zh": "添加边界测试"
+   },
+   "body": {
+    "en": "Boundaries are the values where the behaviour changes: the quantity exactly equal to the stock, zero, a negative number, one past the limit. Derive them from the documented contract (\"fails if the sku holds fewer than qty units\"), not from the code. The patch adds three tests in place of the TODO:\n\n- `removeExactStockLeavesZero` adds 10 and removes 10. `assertEquals(expected, actual)` takes the expected value first, so a failure message reads correctly.\n- `addZeroQuantityIsRejected` uses `assertThrows`. It runs the lambda, fails the test if no exception of that type is thrown, and returns the exception so that you can check its message.\n- `removeNegativeQuantityIsRejected` also checks that the failed call changed nothing.\n\nRun them. One test fails, and the launcher prints the exception that escaped the test and the lines in our code that produced it.",
+    "zh": "边界就是行为发生变化的那些值：数量恰好等于库存、零、负数、超出限制一个单位。要从文档化的约定（“库存少于 qty 件时失败”）推导边界，而不是从代码推导。补丁用三个测试替换 TODO：\n\n- `removeExactStockLeavesZero` 先加 10 件再取 10 件。`assertEquals(expected, actual)` 把期望值放在前面，这样失败消息读起来才正确。\n- `addZeroQuantityIsRejected` 使用 `assertThrows`。它运行那个 lambda，如果没有抛出该类型的异常就让测试失败，并返回这个异常，让你可以检查它的消息。\n- `removeNegativeQuantityIsRejected` 还检查失败的调用没有改变任何状态。\n\n运行它们。有一个测试失败，启动器会打印从测试中逃出的异常，以及我们代码里产生它的那几行。"
+   },
+   "command": "mkdir -p out && javac -cp $LAB_TOOLS/junit.jar -d out src/shop/*.java test/shop/*.java && java -jar $LAB_TOOLS/junit.jar execute --class-path out --select-class shop.InventoryTest --disable-banner --disable-ansi-colors --details=tree --details-theme=ascii",
+   "exit": 1,
+   "contains": [
+    "removeExactStockLeavesZero",
+    "InsufficientStockException",
+    "1 tests failed"
+   ],
+   "lines": 34,
+   "patch": {
+    "file": "test/shop/InventoryTest.java",
+    "from": "    // TODO boundary cases: remove exactly what is in stock, zero and negative quantities.\n",
+    "to": "    @Test\n    void removeExactStockLeavesZero() {\n        inv.add(\"DESK-OAK\", 10);\n        inv.remove(\"DESK-OAK\", 10);\n        assertEquals(0, inv.stockOf(\"DESK-OAK\"));\n    }\n\n    @Test\n    void addZeroQuantityIsRejected() {\n        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,\n                () -> inv.add(\"DESK-OAK\", 0));\n        assertEquals(\"quantity must be positive: 0\", ex.getMessage());\n    }\n\n    @Test\n    void removeNegativeQuantityIsRejected() {\n        inv.add(\"DESK-OAK\", 3);\n        assertThrows(IllegalArgumentException.class, () -> inv.remove(\"DESK-OAK\", -1));\n        assertEquals(3, inv.stockOf(\"DESK-OAK\"));\n    }\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Read the failure and find the line",
+    "zh": "读懂失败信息并找到那一行"
+   },
+   "body": {
+    "en": "The failure has three parts. The tree line `removeExactStockLeavesZero() [X]` names the test and gives the exception message: `cannot remove 10 of DESK-OAK: only 10 in stock`. The message itself is the clue: it says 10 is not enough, and the stock is 10. Under `Failures`, the first frame in our code, `shop.Inventory.remove(Inventory.java:...)`, is where the exception was thrown. The frame below it is the test line that made the call. The rest are JUnit and reflection frames you can skip.\n\n`grep -n` prints the matching line with its number, and `-B1 -A3` adds one line before and three after. The condition is `qty >= current`. The contract says to fail when the stock holds fewer than `qty` units, which is `qty > current`. When the two are equal, taking all the stock is allowed. The typical tests never hit equality, so they never saw the difference.",
+    "zh": "失败信息有三部分。树状输出里的 `removeExactStockLeavesZero() [X]` 给出了测试名和异常消息：`cannot remove 10 of DESK-OAK: only 10 in stock`。这条消息本身就是线索：它说 10 不够，而库存正好是 10。在 `Failures` 之下，我们代码里的第一个帧 `shop.Inventory.remove(Inventory.java:...)` 就是抛出异常的地方，它下面一帧是发起调用的测试行，其余是可以跳过的 JUnit 和反射帧。\n\n`grep -n` 打印匹配的行及其行号，`-B1 -A3` 在前面多显示一行、后面多显示三行。条件是 `qty >= current`，而约定是库存少于 `qty` 件时才失败，也就是 `qty > current`。两者相等时，取走全部库存应当被允许。典型测试从未碰到相等的情形，所以从没发现这一差别。"
+   },
+   "command": "grep -n -B1 -A3 \"qty >= current\" src/shop/Inventory.java",
+   "contains": [
+    "qty >= current"
+   ]
+  },
+  {
+   "title": {
+    "en": "Fix the comparison and rerun everything",
+    "zh": "修复比较并重新运行全部测试"
+   },
+   "body": {
+    "en": "The fix is one character. Rerun the whole class: the new test passes, and so do the eight others, so the fix did not break anything the old tests protected. Keep the test: it is the permanent record that \"remove everything\" is a supported operation.",
+    "zh": "修复只需要改一个字符。重新运行整个测试类：新测试通过，另外八个也通过，说明修复没有破坏旧测试保护的任何东西。请保留这个测试：它是“取走全部库存”属于受支持操作的永久记录。"
+   },
+   "command": "mkdir -p out && javac -cp $LAB_TOOLS/junit.jar -d out src/shop/*.java test/shop/*.java && java -jar $LAB_TOOLS/junit.jar execute --class-path out --select-class shop.InventoryTest --disable-banner --disable-ansi-colors --details=tree --details-theme=ascii",
+   "contains": [
+    "9 tests successful",
+    "0 tests failed"
+   ],
+   "lines": 22,
+   "patch": {
+    "file": "src/shop/Inventory.java",
+    "from": "if (qty >= current) {",
+    "to": "if (qty > current) {"
+   }
+  },
+  {
+   "title": {
+    "en": "Run one test by name",
+    "zh": "按名字只运行一个测试"
+   },
+   "body": {
+    "en": "`--select-method shop.InventoryTest#removeExactStockLeavesZero` selects a single test method (the `#` separates class and method). During a bug hunt you will run one test many times, and this keeps the loop fast and the output short. The launcher also accepts `--select-package` for a whole package, and `--reports-dir` to write XML reports that CI tools can read.",
+    "zh": "`--select-method shop.InventoryTest#removeExactStockLeavesZero` 只选择一个测试方法（`#` 分隔类名和方法名）。查缺陷时你会把同一个测试跑很多次，这样做循环更快，输出也更短。启动器还支持用 `--select-package` 选择整个包，用 `--reports-dir` 写出 CI 工具可以读取的 XML 报告。"
+   },
+   "command": "java -jar $LAB_TOOLS/junit.jar execute --class-path out --select-method shop.InventoryTest#removeExactStockLeavesZero --disable-banner --disable-ansi-colors --details=tree --details-theme=ascii",
+   "contains": [
+    "removeExactStockLeavesZero() [OK]",
+    "1 tests successful"
+   ],
+   "lines": 12
+  }
+ ],
+ "review": [
+  {
+   "en": "Do the tests cover the boundaries named in the contract: equal to the limit, one below, one above, zero, negative, and the largest int?",
+   "zh": "测试是否覆盖了约定里提到的边界：等于上限、低一个、高一个、零、负数，以及最大的 int？"
+  },
+  {
+   "en": "Was each boundary test derived from the documented behaviour rather than from the code? Tests copied from the implementation share its mistakes.",
+   "zh": "每个边界测试是否来自文档化的行为，而不是来自代码？照着实现抄出来的测试会继承它的错误。"
+  },
+  {
+   "en": "Is the expected value the first argument of `assertEquals`? Swapped arguments produce failure messages that point the wrong way.",
+   "zh": "期望值是不是 `assertEquals` 的第一个参数？参数顺序颠倒会让失败消息指向错误的方向。"
+  },
+  {
+   "en": "Do exception tests use `assertThrows` and inspect the result (type, key fields), rather than `try`/`catch` with no `fail()` that passes when nothing is thrown?",
+   "zh": "异常测试是否使用 `assertThrows` 并检查返回结果（类型、关键字段），而不是写一个没有 `fail()` 的 `try`/`catch`（什么都没抛出时也会通过）？"
+  },
+  {
+   "en": "Does a failing call leave the object unchanged, and is that checked? (\"A failed remove changes nothing.\")",
+   "zh": "失败的调用是否让对象保持不变，并且有测试检查？（“失败的 remove 不改变任何状态。”）"
+  },
+  {
+   "en": "Does each test have a name that states a behaviour, one reason to fail, and no loops or `if` statements of its own?",
+   "zh": "每个测试的名字是否表述了一种行为，只有一个失败的理由，并且自己不含循环或 `if` 语句？"
+  },
+  {
+   "en": "Is every test independent (fresh object in `@BeforeEach`, no static state, no order dependence), and deterministic (no clock, no random numbers, no sleeps)?",
+   "zh": "每个测试是否相互独立（`@BeforeEach` 里创建新对象，没有静态状态，不依赖执行顺序），并且结果确定（不用时钟、随机数和 sleep）？"
+  },
+  {
+   "en": "Which behaviours still have no test? Name them in the review (here: the blank sku and integer overflow guards in `add`).",
+   "zh": "还有哪些行为没有测试？在评审里点名（这里是 `add` 里的空白 sku 和整数溢出两个保护）。"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**Boundaries beat volume.** Nine well-chosen tests found a bug that six typical ones could not. Adding fifty more mid-range cases would not have. The cost of thinking about boundaries is small, and the habit transfers: every comparison operator in the code (`>=`, `<`) has a value where it flips, and a test should sit on each side of it. Parameterised tests (`@ParameterizedTest`, in the same jar) make a table of boundary values cheap to write and cheap to read; the price is that a failing row is harder to debug than a named test.\n\n**What to assert.** Asserting the exact exception message ties the test to wording that may be reworded for a good reason. Assert the type and the machine-readable fields (sku, requested, available) unless the message is part of the contract, as it is for the quantity error here. `assertAll` reports every failed check in a group instead of stopping at the first, at the cost of less obvious failure locations.\n\n**Unit tests and their limits.** These tests ran in milliseconds because the class has no collaborators. Once a class talks to a database, a clock or a network, you either fake those (fast, but your fake can be wrong) or use the real thing (slower and less deterministic). The unit tests above cannot tell you that two pickers removing stock at the same time lose an update: this class is not thread-safe, and nothing here tests that.\n\n**Console launcher versus a build tool.** The launcher is enough for a lab or a small repository and exposes exactly what happens: compile, run, exit status. Maven and Gradle add dependency downloads, incremental compilation and report formats, which matter when a project has dozens of modules. They run the same engine, so tests written here move unchanged. JUnit 5 needs Java 8 or newer to run.\n\n**Tests that find nothing.** A passing suite says the tests passed, not that the code is right. The next lab measures what the suite never executes, and the one after shows what a test can fail to check even when it runs the line.",
+  "zh": "**边界胜过数量。** 九个精心选择的测试找到了六个典型测试找不到的缺陷。再添加五十个中间范围的用例也做不到。思考边界的成本很小，而且这个习惯可以迁移：代码里的每个比较运算符（`>=`、`<`）都有一个让结果翻转的值，测试应当在它两边各放一个。参数化测试（`@ParameterizedTest`，在同一个 jar 里）让边界值表写起来省事、读起来也省事；代价是失败的某一行比一个有名字的测试更难调试。\n\n**断言什么。** 断言完整的异常消息，会把测试绑定在可能出于正当理由而改写的措辞上。除非消息本身是约定的一部分（这里的数量错误消息就是），否则应断言异常类型和机器可读的字段（sku、requested、available）。`assertAll` 会报告一组检查中所有失败的项，而不是在第一个处停止，代价是失败位置不那么一目了然。\n\n**单元测试及其局限。** 这些测试只用了几毫秒，因为这个类没有协作对象。一旦类要和数据库、时钟或网络打交道，你要么用假的替身（快，但替身可能有错），要么用真实的东西（更慢、更不确定）。上面的单元测试无法告诉你，两个拣货员同时取货会丢失更新：这个类不是线程安全的，这里没有任何测试涉及这一点。\n\n**控制台启动器与构建工具。** 启动器足够用于实验和小型仓库，并且清楚展示发生了什么：编译、运行、退出状态。Maven 和 Gradle 增加了依赖下载、增量编译和报告格式，在项目有几十个模块时很重要。它们运行的是同一个引擎，所以在这里写的测试可以原样迁移。运行 JUnit 5 需要 Java 8 或更新版本。\n\n**什么也没发现的测试。** 通过的测试集只说明测试通过了，并不说明代码正确。下一个实验衡量测试集从未执行的部分，再下一个实验展示：即使测试执行了某一行，它也可能没有检查任何东西。"
+ },
+ "done": [
+  {
+   "en": "You can explain why six passing tests missed a bug that a seventh found.",
+   "zh": "你能解释为什么六个通过的测试漏掉了第七个测试找到的缺陷。"
+  },
+  {
+   "en": "All nine tests pass with the console launcher and exit status 0, and the fix is a one-character change you can point to.",
+   "zh": "九个测试在控制台启动器下全部通过且退出状态为 0，修复只是一处你能指出的一个字符的改动。"
+  },
+  {
+   "en": "You can read a JUnit failure: the test name, the exception message, the first frame in your code, and the test line that called it.",
+   "zh": "你能读懂 JUnit 的失败信息：测试名、异常消息、你代码里的第一个帧，以及发起调用的测试行。"
+  },
+  {
+   "en": "You can write an `assertThrows` test that also checks the exception message or fields.",
+   "zh": "你能写出同时检查异常消息或字段的 `assertThrows` 测试。"
+  }
+ ]
+}

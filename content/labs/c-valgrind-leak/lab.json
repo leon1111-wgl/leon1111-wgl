@@ -1,0 +1,149 @@
+{
+ "id": "c-valgrind-leak",
+ "course": "comp2017",
+ "minutes": 30,
+ "tools": [
+  "gcc",
+  "Valgrind"
+ ],
+ "title": {
+  "en": "A leak that only happens on the error path",
+  "zh": "只在错误路径上出现的内存泄漏"
+ },
+ "summary": {
+  "en": "The tests all pass, yet Valgrind reports lost memory. Read the leak report, collapse four early returns into one goto cleanup path, and rerun until it is clean.",
+  "zh": "测试全部通过，Valgrind 却报告丢失了内存。读懂泄漏报告，把四处提前返回合并成一条 goto 清理路径，再运行到干净为止。"
+ },
+ "scenario": {
+  "en": "Noah wrote a parser for connection profiles such as `staging 10.0.0.5 8443`. It is used by a long-running agent that re-reads its configuration every few minutes, and operations has noticed that the agent's memory grows by a few bytes per reload whenever a profile in the file is invalid.\n\nThe unit tests pass: invalid specs return NULL, valid ones parse. They check return values, not memory. Your job is to find out what is lost, where it was allocated, and to restructure the function so that no error path can forget to release it.",
+  "zh": "Noah 写了一个连接配置的解析器，配置形如 `staging 10.0.0.5 8443`。一个长期运行的代理程序每隔几分钟重新读取配置，运维人员发现：只要文件里有一条无效配置，每次重新加载代理的内存就会增长几个字节。\n\n单元测试全部通过：无效的配置返回 NULL，有效的能解析。但测试只检查返回值，不检查内存。你的任务是弄清丢了什么、是在哪里分配的，并重构这个函数，让任何错误路径都不可能忘记释放。"
+ },
+ "show": [
+  "profile.c",
+  "profile_test.c"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Run the tests normally",
+    "zh": "正常运行测试"
+   },
+   "body": {
+    "en": "The flags: `-std=c11` fixes the language version, `-Wall -Wextra` turn on the compiler's common warnings, `-g` keeps line numbers for the tools, and `-O0` turns optimisation off so the code runs the way it reads. Everything passes and the exit status is 0. That is the problem with leaks: they do not change any result. The tests prove that invalid specs are rejected, and say nothing about what the rejecting code left behind.",
+    "zh": "各选项的含义：`-std=c11` 固定语言版本，`-Wall -Wextra` 打开编译器常用的警告，`-g` 为工具保留行号，`-O0` 关闭优化，使代码按它写的样子运行。全部通过，退出状态为 0。这正是泄漏的麻烦所在：它不会改变任何结果。测试证明了无效配置会被拒绝，却不能说明拒绝配置的那段代码留下了什么。"
+   },
+   "command": "gcc -std=c11 -Wall -Wextra -g -O0 profile.c profile_test.c -o profile_test && ./profile_test",
+   "contains": [
+    "valid spec parses",
+    "port 0 is rejected"
+   ]
+  },
+  {
+   "title": {
+    "en": "Run it under Valgrind",
+    "zh": "用 Valgrind 运行"
+   },
+   "body": {
+    "en": "Valgrind runs the unchanged program on a simulated CPU and watches every allocation. Two options matter here. `--leak-check=full` lists each leaked block with the call chain that allocated it (the default is a one-line summary). `--error-exitcode=2` makes Valgrind exit with status 2 if it found any error, definite leaks included. Without it, Valgrind passes on the program's own exit status (0 here), and a CI job would stay green.\n\nThe build used `-g` and `-O0` so that the call chains carry file names and line numbers. Valgrind is slow (often 20 to 50 times), which is fine for a unit-test binary. It is not available for macOS on Apple Silicon; there, use Linux, a container, or the macOS `leaks` tool.",
+    "zh": "Valgrind 在模拟的 CPU 上运行未经修改的程序，并监视每一次内存分配。这里有两个选项很重要：`--leak-check=full` 会列出每个泄漏的块以及分配它的调用链（默认只有一行汇总）；`--error-exitcode=2` 让 Valgrind 在发现任何错误（包括确定的泄漏）时以状态 2 退出。不加它的话，Valgrind 会沿用程序自己的退出状态（这里是 0），CI 任务就会一直是绿的。\n\n构建时用了 `-g` 和 `-O0`，这样调用链里才有文件名和行号。Valgrind 很慢（常常慢 20 到 50 倍），对单元测试程序来说没问题。它不支持 Apple Silicon 上的 macOS；在那里请使用 Linux、容器，或 macOS 自带的 `leaks` 工具。"
+   },
+   "command": "valgrind --leak-check=full --error-exitcode=2 ./profile_test",
+   "exit": 2,
+   "contains": [
+    "definitely lost",
+    "loss record",
+    "dup_string",
+    "profile_parse",
+    "ERROR SUMMARY"
+   ],
+   "lines": 50
+  },
+  {
+   "title": {
+    "en": "Read the leak report",
+    "zh": "读懂泄漏报告"
+   },
+   "body": {
+    "en": "Start at the `LEAK SUMMARY`: `definitely lost: 31 bytes in 4 blocks`. \"Definitely lost\" means no pointer to the block exists any more, so it cannot be freed by anyone. The four blocks above it each have a call chain. Read each chain from the top down to find the code, then from the bottom up to find the test:\n\n- the top line, `malloc`, is the allocation itself;\n- the next frame, `dup_string`, is our function that called `malloc`;\n- then `profile_parse`, which asked for the string, with the line of the call;\n- the bottom frame is the caller, `main` in profile_test.c, at the line of one particular test.\n\nThere are four records, not three, because two of the three invalid specs leak two blocks each (the name and the host). Two different `main` lines in the chains tell you which specs: the port 99999 test and the port 0 test. The missing-port spec returns before it allocates anything, so it does not appear. The common point is the `if (port < 1 || port > 65535)` check in profile_parse. It was added after the allocations, and its `free(p)` forgot the two strings that `p` owns.",
+    "zh": "先看 `LEAK SUMMARY`：`definitely lost: 31 bytes in 4 blocks`。“definitely lost”（确定丢失）表示已经没有任何指针指向这个块，所以谁也无法释放它。上面的四个块各有一条调用链。从上往下读可以找到代码，从下往上读可以找到对应的测试：\n\n- 最上面的 `malloc` 是分配动作本身；\n- 往下一帧 `dup_string` 是我们调用 `malloc` 的函数；\n- 再往下是 `profile_parse`，它要求分配这个字符串，并给出调用所在的行；\n- 最下面的帧是调用者，即 profile_test.c 里的 `main`，行号对应某一个具体的测试。\n\n一共有四条记录而不是三条，因为三条无效配置里有两条各泄漏两个块（名字和主机）。调用链里两个不同的 `main` 行号告诉你是哪两条：端口 99999 的测试和端口 0 的测试。缺少端口的配置在分配任何东西之前就返回了，所以没有出现。共同点是 profile_parse 里的 `if (port < 1 || port > 65535)` 检查：它是在分配之后才加上的，它的 `free(p)` 忘了 `p` 拥有的那两个字符串。"
+   }
+  },
+  {
+   "title": {
+    "en": "Collapse the exits into one cleanup path",
+    "zh": "把多个出口合并成一条清理路径"
+   },
+   "body": {
+    "en": "Patching the one missing `free` would fix today's leak and leave the shape that caused it: four exits, each of which has to remember what exists at that point. The patch replaces them with one label, `fail:`, reached by `goto fail`. The function does these things:\n\n- `calloc` zeroes the struct, so `name` and `host` are NULL until they are assigned (all-zero bytes is a null pointer on every mainstream platform, though ISO C does not promise it; assign `NULL` explicitly if you need to be strict). That lets cleanup free unconditionally.\n- All failures jump to the same place, which calls `profile_free`, the one function that knows what a profile owns.\n- On success the function returns before the label, so ownership passes to the caller.\n\n`goto` here is the usual C idiom for cleanup (large C projects use it everywhere): jump forward only, to a label at the end of the function. Rerun under Valgrind. The tests still print `ok`, and the report ends with `0 errors`. The exit status is the program's own, 0.",
+    "zh": "只补上缺失的那一个 `free` 能修好今天的泄漏，但会留下造成它的结构：四个出口，每个出口都得记住此时有哪些资源。补丁用一个标签 `fail:` 取代它们，所有失败都通过 `goto fail` 到达。函数做了这几件事：\n\n- `calloc` 把结构体清零，所以 `name` 和 `host` 在赋值之前都是 NULL（全零字节在所有主流平台上都是空指针，但 ISO C 并不保证这一点；如需严格可移植，请显式赋值为 `NULL`），清理代码可以无条件地释放。\n- 所有失败都跳到同一个地方，调用 `profile_free`；这是唯一知道一个 profile 拥有什么的函数。\n- 成功时函数在标签之前就返回，所有权交给调用者。\n\n这里的 `goto` 是 C 里常见的清理惯用法（大型 C 项目到处都在用）：只向前跳，跳到函数末尾的标签。再用 Valgrind 运行一次。测试仍然打印 `ok`，报告末尾是 `0 errors`，退出状态是程序自己的 0。"
+   },
+   "command": "gcc -std=c11 -Wall -Wextra -g -O0 profile.c profile_test.c -o profile_test && valgrind --leak-check=full --error-exitcode=2 ./profile_test",
+   "contains": [
+    "port 0 is rejected",
+    "ERROR SUMMARY: 0 errors"
+   ],
+   "lines": 24,
+   "patch": {
+    "file": "profile.c",
+    "from": "struct profile *profile_parse(const char *spec)\n{\n    char name[32], host[64];\n    long port;\n\n    struct profile *p = calloc(1, sizeof *p);\n    if (p == NULL) {\n        return NULL;\n    }\n    if (sscanf(spec, \"%31s %63s %ld\", name, host, &port) != 3) {\n        free(p);\n        return NULL;\n    }\n    p->name = dup_string(name);\n    p->host = dup_string(host);\n    if (p->name == NULL || p->host == NULL) {\n        free(p->name);\n        free(p->host);\n        free(p);\n        return NULL;\n    }\n    if (port < 1 || port > 65535) {\n        free(p);\n        return NULL;\n    }\n    p->port = (unsigned)port;\n    return p;\n}\n",
+    "to": "struct profile *profile_parse(const char *spec)\n{\n    char name[32], host[64];\n    long port;\n\n    struct profile *p = calloc(1, sizeof *p);\n    if (p == NULL) {\n        return NULL;\n    }\n    if (sscanf(spec, \"%31s %63s %ld\", name, host, &port) != 3) {\n        goto fail;\n    }\n    if (port < 1 || port > 65535) {\n        goto fail;\n    }\n    p->name = dup_string(name);\n    p->host = dup_string(host);\n    if (p->name == NULL || p->host == NULL) {\n        goto fail;\n    }\n    p->port = (unsigned)port;\n    return p;\n\nfail:\n    profile_free(p);            /* releases whatever was set so far; fields start as NULL */\n    return NULL;\n}\n"
+   }
+  }
+ ],
+ "review": [
+  {
+   "en": "Does every function that acquires more than one resource have a single exit path that releases all of them, rather than each early return listing what to free?",
+   "zh": "每个获取多个资源的函数，是否只有一条释放全部资源的出口路径，而不是每个提前返回都各自列出要释放什么？"
+  },
+  {
+   "en": "Are owning pointers initialised to NULL (an explicit `= NULL`, or calloc on mainstream platforms) so that the cleanup code can free unconditionally?",
+   "zh": "拥有所有权的指针是否初始化为 NULL（显式的 `= NULL`，或在主流平台上用 calloc），使清理代码可以无条件释放？"
+  },
+  {
+   "en": "Is there one `*_free` function that knows what the struct owns? When a field is added, there is exactly one place to update.",
+   "zh": "是否只有一个 `*_free` 函数知道结构体拥有什么？添加字段时，只有一处需要更新。"
+  },
+  {
+   "en": "On success, is ownership clearly handed to the caller, and in the header, who frees what?",
+   "zh": "成功时所有权是否明确交给了调用者，头文件里是否写明了谁来释放什么？"
+  },
+  {
+   "en": "Does a test reach each error path (bad field count, bad range, and out-of-memory by fault injection), not just the success path?",
+   "zh": "测试是否覆盖了每条错误路径（字段数不对、范围不对，以及用故障注入模拟的内存不足），而不只是成功路径？"
+  },
+  {
+   "en": "Does CI run the tests under Valgrind or LeakSanitizer with a non-zero exit on any finding (`--error-exitcode`)?",
+   "zh": "CI 是否在 Valgrind 或 LeakSanitizer 下运行测试，并在有任何发现时以非零状态退出（`--error-exitcode`）？"
+  },
+  {
+   "en": "Are `goto` jumps forward only, to a label at the end, with a name that says what it does (`fail`, `cleanup`)?",
+   "zh": "`goto` 是否只向前跳到末尾的标签，标签名是否说明了用途（`fail`、`cleanup`）？"
+  },
+  {
+   "en": "Was the new validation (`port < 1 || port > 65535`) added after an allocation? Check every early return that now sits between an allocation and its release.",
+   "zh": "新增的校验（`port < 1 || port > 65535`）是否放在了某次分配之后？检查所有夹在分配与释放之间的提前返回。"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**Why not just add the missing free.** It fixes the leak and keeps four exits, each of which must be updated whenever a field is added. The goto form costs a label and an unfamiliar-looking jump, and in return it makes the next forgotten release impossible in this function. Alternatives are nested `if` blocks that free on the way out (they grow a level for every resource), or an arena allocator that frees a whole group at once (simple and fast, but you lose individual lifetimes and cannot release one early). C has no destructors, so the cleanup label is the standard answer. Keep it forward-only so that control flow stays readable.\n\n**What Valgrind tells you.** It sorts lost memory into classes. *Definitely lost*: no pointer remains; always fix. *Indirectly lost*: reachable only through a definitely-lost block (if `p` had leaked, its name and host would be listed this way); fixing the parent fixes them. *Possibly lost*: a pointer into the middle of a block exists, often a false alarm but worth reading. *Still reachable*: a pointer still exists at exit, such as a global cache; this is not an error by default, and `--show-leak-kinds=all` lists it.\n\n**What it cannot tell you.** A long-running agent can grow without bound while every block stays reachable (a list that is appended to and never trimmed). Valgrind sees that as \"still reachable\" at exit, not as a leak, so for that bug you need a heap profiler (Massif, heaptrack) or a production memory graph. Valgrind also only sees the paths your tests run: the out-of-memory branches here never execute unless you inject failures, for example with a test allocator that fails the Nth call. And it only checks the single run; thread timing and other inputs are separate questions.\n\n**Cost and alternatives.** Valgrind needs no recompilation, but it is slow and has no support for macOS on Apple Silicon. On Linux, AddressSanitizer includes LeakSanitizer and costs about a factor of two, so teams often run that in the fast CI job and keep Valgrind for the occasional deep check, for example when the sanitizer build and the real build behave differently, or you need uninitialised-value tracking (`--track-origins=yes`). The macOS `leaks --atExit -- ./program` tool gives a similar answer locally.",
+  "zh": "**为什么不直接补上缺失的 free。** 补一个 free 能修好泄漏，但保留了四个出口，每次添加字段时每个出口都要更新。goto 形式的代价是一个标签和一次看起来不太寻常的跳转，换来的是：在这个函数里，下一次忘记释放变得不可能。其他选择有两种：一种是嵌套的 `if` 块，在退出时一层层释放（每多一个资源就多一层缩进）；另一种是 arena 分配器，一次释放一整组（简单快速，但失去了单个对象的生命周期，也不能提前释放某一个）。C 没有析构函数，所以清理标签是标准答案。保持只向前跳，控制流才容易阅读。\n\n**Valgrind 告诉你什么。** 它把丢失的内存分成几类。*确定丢失（definitely lost）*：没有任何指针剩下，必须修。*间接丢失（indirectly lost）*：只能通过某个确定丢失的块到达（如果 `p` 本身泄漏，它的名字和主机就会这样列出）；修好父块就修好了它们。*可能丢失（possibly lost）*：存在指向块内部的指针，常常是误报，但值得看一眼。*仍可到达（still reachable）*：退出时仍有指针指向，例如全局缓存；默认不算错误，`--show-leak-kinds=all` 会列出它们。\n\n**它不能告诉你什么。** 长期运行的代理可能无限增长，而每个块都仍然可达（一个只追加、从不裁剪的列表）。Valgrind 在退出时把这种情况看作“仍可到达”，不当作泄漏，所以这类缺陷需要堆分析器（Massif、heaptrack）或生产环境的内存曲线。Valgrind 也只看到你的测试走过的路径：这里的内存不足分支永远不会执行，除非你注入故障，例如用一个让第 N 次调用失败的测试分配器。它只检查这一次运行；线程时序和其他输入是另外的问题。\n\n**代价与替代方案。** Valgrind 不需要重新编译，但很慢，也不支持 Apple Silicon 上的 macOS。在 Linux 上，AddressSanitizer 包含 LeakSanitizer，代价约为两倍，所以团队常在快速的 CI 任务里跑它，把 Valgrind 留给偶尔的深入检查，例如 sanitizer 构建和真实构建行为不同，或需要追踪未初始化值（`--track-origins=yes`）时。macOS 的 `leaks --atExit -- ./program` 在本地可以给出类似的结论。"
+ },
+ "done": [
+  {
+   "en": "You can explain why all the tests passed while 31 bytes were lost.",
+   "zh": "你能解释为什么所有测试都通过了，却丢失了 31 个字节。"
+  },
+  {
+   "en": "You can read a loss record from the bottom (caller) to the top (malloc) and name the line that is responsible.",
+   "zh": "你能把一条泄漏记录从下（调用者）往上（malloc）读完，并指出应负责的那一行。"
+  },
+  {
+   "en": "profile_parse has one exit path for failure, and Valgrind ends with 0 errors and exit status 0.",
+   "zh": "profile_parse 只有一条失败出口路径，Valgrind 以 0 errors 结束，退出状态为 0。"
+  },
+  {
+   "en": "You can name the four classes of lost memory and say which one needs no action by default.",
+   "zh": "你能说出丢失内存的四个类别，并说明哪一类默认无需处理。"
+  }
+ ]
+}

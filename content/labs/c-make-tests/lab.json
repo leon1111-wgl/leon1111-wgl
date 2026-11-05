@@ -1,0 +1,289 @@
+{
+ "id": "c-make-tests",
+ "course": "comp2017",
+ "minutes": 40,
+ "tools": [
+  "make",
+  "cc",
+  "UBSan",
+  "AddressSanitizer"
+ ],
+ "title": {
+  "en": "From a loose folder to a build you can trust",
+  "zh": "从一堆散文件到可信赖的构建"
+ },
+ "summary": {
+  "en": "Turn a folder with a build.sh into a Makefile with warnings as errors, header dependency tracking, a test target and a sanitizer build, and watch exactly what rebuilds when one header changes.",
+  "zh": "把带有 build.sh 的散乱文件夹变成 Makefile：警告当作错误、跟踪头文件依赖、测试目标和 sanitizer 构建，并准确观察改动一个头文件时哪些文件会被重新构建。"
+ },
+ "scenario": {
+  "en": "Emma has inherited a small sampler: a ring buffer of the last 16 readings, a function that summarises them, and a hash that picks a shard. It builds with a two-line build.sh that compiles everything every time, has no warning flags, and runs its tests by hand. Last month someone changed a struct in a header, rebuilt only part of the program, and spent a day chasing a crash that disappeared after a full clean build.\n\nYour job is to replace build.sh with a Makefile the team can trust. You will add it in small steps, and check each one by watching what make actually does: which files it recompiles, what it refuses to build, and what it catches that the plain build never showed.",
+  "zh": "Emma 接手了一个小型采样程序：一个保存最近 16 个读数的环形缓冲区、一个汇总它们的函数，以及一个用来选择分片的哈希。它用只有两行的 build.sh 构建，每次都编译全部文件，没有任何警告选项，测试靠手工运行。上个月有人改了头文件里的一个结构体，只重新构建了一部分程序，结果追了一整天的崩溃，而完整干净构建之后问题就消失了。\n\n你的任务是用团队可以信赖的 Makefile 取代 build.sh。你会分小步加入各项功能，并通过观察 make 实际做了什么来验证每一步：它重新编译了哪些文件，拒绝构建什么，以及它发现了哪些普通构建从未显示的问题。"
+ },
+ "show": [
+  "build.sh",
+  "Makefile",
+  "ring.h"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "See the loose folder work",
+    "zh": "先看这堆散文件能工作"
+   },
+   "body": {
+    "en": "`cc` is the system C compiler (gcc on Linux, clang on macOS). `-o` names the output. build.sh compiles four files into `sampler`, and compiles `ring.c`, `stats.c` and `util.c` again for `test_ring`. Nothing is warned about, nothing is remembered between runs, and tests exist only if somebody remembers to run them. `ring.h`, `stats.h` and `util.h` are headers: the module files include them, so they matter to the build even though they are never compiled on their own.",
+    "zh": "`cc` 是系统的 C 编译器（Linux 上是 gcc，macOS 上是 clang）。`-o` 指定输出文件名。build.sh 把四个文件编译成 `sampler`，又把 `ring.c`、`stats.c` 和 `util.c` 为 `test_ring` 重新编译一遍。它不给任何警告，运行之间什么也不记住，测试只有在有人想起来的时候才会运行。`ring.h`、`stats.h` 和 `util.h` 是头文件：各模块文件会包含它们，所以它们对构建很重要，尽管它们从不单独编译。"
+   },
+   "command": "ls && sh build.sh && ./sampler && ./test_ring",
+   "contains": [
+    "build.sh",
+    "shard key 9baee89f",
+    "test_ring: all checks passed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Translate it to a Makefile and find the first problem",
+    "zh": "翻译成 Makefile，并发现第一个问题"
+   },
+   "body": {
+    "en": "The Makefile is a direct translation. A rule has the form `target: prerequisites`, followed by a tab-indented command. make rebuilds a target when any prerequisite is newer than it. The pattern rule `build/%.o: %.c` says how to turn any `.c` into an object in `build/`, and `$@` and `$<` are the target and the first prerequisite. `make clean` removes the previous output, then `make` builds everything.\n\nThe second `make` does nothing, which is correct. Then `touch ring.h` updates the file's time as if it had been edited, and make still does nothing. The rule only lists the `.c` file as a prerequisite, so make cannot know the header matters. This is the dangerous case: edit a struct in `ring.h`, and `main.o` and `stats.o` keep the old layout while `ring.o` could have been rebuilt with the new one. The program builds, links and misbehaves.",
+    "zh": "Makefile 是直接翻译的。规则的形式是 `目标: 先决条件`，后面跟一条以制表符（tab）缩进的命令。当任一先决条件比目标更新时，make 就重新构建该目标。模式规则 `build/%.o: %.c` 说明如何把任何 `.c` 文件变成 `build/` 里的目标文件，`$@` 和 `$<` 分别是目标和第一个先决条件。`make clean` 删除之前的输出，然后 `make` 构建全部。\n\n第二次 `make` 什么也没做，这是对的。接着 `touch ring.h` 把文件时间更新得就像被编辑过一样，make 仍然什么也不做。规则里只把 `.c` 文件列为先决条件，所以 make 无从知道头文件也有影响。这就是危险的情况：修改 `ring.h` 里的结构体后，`main.o` 和 `stats.o` 仍然保留旧的布局，而 `ring.o` 可能已用新布局重建。程序能构建、能链接，但行为错误。"
+   },
+   "command": "make clean && make && make; touch ring.h; make",
+   "contains": [
+    "cc ",
+    "build/sampler",
+    "Nothing to be done"
+   ]
+  },
+  {
+   "title": {
+    "en": "Ask the compiler to write the dependencies",
+    "zh": "让编译器写出依赖关系"
+   },
+   "body": {
+    "en": "The patch adds `-MMD -MP` to the compile flags, together with a baseline: `-std=c11` fixes the language version, `-g` keeps debug information, and `-O2` turns on optimisation. `-MMD` makes the compiler write a small makefile fragment beside each object, listing every non-system header that file included. Look at `build/stats.d`: it says `stats.o` depends on `stats.c`, `stats.h` and `ring.h`. `-MP` adds an empty rule for each header, so deleting a header does not stop the build with \"No rule to make target\".\n\nYet `touch ring.h` still triggers nothing. The `.d` files exist but nobody has read them. That is the next step.",
+    "zh": "补丁在编译选项里加入 `-MMD -MP`，同时加上一组基线选项：`-std=c11` 固定语言版本，`-g` 保留调试信息，`-O2` 打开优化。`-MMD` 让编译器在每个目标文件旁边写出一小段 makefile 片段，列出该文件包含过的所有非系统头文件。看一下 `build/stats.d`：它说 `stats.o` 依赖 `stats.c`、`stats.h` 和 `ring.h`。`-MP` 为每个头文件添加一条空规则，这样删掉某个头文件时，构建不会因为“No rule to make target”而停止。\n\n但 `touch ring.h` 仍然没有触发任何东西。`.d` 文件已经存在，却没有人读取它们。这就是下一步。"
+   },
+   "command": "make clean && make > /dev/null && cat build/stats.d && touch ring.h && make",
+   "contains": [
+    "build/stats.o: stats.c stats.h ring.h",
+    "Nothing to be done"
+   ],
+   "patch": {
+    "file": "Makefile",
+    "from": "CFLAGS    =\n",
+    "to": "CFLAGS    = -std=c11 -g -O2 -MMD -MP $(SANITIZE)\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Include the dependency files and touch one header",
+    "zh": "包含依赖文件，再改动一个头文件"
+   },
+   "body": {
+    "en": "`-include` reads the `.d` files into the Makefile. The leading dash means \"ignore it if the file is missing\", which is true on the very first build. The line goes after the first rule, because a `.d` file contains a rule, and a rule above `all` would become the default goal.\n\nNow `touch ring.h` rebuilds exactly the files that include it, directly or through `stats.h`: `ring`, `stats`, `main` and `test_ring`. It does not rebuild `util.c`, which never includes it. The `if grep` line records that fact, so you do not have to look for a missing line in the output. (`sleep 1` makes sure the header is newer than the objects even on systems that compare times in whole seconds. A real edit is always later than the build, so you will not need it.)",
+    "zh": "`-include` 把 `.d` 文件读进 Makefile。前面的短横线表示“文件不存在就忽略”，第一次构建时正是这种情况。这一行要放在第一条规则之后，因为 `.d` 文件里含有规则，如果放在 `all` 之前，那条规则就会变成默认目标。\n\n现在 `touch ring.h` 恰好重建包含它的文件（直接包含，或通过 `stats.h` 间接包含）：`ring`、`stats`、`main` 和 `test_ring`。它不会重建 `util.c`，因为 `util.c` 从不包含它。`if grep` 那一行把这件事记录下来，你不必在输出里去找缺了哪一行。（`sleep 1` 保证头文件比目标文件新，即使系统只按整秒比较时间也是如此。真实的修改总是晚于构建，所以你平时不需要它。）"
+   },
+   "command": "make clean && make > /dev/null && sleep 1 && touch ring.h && make | tee rebuild.log; if grep -q util.c rebuild.log; then echo \"util.c was rebuilt\"; else echo \"util.c was not rebuilt\"; fi",
+   "contains": [
+    "ring.c",
+    "stats.c",
+    "main.c",
+    "test_ring.c",
+    "util.c was not rebuilt"
+   ],
+   "patch": {
+    "file": "Makefile",
+    "from": "clean:\n\trm -rf build build-asan\n",
+    "to": "# Read the dependency files the compiler wrote (-MMD). The dash ignores\n# missing ones. Keep this below the first rule so no .d file becomes the default goal.\n-include $(OBJS:.o=.d) $(TEST_OBJS:.o=.d)\n\nclean:\n\trm -rf build build-asan\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Turn warnings into errors",
+    "zh": "把警告变成错误"
+   },
+   "body": {
+    "en": "`-Wall -Wextra` turns on the common warnings, and `-Werror` makes each one stop the build, so warnings cannot pile up unread. Changing flags does not make make rebuild, because the Makefile did not say that objects depend on flags. That is why the command starts with `make clean`. `-k` (keep going) builds every file it can and reports all the errors at once, instead of stopping at the first.\n\nThe code has compiled without a word for as long as nobody asked. Two things show up: `main` takes `argc` and `argv` and ignores both, and `stats.c` compares a signed `int` with a `size_t`. The second can change the answer: a negative `int` is converted to a huge unsigned number before the comparison. The message wording differs between compilers (gcc and clang), but the warning name in square brackets is the same.",
+    "zh": "`-Wall -Wextra` 打开常用的警告，`-Werror` 让每一条警告都使构建失败，这样警告就不会堆积而无人阅读。改变编译选项并不会让 make 重新构建，因为 Makefile 没有声明目标文件依赖于编译选项。所以命令以 `make clean` 开头。`-k`（keep going，继续）会构建所有能构建的文件，一次报告全部错误，而不是在第一个错误处停止。\n\n只要没人去问，这些代码一直编译得悄无声息。现在暴露了两处：`main` 接收了 `argc` 和 `argv` 却都没用；`stats.c` 把有符号的 `int` 和 `size_t` 做比较。后者可能改变结果：负的 `int` 在比较之前会被转成一个巨大的无符号数。不同编译器（gcc 和 clang）的消息措辞不同，但方括号里的警告名称是一样的。"
+   },
+   "command": "make clean && make -k",
+   "exit": 2,
+   "contains": [
+    "Werror",
+    "unused-parameter",
+    "sign-compare"
+   ],
+   "lines": 30,
+   "patch": {
+    "file": "Makefile",
+    "from": "-O2 -MMD -MP",
+    "to": "-O2 -Wall -Wextra -Werror -MMD -MP"
+   }
+  },
+  {
+   "title": {
+    "en": "Fix the first warning",
+    "zh": "修复第一个警告"
+   },
+   "body": {
+    "en": "`main` does not use its arguments, so it should say so: `int main(void)`. Fix it and run `make -k` again. The remaining error is the signed comparison in `stats.c`. Do not silence warnings with `-Wno-...` unless you can explain why the code is correct: the fix is almost always shorter than the excuse.",
+    "zh": "`main` 不使用它的参数，所以应当明说：`int main(void)`。修好之后再运行 `make -k`。剩下的错误是 `stats.c` 里的有符号比较。除非你能解释清楚代码为什么正确，否则不要用 `-Wno-...` 压制警告：修复几乎总比借口更短。"
+   },
+   "command": "make -k",
+   "exit": 2,
+   "contains": [
+    "sign-compare"
+   ],
+   "lines": 20,
+   "patch": {
+    "file": "main.c",
+    "from": "int main(int argc, char **argv)",
+    "to": "int main(void)"
+   }
+  },
+  {
+   "title": {
+    "en": "Fix the second warning and build",
+    "zh": "修复第二个警告并构建"
+   },
+   "body": {
+    "en": "The loop counter becomes a `size_t`, the same type as `n`, and the cast disappears. The build now succeeds with all warnings on. make only recompiled `stats.c`, because it is the only file that changed. The other objects were built a moment ago in the last step and are up to date.",
+    "zh": "循环计数器改为 `size_t`，与 `n` 类型一致，类型转换也不再需要。现在带着全部警告选项构建成功。make 只重新编译了 `stats.c`，因为只有它改变了；其他目标文件是上一步刚刚构建的，仍然是最新的。"
+   },
+   "command": "make && build/sampler",
+   "contains": [
+    "16 samples",
+    "shard key"
+   ],
+   "patch": {
+    "file": "stats.c",
+    "from": "for (int i = 0; i < n; i++) {\n        int v = ring_at(r, (size_t)i);",
+    "to": "for (size_t i = 0; i < n; i++) {\n        int v = ring_at(r, i);"
+   }
+  },
+  {
+   "title": {
+    "en": "Add a test target",
+    "zh": "添加测试目标"
+   },
+   "body": {
+    "en": "`make test` builds `build/test_ring` if it is out of date, then runs it. The test program returns a non-zero status when any check fails, so make stops with an error and CI sees the failure. Targets that are not files (`all`, `test`, `asan`, `clean`) are listed in `.PHONY`, so a file with the same name can never make them look up to date.",
+    "zh": "`make test` 会在 `build/test_ring` 过期时先构建它，然后运行。任何检查失败时测试程序都返回非零状态，所以 make 会以错误停止，CI 能看到失败。不是文件的目标（`all`、`test`、`asan`、`clean`）列在 `.PHONY` 里，这样同名文件永远不会让它们看起来“已是最新”。"
+   },
+   "command": "make test",
+   "contains": [
+    "test_ring: all checks passed"
+   ],
+   "patch": {
+    "file": "Makefile",
+    "from": "clean:\n\trm -rf build build-asan\n",
+    "to": "test: $(BUILD)/test_ring\n\t$(BUILD)/test_ring\n\nclean:\n\trm -rf build build-asan\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Add a sanitizer build in its own directory",
+    "zh": "添加放在独立目录里的 sanitizer 构建"
+   },
+   "body": {
+    "en": "`make asan` calls make again with a different `BUILD` directory and with sanitizer flags: `-fsanitize=address,undefined` turns on AddressSanitizer and UndefinedBehaviorSanitizer, `-fno-omit-frame-pointer` keeps stack traces readable, and `-fno-sanitize-recover=undefined` makes the first undefined-behaviour finding stop the program with a non-zero status. Because the objects go to `build-asan/`, they can never be linked with normal ones, and changing flags needs no `make clean`.\n\nThe normal test passed in the last step. The sanitized one fails: `hash_label` multiplies a signed `int`, and overflowing a signed int is undefined behaviour in C even though it appears to wrap on this machine. The exit status is 2: the inner make reports the failing test, and the outer make fails because of it.",
+    "zh": "`make asan` 用不同的 `BUILD` 目录和 sanitizer 选项再次调用 make：`-fsanitize=address,undefined` 打开 AddressSanitizer 和 UndefinedBehaviorSanitizer，`-fno-omit-frame-pointer` 让调用栈可读，`-fno-sanitize-recover=undefined` 让第一个未定义行为的发现就以非零状态终止程序。由于目标文件放在 `build-asan/` 里，它们永远不会和普通的目标文件链接在一起，改变选项也不需要 `make clean`。\n\n上一步里普通测试通过了，带 sanitizer 的却失败了：`hash_label` 对有符号的 `int` 做乘法，而有符号整数溢出在 C 里是未定义行为，尽管在这台机器上看起来是回绕。退出状态是 2：内层 make 报告测试失败，外层 make 因此失败。"
+   },
+   "command": "make asan",
+   "exit": 2,
+   "contains": [
+    "runtime error: signed integer overflow"
+   ],
+   "lines": 24,
+   "patch": {
+    "file": "Makefile",
+    "from": "clean:\n\trm -rf build build-asan\n",
+    "to": "# Same tests, built with sanitizers into a separate directory.\nasan:\n\t$(MAKE) BUILD=build-asan SANITIZE='-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer' test\n\nclean:\n\trm -rf build build-asan\n"
+   }
+  },
+  {
+   "title": {
+    "en": "Fix the hash and run both builds",
+    "zh": "修复哈希并运行两种构建"
+   },
+   "body": {
+    "en": "Hash arithmetic wants wrap-around, and unsigned arithmetic is defined to wrap. The patch changes `int h` to `unsigned h`. The expected constant in the test does not change, because the bits are the same. Start from a clean build to prove the fix does not depend on old objects, and run both: the normal build and the sanitizer build now pass, and `ls -d` shows that the two sets of objects live in separate directories. This is the check CI should run on every commit: `make test` and `make asan`.",
+    "zh": "哈希运算需要回绕，而无符号整数的算术被定义为回绕。补丁把 `int h` 改为 `unsigned h`。测试里的期望常量不变，因为二进制位是一样的。先做一次干净构建，证明修复不依赖旧的目标文件，然后两种构建都运行一遍：普通构建和 sanitizer 构建现在都通过，`ls -d` 显示两组目标文件在不同目录。这就是 CI 对每次提交都应运行的检查：`make test` 和 `make asan`。"
+   },
+   "command": "make clean > /dev/null && make test && make asan && ls -d build build-asan",
+   "contains": [
+    "test_ring: all checks passed",
+    "build-asan"
+   ],
+   "patch": {
+    "file": "util.c",
+    "from": "    int h = 7;\n    while (*s != '\\0') {\n        h = h * 31 + (unsigned char)*s++;\n    }\n    return (unsigned)h;\n",
+    "to": "    unsigned h = 7u;\n    while (*s != '\\0') {\n        h = h * 31u + (unsigned char)*s++;\n    }\n    return h;\n"
+   }
+  }
+ ],
+ "review": [
+  {
+   "en": "Does a fresh clone build and test with one documented command (`make test`), and does a failing test make the command exit non-zero?",
+   "zh": "新克隆下来的代码能否用一条有文档的命令（`make test`）构建并测试，测试失败时命令是否以非零状态退出？"
+  },
+  {
+   "en": "Does every object depend on the headers it includes (`-MMD -MP` plus `-include`)? Change one header and check that exactly the expected files rebuild.",
+   "zh": "每个目标文件是否依赖它所包含的头文件（`-MMD -MP` 加 `-include`）？改动一个头文件，检查重建的恰好是预期的那些文件。"
+  },
+  {
+   "en": "Is `-include` placed after the first rule, so a dependency file cannot become the default goal?",
+   "zh": "`-include` 是否放在第一条规则之后，使依赖文件不可能变成默认目标？"
+  },
+  {
+   "en": "Are `-Wall -Wextra -Werror` on for our own code, and does each warning get fixed rather than silenced? Is every `-Wno-` flag explained in a comment?",
+   "zh": "我们自己的代码是否打开了 `-Wall -Wextra -Werror`，每条警告是被修复而不是被压制？每个 `-Wno-` 选项是否都有注释说明？"
+  },
+  {
+   "en": "Do different configurations (release, asan, tsan) build into different directories, so objects built with different flags are never mixed?",
+   "zh": "不同配置（release、asan、tsan）是否构建到不同的目录，使不同选项构建的目标文件永远不会混在一起？"
+  },
+  {
+   "en": "Are `CC`, `CFLAGS` and `LDFLAGS` overridable from the environment or the command line (`CC=clang make`), instead of hard-coded to one compiler?",
+   "zh": "`CC`、`CFLAGS` 和 `LDFLAGS` 是否可以通过环境变量或命令行覆盖（`CC=clang make`），而不是写死成某一个编译器？"
+  },
+  {
+   "en": "Does the sanitizer target fail on the first finding (`-fno-sanitize-recover`), and does CI run it, not only the normal test?",
+   "zh": "sanitizer 目标是否在第一个发现处失败（`-fno-sanitize-recover`），CI 是否运行它，而不只是运行普通测试？"
+  },
+  {
+   "en": "Are non-file targets in `.PHONY`, does `clean` remove only generated files, and are `build*/` and `*.d` in `.gitignore`?",
+   "zh": "不是文件的目标是否列在 `.PHONY` 里，`clean` 是否只删除生成的文件，`build*/` 和 `*.d` 是否在 `.gitignore` 里？"
+  },
+  {
+   "en": "Does `make -j4` give the same result as `make`? Missing dependencies often first show up as flaky parallel builds.",
+   "zh": "`make -j4` 与 `make` 的结果是否相同？缺失的依赖往往最先表现为并行构建时时好时坏。"
+  }
+ ],
+ "tradeoffs": {
+  "en": "**`-Werror` and compiler upgrades.** `-Werror` keeps the warning count at zero, which is the only number anyone maintains. The cost is that a new compiler release adds warnings and breaks a build nobody touched. Teams handle this by enabling it for their own code only, pinning the compiler version in CI, or using `-Werror` in CI and plain warnings on developers' machines. Do not apply it to third-party headers; use `-isystem` for those so their warnings are not yours.\n\n**What make knows.** make compares file timestamps and the dependency lists it is given. It does not know that `CFLAGS` changed, that the compiler was upgraded, or that an environment variable affected the output. Separate build directories per configuration solve the first problem cleanly. The rest needs a clean build, or a tool such as ccache, which keys on the full command line and compiler. Timestamps also mislead when files arrive with old times (a restore from backup, an archive that keeps modification times) or when the clock is skewed (a network drive): make then treats stale objects as fresh.\n\n**Hand-written versus generated builds.** A 40-line Makefile is easy to read and works everywhere make exists. By a few dozen files, several libraries and a second platform, you will be reimplementing what CMake, Meson or Bazel provide: discovery of libraries, install rules, out-of-tree builds, generated code, and consistent flags across targets. Move when the Makefile starts to need its own tests. Until then, the Makefile is the cheaper thing to maintain.\n\n**Parallel builds and speed.** `make -j` is only correct if the dependency information is complete. The usual way to lose that is a generated header that the rule does not declare. Keeping `-O2` in tests matches what ships and finds optimiser-dependent bugs, but compiles slower than `-O0`, and the sanitizer build roughly doubles the compile and run time of the tests. That is why the sanitizer job is a separate target.\n\n**What this does not give you.** It does not make builds reproducible (same bits from the same source on another machine), does not track the toolchain, and does not run on a platform without POSIX tools. A sanitizer build also only checks what the tests execute; the tests here are small.",
+  "zh": "**`-Werror` 与编译器升级。** `-Werror` 把警告数量保持在零，这是唯一有人去维护的数字。代价是新版编译器增加警告，会让一个没人碰过的构建失败。团队的处理办法有：只对自己的代码启用、在 CI 里固定编译器版本，或者在 CI 里用 `-Werror`、在开发者机器上只显示警告。不要把它用在第三方头文件上；对这些头文件使用 `-isystem`，这样它们的警告不算你的。\n\n**make 知道什么。** make 比较文件时间戳和你给出的依赖列表。它不知道 `CFLAGS` 变了、编译器升级了，也不知道某个环境变量影响了输出。为每种配置使用单独的构建目录，可以干净地解决第一个问题。其余的情况需要完整重建，或者使用 ccache 这样的工具，它以完整命令行和编译器作为键。当文件带着旧时间到来（从备份恢复、保留修改时间的压缩包），或时钟不同步（例如网络盘）时，时间戳同样会产生误导：make 会把过期的目标文件当成最新的。\n\n**手写构建与生成式构建。** 40 行的 Makefile 容易读，而且在任何有 make 的地方都能用。到了几十个文件、多个库、第二个平台的时候，你就会重新实现 CMake、Meson 或 Bazel 已经提供的东西：查找库、安装规则、源码树外构建、生成代码，以及跨目标一致的选项。当 Makefile 开始需要自己的测试时，就该迁移了。在那之前，Makefile 是维护成本更低的选择。\n\n**并行构建与速度。** 只有依赖信息完整，`make -j` 才是正确的。丢失依赖的常见原因是规则没有声明某个生成的头文件。测试里保留 `-O2` 与发布版本一致，可以发现依赖优化器的缺陷，但编译比 `-O0` 慢；sanitizer 构建大致让测试的编译和运行时间翻倍，这就是 sanitizer 任务是单独目标的原因。\n\n**它没有给你什么。** 它不保证构建可复现（同样的源码在另一台机器上得到相同的二进制位），不跟踪工具链，也不能在没有 POSIX 工具的平台上运行。sanitizer 构建也只检查测试执行到的代码，而这里的测试很小。"
+ },
+ "done": [
+  {
+   "en": "After touching ring.h, you can name the four objects that rebuild and say why util.o does not.",
+   "zh": "改动 ring.h 之后，你能说出重建的四个目标文件，并说明 util.o 为什么不重建。"
+  },
+  {
+   "en": "`make clean && make -k` shows how a warning turns into a build failure, and the build is clean after the two fixes.",
+   "zh": "`make clean && make -k` 展示了警告如何变成构建失败，两处修复之后构建是干净的。"
+  },
+  {
+   "en": "`make test` and `make asan` both pass, and their objects live in `build/` and `build-asan/`.",
+   "zh": "`make test` 和 `make asan` 都通过，它们的目标文件分别在 `build/` 和 `build-asan/` 里。"
+  },
+  {
+   "en": "You can explain why changing CFLAGS alone does not rebuild, and what you do about it.",
+   "zh": "你能解释为什么只改 CFLAGS 不会触发重建，以及该怎么办。"
+  }
+ ]
+}

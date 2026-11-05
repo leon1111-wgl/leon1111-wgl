@@ -108,7 +108,7 @@ Original course URLs keep the English `.html` route. Chinese editions use `.zh.h
 
 ## COMP2017 engineering path
 
-`content/comp2017-path.json` adds a bilingual six-pass route and a specific coach for each of the 24 chapters. Six smaller standalone C examples bridge difficult topics before the existing examples. The course now has 54 standalone C programs.
+`content/comp2017-path.json` adds a bilingual six-pass route and a specific coach for each chapter. Six smaller standalone C examples bridge difficult topics before the existing examples. The course now has 54 standalone C programs.
 
 `content/projects/comp2017-*.json` contains the three bilingual workshop guides. The actual multi-file C projects live in `projects/`. `scripts/build_projects.py` publishes their guides, maps, exact source files, individual ZIPs and a combined ZIP. Keep the manifest in each JSON aligned with every project file. Whitespace-only and CRLF fixtures are intentional: preserve bytes, even when a text editor makes them look empty. The small log analyzer fixtures are explicitly exempted from the general log-file exclusion.
 

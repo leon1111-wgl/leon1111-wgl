@@ -1,0 +1,190 @@
+{
+ "id": "py-profile",
+ "course": "comp2123",
+ "minutes": 30,
+ "tools": [
+  "python3",
+  "cProfile",
+  "tracemalloc"
+ ],
+ "title": {
+  "en": "The nightly report that got slow: measure, profile, fix",
+  "zh": "夜间报表越跑越慢：先测量、再剖析、再修复"
+ },
+ "summary": {
+  "en": "A report job is fine at 2,000 rows and painful at 20,000. Find the hot function with cProfile, replace one list with a set, and price the fix in memory.",
+  "zh": "报表作业在 2,000 行时没事，到 20,000 行就很慢。用 cProfile 找到热点函数，把一个列表换成集合，并算出这个修复在内存上的代价。"
+ },
+ "scenario": {
+  "en": "Mia owns a nightly sales report. Last spring it finished before she had made her tea. This week the export reached about 20,000 rows, and the dashboard still shows yesterday's numbers at nine in the morning. Nothing failed, nothing is in the error log, and the only change since the first version is a small refactor that moved row cleaning into a shared module.\n\nYou are asked to find out why the job slowed down and to fix it without changing a single line of the report it prints. The data is fabricated: an exporter that sometimes sends an order twice, about one row in ten. The job keeps the first copy of each order id.\n\nThe lab is about the order of work. Measure before you touch anything. Change one thing. Then prove two facts: the output is identical, and the cost moved the way you predicted.",
+  "zh": "Mia 负责一份夜间销售报表。去年春天，它在她泡好茶之前就跑完了。这周导出的数据涨到约 20,000 行，早上九点看板上还是昨天的数字。作业没有失败，错误日志里也没有任何记录，自第一版以来唯一的改动，是一次把行清洗逻辑搬进共用模块的小重构。\n\n你的任务是找出作业变慢的原因，并在不改动报表输出的前提下修好它。这里的数据是编造的：导出程序偶尔会把同一个订单发两次，大约每十行有一行重复，作业保留每个订单号的第一份。\n\n这个实验训练的是做事的顺序：动手之前先测量，一次只改一处，然后证明两件事：输出完全一致，成本也按你的预测变化。"
+ },
+ "show": [
+  "report.py",
+  "cleaning.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Run it at two sizes",
+    "zh": "用两种规模各跑一次"
+   },
+   "body": {
+    "en": "The job takes the number of rows as its argument. The report goes to standard output and one timing line goes to standard error, so the two can be separated. In both commands, `2>&1 >FILE` first points standard error at the terminal and then sends standard output to FILE. The order matters. For the first run FILE is `/dev/null`, which throws the report away; for the second it is `before.txt`, which keeps a copy. Either way the timing line stays on the screen.\n\nCompare the `clean` figure in the two timing lines. Ten times the rows should cost about ten times the time in a linear job. Here the clean stage grows far more than that, and it is also the stage that holds almost all of the total. Keep `before.txt`: it is the evidence that the fix changes the speed and nothing else.",
+    "zh": "作业用第一个参数接收行数。报表写到标准输出，一行计时信息写到标准错误，这样两者可以分开。两条命令里的 `2>&1 >文件` 都是先把标准错误指向终端，再把标准输出写进文件。顺序很重要。第一次的文件是 `/dev/null`，报表被丢掉；第二次是 `before.txt`，报表被留下一份。两种情况下，计时那一行都留在屏幕上。\n\n对比两行计时里的 `clean` 数值。线性的作业里，行数乘 10，时间也该乘 10 左右。这里清洗阶段的增长远不止如此，而且它几乎占了总时间。请保留 `before.txt`：它是“修复只改变速度、不改变别的东西”的证据。"
+   },
+   "command": "python3 report.py 2000 2>&1 >/dev/null; python3 report.py 20000 2>&1 >before.txt",
+   "contains": [
+    "timing:",
+    "clean"
+   ]
+  },
+  {
+   "title": {
+    "en": "Measure how the cost grows",
+    "zh": "量化成本如何增长"
+   },
+   "body": {
+    "en": "`scaling.py` runs the same report at 2,000 and 20,000 rows and prints the ratio. It takes the best of three runs at the small size to reduce noise, and one run at the large size, which is slow enough that noise no longer matters. Read the last line: the rows grew by a factor of 10, so a linear job would show a time factor near 10. A job whose cost grows with the square of the input would show a factor near 100. Where does yours land?\n\nTimings differ from machine to machine, so do not memorise a number. The shape is what carries over: a factor far above the growth of the input means the cost is not proportional to the input.",
+    "zh": "`scaling.py` 用 2,000 行和 20,000 行各跑一次同样的报表，并打印比值。小规模取三次中最快的一次来降低噪声，大规模只跑一次，因为它足够慢，噪声已经不重要。请看最后一行：行数增长了 10 倍，线性的作业时间倍数应接近 10；成本随输入平方增长的作业，倍数会接近 100。你这里落在哪里？\n\n计时在不同机器上不一样，所以不必记住某个数字。能带走的是形状：时间倍数远大于输入倍数，说明成本并不与输入成正比。"
+   },
+   "command": "python3 scaling.py",
+   "contains": [
+    "growth:",
+    "clean stage"
+   ]
+  },
+  {
+   "title": {
+    "en": "Profile it with cProfile",
+    "zh": "用 cProfile 做性能剖析"
+   },
+   "body": {
+    "en": "`python3 -m cProfile -s cumtime report.py 20000` runs the script under Python's built-in deterministic profiler. `-m cProfile` runs the profiler as a module around your script. `-s cumtime` sorts the table by cumulative time: the time spent in a function plus everything it called. The profile table is printed after the report, once the script ends.\n\nRead the columns. `ncalls` is how many times the function ran. `tottime` is the time inside the function itself, not counting what it called. `cumtime` includes callees. `percall` divides by `ncalls`, and it prints as 0.000 here because each call is very short.\n\nRead the table from the top: `main`, `run`, `prepare`, `drop_duplicates`, then `is_new`. The chain ends at `is_new`, and its `tottime` is almost equal to its `cumtime`, so it calls nothing slow; the time is spent inside it. It was called once per row. Each call is tiny, but there are 20,000 of them, and the work per call grows as `seen` grows.\n\nThe profiler names a function, not a line, and not a reason. `is_new` has exactly one line, `key not in seen`. The reason is in how `seen` is built: `not in` on a list compares the key with one element after another, and for a key that has not been seen it compares with every element. The helper is innocent. The container that the caller hands it is the problem.",
+    "zh": "`python3 -m cProfile -s cumtime report.py 20000` 在 Python 自带的确定性剖析器下运行脚本。`-m cProfile` 把剖析器当作模块，包在你的脚本外面。`-s cumtime` 按累计时间排序：一个函数自身的时间，加上它调用的所有函数的时间。脚本结束后，剖析表会打印在报表后面。\n\n先看各列。`ncalls` 是函数被调用的次数。`tottime` 是函数自身耗费的时间，不含它调用的函数。`cumtime` 则包含被调用者。`percall` 是除以 `ncalls` 的结果，这里每次调用都很短，所以显示为 0.000。\n\n从上往下读：`main`、`run`、`prepare`、`drop_duplicates`，最后是 `is_new`。调用链止于 `is_new`，它的 `tottime` 几乎等于 `cumtime`，说明它没有调用任何慢的函数，时间就花在它自己里面。它每行被调用一次。每次调用都很小，但有 20,000 次，而且随着 `seen` 变长，每次调用的工作量也在增加。\n\n剖析器只告诉你函数，不告诉你是哪一行，更不告诉你原因。`is_new` 只有一行 `key not in seen`。原因在 `seen` 的构造方式：对列表做 `not in`，会把键和元素一个接一个比较，对于从未见过的键，要和每一个元素都比一遍。这个辅助函数没有错，错的是调用者传给它的容器。"
+   },
+   "command": "python3 -m cProfile -s cumtime report.py 20000",
+   "contains": [
+    "ncalls",
+    "cumulative",
+    "is_new"
+   ],
+   "lines": 28
+  },
+  {
+   "title": {
+    "en": "Change one thing: a set instead of a list",
+    "zh": "只改一处：用集合代替列表"
+   },
+   "body": {
+    "en": "Two edits in `drop_duplicates`: `seen = []` becomes `seen = set()`, and `seen.append(...)` becomes `seen.add(...)`. `is_new` is untouched, because all it needs is something that supports `in`. A set finds a key by hashing it, so the cost of a membership test no longer depends, on average, on how many keys are stored. The `kept` list stays a list, because a set has no order and the report must keep the first copy of each order, in the original order.\n\nNow prove the output did not change. `diff before.txt after.txt` prints nothing and exits with 0 when the files are identical, and `&&` runs the `echo` only in that case. The new timing line should show a much smaller `clean` figure.\n\nA set needs keys that are hashable. `order_id` is a string, so it works. A key that is a list or a dict would raise `TypeError`. A key built from floats would need care, because `nan != nan`.",
+    "zh": "`drop_duplicates` 里改两处：`seen = []` 改成 `seen = set()`，`seen.append(...)` 改成 `seen.add(...)`。`is_new` 不动，因为它只要求传进来的东西支持 `in`。集合通过哈希来查找键，所以一次成员判断的平均成本不再取决于已存了多少键。`kept` 仍然是列表，因为集合没有顺序，而报表必须按原始顺序保留每个订单的第一份。\n\n接下来证明输出没变。两个文件完全相同时，`diff before.txt after.txt` 什么都不打印并以 0 退出，`&&` 只在这种情况下才执行 `echo`。新的计时行里，`clean` 的数值应小得多。\n\n集合要求键可哈希。`order_id` 是字符串，没问题；如果键是列表或字典，会抛出 `TypeError`；如果键由浮点数构成则要小心，因为 `nan != nan`。"
+   },
+   "patch": {
+    "file": "cleaning.py",
+    "from": "    seen = []\n    for row in rows:\n        if not is_new(seen, row[\"order_id\"]):\n            continue\n        seen.append(row[\"order_id\"])\n        kept.append(row)",
+    "to": "    seen = set()\n    for row in rows:\n        if not is_new(seen, row[\"order_id\"]):\n            continue\n        seen.add(row[\"order_id\"])\n        kept.append(row)"
+   },
+   "command": "python3 report.py 20000 2>&1 >after.txt; diff before.txt after.txt && echo \"report identical\"",
+   "contains": [
+    "timing:",
+    "report identical"
+   ]
+  },
+  {
+   "title": {
+    "en": "Measure the growth again",
+    "zh": "再量一次增长"
+   },
+   "body": {
+    "en": "Same script, same two sizes. This time the time factor should sit near the row factor, not near its square. Expect some noise: at 2,000 rows the whole job takes a few milliseconds, so a timer tick or a garbage collection moves the ratio. That is why the claim to make is \"near linear\", not an exact number. Also look at the absolute time at 20,000 rows, which is what the nine o'clock dashboard cares about.",
+    "zh": "同一个脚本，同样两种规模。这次时间倍数应当接近行数倍数，而不是它的平方。会有一些噪声：2,000 行时整个作业只要几毫秒，计时器的一次跳动或一次垃圾回收就会改变比值。所以结论应该说“接近线性”，不要说某个精确数字。同时看 20,000 行时的绝对时间，这才是九点的看板真正关心的。"
+   },
+   "command": "python3 scaling.py",
+   "contains": [
+    "growth:"
+   ]
+  },
+  {
+   "title": {
+    "en": "Price the fix in memory",
+    "zh": "算出修复在内存上的代价"
+   },
+   "body": {
+    "en": "The set is faster because it stores more: a hash table with spare room, built on top of the keys. `tracemalloc` is in the standard library. It records every block of memory Python allocates and reports the peak, so it can compare two functions on the same input. The input rows are built before measuring each variant, so the figures show only what the de-duplication itself needs.\n\nRead the three lines. The set costs more than the list. Both are small next to the rows themselves, which is why nobody would worry about it at 20,000 rows. The string keys are not copied: both containers hold references to the same string objects. If the key were a tuple built per row, for example `(customer, day, amount)`, every tuple would be a new object that the set keeps alive, and the cost would be noticeably larger.\n\nMemory grows with the number of distinct keys, so extrapolate before you celebrate: how many keys does the worst night have?",
+    "zh": "集合更快，是因为它存得更多：在键之上建一张留有余量的哈希表。`tracemalloc` 在标准库里，它记录 Python 分配的每一块内存并报告峰值，所以可以在同一份输入上比较两个函数。每个变体测量前，输入行已经构建好，因此数字只反映去重本身需要的内存。\n\n看这三行。集合比列表多占内存，但两者与数据行本身相比都很小，所以 20,000 行时没人会担心。字符串键没有被复制：两种容器保存的都是同一批字符串对象的引用。如果键是每行新建的元组，例如 `(customer, day, amount)`，每个元组都是集合要保持存活的新对象，开销会明显更大。\n\n内存随不同键的数量增长，所以在庆祝之前先外推一下：最忙的那一晚有多少个键？"
+   },
+   "command": "python3 memory_check.py",
+   "contains": [
+    "peak KiB",
+    "set"
+   ]
+  },
+  {
+   "title": {
+    "en": "Write the pull request description",
+    "zh": "写拉取请求的说明"
+   },
+   "body": {
+    "en": "No command here: write the text that goes with the change. A reviewer who has not read this lab should be able to approve from it.\n\nProblem: the nightly report is slow at about 20,000 rows, and the clean stage holds almost all of the time.\nCause: `drop_duplicates` kept the seen order ids in a list, so each membership test scanned it, and the stage was quadratic.\nChange: the list became a set; nothing else moved; the report for 20,000 rows is byte-for-byte identical (`diff`).\nEvidence: the before and after table from `scaling.py` at 2,000 and 20,000 rows, plus the peak memory of both variants.\nLimits: keys must be hashable; memory grows with distinct ids; name the row count at which this design stops being safe, and the next step (sort, or push it to the database).",
+    "zh": "这一步没有命令：写出随这次改动一起提交的文字。一个没读过这个实验的审查者，应当能据此批准。\n\n问题：夜间报表在约 20,000 行时很慢，清洗阶段占了几乎全部时间。\n原因：`drop_duplicates` 用列表保存已见过的订单号，每次成员判断都要扫描整个列表，该阶段因此是二次方的。\n改动：列表换成集合，别的都没动；20,000 行的报表逐字节相同（用 `diff` 证明）。\n证据：`scaling.py` 在 2,000 与 20,000 行下的前后对比表，以及两种做法的内存峰值。\n限制：键必须可哈希；内存随不同订单号数量增长；写明这种设计在多少行时不再安全，以及下一步怎么做（排序，或交给数据库）。"
+   }
+  }
+ ],
+ "review": [
+  {
+   "en": "Is the slow part measured, with the profile or a timing at two sizes in the pull request, rather than guessed?",
+   "zh": "慢的部分是测出来的吗？拉取请求里有剖析结果，或两种规模下的计时，而不是凭猜测。"
+  },
+  {
+   "en": "Does the description show before and after at more than one input size, not a single timing?",
+   "zh": "说明里给的是不止一种输入规模下的前后对比，而不是一个孤立的计时吗？"
+  },
+  {
+   "en": "Is the output identical on realistic input, including which duplicate wins and the original row order?",
+   "zh": "在真实规模的输入上输出一致吗？包括保留哪个重复项，以及原始的行顺序。"
+  },
+  {
+   "en": "Is the de-duplication key hashable, stable and complete: normalised before keying, and not a float or a mutable object?",
+   "zh": "去重的键可哈希、稳定且完整吗？是否在取键前做了规范化，且不是浮点数或可变对象？"
+  },
+  {
+   "en": "Does the change remove the cause (the container type), rather than speed up a symptom such as the helper that called it?",
+   "zh": "改动消除的是原因（容器类型），而不是给症状提速（比如去优化调用它的那个辅助函数）吗？"
+  },
+  {
+   "en": "What is the memory ceiling: how many distinct keys on the worst night, and does that fit on the machine that runs the job?",
+   "zh": "内存上限是多少？最忙的一晚有多少个不同的键，运行作业的机器装得下吗？"
+  },
+  {
+   "en": "Is there a test with repeated ids that pins \"the first copy wins\", so a later refactor cannot flip it silently?",
+   "zh": "有没有一个含重复订单号的测试固定“保留第一份”，让以后的重构不会悄悄改掉它？"
+  },
+  {
+   "en": "Are there more quadratic patterns nearby: `x in some_list` in a loop, `list.remove`, `list.pop(0)`, `str +=` in a loop, `.count()` per item?",
+   "zh": "附近还有没有别的二次方写法：循环里的 `x in 列表`、`list.remove`、`list.pop(0)`、循环里的字符串 `+=`、逐项调用 `.count()`？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "Time against memory. A set trades extra memory, proportional to the number of distinct keys, for a membership test whose expected cost does not depend on how many keys there are. At 20,000 keys the extra memory is a rounding error. At 200 million keys it is tens of gigabytes, and the job will be killed or will start to swap, which is slower than the list was. When the keys do not fit: sort the rows by key and drop neighbours that are equal, which costs time for sorting but no hash table; split the rows into partitions by a hash of the key and process one partition at a time; or let the database do it with a unique constraint and `INSERT ... ON CONFLICT DO NOTHING`. A Bloom filter saves memory but sometimes says \"seen\" for a key that was never seen, which would silently drop real orders. That is the wrong failure for a sales report.\n\nWhere to fix it. The job-level fix is a guard. The real fix is at the source: give the exporter an idempotency key, or put a unique constraint on the order id, so that duplicates never arrive. Keep the guard anyway, and count how many duplicates it drops; a sudden jump in that number is an upstream bug.\n\nWhich profiler. `cProfile` is deterministic and exact about calls, but it adds cost to every function call, so code with many tiny calls looks worse under it than in real life, and it tells you functions, not lines. A sampling profiler such as `py-spy` has little overhead and can attach to a running job, but it is a separate install and is statistical. A line profiler shows lines, at a higher cost. Pick by the question you are asking, and confirm the result with a plain timing before and after, as the lab did.\n\nWhen not to optimise. At 2,000 rows nobody would notice the list. Keep the simple version until the data says otherwise, but log stage timings in the job, as this script does, so that growth shows up in a dashboard before it shows up at nine o'clock. Also profile with realistic data. A test file with no duplicates makes the list scan as bad as it can be, and one that is mostly duplicates hides the problem because the list stays short.",
+  "zh": "时间与内存的取舍。集合用额外的内存（与不同键的数量成正比）换来成员判断的期望成本不再取决于键的数量。20,000 个键时，多出的内存可以忽略；2 亿个键时，它是几十 GB，作业会被系统杀掉或开始使用交换空间，比原来的列表还慢。键装不下内存时：按键排序，再丢掉相邻的相等项，付出排序的时间，但不需要哈希表；把行按键的哈希值切成若干分区，一次处理一个分区；或者交给数据库，用唯一约束加 `INSERT ... ON CONFLICT DO NOTHING`。布隆过滤器省内存，但有时会对从未见过的键说“见过”，这会悄悄丢掉真实订单，对销售报表而言这是错误的失败方式。\n\n在哪里修复。作业层面的修复只是一道防护。真正的修复在源头：给导出程序加幂等键，或在订单号上加唯一约束，让重复数据根本到不了。防护仍应保留，并记录它丢掉了多少重复行；这个数字突然跳高，往往意味着上游出了 bug。\n\n选哪种剖析器。`cProfile` 是确定性的，调用次数精确，但它给每次函数调用都增加开销，所以有大量微小调用的代码在它下面看起来比实际更糟，而且它只给函数，不给行。`py-spy` 这类采样剖析器开销很小，能附着在运行中的作业上，但需要另外安装，而且结果是统计性的。逐行剖析器能显示具体行，代价更高。按你要回答的问题选择，并像本实验那样，在改动前后用最朴素的计时再确认一次。\n\n什么时候不该优化。2,000 行时没有人会注意到列表。在数据证明需要之前，保留简单写法；但要在作业里记录各阶段耗时（本脚本就是这么做的），让增长先出现在看板上，而不是等到九点才被发现。还要用真实的数据来剖析。没有重复项的测试文件会让列表扫描糟到极限，而绝大多数是重复项的文件会掩盖问题，因为列表一直很短。"
+ },
+ "done": [
+  {
+   "en": "You can point to the function responsible and explain why its cost grows with the square of the input.",
+   "zh": "你能指出负责的函数，并说清为什么它的成本随输入的平方增长。"
+  },
+  {
+   "en": "The report for 20,000 rows is identical before and after the change, shown with `diff`.",
+   "zh": "改动前后 20,000 行的报表完全相同，并用 `diff` 证明过。"
+  },
+  {
+   "en": "The time factor for ten times the rows was far above ten before the fix and near ten after it.",
+   "zh": "行数乘 10 时，修复前的时间倍数远高于 10，修复后接近 10。"
+  },
+  {
+   "en": "You can state what the fix costs in memory and what you would do when the keys no longer fit.",
+   "zh": "你能说出修复在内存上的代价，以及键装不下时你打算怎么做。"
+  }
+ ]
+}

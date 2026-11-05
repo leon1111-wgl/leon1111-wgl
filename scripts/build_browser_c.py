@@ -21,6 +21,19 @@ EXTRA_STDIO = '''
 '''
 
 
+EXTRA_STDINT = '''
+// added for the browser: the standard constant macros
+#define INT8_C(c) c
+#define INT16_C(c) c
+#define INT32_C(c) c
+#define INT64_C(c) c##LL
+#define UINT8_C(c) c
+#define UINT16_C(c) c
+#define UINT32_C(c) c##U
+#define UINT64_C(c) c##ULL
+'''
+
+
 def main():
     build = Path(sys.argv[1])
     OUT.mkdir(parents=True, exist_ok=True)
@@ -34,6 +47,7 @@ def main():
             elif name.startswith('usr/lib/') and name.endswith('.a'):
                 (OUT / Path(name).name).write_bytes(z.read(name))
     headers['stdio.h'] += EXTRA_STDIO
+    headers['stdint.h'] += EXTRA_STDINT
     (OUT / 'include.json').write_text(json.dumps(headers, separators=(',', ':')))
     shutil.copy(build / 'LICENSE', OUT / 'LICENSE.xcc.txt')
     print('browser C:', sorted(p.name for p in OUT.iterdir()))

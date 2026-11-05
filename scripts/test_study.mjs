@@ -38,12 +38,65 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
     await go('#/start');
     assert.equal(await page.locator('.goal-card').count(), 4);
     await noOverflow();
-    for (const [goal, course, min] of [['zero', '', 4], ['exam', 'comp2017', 2], ['paper', 'comp2017', 1], ['engineer', 'comp2017', 1], ['paper', 'info1113', 1], ['paper', 'comp2123', 1]]) {
+    for (const [goal, course, min] of [['zero', '', 7], ['exam', 'comp2017', 7], ['exam', 'comp2022', 7], ['exam', 'comp3308', 7], ['exam', 'info1113', 7], ['exam', 'comp2123', 7], ['exam', 'python', 7], ['paper', 'comp2017', 6], ['paper', 'info1113', 6], ['paper', 'python', 5], ['paper', 'comp2123', 5], ['engineer', 'comp2017', 3], ['engineer', 'info1113', 3], ['engineer', 'comp2123', 2], ['engineer', 'ml', 2]]) {
       await go(`#/goal/${goal}${course ? `/${course}` : ''}`);
       await page.waitForSelector('.route-step');
       assert.ok(await page.locator('.route-step').count() >= min, `${goal} has too few steps`);
       await noOverflow();
     }
+  });
+  await check(`${label}: every route step leads to a page that exists`, async () => {
+    for (const route of ['zero', 'exam/comp2022', 'paper/comp2017', 'paper/info1113', 'paper/python', 'engineer/comp2017', 'engineer/info1113', 'engineer/ml']) {
+      await go(`#/goal/${route}`);
+      await page.waitForSelector('.route-step');
+      const links = await page.locator('.route-step .btn.primary, .route-step a.btn').evaluateAll((els) => els.map((a) => a.getAttribute('href')));
+      for (const href of links.filter(Boolean)) {
+        if (href.startsWith('#')) {
+          await page.evaluate((h) => { location.hash = h; }, href);
+          await page.waitForFunction(() => !document.querySelector('[data-load]'));
+          await page.waitForTimeout(60);
+          const text = await page.locator('main').textContent();
+          assert.ok(!/does not exist|No questions match|没有找到这个页面/.test(text), `${route} step ${href} is a dead end`);
+        } else {
+          const status = await page.evaluate((u) => fetch(u.split('#')[0]).then((r) => r.status), href);
+          assert.equal(status, 200, `${route} step ${href}`);
+        }
+      }
+    }
+  });
+  await check(`${label}: a lab shows captured output`, async () => {
+    await go('#/labs/comp2017');
+    await page.waitForSelector('.route-card');
+    await page.locator('main .route-card').first().click();
+    await page.waitForSelector('.lab-steps');
+    await noOverflow();
+  });
+  await check(`${label}: a first-steps guide runs its first example`, async () => {
+    await page.goto(`${origin}/bridges/java-first-steps.html`);
+    await page.waitForSelector('.bridge-lesson .run-button');
+    await noOverflow();
+    const run = page.locator('.bridge-lesson .run-button').first();
+    await run.scrollIntoViewIfNeeded();
+    await run.click();
+    await page.waitForFunction(() => document.querySelector('.bridge-lesson .run-panel[data-state="good"]'), null, { timeout: 30000 });
+  });
+  await check(`${label}: tapping a defined word shows its meaning`, async () => {
+    await page.goto(`${origin}/courses/comp2123.html#analysis-correctness`);
+    await page.waitForSelector('article#analysis-correctness .term');
+    await page.locator('article#analysis-correctness .term').first().click();
+    await page.waitForSelector('.term-pop:not([hidden])');
+    assert.ok((await page.textContent('.term-pop')).length > 5);
+    await noOverflow();
+  });
+  await check(`${label}: my progress can be exported and imported`, async () => {
+    await go('#/mine');
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('[data-backup-export]')]);
+    const path = await download.path();
+    const saved = JSON.parse(readFileSync(path, 'utf8'));
+    assert.equal(saved.site, 'leon-learn');
+    await page.setInputFiles('[data-backup-import]', path);
+    await page.waitForFunction(() => /Imported|已导入/.test(document.querySelector('[data-backup-note]')?.textContent || ''));
+    await page.waitForTimeout(1000);
   });
   await check(`${label}: a finished route step stays finished after reload`, async () => {
     await go('#/goal/exam/comp2017');

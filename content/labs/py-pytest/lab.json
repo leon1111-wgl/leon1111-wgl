@@ -1,0 +1,266 @@
+{
+ "id": "py-pytest",
+ "course": "comp2123",
+ "minutes": 40,
+ "tools": [
+  "pytest",
+  "ruff"
+ ],
+ "title": {
+  "en": "Boundary tests, a linter, and what a green suite does not prove",
+  "zh": "边界测试、代码检查器，以及“全绿”的测试套件没有证明什么"
+ },
+ "summary": {
+  "en": "Parametrized boundary tests find an off-by-one in pagination. Ruff then finds a test that never ran, and that test finds a second bug.",
+  "zh": "参数化的边界测试发现分页里的差一错误；随后 ruff 发现一个从未运行的测试，这个测试又暴露出第二个 bug。"
+ },
+ "scenario": {
+  "en": "Emma maintains the order list endpoint. It returns twenty orders a page, and the page arithmetic lives in `pager.py`. A support ticket says: \"the last page of my orders is always empty\". She also says the test suite is green and has been for months.\n\nYou are asked to look at the tests, not only at the code. The suite has five tests and all of them pass. The question is which inputs they never try. Pagination is a good place to ask it, because nearly every bug in it sits at a boundary: an empty list, one row, exactly one full page, one row more than a full page, a page past the end.\n\nThe lab has three parts. First, write boundary cases with `pytest.mark.parametrize` and let them find the bug. Second, run `ruff check` and follow what it reports. Third, break the code on purpose in a way the suite does not notice, and write the test that would have noticed. The code and data are fabricated.",
+  "zh": "Emma 维护订单列表接口。它每页返回二十个订单，页码计算都在 `pager.py` 里。一张支持工单说：“我的订单最后一页总是空的”。她还说测试套件是绿的，已经绿了好几个月。\n\n你的任务是检查测试，而不只是检查代码。套件有五个测试，全部通过。问题是：它们从来没有试过哪些输入。分页是问这个问题的好地方，因为几乎所有 bug 都在边界上：空列表、一行、刚好一整页、比一整页多一行、超出末页的页码。\n\n实验分三部分。第一，用 `pytest.mark.parametrize` 写边界用例，让它们找出 bug。第二，运行 `ruff check` 并顺着它的报告查下去。第三，故意用测试套件注意不到的方式把代码改坏，再写出本来能发现它的测试。代码和数据都是编造的。"
+ },
+ "show": [
+  "pager.py",
+  "test_pager.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "See what the suite checks today",
+    "zh": "先看现有套件检查了什么"
+   },
+   "body": {
+    "en": "`python3 -m pytest -q` runs pytest as a module, which also puts the current folder on the import path so `from pager import ...` works. `-q` is quiet mode: one dot per passing test and a one-line summary.\n\nAll green. Before you add anything, read `test_pager.py` and list the inputs it uses: 95 rows, a few pages in the middle, the last page of 95. Now list the boundaries it never touches: 0 rows, 1 row, exactly 20 rows, exactly 40 rows, 21 rows. A suite can be green because the code is right or because the tests never go where the code is wrong. From the outside the two look the same.",
+    "zh": "`python3 -m pytest -q` 把 pytest 当作模块运行，这样当前目录会加入导入路径，`from pager import ...` 才能工作。`-q` 是安静模式：每个通过的测试一个点，外加一行汇总。\n\n全绿。添加任何东西之前，先读 `test_pager.py`，列出它用到的输入：95 行、中间的几页、95 行的最后一页。再列出它从未碰过的边界：0 行、1 行、刚好 20 行、刚好 40 行、21 行。套件变绿，可能是因为代码正确，也可能是因为测试从没走到出错的地方。从外面看，这两种情况没有区别。"
+   },
+   "command": "python3 -m pytest -q",
+   "contains": [
+    "passed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Write the boundary cases with parametrize",
+    "zh": "用 parametrize 写边界用例"
+   },
+   "body": {
+    "en": "`@pytest.mark.parametrize(\"total, per_page, expected_pages\", [...], ids=[...])` runs one test function once per tuple. The first argument names the function parameters, the list gives one tuple per case, and `ids` gives each case a readable name that appears in the failure line. Choose ids that describe the situation (`exactly-one-page`), not the numbers, so a failure reads like a sentence.\n\nThe expected values are written by hand from the rule \"an empty list is one page; otherwise round up\". They are not computed with the same formula the code uses. A test that recomputes the answer with the code's own formula agrees with the code by construction, and tells you nothing.\n\n`--tb=short` shortens each traceback to the failing line. Run it and read the summary at the bottom. Most cases pass. Which ones fail, and what do they have in common?",
+    "zh": "`@pytest.mark.parametrize(\"total, per_page, expected_pages\", [...], ids=[...])` 会对每个元组各运行一次测试函数。第一个参数给函数参数命名，列表里每个元组是一个用例，`ids` 给每个用例一个可读的名字，会出现在失败的那一行里。id 要描述情境（`exactly-one-page`），不要写数字，这样失败信息读起来像一句话。\n\n期望值是根据规则“空列表算一页，否则向上取整”手写出来的，不是用代码里同样的公式算出来的。用代码自己的公式重新算答案的测试，天生就与代码一致，什么也说明不了。\n\n`--tb=short` 把每个回溯缩短到出错的那一行。运行它，读最后的汇总。大部分用例通过了。哪几个失败，它们有什么共同点？"
+   },
+   "patch": {
+    "file": "test_pager.py",
+    "from": "# Boundary cases go here.",
+    "to": "@pytest.mark.parametrize(\n    \"total, per_page, expected_pages\",\n    [\n        (0, 20, 1),\n        (1, 20, 1),\n        (19, 20, 1),\n        (20, 20, 1),\n        (21, 20, 2),\n        (40, 20, 2),\n        (41, 20, 3),\n    ],\n    ids=[\"empty\", \"one-row\", \"just-under\", \"exactly-one-page\", \"just-over\", \"exactly-two-pages\", \"two-and-a-bit\"],\n)\ndef test_page_count_at_the_edges(total, per_page, expected_pages):\n    assert paginate(total, per_page=per_page).pages == expected_pages\n\n\n@pytest.mark.parametrize(\n    \"total, page, has_next\",\n    [(0, 1, False), (40, 1, True), (40, 2, False), (41, 2, True), (41, 3, False)],\n    ids=[\"empty-list\", \"two-pages-first\", \"two-pages-last\", \"two-and-a-bit-second\", \"two-and-a-bit-last\"],\n)\ndef test_next_link_at_the_edges(total, page, has_next):\n    assert paginate(total, page=page, per_page=20).has_next is has_next"
+   },
+   "command": "python3 -m pytest -q --tb=short",
+   "exit": 1,
+   "contains": [
+    "FAILED",
+    "test_page_count_at_the_edges",
+    "test_next_link_at_the_edges"
+   ]
+  },
+  {
+   "title": {
+    "en": "Fix the off-by-one",
+    "zh": "修复差一错误"
+   },
+   "body": {
+    "en": "The failing cases are the exact multiples: 20 rows and 40 rows at 20 per page. The old formula `total // per_page + 1` adds a page whenever the division has no remainder, so the last page the customer sees is the extra empty one. That is the support ticket.\n\nThe fix rounds up with integer arithmetic, `(total + per_page - 1) // per_page`, and keeps at least one page for an empty list. Floating-point `math.ceil(total / per_page)` also works for realistic sizes, but integer arithmetic has no rounding to think about. Run the suite again: the new cases pass, and the old five still pass, which shows the fix did not disturb them.",
+    "zh": "失败的用例都是整倍数：每页 20 条时的 20 行和 40 行。旧公式 `total // per_page + 1` 只要除法没有余数就多加一页，于是顾客看到的最后一页是多出来的空页。这就是支持工单。\n\n修复用整数运算向上取整，`(total + per_page - 1) // per_page`，并为空列表保留至少一页。浮点的 `math.ceil(total / per_page)` 在现实的数量下也行，但整数运算不用考虑舍入问题。再运行一次套件：新用例通过，原来的五个也仍然通过，说明修复没有干扰它们。"
+   },
+   "patch": {
+    "file": "pager.py",
+    "from": "def page_count(total, per_page):\n    return total // per_page + 1",
+    "to": "def page_count(total, per_page):\n    # Round up with integer arithmetic. An empty list is still one (empty) page.\n    return max(1, (total + per_page - 1) // per_page)"
+   },
+   "command": "python3 -m pytest -q",
+   "contains": [
+    "passed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Let ruff read the same code",
+    "zh": "让 ruff 读同样的代码"
+   },
+   "body": {
+    "en": "`ruff check .` lints every Python file under the current folder. `--output-format concise` prints one line per finding (file, line, column, rule code, message), which is easier to scan and to compare. The lab's `ruff.toml` pins the rule set to ruff's classic defaults: `E4`, `E7` and `E9` (a few pycodestyle rules) and `F` (pyflakes, which finds unused and undefined names), so the result does not depend on the ruff version you have.\n\nTwo findings. `F401` is an unused import: `ceil` was imported by an earlier attempt and never used. `F811` is the one to read slowly: `test_per_page_is_capped` is defined twice in the same file. Python keeps only the second definition, so pytest never collected the first. That is why the suite said \"5 passed\" when the file visibly holds six test functions. A test that never runs passes forever.",
+    "zh": "`ruff check .` 检查当前目录下所有 Python 文件。`--output-format concise` 每个发现只打印一行（文件、行、列、规则代码、说明），更便于浏览和比较。实验里的 `ruff.toml` 把规则集固定为 ruff 经典的默认值：`E4`、`E7`、`E9`（几条 pycodestyle 规则）和 `F`（pyflakes，用于发现未使用和未定义的名字），这样结果不依赖你装的 ruff 版本。\n\n有两个发现。`F401` 是未使用的导入：`ceil` 是之前某次尝试引入的，后来没用上。`F811` 要慢慢读：`test_per_page_is_capped` 在同一个文件里定义了两次。Python 只保留第二个定义，所以 pytest 根本没有收集到第一个。这就是为什么文件里明明有六个测试函数，套件却只说“5 passed”。一个从不运行的测试，会永远通过。"
+   },
+   "command": "ruff check --output-format concise .",
+   "exit": 1,
+   "contains": [
+    "F401",
+    "F811"
+   ]
+  },
+  {
+   "title": {
+    "en": "Follow the F811",
+    "zh": "顺着 F811 查下去"
+   },
+   "body": {
+    "en": "Rename the first definition to say what it really checks, `test_capped_page_size_also_caps_the_offset`, so both tests have distinct names and both will be collected. Then `ruff check --fix` applies the fixes ruff considers safe, here deleting the unused import. Do not run `--fix` blindly on a large change: read the diff afterwards. The rename is yours to make, because ruff cannot know which of the two tests you meant to keep.",
+    "zh": "把第一个定义改名，让名字说明它真正检查的内容，`test_capped_page_size_also_caps_the_offset`，这样两个测试名字不同，也都会被收集。然后 `ruff check --fix` 会应用 ruff 认为安全的修复，这里是删掉未使用的导入。不要对大改动盲目运行 `--fix`：事后要读 diff。改名只能由你来做，因为 ruff 无从知道你想保留两个测试中的哪一个。"
+   },
+   "patch": {
+    "file": "test_pager.py",
+    "from": "def test_per_page_is_capped():\n    page = paginate(1000, page=2, per_page=500)",
+    "to": "def test_capped_page_size_also_caps_the_offset():\n    page = paginate(1000, page=2, per_page=500)"
+   },
+   "command": "ruff check --fix --output-format concise ."
+  },
+  {
+   "title": {
+    "en": "Run the test that never ran",
+    "zh": "运行那个从未运行过的测试"
+   },
+   "body": {
+    "en": "Now pytest collects six tests, and the one that was hidden fails. It asks for the second page when the client requests 500 rows per page. The code caps the page size at 100, but it computed the offset before applying the cap: `(2 - 1) * 500 = 500` instead of `(2 - 1) * 100 = 100`. A client that asks for big pages would skip rows 100 to 499 and never see them. That is a worse bug than the empty last page, because nothing looks wrong on screen.\n\nThe second test with the same name, written later by someone in a hurry, only checked the page size. It replaced the stronger test without anybody noticing, and ruff was the only reader that did.",
+    "zh": "现在 pytest 收集到六个测试，之前被藏起来的那个失败了。它请求客户端每页 500 行时的第二页。代码把页大小限制在 100，却是在应用限制之前算的偏移量：得到 `(2 - 1) * 500 = 500`，而不是 `(2 - 1) * 100 = 100`。要大页的客户端会跳过第 100 到 499 行，永远看不到它们。这个 bug 比空的最后一页更糟，因为屏幕上看不出任何异常。\n\n后来有人匆忙写的第二个同名测试，只检查了页大小。它在没人注意的情况下顶替了那个更强的测试，唯一注意到的读者是 ruff。"
+   },
+   "command": "python3 -m pytest -q --tb=short",
+   "exit": 1,
+   "contains": [
+    "FAILED",
+    "test_capped_page_size_also_caps_the_offset"
+   ]
+  },
+  {
+   "title": {
+    "en": "Fix the second bug and run both tools",
+    "zh": "修复第二个 bug，两个工具都跑一遍"
+   },
+   "body": {
+    "en": "Apply the cap first, then compute the offset from the capped size. `&&` stops at the first command that fails, so the second tool only runs when the first one passes. Both should now be clean. In CI the two commands belong in the same job, so a shadowed test name fails the build the way a failing test does.",
+    "zh": "先应用上限，再用限制后的页大小计算偏移量。`&&` 在第一条命令失败时就停下，所以第二个工具只有在第一个通过后才会运行。现在两者都应当干净。在 CI 里这两条命令应放在同一个作业中，这样同名遮蔽的测试会像失败的测试一样让构建失败。"
+   },
+   "patch": {
+    "file": "pager.py",
+    "from": "    offset = (page - 1) * per_page\n    per_page = min(per_page, MAX_PER_PAGE)",
+    "to": "    per_page = min(per_page, MAX_PER_PAGE)\n    offset = (page - 1) * per_page"
+   },
+   "command": "python3 -m pytest -q && ruff check --output-format concise .",
+   "contains": [
+    "passed",
+    "All checks passed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Break it on purpose: a green suite on wrong code",
+    "zh": "故意改坏：套件仍是绿的，代码却是错的"
+   },
+   "body": {
+    "en": "This is a hand-made mutation test. Change a line so the program is wrong, then see whether any test notices. Here `has_prev=page > 1` becomes `has_prev=True`: the \"Previous\" link would show on the first page, where there is nothing to go back to. Run the suite. It still passes, so the suite does not check that behaviour at all.\n\nTools such as `mutmut` and `cosmic-ray` automate this: they make many small wrong changes and report the ones no test caught. A green suite with surviving mutants is telling you what it does not know.",
+    "zh": "这是一次手工的变异测试：把一行改成错误的，看有没有测试注意到。这里把 `has_prev=page > 1` 改成 `has_prev=True`：第一页也会显示“上一页”链接，而那里无处可退。运行套件，它仍然通过，说明套件根本没有检查这种行为。\n\n`mutmut` 和 `cosmic-ray` 这类工具会把这一步自动化：它们做许多小的错误改动，并报告没有任何测试发现的那些。有存活变异体的绿色套件，是在告诉你它不知道什么。"
+   },
+   "patch": {
+    "file": "pager.py",
+    "from": "        has_prev=page > 1,",
+    "to": "        has_prev=True,"
+   },
+   "command": "python3 -m pytest -q",
+   "contains": [
+    "passed"
+   ]
+  },
+  {
+   "title": {
+    "en": "Write the test that would have caught it",
+    "zh": "写出本来能发现它的测试"
+   },
+   "body": {
+    "en": "A parametrized test with three pages: the first must have no previous link, the others must. It fails on the mutated code, which is the point: a new test should be seen to fail on the wrong behaviour before you trust it. Write the failing test first, then the fix. That order is how you know the test can fail at all.",
+    "zh": "一个有三个页码的参数化测试：第一页不能有“上一页”链接，其余页必须有。它在被改坏的代码上失败，这正是目的：新测试应当先在错误行为上看到它失败，你才能信任它。先写会失败的测试，再修代码。这个顺序才能证明这个测试确实可能失败。"
+   },
+   "patch": {
+    "file": "test_pager.py",
+    "from": "def test_page_zero_is_rejected():",
+    "to": "@pytest.mark.parametrize(\n    \"page, has_prev\",\n    [(1, False), (2, True), (5, True)],\n    ids=[\"first-page\", \"second-page\", \"last-page\"],\n)\ndef test_previous_link_only_after_the_first_page(page, has_prev):\n    assert paginate(95, page=page).has_prev is has_prev\n\n\ndef test_page_zero_is_rejected():"
+   },
+   "command": "python3 -m pytest -q --tb=short",
+   "exit": 1,
+   "contains": [
+    "FAILED",
+    "test_previous_link_only_after_the_first_page"
+   ]
+  },
+  {
+   "title": {
+    "en": "Undo the mutation",
+    "zh": "撤销变异"
+   },
+   "body": {
+    "en": "Put the real line back. Now the suite has a test for it, and it passes. Count what you did: two real bugs found, one never-running test revived, one gap closed. Then count what you still do not know, which is most of the next section.",
+    "zh": "把真正的那一行改回来。现在套件里有了针对它的测试，并且通过。数一数你做了什么：发现两个真实的 bug，让一个从不运行的测试重新运行，补上一个缺口。再数一数你仍然不知道什么，那正是下一节的大部分内容。"
+   },
+   "patch": {
+    "file": "pager.py",
+    "from": "        has_prev=True,",
+    "to": "        has_prev=page > 1,"
+   },
+   "command": "python3 -m pytest -q && ruff check --output-format concise .",
+   "contains": [
+    "passed",
+    "All checks passed"
+   ]
+  }
+ ],
+ "review": [
+  {
+   "en": "Does each public boundary have a named case: empty, one row, one less than a page, exactly a page, one more, exact multiples, a page past the end?",
+   "zh": "每个公开的边界都有命名的用例吗：空、一行、差一行满页、刚好满页、多一行、整倍数、超出末页的页码？"
+  },
+  {
+   "en": "Are the expected values written by hand from the specification, not recomputed with the formula under test?",
+   "zh": "期望值是根据规格手写的吗，而不是用被测公式重新算出来的？"
+  },
+  {
+   "en": "Do parametrize ids describe the situation, so a failure line is readable without opening the file?",
+   "zh": "parametrize 的 id 描述的是情境吗？这样不打开文件也能读懂失败的那一行。"
+  },
+  {
+   "en": "Was each new test seen to fail on the old code before the fix went in (red, then green)?",
+   "zh": "每个新测试在修复之前都看到它在旧代码上失败过吗（先红后绿）？"
+  },
+  {
+   "en": "Does one test assert everything that matters about the case (page size and offset together), not one field?",
+   "zh": "一个测试是否断言了该用例的全部要点（页大小和偏移量一起），而不是只断言一个字段？"
+  },
+  {
+   "en": "Does CI run the linter in the same job as the tests, and is a redefined test name (`F811`) a failure?",
+   "zh": "CI 是否在运行测试的同一个作业里运行代码检查器？重复定义的测试名（`F811`）会让构建失败吗？"
+  },
+  {
+   "en": "Are the error paths tested: page 0, negative page, `per_page` of 0, negative total?",
+   "zh": "错误路径测了吗：页码 0、负页码、`per_page` 为 0、负的总数？"
+  },
+  {
+   "en": "If you change one comparison or constant by hand, does at least one test fail? If not, which behaviour is untested?",
+   "zh": "如果手工改动一个比较或常量，至少有一个测试会失败吗？如果没有，哪些行为没有被测试？"
+  }
+ ],
+ "tradeoffs": {
+  "en": "Parametrize against separate tests. A table of cases is compact and makes gaps easy to see: you can read down the column and notice that nobody tried 40. Its cost is that a long table hides intent, and one failing row stops looking like a story. Keep a table for one rule, use readable ids, and write a separate test when a case needs its own set-up or its own explanation.\n\nExamples against properties. Hand-picked cases only cover what you thought of. A property-based test, for example with the Hypothesis library, states an invariant (\"reading every page and joining the results gives back the full list exactly once\") and lets the tool search for a counterexample, then shrinks it to a minimal one. It finds boundaries you did not list. The cost is slower tests, failures that are harder to read, and a property that must be stated precisely, which is itself the hard part. Use examples for the boundaries you know and a property for the invariant.\n\nThe linter in CI. Ruff costs seconds and finds shadowed tests, undefined names and unused code that tests cannot see. Pin the rule set so an upgrade does not break builds without warning, and keep `--fix` out of CI: an automatic edit that nobody reads is a risk of its own. Every extra rule has a noise cost, so add rules for mistakes that have actually happened to you.\n\nWhat a green suite does not prove. It proves that the code gives the stated answers for the inputs that were tried, and nothing about the inputs that were not. It does not prove the specification is right: the tests encode the belief that an empty list has one page, and a product owner may disagree. It does not cover the database: `LIMIT` and `OFFSET` behave differently when rows are inserted between two page requests, and a large offset is slow, which is why large feeds use keyset pagination instead. It does not catch concurrency, performance, or a deployed configuration that differs from the test one. It does not prove the tests themselves run, as `F811` showed. Coverage percentage does not rescue it: a line can be executed with no assertion about what it did. Use the suite as a fast net for regressions, and use review, mutation checks, property tests and production monitoring for the gaps.",
+  "zh": "parametrize 与独立测试。用例表格紧凑，也容易看出缺口：顺着一列读下去，你会发现没人试过 40。代价是表太长会掩盖意图，一行失败也不再像一个完整的故事。表格只用来表达一条规则，id 要可读；当某个用例需要自己的准备步骤或单独的解释时，就另写一个测试。\n\n例子与性质。手挑的用例只覆盖你想到的东西。基于性质的测试（例如 Hypothesis 库）陈述一个不变式（“读完每一页再拼接，恰好得到完整列表一次”），让工具去搜索反例，再把它缩减成最小反例，因此能发现你没列出来的边界。代价是测试更慢、失败信息更难读，而且性质必须表述得很精确，这本身就是难点。已知的边界用例子，不变式用性质。\n\nCI 里的代码检查器。ruff 只花几秒，却能发现测试看不到的同名遮蔽、未定义的名字和无用代码。固定规则集，免得升级时构建毫无预警地失败；`--fix` 不要放进 CI，没人读的自动修改本身就是风险。每多一条规则就多一份噪声，所以只为你确实犯过的错误加规则。\n\n全绿的套件没有证明什么。它只证明：对试过的输入，代码给出了所声明的答案；对没试过的输入则什么也没说。它不证明规格正确：这些测试编码的是“空列表有一页”这一信念，产品负责人可能不同意。它不覆盖数据库：两次翻页请求之间有行被插入时，`LIMIT` 与 `OFFSET` 的表现会不同，而且偏移量大时很慢，所以大型数据流改用键集分页。它也抓不到并发、性能，或线上配置与测试配置的差异。它不能证明测试本身真的在运行，`F811` 就是例子。覆盖率百分比也救不了：一行代码被执行了，并不等于有人断言过它做了什么。把套件当作快速的回归保险网，用评审、变异检查、性质测试和线上监控去补其余的缺口。"
+ },
+ "done": [
+  {
+   "en": "The boundary cases are in a parametrized test with readable ids, and they failed before the fix and pass after.",
+   "zh": "边界用例放在带可读 id 的参数化测试里，修复前失败、修复后通过。"
+  },
+  {
+   "en": "`ruff check` is clean and you can explain why the shadowed test mattered.",
+   "zh": "`ruff check` 没有任何发现，并且你能解释被遮蔽的测试为什么重要。"
+  },
+  {
+   "en": "Changing `has_prev` on purpose makes a test fail, so that behaviour is now covered.",
+   "zh": "故意改动 `has_prev` 会让测试失败，这项行为现在有了覆盖。"
+  },
+  {
+   "en": "You can name three things this suite still does not check.",
+   "zh": "你能说出这个套件仍然没有检查的三件事。"
+  }
+ ]
+}

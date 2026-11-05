@@ -1,0 +1,176 @@
+{
+ "id": "ml-leakage",
+ "course": "ml",
+ "minutes": 30,
+ "tools": [
+  "python3",
+  "scikit-learn",
+  "numpy"
+ ],
+ "title": {
+  "en": "Leakage in cross-validation: fit inside the folds",
+  "zh": "交叉验证中的数据泄漏：把拟合放进折内"
+ },
+ "summary": {
+  "en": "A scaler and a feature selector are fitted on all rows before cross-validation. The score looks excellent, survives shuffled labels, and does not survive a new batch. A Pipeline fixes it.",
+  "zh": "在交叉验证之前，用全部数据拟合了缩放器和特征选择器。分数看起来极好，标签打乱后依然很高，换一批新数据就不成立。用 Pipeline 修复。"
+ },
+ "scenario": {
+  "en": "Mia's team is building a go/no-go model for a burn-in test: each unit gets 500 sensor summaries (temperatures, ripple, drift, all in different units), and the label says whether it later failed. They have 150 labelled units. Jack must decide whether to commit the test rig to the model, so the question is simple: how well will it do on the next batch?\n\nThe team's script reports a cross-validated ROC AUC, and the number is very good. Iris, the reviewer, asks one question: what does the script report if the labels are shuffled? The lab follows that question. You will see that the good number is produced by the order of two lines of preprocessing, not by the sensors, and what that would have cost after deployment. All data is fabricated by a seeded generator, and nothing heavy is trained: every run takes a second or two.",
+  "zh": "Mia 的团队在为老化测试做一个“放行/拦截”模型：每个单元有 500 个传感器汇总值（温度、纹波、漂移，单位各不相同），标签表示它之后是否失效。他们手上有 150 个带标签的单元。Jack 要决定是否让测试台依赖这个模型，所以问题很简单：它在下一批上会表现如何？\n\n团队的脚本报告了交叉验证的 ROC AUC，数字很好。评审人 Iris 只问了一个问题：如果把标签打乱，脚本会报告什么？这个实验就沿着这个问题走。你会看到，这个好数字来自两行预处理代码的先后顺序，而不是传感器本身；你还会看到，如果带着它上线，会付出什么代价。所有数据都由带种子的生成器编造，不训练任何大模型：每次运行只要一两秒。"
+ },
+ "show": [
+  "train.py",
+  "compare.py"
+ ],
+ "steps": [
+  {
+   "title": {
+    "en": "Run the team's script",
+    "zh": "运行团队的脚本"
+   },
+   "body": {
+    "en": "ROC AUC is the probability that the model ranks a randomly chosen failing unit above a randomly chosen passing one: 0.5 is a coin flip and 1.0 is perfect. `cross_val_score` splits the rows into folds, trains on all but one, scores the held-out fold, and repeats. `RepeatedStratifiedKFold` keeps the failing share the same in every fold and repeats the whole 5-fold split three times with different shuffles, so one lucky split cannot decide the result; `random_state=0` fixes the shuffles. The script prints the mean and the spread over the 15 folds.\n\nBefore you look at the number, read `prepare` and `cv_estimate` in `train.py` and write down the order of operations. Scaling sees every row. Selection sees every row and every label. Only then does cross-validation start.",
+    "zh": "ROC AUC 是模型把随机挑出的一个失效单元排在随机挑出的一个正常单元之前的概率：0.5 相当于抛硬币，1.0 是完美。`cross_val_score` 把行分成若干折，用其余折训练、在留出的那一折上打分，然后轮流重复。`RepeatedStratifiedKFold` 让每一折里失效单元的比例保持一致，并用不同的洗牌把整个 5 折划分重复三次，这样一次运气好的划分不能决定结果；`random_state=0` 固定了洗牌。脚本打印 15 折的均值和离散程度。\n\n看数字之前，先读 `train.py` 里的 `prepare` 和 `cv_estimate`，写下操作的顺序：缩放看到了每一行；特征选择看到了每一行以及每一个标签；这之后交叉验证才开始。"
+   },
+   "command": "python3 train.py",
+   "contains": [
+    "cross-validated ROC AUC"
+   ]
+  },
+  {
+   "title": {
+    "en": "Run the control that should be boring",
+    "zh": "运行本该毫无亮点的对照实验"
+   },
+   "body": {
+    "en": "`--shuffle-labels` randomly reassigns the labels, so no relation between sensors and failures remains. A sound procedure must then report about 0.5. The control averages five different shuffles so one unlucky shuffle cannot mislead.\n\nIf the score stays far above 0.5 here, the evaluation is leaking information from the labels into the part of the pipeline that should not see them. There is nothing to be learned, yet the procedure reports learning. That is not a good model. It is a defect in the measurement.",
+    "zh": "`--shuffle-labels` 随机重新分配标签，传感器与失效之间不再有任何关系。此时正确的流程必须报告约 0.5。对照实验取五次不同打乱的平均，避免一次倒霉的打乱造成误导。\n\n如果这里的分数仍远高于 0.5，说明评估把标签信息泄漏给了本不该看到它们的那部分流程。明明没有可学的东西，流程却报告学到了。这不是一个好模型，而是测量方法的缺陷。"
+   },
+   "command": "python3 train.py --shuffle-labels",
+   "contains": [
+    "control, labels shuffled"
+   ]
+  },
+  {
+   "title": {
+    "en": "Find which step leaks",
+    "zh": "找出是哪一步在泄漏"
+   },
+   "body": {
+    "en": "`compare.py` isolates each step. Four rows, all with the same data, model and folds: the scaler fitted on all rows first; the selector fitted on all rows first; both fitted first (what `train.py` does); and both inside a `Pipeline`. A `Pipeline` chains steps into one estimator, and `cross_val_score` refits the whole chain on the training part of each fold only, so the held-out fold never influences a fitted step.\n\nRead down the column. The selector row jumps and the scaler row hardly moves. `StandardScaler` uses only feature means and spreads, never the labels, so its leak is mild and easy to miss. `SelectKBest(f_classif)` chooses the 10 columns most related to the labels. With 500 columns and 150 rows, some noise columns will correlate with the labels by chance, and a selector that has seen every label picks them; the held-out rows then look predictable because the labels helped choose the columns.\n\nBoth leaks are the same mistake: a fitted step saw the held-out rows. One of them is cheap to commit and costly to discover.",
+    "zh": "`compare.py` 把每一步单独隔离出来。四行，数据、模型和折划分全部相同：先用全部行拟合缩放器；先用全部行拟合选择器；两者都先拟合（`train.py` 的做法）；两者都放在 `Pipeline` 里。`Pipeline` 把多个步骤串成一个估计器，`cross_val_score` 只在每一折的训练部分上重新拟合整条链，因此留出的那一折永远不会影响任何拟合的步骤。\n\n顺着这一列读下来。选择器那一行大幅上跳，缩放器那一行几乎不动。`StandardScaler` 只用特征的均值和离散程度，从不看标签，所以它的泄漏轻微、容易被忽略。`SelectKBest(f_classif)` 选出与标签最相关的 10 列。500 列配 150 行时，总有一些噪声列碰巧与标签相关，看过全部标签的选择器会选中它们；留出的行于是看起来可预测，其实是标签参与了选列。\n\n两种泄漏是同一个错误：某个已拟合的步骤看到了留出的行。其中一种犯起来代价小，发现起来代价大。"
+   },
+   "command": "python3 compare.py",
+   "contains": [
+    "variant",
+    "Pipeline"
+   ]
+  },
+  {
+   "title": {
+    "en": "The same four variants with no signal at all",
+    "zh": "同样四种做法，但完全没有信号"
+   },
+   "body": {
+    "en": "Shuffle the labels and run all four again, averaged over five shuffles. The truth is chance, around 0.5, for every row. A row that is far above it is not measuring the sensors. It is measuring how much the procedure lets the answer into the question.\n\nThis is the check to add to any evaluation script you did not write: a shuffled-label control costs one extra run and catches a whole class of mistakes.",
+    "zh": "打乱标签，把四种做法再各跑一遍，取五次打乱的平均。此时对每一行来说真相都是随机水平，约 0.5。哪一行远高于它，它测的就不是传感器，而是这套流程让答案泄漏进问题的程度。\n\n对任何不是你写的评估脚本，都应加上这项检查：打乱标签的对照只多花一次运行，却能抓住一整类错误。"
+   },
+   "command": "python3 compare.py --shuffle-labels",
+   "contains": [
+    "labels shuffled",
+    "Pipeline"
+   ]
+  },
+  {
+   "title": {
+    "en": "What happens in production",
+    "zh": "上线之后会怎样"
+   },
+   "body": {
+    "en": "`--fresh` draws a new batch of 3,000 units from the same simulated plant, which the model has never seen, trains the final model on the original 150, and scores the new units. Compare three lines: the estimate from the leaky procedure, the honest estimate from the Pipeline, and the score on the new batch.\n\nNotice what did not change. The model that gets deployed is identical under both procedures, because both finally fit on all 150 units. Leakage did not make the model worse. It made the number you used to decide worse. Jack committed the rig on the leaky number and got what the Pipeline row had said all along. A team that then tunes `k` or compares models with the leaky number will also choose the wrong settings, because each choice is rewarded for fitting the held-out rows.\n\nIn real life you rarely have 3,000 new labelled units to check against. That is why the Pipeline and the shuffled-label control matter: they are the cheap way to get the honest figure before deployment.",
+    "zh": "`--fresh` 从同一个模拟工厂再生成一批 3,000 个模型从未见过的单元，用原来的 150 个训练最终模型，再给这批新单元打分。比较三行：带泄漏的流程给出的估计、Pipeline 给出的诚实估计，以及在新批次上的得分。\n\n注意没有变的东西。两种流程部署出去的模型是完全相同的，因为它们最终都在全部 150 个单元上拟合。泄漏没有让模型变差，它让你据以决策的那个数字变差了。Jack 按带泄漏的数字下了注，得到的却是 Pipeline 那一行从头到尾说的水平。接着用泄漏的数字去调 `k` 或比较模型的团队，也会选错设置，因为每一次选择都因“更贴合留出的行”而得到奖励。\n\n现实中你很少有 3,000 个新的带标签单元可供核对。所以 Pipeline 和打乱标签的对照才重要：它们是在部署之前得到诚实数字的廉价办法。"
+   },
+   "command": "python3 compare.py --fresh",
+   "contains": [
+    "deployed model"
+   ]
+  },
+  {
+   "title": {
+    "en": "Move the fit inside the folds",
+    "zh": "把拟合移到折内"
+   },
+   "body": {
+    "en": "The fix replaces `prepare` and the manual chain with one `Pipeline` of scaler, selector and classifier, and `cv_estimate` passes that object to `cross_val_score`. Nothing else in the script changes: same data, same folds, same metric. Run the real and the shuffled version. The first number should now agree with the Pipeline row of `compare.py` and with the score on the new batch, and the control should be back near 0.5.\n\nTwo details matter. `make_model()` returns a new, unfitted object each time, and `cross_val_score` clones it for every fold, so there is no state to leak between folds. And the same `make_model()` is what you save and serve in production, so training and serving apply identical steps.",
+    "zh": "修复把 `prepare` 和手工串起来的步骤，换成由缩放器、选择器和分类器组成的一个 `Pipeline`，`cv_estimate` 把这个对象交给 `cross_val_score`。脚本里其他地方都没变：同样的数据、同样的折、同样的指标。分别运行真实标签和打乱标签的版本。第一个数字应当与 `compare.py` 里 Pipeline 那一行以及新批次上的得分吻合，对照实验则回到 0.5 附近。\n\n有两个细节。`make_model()` 每次返回一个全新的、未拟合的对象，`cross_val_score` 会为每一折克隆它，因此折与折之间没有可泄漏的状态。而且上线时保存和提供服务的，正是同一个 `make_model()`，所以训练和服务应用的是完全相同的步骤。"
+   },
+   "patch": {
+    "file": "train.py",
+    "from": "from sklearn.preprocessing import StandardScaler\n\nfrom sensors import Plant\n\nK = 10\nCV = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=0)\n\n\ndef prepare(X, y):\n    \"\"\"Put the sensors on one scale and keep the K columns most related to the label.\"\"\"\n    X = StandardScaler().fit_transform(X)\n    return SelectKBest(f_classif, k=K).fit_transform(X, y)\n\n\ndef cv_estimate(X, y):\n    Xp = prepare(X, y)\n    scores = cross_val_score(LogisticRegression(max_iter=1000), Xp, y, cv=CV, scoring=\"roc_auc\")\n    return scores.mean(), scores.std()",
+    "to": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\n\nfrom sensors import Plant\n\nK = 10\nCV = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=0)\n\n\ndef make_model():\n    \"\"\"Every fitted step lives inside the model, so cross-validation refits it on each training fold.\"\"\"\n    return Pipeline([\n        (\"scale\", StandardScaler()),\n        (\"select\", SelectKBest(f_classif, k=K)),\n        (\"clf\", LogisticRegression(max_iter=1000)),\n    ])\n\n\ndef cv_estimate(X, y):\n    scores = cross_val_score(make_model(), X, y, cv=CV, scoring=\"roc_auc\")\n    return scores.mean(), scores.std()"
+   },
+   "command": "python3 train.py && python3 train.py --shuffle-labels",
+   "contains": [
+    "cross-validated ROC AUC",
+    "control, labels shuffled"
+   ]
+  }
+ ],
+ "review": [
+  {
+   "en": "Is every fitted step (scaler, imputer, encoder, selector, PCA, resampler) inside the object that cross-validation refits? Search the code for `fit(` and `fit_transform(` outside a `Pipeline`.",
+   "zh": "每个已拟合的步骤（缩放器、填充器、编码器、选择器、PCA、重采样器）是否都在交叉验证会重新拟合的对象里面？在代码里搜索 `Pipeline` 之外的 `fit(` 和 `fit_transform(`。"
+  },
+  {
+   "en": "Does anything use the label before the split: target encoding, selection by correlation with y, supervised binning, oversampling such as SMOTE? Each one is a leak even when it is \"just preprocessing\".",
+   "zh": "在划分之前有没有任何步骤用到标签：目标编码、按与 y 的相关性选特征、有监督分箱、SMOTE 之类的过采样？即使只是“预处理”，每一种也都是泄漏。"
+  },
+  {
+   "en": "Is there a shuffled-label control, and does it come back near chance? A high score on shuffled labels means the evaluation is broken, not that the model is good.",
+   "zh": "有没有打乱标签的对照实验，它是否回到接近随机的水平？打乱标签后分数仍高，说明评估出了问题，而不是模型好。"
+  },
+  {
+   "en": "Are rows that belong together kept in one fold: the same machine, patient, customer, or near-duplicate records (GroupKFold)? For time-ordered data, does every training row come earlier than every test row?",
+   "zh": "属于同一组的行是否留在同一折里：同一台机器、同一位患者、同一个客户或近似重复的记录（GroupKFold）？对有时间顺序的数据，每个训练行是否都早于每个测试行？"
+  },
+  {
+   "en": "Was the estimate compared with data that played no part in any choice: a later batch, a held-out period, or a final test set used once?",
+   "zh": "这个估计是否与没有参与任何选择的数据做过对比：更晚的一批、留出的时间段，或只用一次的最终测试集？"
+  },
+  {
+   "en": "If `k`, a regulariser or a model family was chosen with cross-validation, was the reported number measured on separate data (nested cross-validation or a held-out set)?",
+   "zh": "如果 `k`、正则化强度或模型类型是用交叉验证选出来的，报告的数字是否在另外的数据上测得（嵌套交叉验证或留出集）？"
+  },
+  {
+   "en": "Does the report give the spread and the sample size (mean, standard deviation over folds and repeats, number of rows), not one bare score?",
+   "zh": "报告给出了离散程度和样本量吗（均值、跨折与跨重复的标准差、行数），而不是一个孤零零的分数？"
+  },
+  {
+   "en": "Is the deployed artefact the whole fitted `Pipeline`, saved and versioned together, rather than a model plus a separate script that rebuilds the preprocessing?",
+   "zh": "上线的是整个已拟合的 `Pipeline`，一起保存、一起版本化吗？而不是一个模型外加一份另外重建预处理的脚本。"
+  }
+ ],
+ "tradeoffs": {
+  "en": "What a Pipeline costs. Every transform is refitted for every fold, so a slow transform is paid for again and again. The `memory=` argument can cache the transforms that do not change. Custom steps must follow the `fit` and `transform` convention, and anything that needs both the features and the label has to be written as a step, which is more work than a one-off pandas line. Stateless, row-by-row steps such as converting units, parsing a date or taking a logarithm can stay outside, because they learn nothing from the data. The test for a step is: does it learn anything from the rows? If yes, it belongs inside.\n\nHow much each leak matters. A scaler that learns means and spreads from test rows is usually a small leak, and here it was invisible in the score. With few rows, heavy-tailed features, time series, or imputation with group statistics, the same mistake can be large. Sometimes using unlabeled test rows is a deliberate choice (semi-supervised learning, transductive methods). Then it should be written down as a decision, with the reason, not found by accident. Leaks that use the label, like the selector here, are never acceptable: they change the answer by an amount you cannot predict.\n\nSmall data. With 150 rows, the honest score has a wide error: the spread over folds is several points, and two models that differ by one or two points are not distinguishable. Repeating the cross-validation reduces the noise from the splitting, not the noise from having only 150 units. Say so when you report it. A held-out final set is the one unbiased number, and it costs you data that you cannot train on, which is a real price when data is scarce. Nested cross-validation gives an honest number for the whole procedure including tuning, at several times the compute.\n\nWhere the honest number still lies. Choosing the best of many models and reporting its score is optimistic even with perfect folds, because the winner is partly lucky. Rows from the same machine in different folds make a model look better than it is on new machines. A leak-free score from last year's units does not promise anything about a new supplier's units. The Pipeline removes one big error. It does not make the evaluation representative.",
+  "zh": "Pipeline 的代价。每个变换在每一折都要重新拟合，所以慢的变换会被反复付费。`memory=` 参数可以缓存不变的变换。自定义步骤必须遵循 `fit` 和 `transform` 的约定，凡是同时需要特征和标签的操作都要写成一个步骤，这比临时写一行 pandas 麻烦。不从数据里学习任何东西的、逐行的无状态步骤（换算单位、解析日期、取对数）可以留在外面。判断标准是：这一步是否从数据行里学到了什么？如果是，它就该放在里面。\n\n每种泄漏有多严重。缩放器从测试行学习均值和离散程度，通常是小泄漏，这里在分数上甚至看不出来。数据行很少、特征重尾、时间序列，或者用分组统计量做填充时，同样的错误可能很大。有时使用没有标签的测试行是有意的选择（半监督学习、直推式方法），那应当作为一个决定写下来并给出理由，而不是被意外发现。像这里的选择器那样使用了标签的泄漏则永远不可接受：它改变答案的幅度你无法预知。\n\n小样本。只有 150 行时，诚实的分数有很宽的误差：折与折之间的离散有好几个百分点，相差一两个点的两个模型无法区分。重复交叉验证降低的是划分带来的噪声，不是“只有 150 个单元”带来的噪声。报告时要这样说明。留出的最终测试集是唯一无偏的数字，代价是这部分数据不能用来训练，数据稀缺时这是真实的代价。嵌套交叉验证能给出包含调参在内的整个流程的诚实数字，计算量是数倍。\n\n诚实的数字依旧会骗人的地方。在许多模型中挑出最好的并报告它的分数，即使折划分完美也偏乐观，因为赢家有一部分是运气。同一台机器的行分散在不同折里，会让模型看起来比在新机器上好。用去年单元算出的、无泄漏的分数，对新供应商的单元不作任何保证。Pipeline 消除的是一个大错误，它不能让评估变得具有代表性。"
+ },
+ "done": [
+  {
+   "en": "You can point to the lines in `train.py` where the scaler and the selector saw the held-out rows, and say which one inflated the score.",
+   "zh": "你能指出 `train.py` 中缩放器和选择器看到留出行的那几行，并说出是哪一个抬高了分数。"
+  },
+  {
+   "en": "The shuffled-label control is far above chance before the fix and near chance after it.",
+   "zh": "打乱标签的对照实验在修复前远高于随机水平，修复后接近随机水平。"
+  },
+  {
+   "en": "The Pipeline estimate agrees with the score on the new batch, while the leaky estimate does not.",
+   "zh": "Pipeline 的估计与新批次上的得分吻合，而带泄漏的估计不吻合。"
+  },
+  {
+   "en": "You can explain, to someone who commits money on the number, what the leaky score would have cost.",
+   "zh": "你能向依据这个数字投入资金的人解释，带泄漏的分数会造成什么代价。"
+  }
+ ]
+}

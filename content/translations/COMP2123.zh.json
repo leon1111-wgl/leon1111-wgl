@@ -3,7 +3,7 @@
   "title": "算法设计与分析",
   "subtitle": "选择算法，逐步追踪，用不变量证明正确性，再说明计算成本。",
   "description": "学习如何把问题变成正确且高效的算法。从小故事和具体输入开始，用 Python 追踪搜索、排序、图遍历、贪心选择、分治与随机化。列表、树、堆与哈希表为算法提供实现支持。完整例题解释方法为何成功，以及假设改变后为何可能失效。",
-  "coverage": "二十六个相互关联的主题覆盖正确性与成本、辅助数据表示、图算法、贪心证明、分治、选择、随机化，以及密码学复杂度入门。这份原创学习指南用小程序解释机制，不是官方课程，也不收录提供给学生的考核材料。生产级库实现与高级密码学安全证明不在范围内。",
+  "coverage": "三十个相互关联的主题覆盖正确性与成本、辅助数据表示、图算法、贪心证明、分治、选择、随机化，以及密码学复杂度入门。这份原创学习指南用小程序解释机制，不是官方课程，也不收录提供给学生的考核材料。生产级库实现与高级密码学安全证明不在范围内。",
   "color": "#fb923c",
   "prerequisites": [
     "基础算术：整数的加、减、乘与大小比较。对数可理解为重复相除的次数，需要时会解释。",
@@ -26,8 +26,10 @@
       "title": "明确算法并选择辅助结构",
       "topics": [
         "analysis-correctness",
+        "induction-invariants",
         "lists-representations",
         "stacks-queues",
+        "stack-queue-applications",
         "trees-traversal",
         "bst-range-queries",
         "avl-balance",
@@ -36,18 +38,20 @@
         "hashing-collisions",
         "cuckoo-maps-sets"
       ],
-      "purpose": "先理解正确性与成本，再根据搜索、排序和更新需要的操作选择存储方式。"
+      "purpose": "先理解正确性、归纳法与成本，再根据搜索、排序和更新需要的操作选择存储方式，并把栈和队列用到实际任务中。"
     },
     {
       "title": "遍历与优化网络",
       "topics": [
         "graph-models",
         "dfs-bridges",
+        "topological-scc",
         "bfs-distance",
         "dijkstra-relaxation",
+        "augmenting-structures",
         "minimum-spanning-trees"
       ],
-      "purpose": "建立连接模型，再区分可达性、最短路线与总成本最低的连通网络。"
+      "purpose": "建立连接模型，再区分可达性、依赖次序、最短路线、附加状态与总成本最低的连通网络。"
     },
     {
       "title": "证明贪心选择",
@@ -230,6 +234,251 @@
           ],
           "answer": "运行和节省 28 次加法，复杂度 Θ(n)；重算为 Θ(n²)。",
           "sanity_check": "前缀不变量保证两者产生相同八项输出。n=0 时，两者都不做加法。"
+        }
+      ]
+    },
+    {
+      "id": "induction-invariants",
+      "title": "归纳法与循环不变式：证明算法正确",
+      "story": "米娅为学校的游园会摆了一长排一千张多米诺骨牌。她不可能把每一张都推一遍来检验，于是只检查两件小事。第一，推第一张牌，它必须倒下。第二，每一张牌都要摆得足够近，能撞倒下一张。\n\n这两项检查就够了。第一张倒下；因为它倒下，第二张倒下；因为第二张倒下，第三张倒下，一直传到最后。米娅从没有单独检查过第 700 张牌，却对它很有把握。\n\n后来，莱昂从罐子里一枚一枚地数硬币，并在便条上写下累计的总数。在任何时刻，便条上的数字都等于他已经数过的硬币的总价值。这句话在每数完一枚硬币之后仍然成立，所以罐子数空时，便条上就是全部硬币的价值。归纳法和循环不变式是同一个想法：有一个成立的起点，再有一个能让“成立”一直传下去的步骤。",
+      "principle": "归纳法证明的是：一个与整数 n 有关的命题 P(n)，对从起始值 b 往上的每个整数 n 都成立。它分为两部分。基础情形：直接证明 P(b) 成立。归纳步骤：证明一个“如果……那么……”的事实——如果对某个 k ≥ b，P(k) 成立，那么 P(k+1) 也成立。其中“P(k) 成立”这个假定叫作归纳假设。在步骤中可以使用它，因为步骤只声称一个蕴含关系，并没有声称 P(k) 本身成立。基础情形提供第一个成立的命题，归纳步骤再把“成立”从每个数传到下一个数。\n\n强归纳使用更大的假设。要证明 P(k+1)，可以假定从 b 到 k 的每个 j 都满足 P(j)。当递归调用的输入比 n − 1 小得多时就要用它，例如函数对 n // 2 调用自己。\n\n归纳法是证明递归算法的自然方式。令 P(n) 表示“对每个规模为 n 的输入，函数都返回正确答案”。递归的终止情形就是基础情形。在步骤中，先假定对更小输入的递归调用都是正确的，再证明代码把这些答案正确地组合起来。还要说明每次调用都更接近终止情形，因此递归一定会结束。\n\n循环不变式是对循环执行次数所做的归纳。它是关于变量的一句话，在每一轮的同一位置都成立，通常取在循环条件检查之前。证明分三部分。初始化：第一轮之前它成立。保持：如果某一轮开始前它成立，那么循环体执行完之后它仍然成立。终止：循环条件不再成立时，不变式加上“条件不成立”这个事实，能推出目标。要说明循环会结束，需要找出一个递减量：它是一个非负整数，并且每一轮都严格变小。\n\n不变式要写成关于变量取值的完整句子，例如“total 等于前 i 个元素之和”，不要只描述代码做了什么。好的不变式要足够强，使得退出时能推出目标；又要足够弱，使得一开始就成立。",
+      "formula": "归纳法：若 P(b) 成立，且对每个 k ≥ b 都有 P(k) ⇒ P(k+1)，则对每个 n ≥ b，P(n) 成立。\n循环不变式：初始化 + 保持 + 终止 ⇒ 目标；严格递减的递减量 ⇒ 循环必然结束。",
+      "symbols": "P(n) 是依赖整数 n 的命题，例如“前 n 个奇数之和等于 n²”。b 是起始值，常取 0 或 1。k 是任意不小于 b 的数；我们不指定具体的 k，而是对任意的 k 证明步骤。符号 ⇒ 表示“如果左边成立，那么右边成立”。\n\n归纳假设是 P(k)，步骤的目标是 P(k+1)。在循环证明里，不变式是关于变量的命题。递减量是类似欧几里得循环中 b 那样的数：每一轮都变小，并且不能小于零。整数不可能无限变小，所以循环一定会停止。",
+      "example": "命题 P(n)：前 n 个奇数之和等于 n²。n = 4 时，奇数是 1、3、5、7，和为 16，而 4² = 16，命题看起来正确。但几次检验不是证明，所以要用归纳法。\n\n基础情形 n = 0：零个数相加为 0，而 0² = 0。\n\n步骤：假定 P(k) 成立，即 1 + 3 + ⋯ + (2k − 1) = k²。下一个奇数是 2k + 1。两边同时加上它：1 + 3 + ⋯ + (2k − 1) + (2k + 1) = k² + 2k + 1。右边正是 (k + 1)²，这就是 P(k + 1)。取 k = 3，步骤就是 9 + 7 = 16。\n\n再用同样的想法来看循环。欧几里得循环从 a = 252、b = 105 开始，反复执行 a, b ← b, a mod b。不变式是“a 与 b 的公约数，和 252 与 105 的公约数相同”，即 1、3、7、21。各轮的数对依次是 (252, 105)、(105, 42)、(42, 21)、(21, 0)，不变式始终没有变。退出时 b = 0，a 与 0 的公约数就是 a 的全部约数，其中最大的是 21，也就是 a。",
+      "pitfall": "三种常见错误。第一，只证明步骤而漏掉基础情形。假命题“n = n + 1”能通过步骤（对 k = k + 1 两边加一后仍然成立），但它对每个 n 都不成立。第二，在步骤里用到了要证明的 P(k + 1) 本身，而不是 P(k)，这是循环论证。第三，写出的循环不变式只在开始时成立，或者太弱，退出时推不出任何有用的结论。要把三个部分逐一检查，并分别写下来。",
+      "check": {
+        "question": "在“前 n 个奇数之和等于 n²”的证明中，步骤里要假定什么，又必须证明什么？",
+        "answer": "假定前 k 个奇数之和是 k²，然后证明前 k + 1 个奇数之和是 (k + 1)²。把 2k + 1 加到 k² 上得到 k² + 2k + 1 = (k + 1)²，所以步骤成立。"
+      },
+      "glossary": [
+        {
+          "term": "基础情形",
+          "meaning": "直接检验命题成立的最小 n 值，相当于第一张骨牌。"
+        },
+        {
+          "term": "归纳假设",
+          "meaning": "假定命题对 k 成立。它只在归纳步骤内部使用。"
+        },
+        {
+          "term": "归纳步骤",
+          "meaning": "证明如果命题对 k 成立，那么它对 k + 1 也成立。"
+        },
+        {
+          "term": "强归纳",
+          "meaning": "假设覆盖从基础情形一直到 k 的所有取值，而不只是 k 本身的归纳法。"
+        },
+        {
+          "term": "循环不变式",
+          "meaning": "关于变量的一句话，在每一轮循环条件检查之前都成立。"
+        },
+        {
+          "term": "递减量",
+          "meaning": "一个不会小于零、并且每一轮都严格变小的整数，用来说明循环会结束。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "步骤已经成立，为什么还需要基础情形？",
+          "answer": "步骤只说“如果 P(k) 成立，则 P(k+1) 成立”。没有一个成立的起点，就没有东西能启动这条链。命题 2n = 2n + 1 能通过步骤，却对每个 n 都不成立。"
+        },
+        {
+          "question": "为什么欧几里得循环一定会结束？",
+          "answer": "b 从不为负，而 a mod b 比 b 小，所以每一轮 b 都变小，整数不能无限变小。示例中 b 依次是 105、42、21、0。"
+        },
+        {
+          "question": "什么时候需要强归纳？",
+          "answer": "当递归调用所用的更小输入不是 n − 1 时。函数 power(x, n) 用 n // 2 调用自己，所以证明必须假定对所有更小的指数结果都正确。"
+        },
+        {
+          "question": "循环不变式的三个部分中，哪一部分用到了“循环条件不成立”这个事实？",
+          "answer": "终止这一部分。条件不成立时，不变式与这个事实一起必须推出目标。在欧几里得循环里，b = 0 加上不变式，就说明最大公约数是 a。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "odd-sum-recursion",
+          "title": "与证明形状一致的递归函数",
+          "intro": "函数模仿归纳法：一个基础情形，加上一个信任更小调用的步骤。",
+          "code": "def sum_odd(n):\n    \"\"\"Return 1 + 3 + 5 + ... + (2n - 1), written in the shape of the proof.\"\"\"\n    if n == 0:\n        return 0                          # base case: the empty sum\n    return sum_odd(n - 1) + (2 * n - 1)   # step: trust n - 1, add the next odd number\n\nfor n in range(0, 7):\n    value = sum_odd(n)\n    print(\"n =\", n, \" sum =\", value, \" n*n =\", n * n, \" equal:\", value == n * n)\n",
+          "output": "n = 0  sum = 0  n*n = 0  equal: True\nn = 1  sum = 1  n*n = 1  equal: True\nn = 2  sum = 4  n*n = 4  equal: True\nn = 3  sum = 9  n*n = 9  equal: True\nn = 4  sum = 16  n*n = 16  equal: True\nn = 5  sum = 25  n*n = 25  equal: True\nn = 6  sum = 36  n*n = 36  equal: True\n",
+          "explanation": "sum_odd(n) 对整数 n ≥ 0 有定义。if n == 0 这一行是基础情形：零个奇数之和是 0。最后一行是归纳步骤：它假定 sum_odd(n - 1) 已经正确，再加上第 n 个奇数 2 * n - 1。\n\n底部的循环只是对七个值的抽查，它不能证明命题对所有 n 成立，归纳证明才能做到。这里涉及两个事实：sum_odd(n) 确实返回奇数之和，因为递归与定义一致；以及这个和等于 n²，也就是示例里的归纳。\n\n每次调用只发起一个更小的调用，所以时间是 O(n)。调用栈保存 n + 1 个栈帧，所以空间是 O(n)。",
+          "language": "python",
+          "walkthrough": [
+            "基础情形 n == 0 返回 0，即空和，相当于第一张骨牌倒下。",
+            "递归行信任 sum_odd(n - 1)，再加上下一个奇数 2 * n - 1，这就是归纳步骤。",
+            "循环打印七次检查。结果与 n * n 一致，但只有归纳证明才覆盖所有的 n。"
+          ],
+          "trace": {
+            "columns": [
+              "返回的调用",
+              "所等待的更小调用的值",
+              "返回值"
+            ],
+            "rows": [
+              [
+                "sum_odd(0)",
+                "无",
+                "0"
+              ],
+              [
+                "sum_odd(1)",
+                "sum_odd(0) = 0",
+                "0 + 1 = 1"
+              ],
+              [
+                "sum_odd(2)",
+                "sum_odd(1) = 1",
+                "1 + 3 = 4"
+              ],
+              [
+                "sum_odd(3)",
+                "sum_odd(2) = 4",
+                "4 + 5 = 9"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "gcd-loop-invariant",
+          "title": "不变式始终不变的循环",
+          "intro": "欧几里得循环在数不断变小的同时，保持公约数的集合不变。",
+          "code": "def common_divisors(a, b):\n    \"\"\"Brute-force checker: every d >= 1 that divides both a and b.\"\"\"\n    return [d for d in range(1, max(a, b) + 1) if a % d == 0 and b % d == 0]\n\na, b = 252, 105\noriginal = common_divisors(a, b)\nprint(\"start  a =\", a, \" b =\", b, \" common divisors:\", original)\n\nwhile b != 0:\n    old_b = b\n    a, b = b, a % b\n    assert common_divisors(a, b) == original    # invariant is maintained\n    assert 0 <= b < old_b                       # b shrinks, so the loop must end\n    print(\"after  a =\", a, \" b =\", b, \" common divisors:\", common_divisors(a, b))\n\nprint(\"exit: b = 0, so the greatest common divisor is a =\", a)\n",
+          "output": "start  a = 252  b = 105  common divisors: [1, 3, 7, 21]\nafter  a = 105  b = 42  common divisors: [1, 3, 7, 21]\nafter  a = 42  b = 21  common divisors: [1, 3, 7, 21]\nafter  a = 21  b = 0  common divisors: [1, 3, 7, 21]\nexit: b = 0, so the greatest common divisor is a = 21\n",
+          "explanation": "common_divisors 是一个很慢的检查器，它试遍从 1 到较大数的每个 d。算法本身从不调用它，assert 用它来检验命题。original 保存起始数对的公约数 [1, 3, 7, 21]。\n\n每一轮把 (a, b) 换成 (b, a % b)。第一个 assert 检查保持：公约数仍然是 original。第二个 assert 检查递减量：b 非负，并且比之前小。最后循环条件 b != 0 不再成立。此时 a 与 0 的公约数恰好是 a 的全部约数，其中最大的就是 a 本身，于是得到答案 21。\n\n每两轮 b 至少减半，所以轮数是 O(log b)。assert 里的检查器比循环本身慢得多，它只用于教学，实际使用时应当去掉。",
+          "language": "python",
+          "walkthrough": [
+            "在循环之前保存起始数对的公约数，这是必须始终不变的事实。",
+            "赋值 a, b = b, a % b 就是一轮。两个新值都由旧值算出，之后才同时存入。",
+            "每一轮之后，assert 检查不变式与递减量。b 变成 0 时循环结束。"
+          ],
+          "trace": {
+            "columns": [
+              "轮次",
+              "a",
+              "b",
+              "公约数",
+              "b 比之前小？"
+            ],
+            "rows": [
+              [
+                "开始",
+                "252",
+                "105",
+                "1, 3, 7, 21",
+                "不适用"
+              ],
+              [
+                "1",
+                "105",
+                "42",
+                "1, 3, 7, 21",
+                "是：42 < 105"
+              ],
+              [
+                "2",
+                "42",
+                "21",
+                "1, 3, 7, 21",
+                "是：21 < 42"
+              ],
+              [
+                "3",
+                "21",
+                "0",
+                "1, 3, 7, 21",
+                "是：0 < 21，循环结束"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "power-strong-induction",
+          "title": "需要强归纳的递归",
+          "intro": "power 把指数减半，所以证明必须信任所有更小的指数，而不只是 n - 1。",
+          "code": "def power(x, n):\n    \"\"\"Return (x ** n, number of multiplications used).\"\"\"\n    if n == 0:\n        return 1, 0                  # base case\n    half, used = power(x, n // 2)    # a smaller call, but not n - 1\n    result = half * half\n    used += 1\n    if n % 2 == 1:\n        result = result * x\n        used += 1\n    return result, used\n\nfor n in [0, 1, 2, 5, 13, 64]:\n    value, used = power(3, n)\n    assert value == 3 ** n\n    print(\"n =\", n, \" 3^n =\", value, \" multiplications:\", used)\n",
+          "output": "n = 0  3^n = 1  multiplications: 0\nn = 1  3^n = 3  multiplications: 2\nn = 2  3^n = 9  multiplications: 3\nn = 5  3^n = 243  multiplications: 5\nn = 13  3^n = 1594323  multiplications: 7\nn = 64  3^n = 3433683820292512484657849089281  multiplications: 8\n",
+          "explanation": "power(x, n) 返回一对值：x ** n，以及使用的乘法次数。n = 0 时答案是 1。否则它用 n // 2 调用自己。若 n = 2q，则 x^n = (x^q)²；若 n = 2q + 1，则 x^n = (x^q)² · x。代码做的正是这件事。\n\n这里调用的是 n // 2 而不是 n - 1，所以从 k 到 k + 1 的普通归纳不适用，强归纳才适用：假定对低于 n 的每个指数答案都正确，而当 n ≥ 1 时 n // 2 正是其中之一。assert 把六个抽查值与 Python 自带的乘方运算做比较。\n\n每次调用都把 n 减半，所以大约有 log₂ n + 1 次调用，每次调用最多做两次乘法。n = 64 时程序只用 8 次乘法，而逐个连乘需要 63 次。乘法次数把与 1 相乘的平凡乘法也算了进去。Python 整数会按需增长，所以结果是精确的，但对巨大整数做乘法，每次也不止花一步。",
+          "language": "python",
+          "walkthrough": [
+            "基础情形 n == 0 返回 1 且不做乘法；每条不断减半的链都会走到它。",
+            "递归调用使用 n // 2。强归纳假设保证它的答案已经正确。",
+            "把一半的结果平方，n 为奇数时再多乘一次 x，并统计这两种乘法。"
+          ],
+          "trace": {
+            "columns": [
+              "调用",
+              "n // 2",
+              "返回（值，乘法次数）"
+            ],
+            "rows": [
+              [
+                "power(3, 0)",
+                "无",
+                "(1, 0)"
+              ],
+              [
+                "power(3, 1)",
+                "0",
+                "(3, 2)"
+              ],
+              [
+                "power(3, 3)",
+                "1",
+                "(27, 4)"
+              ],
+              [
+                "power(3, 6)",
+                "3",
+                "(729, 5)"
+              ],
+              [
+                "power(3, 13)",
+                "6",
+                "(1594323, 7)"
+              ]
+            ]
+          }
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "循环不变式就是对轮数做归纳",
+          "body": "把已完成的轮数记为 i，令 P(i) 表示“i 轮之后不变式成立”。初始化就是基础情形 P(0)，保持就是步骤 P(i) ⇒ P(i+1)。因此每个循环都可以问同样的三个问题：开始时什么成立，什么让它一直成立，结束时它能推出什么。看清这层联系，就能把同一种能力同时用在递归和循环上。"
+        },
+        {
+          "title": "先选好命题，再写证明",
+          "body": "证明失败有时是因为命题太弱，而不是代码有错。要证明一个递归的树函数正确，有时需要证明更强的命题，例如它同时返回规模和高度，就像前面的树章节那样。更强的假设会让步骤有更多可用的条件。在欧几里得循环里，关于公约数的不变式比“a 和 b 保持非负”强得多，只有前者才能在退出时给出答案。"
+        },
+        {
+          "title": "测试能发现错误，证明才覆盖所有输入",
+          "body": "程序里对 n² 的七次检查，发现不了在更大的 n 才出错的命题。多项式 n² + n + 41 在 n 从 0 到 39 时都是质数，但 n = 40 时它等于 41 × 41。例子能增加信心、暴露错误，但只有基础情形加步骤，才能覆盖无穷多个输入。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "用高度限制二叉树的结点数",
+          "question": "一棵二叉树的高度为 h，即从根往下最长的路径有 h 条边。用对 h 的归纳法证明，它最多有 2^(h+1) − 1 个结点，并检验 h = 3 时的界。",
+          "strategy": "使用对 h 的强归纳，因为两棵子树的高度至多为 h − 1，其中任何一棵都可能更矮。令 P(h) 表示“每棵高度为 h 的二叉树至多有 2^(h+1) − 1 个结点”，空子树单独处理。",
+          "steps": [
+            "基础情形 h = 0：高度为 0 的树只有一个结点。界是 2¹ − 1 = 1，所以 P(0) 成立。",
+            "步骤：设一棵树的高度为 k + 1，其中 k ≥ 0。去掉根结点，左、右子树的高度都至多为 k，或者为空。由归纳假设，每棵子树至多有 2^(k+1) − 1 个结点。",
+            "计数：结点数至多为 1 + 2(2^(k+1) − 1) = 2^(k+2) − 1 = 2^((k+1)+1) − 1，这正是 P(k + 1)。",
+            "代入数值：h = 3 时界是 2⁴ − 1 = 15。各层分别有 1、2、4、8 个结点的满二叉树恰有 1 + 2 + 4 + 8 = 15 个结点，所以这个界是准确的。"
+          ],
+          "answer": "高度为 h 的二叉树至多有 2^(h+1) − 1 个结点，满二叉树恰好达到这个数。取对数可知，有 n 个结点的树的高度至少是 log₂(n + 1) − 1，所以没有二叉树能比 log₂ n 矮很多。",
+          "sanity_check": "检验 h = 1：最大的树有一个根和两个孩子，共 3 个结点，而 2² − 1 = 3。如果把界写成 2^h，h = 1 时只有 2，就会出错，所以指数必须准确。"
+        },
+        {
+          "title": "为什么四十个正确的例子不能证明命题",
+          "question": "一位同学声称：对每个整数 n ≥ 0，n² + n + 41 都是质数。当 n = 0, 1, 2, …, 39 时它确实是质数。这个命题被证明了吗？归纳证明需要什么，是这四十次检验所缺少的？",
+          "strategy": "先找出命题失败的情形，再问归纳证明缺少了哪一部分。",
+          "steps": [
+            "检验 n = 40：40² + 40 + 41 = 1600 + 40 + 41 = 1681。",
+            "分解：1681 = 41 × 41，不是质数。",
+            "尝试构造归纳步骤。要从“k² + k + 41 是质数”推出“(k+1)² + (k+1) + 41 是质数”。这两个值相差 2k + 2，而给一个质数加上某个数，结果不一定还是质数，所以这样的步骤不存在。"
+          ],
+          "answer": "这个命题是假的。四十个成立的例子不能代替一个对每个 k 都成立的步骤。正确的归纳既需要基础情形，也需要对任意 k 证明的步骤。这里步骤无法证明，因为命题在 n = 40 时就不成立。",
+          "sanity_check": "对比奇数和的命题：它的步骤只是一小段代数，对每个 k 都有效。如果你写不出对一般 k 都成立的步骤，那么无论有多少个例子通过，都应当把命题看作尚未证明。"
         }
       ]
     },
@@ -518,6 +767,337 @@
           ],
           "answer": "剩余顺序是 B、C、D，对应槽 4、0、1；原元素无需移动。",
           "sanity_check": "从 front=4 走 size=3 个模 5 位置，恰好得到 4、0、1。"
+        }
+      ]
+    },
+    {
+      "id": "stack-queue-applications",
+      "title": "栈与队列的应用：分隔符、函数调用、调度与迭代器",
+      "story": "艾丽丝批改一份很长的数学练习。题目写着“用第 7 题的答案”时，她就把书签放进托盘，先去做第 7 题。如果第 7 题又指向别的题，她就再往下走。书签越叠越多，而她总是先回到最新放下的那一张。计算机在一个函数调用另一个函数时，做的就是同样的事。\n\n同一时间，诺亚为三位同学管理一台共用打印机。如果打印机一直留在一个人手里，直到他全部印完，其他人就要等很久。诺亚改为每个人每次只用两分钟，时间到了就让这个人排到队尾。每个人都很早就轮到了第一次。\n\n这两条规则都来自同一个问题：下一个该离开的是谁？书签和函数调用需要最新的先出来，公平的打印队伍则需要等得最久的人先出来。",
+      "principle": "前面讲栈与队列的章节介绍了移除规则：栈先移除最新的项（后进先出 LIFO），队列先移除最早的项（先进先出 FIFO）。这一章把这两条规则用在四个地方。\n\n分隔符匹配。分隔符是类似括号的标记，如 ( ) [ ] { }。把每个左分隔符连同它的位置压入栈。右分隔符到来时弹出栈顶，它必须是与之匹配的左分隔符。扫描有三种失败方式：右分隔符到来时栈已空，这是多余的右分隔符；弹出的左分隔符不匹配，这是次序错误；扫描结束后还有左分隔符留在栈里，这是未关闭的分隔符。对长度为 n 的文本，时间是 O(n)，空间是 O(d)，其中 d 是最深的嵌套层数。\n\n方法调用栈。每次调用函数时，机器都会建立一个栈帧。栈帧保存参数、局部变量，以及调用返回后继续执行的位置。返回时弹出栈帧。最新的调用总是最先结束，所以栈是合适的结构。同时处于活动状态的调用数量称为调用深度。深度为 d 的递归需要 O(d) 的空间来保存栈帧。调用栈的大小是固定的，所以过深的递归会造成栈溢出。Python 默认在大约一千个栈帧之后抛出 RecursionError。把状态放在变量里的循环可以避免这个问题，在普通内存里自己维护一个显式栈也可以。\n\n时间片轮转调度。调度器决定下一个由哪个作业使用处理器。时间片轮转把等待的作业放在队列里：取出队首作业，让它最多运行一个时间片 q；如果作业还有工作没做完，就把它放到队尾。每个作业都能很早得到第一次运行，也没有作业能长时间霸占处理器。需要 t 个时间单位的作业要运行 ⌈t / q⌉ 次。每个队列操作的成本是 O(1)。\n\n迭代器。迭代器一次访问集合中的一项，而不暴露这些项是如何存储的。它能说明是否还有下一项，也能返回下一项。在 Python 中，__next__ 返回下一项，或者抛出 StopIteration。迭代不能移除元素，同一个对象上的两个迭代器也不能互相干扰。如果集合在遍历过程中被修改，快速失败的迭代器会发现这一点（这里用版本号），并抛出错误，而不是返回错误的元素。完整遍历一次的成本是 O(n)，每一步是 O(1)。",
+      "formula": "一个需要 t 个单位的作业的轮转次数：⌈t / q⌉\n总轮转次数 = 对所有作业 i 求和 Σ ⌈tᵢ / q⌉\n调用栈空间 = O(最大深度)。分隔符扫描 = O(n) 时间，O(最大嵌套层数) 空间。",
+      "symbols": "t 是作业还需要的处理器时间。q 是时间片，即一次运行最长可持续的时间。括号 ⌈ ⌉ 表示向上取整到下一个整数，所以 ⌈5 / 2⌉ = 3。符号 Σ 表示“对每个作业求和”。n 是文本的字符数。深度是已经开始但尚未返回的调用数量。\n\n需要 5 个单位、q = 2 的作业先运行 2，再运行 2，最后运行 1，共 3 次。最后一次较短，因为作业已经完成。所有 t 之和就是总运行时间，不管怎样切分轮转。时间片轮转改变的是谁在等待，而不是工作总量。",
+      "example": "分隔符。取 f(a[1)]，各字符位置为 f 0、( 1、a 2、[ 3、1 4、) 5、] 6。栈里先有位置 1 的 (，再有位置 3 的 [。位置 5 的右括号 ) 到来，弹出位置 3 的 [。两者不匹配，于是程序在位置 5 报告错误。\n\n调用栈。计算 sum(3) = 3 + sum(2) 时，栈帧依次增长为 sum(3)、sum(2)、sum(1)、sum(0)，深度为 4。然后各次返回按相反的顺序弹出栈帧，依次得到 0、1、3、6。\n\n时间片轮转。莱昂需要 5 个单位，米娅需要 3 个，艾玛需要 1 个，q = 2。各次轮转依次是：莱昂 2、米娅 2、艾玛 1（时间 5 完成）、莱昂 2、米娅 1（时间 8 完成）、莱昂 1（时间 9 完成），共 ⌈5/2⌉ + ⌈3/2⌉ + ⌈1/2⌉ = 3 + 2 + 1 = 6 次。如果不轮流，艾玛要等到时间 8 才第一次运行，轮流之后她在时间 4 就开始了。\n\n迭代器。容量为 4 的环形队列把米娅、艾玛、杰克放在槽 1、2、3，诺亚放在槽 0。迭代器从 front = 1 开始，访问槽 1、2、3、0，返回米娅、艾玛、杰克、诺亚，调用者始终看不到环绕。",
+      "pitfall": "括号：只返回 True 或 False 会掩盖错误出现的位置；对空栈执行弹出会使程序崩溃。要把位置与每个左分隔符一起存入栈。\n\n调用：递归不是免费的。调用栈随深度增长，几千层的深度就可能使它溢出。\n\n调度：没有完成的作业必须放回队尾；作业运行的时间也绝不能超过它还需要的时间。\n\n迭代器：遍历过程中移除元素，会造成元素被跳过或重复。要让迭代器能发现这种修改，或者干脆禁止修改。",
+      "check": {
+        "question": "一个时间片轮转调度器的 q = 3，作业分别需要 7、3 和 2 个单位。总共需要多少次轮转？",
+        "answer": "需要 7 的作业要 ⌈7/3⌉ = 3 次（分别运行 3、3、1 个单位）。需要 3 的作业运行 1 次，需要 2 的作业运行 1 次。总共 5 次。总运行时间仍然是 7 + 3 + 2 = 12 个单位。"
+      },
+      "glossary": [
+        {
+          "term": "分隔符",
+          "meaning": "开始或结束一个分组的标记，例如括号或引号。"
+        },
+        {
+          "term": "栈帧",
+          "meaning": "为一次函数调用建立的内存块，保存参数、局部变量和返回位置。"
+        },
+        {
+          "term": "栈溢出",
+          "meaning": "调用嵌套得比调用栈预留的内存更深时发生的错误。"
+        },
+        {
+          "term": "时间片",
+          "meaning": "时间片轮转调度中，一个作业一次运行最多可以持续的时间。"
+        },
+        {
+          "term": "迭代器",
+          "meaning": "一次返回集合中的一项，并记住自己进行到哪里的对象。"
+        },
+        {
+          "term": "快速失败",
+          "meaning": "一种设计：一旦发现问题就立即报告，而不是带着错误的数据继续运行。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "为什么分隔符栈除了括号本身还要保存位置？",
+          "answer": "括号告诉你该匹配什么，位置告诉用户问题出在哪里。没有匹配上的左分隔符可能离扫描停下来的地方很远。"
+        },
+        {
+          "question": "为什么调用栈适合用来管理函数调用？",
+          "answer": "最新的调用必须先结束，发起它的调用才能继续。这是后进先出，所以每次调用开始时压栈，返回时弹栈。"
+        },
+        {
+          "question": "为什么时间片轮转要把没完成的作业放到队尾？",
+          "answer": "放到队尾，等于让其他所有等待的作业先运行一次。这样每个作业等到第一次运行的时间都很短。"
+        },
+        {
+          "question": "如果迭代器遍历时队列发生了变化，会怎样？",
+          "answer": "迭代器可能跳过或重复元素。示例中用版本号发现了变化，下一步就抛出 RuntimeError。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "delimiter-error-report",
+          "title": "报告括号在哪里出错",
+          "intro": "栈把每个左分隔符连同位置一起保存，所以每种失败都能定位。",
+          "code": "def check_delimiters(text):\n    closer_to_opener = {\")\": \"(\", \"]\": \"[\", \"}\": \"{\"}\n    stack = []                              # holds (opening character, position)\n    for position, char in enumerate(text):\n        if char in \"([{\":\n            stack.append((char, position))\n        elif char in closer_to_opener:\n            if not stack:\n                return \"extra \" + char + \" at \" + str(position)\n            opener, where = stack.pop()\n            if opener != closer_to_opener[char]:\n                return (\"found \" + char + \" at \" + str(position) +\n                        \" but \" + opener + \" from \" + str(where) + \" is still open\")\n    if stack:\n        opener, where = stack[-1]\n        return \"unclosed \" + opener + \" from \" + str(where)\n    return \"ok\"\n\nfor text in [\"f(a[1], {b})\", \"f(a[1)]\", \"a)\", \"{(x)\", \"\"]:\n    print(repr(text), \"->\", check_delimiters(text))\n",
+          "output": "'f(a[1], {b})' -> ok\n'f(a[1)]' -> found ) at 5 but [ from 3 is still open\n'a)' -> extra ) at 1\n'{(x)' -> unclosed { from 0\n'' -> ok\n",
+          "explanation": "check_delimiters 只扫描文本一遍。closer_to_opener 把每个右分隔符映射到它所需的左分隔符。左分隔符以（字符，位置）这一对的形式入栈。遇到右分隔符时，先检查栈是否为空，避免对空列表执行 pop 而出错；然后弹出最新的左分隔符并比较。\n\n失败有三种。'a)' 有多余的右分隔符。'f(a[1)]' 的右分隔符遇到了错误的左分隔符：) 到来时栈顶是 [。'{(x)' 结束时栈里还留着 {。最后一种情况报告 stack[-1]，也就是仍未关闭的最内层左分隔符，它是最先需要右分隔符的那个。其他字符被忽略。\n\n扫描对每个字符只检查一次，每次入栈或出栈的成本是 O(1)，所以时间是 O(n)。栈中保存的是仍未关闭的左分隔符，所以最坏空间是 O(n)，按嵌套深度 d 计则是 O(d)。函数在第一个错误处停止，所以只报告第一个错误。",
+          "language": "python",
+          "walkthrough": [
+            "把每个右分隔符映射到它必须遇到的左分隔符，并从空栈开始。",
+            "每个左分隔符都压入（左分隔符，位置）；每个右分隔符先确认栈不为空，再弹出。",
+            "在第一个不匹配处返回消息；最后一个字符之后如果栈里还有左分隔符，就报告它。"
+          ],
+          "trace": {
+            "columns": [
+              "位置",
+              "字符",
+              "之后的栈（栈顶在右）"
+            ],
+            "rows": [
+              [
+                "0",
+                "f",
+                "[]"
+              ],
+              [
+                "1",
+                "(",
+                "[位置 1 的 (]"
+              ],
+              [
+                "2",
+                "a",
+                "[位置 1 的 (]"
+              ],
+              [
+                "3",
+                "[",
+                "[位置 1 的 (，位置 3 的 [ ]"
+              ],
+              [
+                "4",
+                "1",
+                "[位置 1 的 (，位置 3 的 [ ]"
+              ],
+              [
+                "5",
+                ")",
+                "弹出位置 3 的 [：不匹配，停止"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "call-stack-frames",
+          "title": "观察调用栈增长并溢出",
+          "intro": "用一个列表代表机器的调用栈。每次调用压入一个栈帧，每次返回弹出一个。",
+          "code": "class CallStack:\n    \"\"\"A tiny model of the memory that holds one frame per active call.\"\"\"\n    def __init__(self, capacity):\n        self.frames = []\n        self.capacity = capacity\n\n    def push(self, name):\n        if len(self.frames) == self.capacity:\n            raise OverflowError(\"stack overflow while calling \" + name)\n        self.frames.append(name)\n\n    def pop(self):\n        self.frames.pop()\n\ndef recursive_sum(n, stack, log):\n    stack.push(\"sum(\" + str(n) + \")\")\n    if log:\n        print(\"enter:\", \" > \".join(stack.frames))\n    result = 0 if n == 0 else n + recursive_sum(n - 1, stack, log)\n    if log:\n        print(\"leave:\", \" > \".join(stack.frames), \"returns\", result)\n    stack.pop()\n    return result\n\ndef loop_sum(n):\n    total = 0                    # one frame only: the answer lives in a variable\n    for i in range(1, n + 1):\n        total += i\n    return total\n\nprint(\"answer:\", recursive_sum(3, CallStack(10), True))\nfor n in [2, 3, 6]:\n    try:\n        print(\"capacity 4, n =\", n, \"->\", recursive_sum(n, CallStack(4), False))\n    except OverflowError as error:\n        print(\"capacity 4, n =\", n, \"->\", error)\nprint(\"loop version, n = 6 ->\", loop_sum(6))\n",
+          "output": "enter: sum(3)\nenter: sum(3) > sum(2)\nenter: sum(3) > sum(2) > sum(1)\nenter: sum(3) > sum(2) > sum(1) > sum(0)\nleave: sum(3) > sum(2) > sum(1) > sum(0) returns 0\nleave: sum(3) > sum(2) > sum(1) returns 1\nleave: sum(3) > sum(2) returns 3\nleave: sum(3) returns 6\nanswer: 6\ncapacity 4, n = 2 -> 3\ncapacity 4, n = 3 -> 6\ncapacity 4, n = 6 -> stack overflow while calling sum(2)\nloop version, n = 6 -> 21\n",
+          "explanation": "CallStack 是一个小模型：一个保存栈帧名称、容量固定的列表。列表已满时，push 会抛出 OverflowError。这模仿了真实机器在栈内存用完时的行为。\n\nrecursive_sum(n, stack, log) 先压入一个栈帧，再用 n - 1 调用自己，返回前弹出栈帧。log 打开时，程序在每次进入和退出时打印栈。n = 3 时，栈增长到四个栈帧，然后在答案 0、1、3、6 依次返回的过程中缩小。\n\n容量为 4 时，n = 2 需要三个栈帧，n = 3 需要四个，所以都能成功。n = 6 需要七个栈帧，在四个栈帧已被占用时试图调用 sum(2)，就会失败。loop_sum 只用一个栈帧和一个变量算出同样的总和，所以它的栈深度不随 n 增长。两种写法的时间都是 O(n)，递归版本为栈帧使用 O(n) 空间，循环版本使用 O(1)。",
+          "language": "python",
+          "walkthrough": [
+            "push 添加一个有名字的栈帧，栈满时拒绝，就像真实的栈用完了空间。",
+            "recursive_sum 在递归调用前压栈、调用后弹栈，所以列表始终显示当前活动的调用。",
+            "容量为 4 的几次运行，在深度 3 和 4 时成功，在深度 7 时溢出。循环版本从不溢出。"
+          ],
+          "trace": {
+            "columns": [
+              "事件",
+              "事件之后的栈（从底到顶）",
+              "深度"
+            ],
+            "rows": [
+              [
+                "调用 sum(3)",
+                "sum(3)",
+                "1"
+              ],
+              [
+                "调用 sum(2)",
+                "sum(3) > sum(2)",
+                "2"
+              ],
+              [
+                "调用 sum(1)",
+                "sum(3) > sum(2) > sum(1)",
+                "3"
+              ],
+              [
+                "调用 sum(0)",
+                "sum(3) > sum(2) > sum(1) > sum(0)",
+                "4"
+              ],
+              [
+                "sum(0) 返回 0",
+                "sum(3) > sum(2) > sum(1)",
+                "3"
+              ],
+              [
+                "sum(1) 返回 1",
+                "sum(3) > sum(2)",
+                "2"
+              ],
+              [
+                "sum(2) 返回 3",
+                "sum(3)",
+                "1"
+              ],
+              [
+                "sum(3) 返回 6",
+                "（空）",
+                "0"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "round-robin-queue",
+          "title": "用队列公平地分享处理器",
+          "intro": "deque 保存等待的作业。队首作业最多运行一个时间片，如果没做完，就回到队尾。",
+          "code": "from collections import deque\n\ndef round_robin(jobs, quantum, show):\n    queue = deque(jobs)                  # (name, time still needed)\n    clock = 0\n    first_turn, finish = {}, {}\n    while queue:\n        name, left = queue.popleft()\n        run = min(quantum, left)\n        first_turn.setdefault(name, clock)\n        if show:\n            print(\"t =\", clock, name, \"runs\", run)\n        clock += run\n        if left > run:\n            queue.append((name, left - run))     # back of the line\n        else:\n            finish[name] = clock\n    return first_turn, finish\n\njobs = [(\"Leon\", 5), (\"Mia\", 3), (\"Emma\", 1)]\nfirst_turn, finish = round_robin(jobs, 2, True)\nprint(\"quantum 2  first turns:\", first_turn, \" finish:\", finish)\nfirst_turn, finish = round_robin(jobs, 100, False)\nprint(\"quantum 100 first turns:\", first_turn, \" finish:\", finish)\n",
+          "output": "t = 0 Leon runs 2\nt = 2 Mia runs 2\nt = 4 Emma runs 1\nt = 5 Leon runs 2\nt = 7 Mia runs 1\nt = 8 Leon runs 1\nquantum 2  first turns: {'Leon': 0, 'Mia': 2, 'Emma': 4}  finish: {'Emma': 5, 'Mia': 8, 'Leon': 9}\nquantum 100 first turns: {'Leon': 0, 'Mia': 5, 'Emma': 8}  finish: {'Leon': 5, 'Mia': 8, 'Emma': 9}\n",
+          "explanation": "round_robin 接收（名字，所需时间）数对。popleft 取出队首作业。run = min(quantum, left) 是这个作业这次使用的时间。first_turn.setdefault 只在某个名字第一次出现时记录时钟。如果作业还有工作，append 会用减少后的需求把它放回队尾，否则就记录它的完成时间。\n\n时间片为 2 时，日志显示六次轮转，与 ⌈5/2⌉ + ⌈3/2⌉ + ⌈1/2⌉ 一致。艾玛的作业只需要一个单位，虽然她排在最后，却在时间 5 就完成了。时间片为 100 时，每个作业在第一次运行中就完成，次序就是单纯的先进先出：艾玛要等到时间 8 才第一次运行，而莱昂排在第一位，所以在时间 5 最先完成。两次运行都在时间 9 结束，因为总工作量是 5 + 3 + 1 = 9。\n\n每个队列操作的成本是 O(1)。循环的轮数就是轮转次数 Σ⌈tᵢ/q⌉。时间片很小会使轮转次数很多。真实系统切换作业还要付出成本，这个模型没有考虑。",
+          "language": "python",
+          "walkthrough": [
+            "deque 按到达顺序保存作业。popleft 取出队首作业，min(quantum, left) 决定它运行多久。",
+            "还有工作的作业带着更小的需求被追加到队尾；完成的作业记录它的完成时间。",
+            "第二次调用使用极大的时间片，说明同一段代码此时的行为就是单纯的先进先出。"
+          ],
+          "trace": {
+            "columns": [
+              "时间",
+              "队首作业",
+              "运行",
+              "之后的队列（队首在前）"
+            ],
+            "rows": [
+              [
+                "0",
+                "Leon",
+                "2",
+                "Mia 3, Emma 1, Leon 3"
+              ],
+              [
+                "2",
+                "Mia",
+                "2",
+                "Emma 1, Leon 3, Mia 1"
+              ],
+              [
+                "4",
+                "Emma",
+                "1",
+                "Leon 3, Mia 1（Emma 完成）"
+              ],
+              [
+                "5",
+                "Leon",
+                "2",
+                "Mia 1, Leon 1"
+              ],
+              [
+                "7",
+                "Mia",
+                "1",
+                "Leon 1（Mia 完成）"
+              ],
+              [
+                "8",
+                "Leon",
+                "1",
+                "空（Leon 完成）"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "ring-queue-iterator",
+          "title": "环形队列的迭代器",
+          "intro": "迭代器隐藏了环绕，并且在队列发生变化时拒绝继续。",
+          "code": "class RingQueue:\n    def __init__(self, capacity):\n        self.slots = [None] * capacity\n        self.front = 0\n        self.size = 0\n        self.version = 0                  # changes on every enqueue or dequeue\n\n    def enqueue(self, item):\n        if self.size == len(self.slots):\n            raise OverflowError(\"queue is full\")\n        self.slots[(self.front + self.size) % len(self.slots)] = item\n        self.size += 1\n        self.version += 1\n\n    def dequeue(self):\n        item = self.slots[self.front]\n        self.slots[self.front] = None\n        self.front = (self.front + 1) % len(self.slots)\n        self.size -= 1\n        self.version += 1\n        return item\n\n    def __iter__(self):\n        return RingIterator(self)\n\nclass RingIterator:\n    def __init__(self, queue):\n        self.queue = queue\n        self.seen = 0                     # how many items were already returned\n        self.expected = queue.version\n\n    def __iter__(self):\n        return self\n\n    def __next__(self):\n        if self.queue.version != self.expected:\n            raise RuntimeError(\"queue changed during iteration\")\n        if self.seen == self.queue.size:\n            raise StopIteration\n        slot = (self.queue.front + self.seen) % len(self.queue.slots)\n        self.seen += 1\n        return self.queue.slots[slot]\n\nq = RingQueue(4)\nfor name in [\"Leon\", \"Mia\", \"Emma\", \"Jack\"]:\n    q.enqueue(name)\nq.dequeue()\nq.enqueue(\"Noah\")                         # wraps to slot 0\nprint(\"slots:\", q.slots, \" front:\", q.front)\nprint(\"in order:\", [name for name in q], \" size:\", q.size)\n\nfirst, second = iter(q), iter(q)\nprint(next(first), next(first), next(second))\n\ntry:\n    for name in q:\n        print(\"visiting\", name)\n        q.dequeue()\nexcept RuntimeError as error:\n    print(\"error:\", error)\n",
+          "output": "slots: ['Noah', 'Mia', 'Emma', 'Jack']  front: 1\nin order: ['Mia', 'Emma', 'Jack', 'Noah']  size: 4\nMia Emma Mia\nvisiting Mia\nerror: queue changed during iteration\n",
+          "explanation": "RingQueue 是栈与队列章节里的环形队列，只是多了一个版本计数器，每次入队和出队都会让它增加。__iter__ 返回一个新的 RingIterator，所以每个 for 循环都有自己独立的遍历器。\n\nRingIterator 记住自己已经返回了多少项（seen）以及开始时的版本。__next__ 先比较版本，然后在 seen 等于 size 时抛出 StopIteration；否则计算槽位 (front + seen) % capacity 并返回该项。调用者看不到环绕。莱昂离开、诺亚存入槽 0 之后，循环依然依次给出米娅、艾玛、杰克、诺亚。\n\n两个迭代器 first 和 second 有各自的 seen 计数，所以 next(first)、next(first)、next(second) 依次给出 Mia、Emma、Mia。最后一个循环在遍历过程中出队。取出第一项之后版本变了，下一次调用 __next__ 就抛出 RuntimeError。完整遍历的成本是 O(n)，每一步是 O(1)。迭代不会移除或复制任何东西。\n\nPython 也允许用带 yield 的生成器来写 __iter__，那样更短。这里用类的写法，是因为它能让迭代器的状态看得更清楚。",
+          "language": "python",
+          "walkthrough": [
+            "enqueue 和 dequeue 都会改变 version，所以任何修改都能被已经存在的迭代器发现。",
+            "__next__ 先检查版本，再检查计数，然后用取模算出物理槽位。",
+            "演示依次展示了逻辑顺序 Mia、Emma、Jack、Noah，两个互相独立的迭代器，以及循环中队列变化时的错误。"
+          ],
+          "trace": {
+            "columns": [
+              "next 的第几次调用",
+              "调用前的 seen",
+              "槽位",
+              "结果"
+            ],
+            "rows": [
+              [
+                "1",
+                "0",
+                "(1 + 0) % 4 = 1",
+                "Mia"
+              ],
+              [
+                "2",
+                "1",
+                "(1 + 1) % 4 = 2",
+                "Emma"
+              ],
+              [
+                "3",
+                "2",
+                "(1 + 2) % 4 = 3",
+                "Jack"
+              ],
+              [
+                "4",
+                "3",
+                "(1 + 3) % 4 = 0",
+                "Noah"
+              ],
+              [
+                "5",
+                "4",
+                "不使用",
+                "StopIteration，因为 seen 等于 size"
+              ]
+            ]
+          }
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "移除规则就是算法本身",
+          "body": "分隔符匹配使用后进先出，因为最新的未关闭左分隔符必须最先关闭。时间片轮转使用先进先出，因为等得最久的作业必须最先运行。如果把两个容器对调，分隔符检查器会接受 ([)]，而调度器会让早到的作业排在晚到的作业后面。遇到新问题时，先问下一项必须是谁，再根据答案选容器。"
+        },
+        {
+          "title": "递归与显式栈是同一个想法的两种看法",
+          "body": "调用栈保存函数的参数和继续执行的位置。循环中的显式栈保存的是同样的信息，只是由你自己控制。它位于普通内存里，可以比调用栈大得多。把递归改成循环，对非常深的输入很有用，例如有几千个顶点的路径图。代价是代码更多，因为你要自己保存每个栈帧原本会记住的内容。"
+        },
+        {
+          "title": "迭代器是接口，不是存储布局",
+          "body": "遍历队列的调用方代码，在存储从环形数组改为链表之后仍然照常工作。这种自由的代价由迭代器承担，因为只有它需要了解布局。版本号体现了一种设计选择，其他选择是禁止遍历期间的修改，或者遍历一份副本，而副本需要 O(n) 的额外空间。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "用时间片 3 调度四个作业",
+          "question": "作业 A、B、C、D 依次到达，分别需要 5、2、7、3 个单位。时间片为 3。列出各次轮转，求每个作业的完成时间，并统计轮转次数。",
+          "strategy": "同时记录队列和时钟。每次轮转取出队首作业，运行 min(3, 剩余时间) 个单位，如果还有工作就放回队尾。",
+          "steps": [
+            "开始：时间 0，队列为 A5、B2、C7、D3。",
+            "A 运行 3（时间 3），剩 2 放回队尾。B 运行 2，在时间 5 完成。C 运行 3（时间 8），剩 4 放回队尾。D 运行 3，在时间 11 完成。",
+            "此时队列为 A2、C4。A 运行 2，在时间 13 完成。C 运行 3（时间 16），剩 1 放回队尾。C 再运行 1，在时间 17 完成。",
+            "统计轮转：A 两次、B 一次、C 三次、D 一次，共 7 次。公式一致：⌈5/3⌉ + ⌈2/3⌉ + ⌈7/3⌉ + ⌈3/3⌉ = 2 + 1 + 3 + 1 = 7。"
+          ],
+          "answer": "完成时间分别是 B 为 5、D 为 11、A 为 13、C 为 17。共轮转 7 次。总运行时间为 17，等于各作业需求之和。",
+          "sanity_check": "最后的完成时间必须等于 5 + 2 + 7 + 3 = 17，因为只要还有作业在等待，处理器就不会空闲。"
+        },
+        {
+          "title": "手工跟踪分隔符检查器",
+          "question": "对文本 a{b(c)d]e 手工跟踪本章的分隔符检查器。各字符位置为 a 0、{ 1、b 2、( 3、c 4、) 5、d 6、] 7、e 8。它返回哪条消息？",
+          "strategy": "保存由（左分隔符，位置）组成的栈，从左到右处理字符，遇到第一个失败就停止。",
+          "steps": [
+            "位置 1 是 {，压入位置 1 的 {。位置 3 是 (，压入位置 3 的 (。栈为 [位置 1 的 {，位置 3 的 (]。",
+            "位置 5 是 )。弹出位置 3 的 (，它与 ) 匹配，于是栈变为 [位置 1 的 {]。",
+            "位置 7 是 ]。弹出位置 1 的 {。] 需要的是 [ 而不是 {，所以检查在这里失败。"
+          ],
+          "answer": "消息是 \"found ] at 7 but { from 1 is still open\"。错误是位置 7 的右分隔符不对。",
+          "sanity_check": "文本中有 2 个左分隔符和 2 个右分隔符，只数数量看不出任何问题。只有次序检查——把每个右分隔符与最新未关闭的左分隔符比较——才能发现这个错误。"
         }
       ]
     },
@@ -1865,6 +2445,269 @@
       ]
     },
     {
+      "id": "topological-scc",
+      "title": "有向无环图、拓扑排序与强连通分量",
+      "story": "艾玛计划一顿晚餐。洋葱没有切就不能煎，意面和酱汁也要都准备好了才能拌在一起。每项任务都要等另一些任务先做完。她从每项任务向依赖它的任务画一个箭头，再把任务排成一行，让所有箭头都指向前面。任何这样的排法都是一份安全的计划。只有一件事会破坏它：一圈任务，每一个都在等下一个，就像钥匙锁在了它要打开的房间里。这样的一圈任务不存在任何可行的次序。\n\n杰克在小镇的另一边研究单行道。在有些街区里，从任何一条街都能开到其他每一条街，还能开回来；而街区与街区之间的路只有一个方向。杰克想把这些街区找出来。它们就是有向图中强连通的部分。",
+      "principle": "有向图的边有方向：边 u → v 从 u 指向 v。有向环是沿着边走、最后回到起点的路线。有向无环图（DAG）里没有有向环。DAG 是描述任务之间相互依赖的天然模型。\n\n拓扑序把所有顶点排成一行，使得对每条边 u → v，顶点 u 都在顶点 v 之前。拓扑序存在，当且仅当图是 DAG。它通常不唯一。\n\n方法一：DFS 完成时间。从每个未访问的顶点出发做深度优先搜索。当一个顶点的所有出边都探索完毕，就说它完成了。按完成的先后记录顶点，再把列表反转。取一条边 u → v。如果 DFS 检查这条边时 v 还没访问过，v 会在 u 的内部被探索，并且先完成；如果 v 已经完成，它更早就完成了。无论哪种情况，v 都先于 u 完成，所以反转之后 u 在前面。第三种情形是 v 仍处于进行中，也就是它在当前 DFS 路径上。这时这条边回到了祖先，形成了有向环。所以要把每个顶点标记为未访问、进行中或已完成，一旦遇到进行中的顶点就停止。\n\n方法二：Kahn 算法。顶点的入度是进入它的边的数量。入度为 0 的顶点没有未满足的前置条件。把所有这样的顶点放进队列。反复取出一个，输出它，并把它指向的每个顶点的入度减 1。入度降到 0 的顶点加入队列。如果输出的顶点少于 n 个，剩下的顶点要么在某个环上，要么只能经过环才能到达。\n\n两种方法使用邻接表时的时间都是 O(n + m)。\n\n强连通分量。如果存在从 u 到 v 的路线，也存在从 v 到 u 的路线，就说 u 和 v 强连通。这个关系把顶点分成若干组，称为强连通分量（SCC）。如果把每个 SCC 缩成一个点，得到的总是一个 DAG。\n\n两遍算法。第一遍：对原图做 DFS，记录完成顺序。建立转置图，也就是顶点不变、每条边都反向的图。第二遍：对转置图做 DFS，按第一遍完成时间从大到小的顺序开始新的搜索树。第二遍的每一棵树就是一个 SCC。原因是：第一遍中最后完成的顶点，位于一个没有其他 SCC 指向它的 SCC 中。在转置图里，没有边从这个分量出去，所以 DFS 逃不出去。把它去掉，同样的论证可以重复。总时间是 O(n + m)。",
+      "formula": "拓扑序：对每条边 u → v，position(u) < position(v)\nKahn：入度(v) = 进入 v 的边数；当入度(v) = 0 时输出 v\nSCC：对 G 的第一遍给出完成顺序；对 Gᵀ 按完成顺序的逆序做第二遍，每棵树是一个 SCC\n三者的时间都是 O(n + m)。",
+      "symbols": "G = (V, E) 是有向图，n = |V|，m = |E|。边 u → v 从 u 指向 v。转置图 Gᵀ 对 G 的每条边 u → v 都有一条边 v → u。position(u) 是 u 在输出列表中的下标，从 0 开始数。顶点的入度是进入它的边数。u 的出邻居是 u 的出边所指向的顶点。\n\n把每条边反向，不会改变哪些顶点能够互相到达，所以 G 和 Gᵀ 有相同的 SCC。这就是第二遍可以放心使用 Gᵀ 的原因。",
+      "example": "一个很小的 DAG 有边 A → B、A → C、B → D、C → D。两种次序都有效：A, B, C, D 和 A, C, B, D。A 必须在最前，D 必须在最后，B 和 C 可以交换。列表 A, D, B, C 无效，因为 B → D 要求 B 在 D 之前。\n\n从 A 开始做 DFS，按 B、C 的顺序取邻居，会先探索 B，再探索 D。先完成 D，然后是 B，再是 C，最后是 A。完成顺序反转后是 A, C, B, D。Kahn 算法一开始的入度是 A 为 0、B 为 1、C 为 1、D 为 2。它输出 A，使 B 和 C 变为就绪；输出 B，使 D 降到 1；输出 C，使 D 降到 0；再输出 D。次序是 A, B, C, D。两个答案都正确。\n\n再看 SCC，取代码里的七条街的小镇。A 和 B 互相指向。C 和 D 互相指向。E、F、G 组成环 E → F → G → E。另外的单行道有：C 到 A、D 到 B、E 到 C、G 到 D。SCC 是 {A, B}、{C, D} 和 {E, F, G}。\n\n第一遍从 A 开始，也就是从最低的一组开始。完成顺序是 B, A, D, C, G, F, E，所以 E 最后完成，它位于 {E, F, G} 中，没有其他组指向这一组。在转置图里，从 E 出发的边只通向 G，所以第二遍从 E 开始，收集到 E、G、F，不会走进 C 或 D。下一个起点 C 收集到 C 和 D。最后的起点 A 收集到 A 和 B。",
+      "pitfall": "不要直接读取完成顺序而不反转，那样会把每项任务都排在它所依赖的任务之前。不要以为拓扑序是唯一的，测试应当检查每一条边，而不是与某一个固定列表比较。\n\n不要忘记检测环。只关注“是否访问过”的 DFS，会接受一条回到当前路径的边，返回的列表就不是有效的次序。\n\n在 SCC 算法中，如果第二遍对原图而不是转置图运行，或者忽略完成时间从大到小的顺序，得到的分组会太大或者是错的。还要记住，忽略方向后连通的图，不一定是强连通的。",
+      "check": {
+        "question": "一个图有边 A → B、B → C、C → A，另外还有 C → D。它有几个 SCC，分别是什么？",
+        "answer": "两个：{A, B, C} 和 {D}。A、B、C 组成有向环，所以每个顶点都能到达其他顶点。D 可以从 C 到达，却回不来，所以 D 自己成一组。"
+      },
+      "glossary": [
+        {
+          "term": "有向无环图（DAG）",
+          "meaning": "没有有向环的有向图，是描述有前置条件的任务的天然模型。"
+        },
+        {
+          "term": "拓扑序",
+          "meaning": "把所有顶点排成一行，使每条边 u → v 中 u 都在 v 之前。"
+        },
+        {
+          "term": "入度",
+          "meaning": "进入一个顶点的边的数量。"
+        },
+        {
+          "term": "完成时间",
+          "meaning": "DFS 把一个顶点的所有出边都探索完毕、并最终离开该顶点的时刻。"
+        },
+        {
+          "term": "强连通分量",
+          "meaning": "最大的一组顶点，组内每个顶点都能到达组内的其他每个顶点。"
+        },
+        {
+          "term": "转置图",
+          "meaning": "把每条边的方向都反过来所得到的图。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "为什么把 DFS 的完成顺序反转就得到拓扑序？",
+          "answer": "在 DAG 中，对每条边 u → v，v 都先于 u 完成。所以 u 在完成列表中更靠后，反转之后就更靠前。"
+        },
+        {
+          "question": "Kahn 算法是怎样说明图中有环的？",
+          "answer": "它停止时输出的顶点少于 n 个。环上的每个顶点都有一条来自环上另一个顶点的入边，所以它们的入度永远降不到 0。"
+        },
+        {
+          "question": "为什么 SCC 算法的第二遍要用转置图？",
+          "answer": "最后完成的顶点所在的分量，没有其他分量指向它。在转置图里，没有边从这个分量出去，所以从该顶点出发的 DFS 会留在分量内部。"
+        },
+        {
+          "question": "含有无向边的图可以有拓扑序吗？",
+          "answer": "把无向边看作两条有向边 u → v 和 v → u，它们组成长度为 2 的环，所以不存在拓扑序。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "topo-dfs-finishing",
+          "title": "按反转的 DFS 完成顺序排列任务",
+          "intro": "DFS 把每个顶点标为未访问、进行中或已完成。指向进行中顶点的边就是环。",
+          "code": "def topological_order(graph):\n    \"\"\"Return the vertices in a valid order, or None if a directed cycle exists.\"\"\"\n    state = {v: \"new\" for v in graph}       # new -> active -> done\n    finished = []                           # vertices in the order they finish\n\n    def visit(u):\n        state[u] = \"active\"                 # u is on the current DFS path\n        for v in graph[u]:\n            if state[v] == \"active\":\n                return False                # edge back to the path: a cycle\n            if state[v] == \"new\" and not visit(v):\n                return False\n        state[u] = \"done\"\n        finished.append(u)\n        return True\n\n    for u in graph:\n        if state[u] == \"new\" and not visit(u):\n            return None\n    print(\"finishing order:\", finished)\n    return finished[::-1]                   # latest finisher goes first\n\nmeals = {\n    \"shop\": [\"chop\", \"boil\"],\n    \"chop\": [\"fry\"],\n    \"boil\": [\"pasta\"],\n    \"fry\": [\"mix\"],\n    \"pasta\": [\"mix\"],\n    \"mix\": [\"serve\"],\n    \"serve\": [],\n}\nprint(\"order:\", topological_order(meals))\n\nstuck = {\"plan\": [\"unlock\"], \"unlock\": [\"enter\"], \"enter\": [\"key\"], \"key\": [\"unlock\"]}\nprint(\"order:\", topological_order(stuck))\n",
+          "output": "finishing order: ['serve', 'mix', 'fry', 'chop', 'pasta', 'boil', 'shop']\norder: ['shop', 'boil', 'pasta', 'chop', 'fry', 'mix', 'serve']\norder: None\n",
+          "explanation": "meals 把每项任务映射到需要它的任务。topological_order 先把所有顶点标为 new。visit(u) 在探索 u 的出边期间把 u 标为 active。如果一条边通向 active 的顶点，说明路线回到了它自己的路径上，函数就一路返回 False 来报告环。遇到 new 的邻居先去访问它。只有检查完所有边之后，u 才被标为 done 并追加到 finished。\n\n完成顺序是 serve、mix、fry、chop、pasta、boil、shop。每项任务都出现在依赖它的任务之后。把列表反转，shop 排在最前，serve 排在最后，每个依赖关系现在都指向前面。第二个图 stuck 含有 unlock → enter → key → unlock。DFS 到达 key，发现 unlock 仍然是 active，函数就返回 None。\n\n每个顶点只访问一次，每条边只检查一次，所以时间是 O(n + m)。递归和列表需要 O(n) 空间。很长的链可能超出 Python 的递归限制，用显式栈可以避免。",
+          "language": "python",
+          "walkthrough": [
+            "state 字典有三个值。active 表示“在当前 DFS 路径上”，再次遇到它就意味着有环。",
+            "顶点只有在所有邻居都完成之后才追加到 finished，所以它在它所指向的一切之后完成。",
+            "反转 finished 得到次序。有环时函数返回 None，而不是列表。"
+          ],
+          "trace": {
+            "columns": [
+              "完成的次序",
+              "顶点",
+              "为什么它能完成"
+            ],
+            "rows": [
+              [
+                "1",
+                "serve",
+                "它没有出边"
+              ],
+              [
+                "2",
+                "mix",
+                "serve 已完成"
+              ],
+              [
+                "3",
+                "fry",
+                "mix 已完成"
+              ],
+              [
+                "4",
+                "chop",
+                "fry 已完成"
+              ],
+              [
+                "5",
+                "pasta",
+                "mix 早已完成"
+              ],
+              [
+                "6",
+                "boil",
+                "pasta 已完成"
+              ],
+              [
+                "7",
+                "shop",
+                "chop 和 boil 都已完成"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "kahn-indegree-queue",
+          "title": "用入度和队列排列任务",
+          "intro": "当一项任务的所有前置任务都已安排好，它就就绪了。队列保存就绪的任务。",
+          "code": "from collections import deque\n\ndef kahn(graph):\n    indegree = {v: 0 for v in graph}\n    for u in graph:\n        for v in graph[u]:\n            indegree[v] += 1                # count the edges that enter v\n    ready = deque(v for v in graph if indegree[v] == 0)\n    order = []\n    while ready:\n        u = ready.popleft()\n        order.append(u)\n        for v in graph[u]:\n            indegree[v] -= 1                # u is placed, so one prerequisite is met\n            if indegree[v] == 0:\n                ready.append(v)\n    return order\n\nmeals = {\n    \"shop\": [\"chop\", \"boil\"],\n    \"chop\": [\"fry\"],\n    \"boil\": [\"pasta\"],\n    \"fry\": [\"mix\"],\n    \"pasta\": [\"mix\"],\n    \"mix\": [\"serve\"],\n    \"serve\": [],\n}\norder = kahn(meals)\nprint(\"order:\", order)\nposition = {v: i for i, v in enumerate(order)}\nprint(\"all edges point forward:\", all(position[u] < position[v] for u in meals for v in meals[u]))\n\nstuck = {\"plan\": [\"unlock\"], \"unlock\": [\"enter\"], \"enter\": [\"key\"],\n         \"key\": [\"unlock\"], \"party\": []}\norder = kahn(stuck)\nprint(\"placed:\", order)\nprint(\"blocked:\", [v for v in stuck if v not in order])\n",
+          "output": "order: ['shop', 'chop', 'boil', 'fry', 'pasta', 'mix', 'serve']\nall edges point forward: True\nplaced: ['plan', 'party']\nblocked: ['unlock', 'enter', 'key']\n",
+          "explanation": "第一个循环数出进入每个顶点的边数。ready 一开始包含所有入度为 0 的顶点。每一轮取出一项任务，追加到 order，并把依赖它的每项任务的入度减 1。降到 0 的任务，说明它的所有前置任务都已安排好，于是加入队列。\n\n对于 meals，结果是 shop、chop、boil、fry、pasta、mix、serve。它与 DFS 的答案不同，而两者都有效，程序检查了每条边来证明这一点。对于有环的图，程序安排了 plan 和 party。unlock、enter、key 这三项任务的入度始终至少为 1，因为环中的每一项都在等另一项，所以它们被阻塞。剩下的列表里也可能包含依赖于环的任务，而不只是环本身。\n\n数入度需要 O(n + m)。每个顶点只进入队列一次，每条边只处理一次，所以总时间是 O(n + m)。入度表和队列的空间是 O(n)。队列的次序决定你得到哪一种有效次序。",
+          "language": "python",
+          "walkthrough": [
+            "双重循环对每条边计数一次，建立入度表。",
+            "一项任务离开队列、被安排进 order，并为它指向的每项任务减去一个等待中的前置任务。",
+            "如果 order 比任务数少，被阻塞的任务就表明环在哪里。"
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "安排的任务",
+              "之后的队列",
+              "入度发生变化的任务"
+            ],
+            "rows": [
+              [
+                "1",
+                "shop",
+                "chop, boil",
+                "chop 由 1 变 0，boil 由 1 变 0"
+              ],
+              [
+                "2",
+                "chop",
+                "boil, fry",
+                "fry 由 1 变 0"
+              ],
+              [
+                "3",
+                "boil",
+                "fry, pasta",
+                "pasta 由 1 变 0"
+              ],
+              [
+                "4",
+                "fry",
+                "pasta",
+                "mix 由 2 变 1"
+              ],
+              [
+                "5",
+                "pasta",
+                "mix",
+                "mix 由 1 变 0"
+              ],
+              [
+                "6",
+                "mix",
+                "serve",
+                "serve 由 1 变 0"
+              ],
+              [
+                "7",
+                "serve",
+                "空",
+                "无"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "scc-two-pass",
+          "title": "分两遍求强连通分量",
+          "intro": "第一遍在原图上记录完成顺序。第二遍按完成顺序的逆序探索转置图。",
+          "code": "def explore(graph, u, seen, out):\n    seen.add(u)\n    for v in graph[u]:\n        if v not in seen:\n            explore(graph, v, seen, out)\n    out.append(u)                           # u finishes after everything below it\n\ndef transpose(graph):\n    flipped = {u: [] for u in graph}\n    for u in graph:\n        for v in graph[u]:\n            flipped[v].append(u)            # reverse the edge u -> v\n    return flipped\n\ndef strongly_connected(graph):\n    seen, finish = set(), []\n    for u in graph:                         # pass 1: DFS on the original graph\n        if u not in seen:\n            explore(graph, u, seen, finish)\n    print(\"finishing order:\", finish)\n    flipped = transpose(graph)\n    seen, components = set(), []\n    for u in reversed(finish):              # pass 2: DFS on the transpose\n        if u not in seen:\n            members = []\n            explore(flipped, u, seen, members)\n            components.append(sorted(members))\n    return components\n\nroads = {\n    \"A\": [\"B\"], \"B\": [\"A\"],\n    \"C\": [\"D\", \"A\"], \"D\": [\"C\", \"B\"],\n    \"E\": [\"F\", \"C\"], \"F\": [\"G\"], \"G\": [\"E\", \"D\"],\n}\nprint(\"components:\", strongly_connected(roads))\n",
+          "output": "finishing order: ['B', 'A', 'D', 'C', 'G', 'F', 'E']\ncomponents: [['E', 'F', 'G'], ['C', 'D'], ['A', 'B']]\n",
+          "explanation": "explore 是一个普通的 DFS，顶点完成时把它追加到 out。第一遍在原图上运行，填满 finish。transpose 建立一个新图，其中每条边 u → v 变成 v → u。第二遍倒着遍历 finish。每当遇到一个没有看过的顶点，就在转置图上做一次新的 explore，收集从它出发仍未看过的所有可达顶点。这个集合就是一个 SCC。\n\n完成顺序是 B、A、D、C、G、F、E。最后一个顶点 E 属于 {E, F, G}，没有其他组指向这一组。第一遍从 {A, B} 开始，但最后完成的顶点仍然在一个没有任何东西指向的组里。在转置图里，从 E 出发的边只通向 G，所以第二遍找到 E、G、F，不会走进 C 或 D。然后它找到 {C, D} 和 {A, B}。这些分量是按分量图的拓扑序得到的。\n\n两遍以及转置的时间都是 O(n + m)。seen 集合、列表和转置图使用 O(n + m) 空间。对于非常大的图，用显式栈可以避开 Python 的递归限制。",
+          "language": "python",
+          "walkthrough": [
+            "第一遍对每个未看过的顶点调用 explore，并把完成顺序收集在 finish 中。",
+            "transpose 把每条边反向。反向不改变强连通关系，但会把“哪个分量能到达哪个分量”颠倒过来。",
+            "第二遍按完成顺序的逆序开始搜索树。每棵树都留在一个分量内部，成员排序后便于显示。"
+          ],
+          "trace": {
+            "columns": [
+              "第二遍的起点",
+              "在转置图中到达的顶点",
+              "分量"
+            ],
+            "rows": [
+              [
+                "E",
+                "E, G, F",
+                "{E, F, G}"
+              ],
+              [
+                "C",
+                "C, D（E 和 G 已看过）",
+                "{C, D}"
+              ],
+              [
+                "A",
+                "A, B（C 和 D 已看过）",
+                "{A, B}"
+              ]
+            ]
+          }
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "拓扑序很容易验证",
+          "body": "检查一个次序，只需扫描所有边：每条边 u → v 都要满足 position(u) < position(v)。这个检查的时间是 O(n + m)，并且与次序是怎么得到的无关，所以适合用来测试两种算法。由于有效次序很多，应当与这条性质比较，而不是与某一个固定的列表比较。数出有效次序的个数更难：DAG A → B、A → C、B → D、C → D 有 2 个，而 n 个顶点、没有边的图有 n! 个。"
+        },
+        {
+          "title": "按任务选择 DFS 还是 Kahn",
+          "body": "Kahn 算法从前往后构造次序，可以分批放出就绪的任务。这适合可以并行的工作，因为队列里同一时刻的所有任务可以一起运行。如果你本来就在做 DFS（例如 SCC 算法），DFS 方法更合适，它还能通过“进行中”状态发现环。Kahn 只会报告被阻塞的顶点，如果需要一个真正的环，DFS 的路径可以给出。"
+        },
+        {
+          "title": "分量把有环图变成 DAG",
+          "body": "如果把每个 SCC 看成一个顶点，得到的分量图没有环，因为分量之间若有环，这些分量就会合并成一个。所以对有环图的问题，可以先求出 SCC，再对分量做拓扑排序来解决。两遍算法的第二遍正好按这个次序列出分量，源分量在前。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "Kahn 算法中被阻塞的顶点",
+          "question": "一个图有边 A → B、B → C、C → B 和 C → D。手工运行 Kahn 算法。哪些顶点被输出，哪些被阻塞？",
+          "strategy": "先数出入度。然后反复取出就绪的顶点并更新计数。",
+          "steps": [
+            "入度：A 为 0，B 为 2（来自 A 和 C），C 为 1（来自 B），D 为 1（来自 C）。",
+            "只有 A 就绪。输出 A。B 从 2 降到 1。没有顶点降到 0。",
+            "输出 4 个顶点中的 1 个之后，队列已空。"
+          ],
+          "answer": "只输出了 A。B、C、D 被阻塞。B 和 C 组成环；D 被阻塞，是因为它唯一的前置顶点 C 永远不会被安排。所以不存在拓扑序。",
+          "sanity_check": "去掉边 C → B，B 的入度降到 1，于是 A 之后 B 就绪，接着是 C，然后是 D，次序为 A, B, C, D。去掉环，问题就解决了。"
+        },
+        {
+          "title": "为什么第二遍必须从正确的位置开始",
+          "question": "一个图有边 1 → 2、2 → 3、3 → 1、3 → 4、4 → 5 和 5 → 4。它的 SCC 是 {1, 2, 3} 和 {4, 5}。求第一遍的完成顺序，然后比较正确的第二遍与从顶点 4 开始的第二遍。",
+          "strategy": "先从顶点 1 做第一遍，列出转置图的边，再从各个起点探索转置图。",
+          "steps": [
+            "从顶点 1 做第一遍，依次访问 2、3、4、5。完成顺序是 5, 4, 3, 2, 1。最后完成的是 1，它在 {1, 2, 3} 中，没有其他组指向这一组。",
+            "转置图的边是 2 → 1、3 → 2、1 → 3、4 → 3、5 → 4 和 4 → 5。",
+            "正确的第二遍从 1 开始。它到达 3，再到达 2，然后停止，因为 2 → 1 回到了已经看过的顶点。这棵树是 {1, 2, 3}。按完成顺序的逆序，下一个未看过的顶点是 4。它只到达 5，因为 4 → 3 通向已经划分好的顶点。这棵树是 {4, 5}。",
+            "如果错误地从 4 开始，会探索 4 → 3 → 2 → 1 以及 4 → 5。一棵树就包含了全部五个顶点。"
+          ],
+          "answer": "从最后完成的顶点开始，得到 {1, 2, 3}，然后是 {4, 5}，这是正确的。从 4 开始则得到包含全部五个顶点的一组，这是错的，因为转置边 4 → 3 让搜索逃出了 {4, 5}。",
+          "sanity_check": "在原图里，4 不能到达 1，所以 4 和 1 不是强连通的。任何把它们放在同一组的答案一定是错的。"
+        }
+      ]
+    },
+    {
       "id": "bfs-distance",
       "title": "广度优先搜索与无权距离",
       "story": "萨拉想从入口到舞台穿过最少走廊。先深入一条路却走了长绕路，于是先列一步可达房，再列两步可达房。\n\n等待队列维持层次顺序，入队就标记以防重复。舞台首次发现用了三条边，沿父指针得到对应路线。因为每走廊都算一步，此方法才成立；不同旅行时间需另一算法。",
@@ -2235,6 +3078,315 @@
           ],
           "answer": "d_2(C)=8；最终距离为 5，路线是 S、A、B、C。",
           "sanity_check": "直接把路径边权相加：4-2+3=5。该路线有三条边，不可能出现在最多两条边的表中。"
+        }
+      ]
+    },
+    {
+      "id": "augmenting-structures",
+      "title": "增强数据结构：附加字段与附加状态",
+      "story": "莱昂在白板上写了一份按成绩排序的赛跑名单。有人问：“有多少人比米娅跑得快？”他从左边开始，一个名字一个名字地数。后来一位朋友给白板的每一段加了一个小标签：这一段里有多少个名字。这样莱昂就可以一次跳过一整段。他把米娅左边各段的标签加起来，不必读每一个名字就得到了答案。有新选手加入时，他只需要修改通向新名字那一路上的标签。\n\n再后来，艾丽丝计划一次带一张免费车票的公交旅行。普通的最短路径规则不够用，因为最好的道路取决于车票是否还没有用掉。她画了两份地图：一份是“车票在手”，一份是“车票已用”。一次免费乘车把人从第一份地图带到第二份。在这两份地图上做一次普通的最短路径搜索，就解决了她的问题。两个故事都是：在合适的位置多存一点信息，让已知的方法回答了新的问题。",
+      "principle": "增强一个数据结构，就是在其中额外存储一项信息，使它能很快回答新的问题。分四步进行。选定附加字段。检查结点的字段能否只由该结点本身和它孩子的字段算出。在结构发生变化的地方更新这个字段。让新操作使用这个字段，并说明每个操作的成本。\n\n顺序统计量。在平衡二叉搜索树里，每个结点存储它的子树大小：以该结点为根的子树里的键的个数。规则是 size(v) = 1 + size(left) + size(right)，空子树的大小为 0。x 的名次（rank）是 x 在排好序的序列中的位置，从 1 开始数。select(k) 返回第 k 小的键。两者都沿着一条路径往下走。在结点 v，令 r = size(left) + 1，它是 v 在自己子树内的位置。对 select 来说：k = r 表示答案就是 v，k < r 表示往左走，k > r 表示以 k − r 往右走。对 rank 来说：往右走时把 r 加到计数里，往左走则什么也不加。两个操作的成本都是 O(h)。在 AVL 树中 h = O(log n)，所以各自的成本是 O(log n)。区间 [lo, hi) 内的键数等于 rank(hi) − rank(lo)，成本同样是 O(log n)，而且不需要列出任何一个键。\n\n为什么这个字段很容易维护。一次插入或删除只改变一条从根到结点的路径。沿这条路径自底向上重新计算 size，每个结点的成本是 O(1)。一次旋转改变两个结点的孩子，所以先重新计算较低的结点，再计算新的顶部，就像 AVL 章节对高度所做的那样。这样每次旋转只增加 O(1)，每次更新仍是 O(log n)。这样做是可行的，因为 size 只依赖结点的孩子。而深度这样的字段依赖祖先，一次旋转会改变整棵子树的深度，可能需要 O(n) 次更新。\n\n修改抽象数据类型（ADT）。ADT 是一组带有成本承诺的操作。有时结构不是树。先说明新操作、每个操作要求的成本，以及可以接受多少额外空间。然后给每个元素存一份摘要。在栈里，摘要“这一项及其下面各项中的最小值”在这一项入栈时就确定，在它出栈时消失。这个栈在最坏情况下以 O(1) 回答 minimum()，push 和 pop 仍是 O(1)。代价是每项多存一个数。只记住一个最小值是不够的，因为出栈之后无法恢复之前的最小值。\n\n图的顶点中附加状态。有些规则依赖历史：只能用一次的车票、能打开门的钥匙、到目前为止走过的步数是否为偶数。把历史放进顶点里。新的顶点是一对（地点，状态）。保持状态不变的移动留在同一份地图里，改变状态的移动通向另一份地图。这样 BFS 或 Dijkstra 无需修改即可运行。若有 s 种可能的状态，新图有 n·s 个顶点，大约有 m·s 条边，再加上改变状态的边，所以时间大约增长为原来的 s 倍。状态必须恰好包含规则需要的信息：太少会得出错误答案，太多则会让图变得巨大。",
+      "formula": "size(v) = 1 + size(left(v)) + size(right(v))；size(空) = 0\nrank(x) = 1 + （比 x 小的键的个数）\nselect(k)：r = size(left(v)) + 1；若 k = r，答案是 v；若 k < r，以 k 往左走；若 k > r，以 k − r 往右走\n状态图：顶点是（地点，状态），因此 |V′| = n·s",
+      "symbols": "v 是一个结点，left(v) 和 right(v) 是它的孩子，h 是树的高度。k 从 1 开始数，所以 select(1) 是最小的键。s 是旅行者可能处于的不同状态的个数，n 是地点数，m 是道路数。一对（地点，状态）是新图中的一个顶点。\n\nsize(v) 把 v 自己和它下面的一切都数在内。数值 r = size(left(v)) + 1 说明 v 的子树里有多少个键不超过 v。在状态图里，改变状态的移动（例如用掉车票）是两份地图之间的一条边。",
+      "example": "把 40、20、60、10、30、50、70 依次插入一棵搜索树。这棵树是满的：40 是根，20 和 60 是它的孩子，10、30、50、70 是叶子。各结点的大小是：根为 7，20 和 60 为 3，每个叶子为 1。\n\nselect(5) 要找第五小的键。在根，r = 3 + 1 = 4。因为 5 > 4，以 k = 5 − 4 = 1 往右走。在 60，r = 1 + 1 = 2。因为 1 < 2，往左走。在 50，r = 0 + 1 = 1，等于 k，所以答案是 50。只读了三个结点，有序列表 10, 20, 30, 40, 50 也印证了这一点。\n\nrank(65)：在 40，65 > 40，所以加上 r = 4。在 60，65 > 60，所以加上 r = 2，累计 6。在 70，65 ≤ 70，往左走到空子树，加 1。65 的名次是 7，的确有六个键比它小。区间 [25, 56) 内的键数是 rank(56) − rank(25) = 6 − 3 = 3，它们是 30、40、50。\n\n再看车票旅行，设道路为 S–A 2、A–T 9、A–C 1、S–B 4、B–C 3、C–T 4。没有车票时最便宜的路线是 S, A, C, T，花费 7。有一张免费车票时，S, A, T 就可行了：S–A 花 2，A–T 免费，总共 2。如果先规划最便宜的路线，再给它最贵的一段打折，得到的是 7 − 4 = 3，并不是最好的。",
+      "pitfall": "不要在会旋转的树里存储依赖祖先的字段，例如深度，否则每次旋转都要做大量更新。不要忘记在旋转之后重新计算 size，否则即使树看起来仍然有序，select 也会返回错误的键。不要先更新新的顶部再更新旧的根，因为新的顶部会读到过期的孩子大小。\n\n修改抽象数据类型时，只记住一个“当前最小值”，在出栈之后无法修复。\n\n对于状态图，漏掉一部分状态是严重的错误。只以地点为顶点的图无法知道车票是否还没用过。“先规划、后打折”的捷径得到的是 3，而真正的最优值是 2。",
+      "check": {
+        "question": "在示例的那棵树里，select(3) 返回什么，它读了哪些结点？",
+        "answer": "在根，r = 4，k = 3 < 4，所以往左走。在 20，r = 1 + 1 = 2，k = 3 > 2，所以以 k = 3 − 2 = 1 往右走。在 30，r = 1，等于 k。答案是 30，读过的结点是 40、20、30。"
+      },
+      "glossary": [
+        {
+          "term": "增强",
+          "meaning": "在数据结构中额外存储一个字段，使它能很快回答新的问题。"
+        },
+        {
+          "term": "子树大小",
+          "meaning": "以某个结点为根的子树中存储的键的个数，包括该结点自己。"
+        },
+        {
+          "term": "名次（rank）",
+          "meaning": "一个键在排好序的序列中的位置，从 1 开始数。"
+        },
+        {
+          "term": "选择（select）",
+          "meaning": "返回第 k 小的键的操作。"
+        },
+        {
+          "term": "状态图",
+          "meaning": "顶点是（地点，状态）对的图，使历史信息成为顶点的一部分。"
+        },
+        {
+          "term": "过期字段",
+          "meaning": "因为发生了变化却没有修复，而与结构不再相符的附加存储值。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "为什么旋转之后能在 O(1) 内修复 size？",
+          "answer": "一次旋转只改变两个结点的孩子。它们新的大小由各自孩子的大小得出，所以先重新计算较低的结点，再计算新的顶部。"
+        },
+        {
+          "question": "为什么深度不适合作为会旋转的树的字段？",
+          "answer": "深度依赖祖先。一次旋转会把整棵子树移动一层，里面的每个结点都要更新，可能需要 O(n)。"
+        },
+        {
+          "question": "为什么最小值栈要在每一项里都存一个最小值？",
+          "answer": "一项出栈时，它下面的栈必须马上知道自己的最小值。每一项保存“这一项及其下面各项中的最小值”，答案早已存好。"
+        },
+        {
+          "question": "有 n 个城镇和一张车票时，车票图有多大？",
+          "answer": "每个城镇有两份，所以有 2n 个顶点。每条道路产生四条普通弧和两条免费弧，共 6m 条弧，仍然与 m 成正比。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "tree-size-rank-select",
+          "title": "用子树大小做 rank 与 select",
+          "intro": "每个结点存储它的子树里有多少个键。这样从根出发的一次遍历就能回答位置问题。",
+          "code": "class Node:\n    def __init__(self, key):\n        self.key = key\n        self.left = None\n        self.right = None\n        self.size = 1                       # keys stored in this subtree\n\ndef size(node):\n    return 0 if node is None else node.size\n\ndef insert(node, key):\n    if node is None:\n        return Node(key)\n    if key < node.key:\n        node.left = insert(node.left, key)\n    elif key > node.key:\n        node.right = insert(node.right, key)\n    node.size = 1 + size(node.left) + size(node.right)   # repair on the way up\n    return node\n\ndef rank(node, key):\n    \"\"\"Position key has (or would have) in sorted order, counting from 1.\"\"\"\n    if node is None:\n        return 1\n    if key <= node.key:\n        return rank(node.left, key)\n    return size(node.left) + 1 + rank(node.right, key)\n\ndef select(node, k, path):\n    \"\"\"The k-th smallest key (k = 1 is the smallest). path records the walk.\"\"\"\n    path.append(node.key)\n    left = size(node.left)\n    if k <= left:\n        return select(node.left, k, path)\n    if k == left + 1:\n        return node.key\n    return select(node.right, k - left - 1, path)\n\nroot = None\nfor key in [40, 20, 60, 10, 30, 50, 70]:\n    root = insert(root, key)\nprint(\"sizes: root\", root.size, \" left\", root.left.size, \" right\", root.right.size)\n\npath = []\nprint(\"5th smallest:\", select(root, 5, path), \" walk:\", path)\nprint(\"rank of 50:\", rank(root, 50), \" rank of 65:\", rank(root, 65))\nprint(\"keys in [25, 56):\", rank(root, 56) - rank(root, 25))\n",
+          "output": "sizes: root 7  left 3  right 3\n5th smallest: 50  walk: [40, 60, 50]\nrank of 50: 5  rank of 65: 7\nkeys in [25, 56): 3\n",
+          "explanation": "Node 存储 size，初值为 1。insert 是普通的搜索树插入，只多了一行：在递归返回的途中，根据孩子重新计算 size。rank 和 select 读取这些大小，从而跳过整棵子树。\n\n键按 40、20、60、10、30、50、70 的顺序插入，建成一棵满二叉树。输出显示大小为 7、3、3。select(root, 5, path) 在 40 处往右，在 60 处往左，在 50 处停止，所以路径是 [40, 60, 50]。rank 对键 50 返回 5，对 65 返回 7：65 没有存储，但它会排在第七位。最后一行把 [25, 56) 内的键数算成两个名次之差。\n\n这段代码没有做平衡。在 AVL 树里，同样的 size 那一行放在高度更新旁边，每次旋转也要重新计算 size。每个操作只沿着一条从根到叶的路径走，所以成本是 O(h)，树平衡时就是 O(log n)。用中序遍历来数则需要 O(n)。递归使用 O(h) 的栈空间。",
+          "language": "python",
+          "walkthrough": [
+            "size(None) 为 0，所以缺失的孩子在公式 1 + size(left) + size(right) 里什么也不加。",
+            "insert 像平常一样放置键，然后在返回根的途中修复 size。",
+            "select 把 k 与 size(left) + 1 比较，来选择往左、停止或往右。rank 每次往右走时加上同样的量。"
+          ],
+          "trace": {
+            "columns": [
+              "读到的结点",
+              "r = size(left) + 1",
+              "到达时的 k",
+              "决定"
+            ],
+            "rows": [
+              [
+                "40",
+                "4",
+                "5",
+                "5 > 4：以 k = 1 往右走"
+              ],
+              [
+                "60",
+                "2",
+                "1",
+                "1 < 2：往左走"
+              ],
+              [
+                "50",
+                "1",
+                "1",
+                "k = r：答案是 50"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "rotation-size-repair",
+          "title": "旋转必须修复大小",
+          "intro": "右旋转保持排序顺序，但在重新计算之前，有些存储的大小是错的。",
+          "code": "class Node:\n    def __init__(self, key, left=None, right=None):\n        self.key, self.left, self.right = key, left, right\n        self.size = 1 + (left.size if left else 0) + (right.size if right else 0)\n\ndef size(node):\n    return 0 if node is None else node.size\n\ndef true_count(node):\n    \"\"\"Slow checker: count the nodes by visiting all of them.\"\"\"\n    return 0 if node is None else 1 + true_count(node.left) + true_count(node.right)\n\ndef inorder(node):\n    return [] if node is None else inorder(node.left) + [node.key] + inorder(node.right)\n\nroot = Node(30, Node(20, Node(10)))\nprint(\"before: root\", root.key, \" size\", root.size, \" inorder\", inorder(root))\n\ntop = root.left                              # rotate right at 30\nroot.left = top.right\ntop.right = root\nprint(\"links changed, sizes not yet repaired:\")\nprint(\"  new root\", top.key, \" stored size\", top.size, \" true size\", true_count(top))\n\nroot.size = 1 + size(root.left) + size(root.right)   # lower node first\ntop.size = 1 + size(top.left) + size(top.right)      # then the new top\nprint(\"after repair: new root\", top.key, \" stored size\", top.size, \" true size\", true_count(top))\nprint(\"old root\", root.key, \" size\", root.size, \" inorder\", inorder(top))\n",
+          "output": "before: root 30  size 3  inorder [10, 20, 30]\nlinks changed, sizes not yet repaired:\n  new root 20  stored size 2  true size 3\nafter repair: new root 20  stored size 3  true size 3\nold root 30  size 1  inorder [10, 20, 30]\n",
+          "explanation": "树一开始是 30，左孩子是 20，20 的左孩子是 10。Node 在创建时计算自己的 size。true_count 是一个很慢的检查器，它会访问每个结点。程序像 AVL 章节那样，通过修改链接在 30 处右旋转。然后打印新的顶部 20。它存储的 size 仍然是 2，那在 20 没有右孩子时是对的，但它真实的大小是 3。\n\n修复需要两行。先重新计算旧的根，因为它现在是较低的结点，它的孩子已经确定，大小为 1。然后根据孩子重新计算新的顶部：1 + 1 + 1 = 3。最后的输出显示存储值与真实值一致。旋转前后中序列表都是 [10, 20, 30]，所以旋转保持了顺序。\n\n旋转只改变两个结点，所以修复的成本是 O(1)。如果把这两行对调，新的顶部会读到旧根过期的大小，存下错误的值。检查器的成本是 O(n)，它只用于测试，不属于数据结构本身。",
+          "language": "python",
+          "walkthrough": [
+            "把 30、20、10 建成一条链，大小分别为 3、2、1，然后修改旋转涉及的三条链接。",
+            "打印新顶部存储的大小和真实的大小，展示过期的字段。",
+            "先重新计算旧的根，再计算新的顶部，并再次与慢速计数比较。"
+          ],
+          "trace": {
+            "columns": [
+              "阶段",
+              "30 存储的大小",
+              "20 存储的大小",
+              "中序"
+            ],
+            "rows": [
+              [
+                "旋转前",
+                "3",
+                "2",
+                "10, 20, 30"
+              ],
+              [
+                "链接已改",
+                "3（过期）",
+                "2（过期）",
+                "10, 20, 30"
+              ],
+              [
+                "旧根已修复",
+                "1",
+                "2（过期）",
+                "10, 20, 30"
+              ],
+              [
+                "新顶部已修复",
+                "1",
+                "3",
+                "10, 20, 30"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "min-stack-adt",
+          "title": "给栈增加 minimum() 操作",
+          "intro": "每一项都记住它自己及其下面各项中的最小值，所以答案在出栈之后依然有效。",
+          "code": "class WrongMinStack:\n    \"\"\"Remembers one smallest value for the whole stack.\"\"\"\n    def __init__(self):\n        self.items = []\n        self.smallest = None\n\n    def push(self, value):\n        self.items.append(value)\n        if self.smallest is None or value < self.smallest:\n            self.smallest = value\n\n    def pop(self):\n        return self.items.pop()               # smallest is never repaired\n\nclass MinStack:\n    \"\"\"Each item also stores the smallest value at or below it.\"\"\"\n    def __init__(self):\n        self.items = []                       # pairs (value, smallest so far)\n\n    def push(self, value):\n        smallest = value if not self.items else min(value, self.items[-1][1])\n        self.items.append((value, smallest))\n\n    def pop(self):\n        return self.items.pop()[0]\n\n    def minimum(self):\n        return self.items[-1][1]\n\nwrong, good = WrongMinStack(), MinStack()\nfor value in [5, 3, 7, 3, 8]:\n    wrong.push(value)\n    good.push(value)\n    print(\"push\", value, \" minimum:\", good.minimum())\n\nfor _ in range(4):\n    popped = good.pop()\n    wrong.pop()\n    print(\"pop\", popped, \" minimum:\", good.minimum(), \" one-variable version says:\", wrong.smallest)\n",
+          "output": "push 5  minimum: 5\npush 3  minimum: 3\npush 7  minimum: 3\npush 3  minimum: 3\npush 8  minimum: 3\npop 8  minimum: 3  one-variable version says: 3\npop 3  minimum: 3  one-variable version says: 3\npop 7  minimum: 3  one-variable version says: 3\npop 3  minimum: 5  one-variable version says: 3\n",
+          "explanation": "WrongMinStack 只保存一个变量 smallest。入栈之后它是对的，但 pop 从不修复它。最后一次出栈之后，栈里只剩下 5，而单变量版本仍然说是 3。\n\nMinStack 存储数对。压入一个值时，数对的第二部分是 min(value, 下面一项的最小值)。整个栈的最小值就是栈顶数对的第二部分，所以 minimum() 是 O(1)。pop 移除数对之后，剩下的栈的答案早已存在下面一层。重复出现的 3 说明了存储的数为什么必须表示“不大于”而不是“严格小于”：一个 3 离开之后，另一个 3 仍然保存着最小值。\n\npush、pop 和 minimum 在最坏情况下的成本都是 O(1)。n 个元素的空间是 O(n)，每项多存一个数。这个设计通过增加一个操作改变了抽象数据类型，并用空间付出了代价。同样的模式也可以得到最大值、累计和或计数。",
+          "language": "python",
+          "walkthrough": [
+            "错误的类只记录一个最小值，而且它只会变得更好。",
+            "正确的类存储（值，该项及其下面各项的最小值），并从栈顶读取答案。",
+            "循环弹出四项并打印两个版本。只剩 5 时，它们第一次出现分歧。"
+          ],
+          "trace": {
+            "columns": [
+              "压入之后",
+              "存储的数对（值，最小值）",
+              "minimum()"
+            ],
+            "rows": [
+              [
+                "5",
+                "(5, 5)",
+                "5"
+              ],
+              [
+                "3",
+                "(5, 5) (3, 3)",
+                "3"
+              ],
+              [
+                "7",
+                "(5, 5) (3, 3) (7, 3)",
+                "3"
+              ],
+              [
+                "3",
+                "(5, 5) (3, 3) (7, 3) (3, 3)",
+                "3"
+              ],
+              [
+                "8",
+                "(5, 5) (3, 3) (7, 3) (3, 3) (8, 3)",
+                "3"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "ticket-state-graph",
+          "title": "把免费车票建模为附加状态",
+          "intro": "顶点是一对（城镇，剩余车票数）。这样 Dijkstra 不用修改就能解决新问题。",
+          "code": "import heapq\n\nroads = [(\"S\", \"A\", 2), (\"A\", \"T\", 9), (\"A\", \"C\", 1),\n         (\"S\", \"B\", 4), (\"B\", \"C\", 3), (\"C\", \"T\", 4)]\ngraph = {}\nfor u, v, w in roads:\n    graph.setdefault(u, []).append((v, w))\n    graph.setdefault(v, []).append((u, w))\n\ndef cheapest(source, target, tickets):\n    \"\"\"Dijkstra over states (town, tickets still unused).\"\"\"\n    start = (source, tickets)\n    best = {start: 0}\n    parent = {}\n    heap = [(0, start)]\n    while heap:\n        cost, state = heapq.heappop(heap)\n        if cost > best[state]:\n            continue                                   # stale heap entry\n        town, left = state\n        moves = [((nxt, left), cost + w) for nxt, w in graph[town]]\n        if left > 0:                                   # use a ticket: free road\n            moves += [((nxt, left - 1), cost) for nxt, w in graph[town]]\n        for new_state, new_cost in moves:\n            if new_cost < best.get(new_state, float(\"inf\")):\n                best[new_state] = new_cost\n                parent[new_state] = state\n                heapq.heappush(heap, (new_cost, new_state))\n    end = min((s for s in best if s[0] == target), key=lambda s: best[s])\n    route = [end]\n    while route[-1] != start:\n        route.append(parent[route[-1]])\n    return best[end], route[::-1]\n\nfor tickets in [0, 1, 2]:\n    cost, route = cheapest(\"S\", \"T\", tickets)\n    print(\"tickets\", tickets, \"-> cost\", cost, \" states:\", route)\n\ncost, route = cheapest(\"S\", \"T\", 0)\nweights = {(u, v): w for u, v, w in roads}\nweights.update({(v, u): w for u, v, w in roads})\nbiggest = max(weights[(a[0], b[0])] for a, b in zip(route, route[1:]))\nprint(\"plan first, discount the dearest road later:\", cost - biggest)\n",
+          "output": "tickets 0 -> cost 7  states: [('S', 0), ('A', 0), ('C', 0), ('T', 0)]\ntickets 1 -> cost 2  states: [('S', 1), ('A', 1), ('T', 0)]\ntickets 2 -> cost 0  states: [('S', 2), ('A', 1), ('T', 0)]\nplan first, discount the dearest road later: 3\n",
+          "explanation": "graph 列出每个城镇的邻居和道路费用。cheapest 在状态上运行 Dijkstra。从（town, left）出发有两种移动。付费走一条路，left 不变，加上费用。使用车票只在 left > 0 时允许，走到同一个邻居，left 减一，费用不增加。best 保存每个状态已知的最低费用，parent 用来重建路线，过期的堆条目会被跳过，就像 Dijkstra 章节里那样。\n\n答案是城镇为 T 的状态中最便宜的那个，不管还剩几张车票。0 张车票时，沿 S, A, C, T 的费用是 7。1 张车票时，路线是 S, A, T，费用是 2：S–A 付 2，A–T 使用车票。2 张车票时两段路都免费，费用是 0。最后一行说明状态为什么重要：先规划最便宜的路线（费用 7），再给它最贵的一段（4）打折，得到 3；但一张车票时真正的最优值是 2，因为车票改变了哪条路线最好。\n\n有 t 张车票时有 n(t + 1) 个状态，至多 m(4t + 2) 条弧，所以运行时间大致与 t + 1 成正比。一张车票时，搜索的规模大约是普通搜索的两倍。",
+          "language": "python",
+          "walkthrough": [
+            "每个状态是元组（town, left）。起始状态是（S, tickets）。",
+            "堆里加入两种移动：付费并保持车票数，或者用一张车票、费用为 0 并让车票数减一。",
+            "目标可以在多个状态下到达。取其中最便宜的一个，并通过 parent 链接重建路线。"
+          ],
+          "trace": {
+            "columns": [
+              "已确定的状态（城镇，剩余车票）",
+              "费用",
+              "来自"
+            ],
+            "rows": [
+              [
+                "(S, 1)",
+                "0",
+                "起点"
+              ],
+              [
+                "(A, 0)",
+                "0",
+                "(S, 1)：在 S–A 上用车票"
+              ],
+              [
+                "(B, 0)",
+                "0",
+                "(S, 1)：在 S–B 上用车票"
+              ],
+              [
+                "(C, 0)",
+                "1",
+                "(A, 0)：A–C 付 1"
+              ],
+              [
+                "(A, 1)",
+                "2",
+                "(S, 1)：S–A 付 2"
+              ],
+              [
+                "(S, 0)",
+                "2",
+                "(A, 0)：A–S 付 2"
+              ],
+              [
+                "(T, 0)",
+                "2",
+                "(A, 1)：在 A–T 上用车票"
+              ]
+            ]
+          }
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "字段只依赖下方时才是安全的",
+          "body": "子树大小和高度由结点及其孩子算出，所以结点附近的任何变化，都可以沿着通向根的路径修复。深度，或者“祖先中比它大的键的个数”，依赖上方的内容，所以一次旋转就可能让许多结点出错。添加字段之前先问：如果我改变一条链接，哪些字段会过期？如果答案是“只有一条路径上的结点”，这个增强的代价就很低。"
+        },
+        {
+          "title": "根据查询而不是根据结构来选择增强",
+          "body": "要快速统计一个区间内的键数，我们并不需要新的树，只需要每个结点多存一个数。同一棵树配上别的字段，可以回答别的问题：子树中键的和能回答区间求和，子树中最大的区间右端点有助于回答重叠查询。关键是先列出要回答的查询，再找出最小的摘要，使得一次遍历就能回答它们。"
+        },
+        {
+          "title": "状态是规则所需要的记忆",
+          "body": "最短路径算法会忘记自己是怎样到达某个顶点的。如果规则依赖历史，顶点就必须携带这份历史。车票数量、手里的钥匙、步数的奇偶都是典型的例子。判断状态是否合适有一个好办法：给定状态和下一步移动，能否不借助过去的其他信息，就判断这一步是否合法、花费多少？如果可以，状态就够了。如果状态有 s 种取值，预计图和运行时间都会增长为原来的 s 倍左右。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "手工做 select 与 rank",
+          "question": "一棵搜索树以满二叉的形状存放键 10、20、30、40、50、60、70，根是 40。各结点大小为：40 是 7，20 和 60 是 3，每个叶子是 1。求 select(6) 和 rank(35)，并列出读到的结点。",
+          "strategy": "在每个结点计算 r = size(left) + 1，并与 k 比较。对于 rank，每次往右走就加上 r，到达空子树时再加 1。",
+          "steps": [
+            "select(6)：在 40，r = 3 + 1 = 4。因为 6 > 4，往右走并要求 k = 6 − 4 = 2。",
+            "在 60，r = 1 + 1 = 2。因为 k = 2，答案是 60。读了两个结点：40 和 60。",
+            "rank(35)：在 40，35 ≤ 40，所以往左走，什么也不加。在 20，35 > 20，所以加上 r = 2 并往右走。在 30，35 > 30，所以加上 r = 1 并往右走到空子树，再加 1。总数是 2 + 1 + 1 = 4。"
+          ],
+          "answer": "select(6) 是 60，rank(35) 是 4，也就是说 35 会是第四小的键。",
+          "sanity_check": "在有序列表 10, 20, 30, 40, 50, 60, 70 中，第六项是 60。比 35 小的键恰好有三个：10、20、30。另外 select(rank(30)) = select(3) = 30。"
+        },
+        {
+          "title": "计算一次插入的工作量",
+          "question": "一棵 AVL 树存有 1,000,000 个键。高度为 h 的最小 AVL 树有 N(h) = F(h + 3) − 1 个结点，其中 F 是斐波那契数列，F(1) = F(2) = 1。求可能的最大高度。然后限定一次需要一次单旋转或一次双旋转的插入所重新计算的 size 字段的个数。",
+          "strategy": "找出使 N(h) 不超过键数的最大 h。然后数出一条从根到叶的路径上的结点数，再加上旋转所涉及的结点。",
+          "steps": [
+            "用前面的数值检验公式：N(3) = F(6) − 1 = 8 − 1 = 7，N(4) = F(7) − 1 = 13 − 1 = 12，与 AVL 章节一致。",
+            "F(30) = 832,040，F(31) = 1,346,269。所以 N(27) = 832,039，低于 1,000,001 个键；而 N(28) = 1,346,268，高于它。高度为 28 的树需要的键比我们拥有的更多，所以高度至多为 27。",
+            "一条从根到叶的路径最多有 28 个结点。插入时在其中每个结点重新计算 size，最多 28 次。一次双旋转会改变最多三个结点的孩子，所以再多留 4 次。",
+            "总共至多 28 + 4 = 32 次重新计算。如果把所有 size 从头重新数一遍，要接触约 1,000,000 个结点。"
+          ],
+          "answer": "高度至多为 27，一次插入最多重新计算约 32 个 size 字段，也就是大约 32 个常数时间的步骤，而不是一百万个。",
+          "sanity_check": "次数随 log n 增长。把键数翻倍到 2,000,000，只会多出大约一层。没有平衡的搜索树高度可能达到 1,000,000，这个界就不成立了。"
+        },
+        {
+          "title": "估算车票图的规模",
+          "question": "一张地图有 5 个城镇、6 条无向道路，旅行者持有 1 张免费车票。状态图有多少个顶点和多少条弧？没有车票时是多少？",
+          "strategy": "先数状态。然后对一条道路，数每份地图里的普通弧以及两份地图之间的免费弧。",
+          "steps": [
+            "状态是（城镇，剩余车票数），剩余车票数为 0 或 1，所以有 5 × 2 = 10 个顶点。",
+            "一条道路在两份地图里各有两个方向的普通弧：2 × 2 = 4 条。",
+            "一条道路还有从“车票在手”那份到“车票已用”那份的免费弧，每个方向一条：2 条。所以一条道路有 6 条弧，6 条道路有 36 条弧。"
+          ],
+          "answer": "状态图有 10 个顶点和 36 条弧。没有车票时就是原来的地图：5 个顶点和 12 条弧。",
+          "sanity_check": "状态图的顶点数大约是原来的两倍，弧数大约是三倍，所以 Dijkstra 的成本只多出一个很小的常数倍。有 t 张车票时，有 n(t + 1) 个顶点和 m(4t + 2) 条弧。"
         }
       ]
     },

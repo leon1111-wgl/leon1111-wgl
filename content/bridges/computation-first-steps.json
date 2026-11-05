@@ -1,0 +1,987 @@
+{
+ "id": "computation-first-steps",
+ "course": "comp2022",
+ "kind": "first-steps",
+ "title": {
+  "en": "Models of computation: first steps",
+  "zh": "计算模型入门：第一步"
+ },
+ "summary": {
+  "en": "Six short lessons on the ideas the course takes for granted: sets, strings and languages, functions and state, what a proof is, logic words and truth tables, and how to read the notation. Python examples check each claim by brute force on small cases.",
+  "zh": "六节短课，讲这门课默认你已经懂的想法：集合，字符串与语言，函数与状态，什么是证明，逻辑词与真值表，以及怎样读懂记号。Python 例子用暴力检查在小情形上验证每个说法。"
+ },
+ "needs": [
+  {
+   "en": "Nothing to install. Every example is Python and runs on this page: press Run under the code. You can also change the code and run it again.",
+   "zh": "不需要安装任何东西。所有例子都是 Python，直接在本页运行：点代码下方的“运行”。你也可以改动代码再运行一次。"
+  },
+  {
+   "en": "School arithmetic: add, multiply, divide with a remainder, and know what even and odd numbers are.",
+   "zh": "学校里学过的算术：加、乘、带余数的除法，并知道什么是偶数和奇数。"
+  },
+  {
+   "en": "No programming and no earlier logic. Every Python word and every symbol is explained the first time it appears.",
+   "zh": "不需要会编程，也不需要学过逻辑。每个 Python 词和每个符号第一次出现时都会解释。"
+  },
+  {
+   "en": "Patience with symbols. Each symbol comes with its name and how to say it aloud, and lesson 6 is a reading guide you can return to.",
+   "zh": "对符号有耐心。每个符号都配有名字和读法，第 6 课是一份可以反复回来看的阅读指南。"
+  }
+ ],
+ "lessons": [
+  {
+   "id": "sets-membership",
+   "title": {
+    "en": "Sets and membership",
+    "zh": "集合与属于关系"
+   },
+   "goal": {
+    "en": "After this you can read and write a set, say whether something is an element of it, and use union, intersection and subset.",
+    "zh": "学完后你能读写集合，判断某个东西是不是它的元素，并会用并集、交集和子集。"
+   },
+   "plain": {
+    "en": "A set is a collection of things, called its elements. Only two questions matter about a set: what is in it, and what is not. Order does not matter and repeats do not count. We write a set with curly braces: {1, 2, 3} is the set whose elements are 1, 2 and 3. The set {3, 1, 2, 2} is the very same set, because order and repeats are ignored.\n\nThe symbol ∈ means \"is an element of\", and ∉ means \"is not an element of\". So 2 ∈ {1, 2, 3} is true and 5 ∈ {1, 2, 3} is false. A set can have no elements at all. That is the empty set, written ∅. The size of a set S, written |S|, is the number of its elements. |{1, 2, 3}| is 3 and |∅| is 0.\n\nA set A is a subset of a set B, written A ⊆ B, when every element of A is also an element of B. For example {1, 2} ⊆ {1, 2, 3}. Every set is a subset of itself, and ∅ is a subset of every set. Do not mix up ∈ and ⊆. The statement 1 ∈ {1, 2} says 1 is an element. The statement {1} ⊆ {1, 2} says the set that contains only 1 is a subset. A set can also be an element of another set. The set {∅} has exactly one element, and that element is the empty set. So |{∅}| is 1, while |∅| is 0. A box with an empty box inside it is not an empty box.\n\nThere are three ways to combine two sets. The union A ∪ B has every element that is in A or in B or in both. The intersection A ∩ B has the elements that are in both. The difference A − B has the elements of A that are not in B. With A = {1, 2, 3} and B = {3, 4}: A ∪ B = {1, 2, 3, 4}, A ∩ B = {3}, and A − B = {1, 2}.\n\nPython has sets too. In Python a variable is a name for a value, and = puts the value on its right under the name on its left. print(...) shows values on the screen. A set has no order of its own, so the example prints sorted(...) of each set. That puts the elements in order and makes the output the same on every run. The example tests each claim on a tiny case. Trying small cases like this is called brute force. It is a good way to see an idea work, but it does not prove anything about all sets.",
+    "zh": "集合是一些东西的汇集，这些东西叫作它的元素。关于集合只有两个问题重要：里面有什么，没有什么。顺序不重要，重复不算数。集合用花括号来写：{1, 2, 3} 是以 1、2、3 为元素的集合。集合 {3, 1, 2, 2} 和它是同一个集合，因为顺序和重复都被忽略。\n\n符号 ∈ 表示“是……的元素”，∉ 表示“不是……的元素”。所以 2 ∈ {1, 2, 3} 为真，5 ∈ {1, 2, 3} 为假。集合可以一个元素也没有，那就是空集，写作 ∅。集合 S 的大小写作 |S|，是它的元素个数。|{1, 2, 3}| 是 3，|∅| 是 0。\n\n如果集合 A 的每个元素也都是集合 B 的元素，就说 A 是 B 的子集，写作 A ⊆ B。例如 {1, 2} ⊆ {1, 2, 3}。每个集合都是它自己的子集，∅ 是每个集合的子集。不要混淆 ∈ 和 ⊆。1 ∈ {1, 2} 说的是 1 是一个元素；{1} ⊆ {1, 2} 说的是只含 1 的那个集合是一个子集。集合也可以是另一个集合的元素。集合 {∅} 恰好有一个元素，这个元素就是空集。所以 |{∅}| 是 1，而 |∅| 是 0。里面装着一个空盒子的盒子，并不是空盒子。\n\n两个集合有三种组合方式。并集 A ∪ B 包含属于 A 或属于 B 或两者都属于的所有元素。交集 A ∩ B 包含同时属于两者的元素。差集 A − B 包含属于 A 但不属于 B 的元素。取 A = {1, 2, 3}，B = {3, 4}：A ∪ B = {1, 2, 3, 4}，A ∩ B = {3}，A − B = {1, 2}。\n\nPython 里也有集合。在 Python 里，变量是一个值的名字，= 把右边的值放到左边的名字下。print(...) 把值显示在屏幕上。集合本身没有顺序，所以例子打印的是每个集合的 sorted(...)，它把元素排好序，使每次运行的输出都一样。例子在很小的情形上检验每个说法。这样试小情形叫作暴力检查。它是看清一个想法如何运作的好办法，但并不能证明关于所有集合的结论。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "set",
+      "zh": "集合"
+     },
+     "meaning": {
+      "en": "A collection of distinct things. Only membership matters, not order or repeats.",
+      "zh": "一些互不相同的东西的汇集。只看谁属于它，不看顺序，也不看重复。"
+     }
+    },
+    {
+     "term": {
+      "en": "element",
+      "zh": "元素"
+     },
+     "meaning": {
+      "en": "One of the things in a set. We write x ∈ S for \"x is an element of S\".",
+      "zh": "集合里的一个东西。x ∈ S 读作“x 是 S 的元素”。"
+     }
+    },
+    {
+     "term": {
+      "en": "subset (⊆)",
+      "zh": "子集（⊆）"
+     },
+     "meaning": {
+      "en": "A is a subset of B when every element of A is also in B.",
+      "zh": "如果 A 的每个元素也都在 B 里，A 就是 B 的子集。"
+     }
+    },
+    {
+     "term": {
+      "en": "union, intersection, difference",
+      "zh": "并集、交集、差集"
+     },
+     "meaning": {
+      "en": "A ∪ B: in A or B. A ∩ B: in both. A − B: in A but not in B.",
+      "zh": "A ∪ B：属于 A 或 B。A ∩ B：同时属于两者。A − B：属于 A 但不属于 B。"
+     }
+    },
+    {
+     "term": {
+      "en": "empty set (∅)",
+      "zh": "空集（∅）"
+     },
+     "meaning": {
+      "en": "The set with no elements. Its size is 0.",
+      "zh": "没有元素的集合，大小是 0。"
+     }
+    },
+    {
+     "term": {
+      "en": "brute force",
+      "zh": "暴力检查"
+     },
+     "meaning": {
+      "en": "Testing a claim on every case in a small range.",
+      "zh": "把一个小范围里的每个情形都拿来检验。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "A = {1, 2, 3}\nB = {3, 4}\n\nprint(\"2 in A:\", 2 in A)\nprint(\"5 in A:\", 5 in A)\nprint(\"size of {3, 1, 2, 2}:\", len({3, 1, 2, 2}))\nprint(\"A union B:\", sorted(A | B))\nprint(\"A intersect B:\", sorted(A & B))\nprint(\"A minus B:\", sorted(A - B))\nprint(\"{1, 2} subset of A:\", {1, 2} <= A)\nprint(\"A subset of B:\", A <= B)\nprint(\"size of the empty set:\", len(set()))\nprint(\"size rule holds:\", len(A | B) == len(A) + len(B) - len(A & B))\n",
+    "output": "2 in A: True\n5 in A: False\nsize of {3, 1, 2, 2}: 3\nA union B: [1, 2, 3, 4]\nA intersect B: [3]\nA minus B: [1, 2]\n{1, 2} subset of A: True\nA subset of B: False\nsize of the empty set: 0\nsize rule holds: True\n",
+    "walk": {
+     "en": [
+      "A = {1, 2, 3} makes a set and gives it the name A. Curly braces make a set in Python, as on paper.",
+      "The word in asks the membership question and answers True or False. 2 in A is Python for 2 ∈ A.",
+      "len(...) gives the number of elements. In {3, 1, 2, 2} the repeated 2 counts once, so the answer is 3.",
+      "The signs |, & and - give the union, the intersection and the difference. The sorted(...) around them lists the result in order, so you see the same lines each time.",
+      "<= asks \"is the left set a subset of the right set?\" {1, 2} is a subset of A, but A is not a subset of B.",
+      "set() makes the empty set. Python also has {}, but that makes something else, as the mistakes below show.",
+      "The last line checks a rule by brute force on this one pair: the size of a union is the two sizes added, minus the size of the overlap, so the overlap is not counted twice. It prints True here."
+     ],
+     "zh": [
+      "A = {1, 2, 3} 建立一个集合并取名 A。Python 里的花括号和纸上一样，用来写集合。",
+      "单词 in 提出属于关系的问题，答案是 True 或 False。2 in A 就是 Python 写法的 2 ∈ A。",
+      "len(...) 给出元素个数。在 {3, 1, 2, 2} 里重复的 2 只算一次，所以答案是 3。",
+      "符号 |、& 和 - 分别给出并集、交集和差集。外面的 sorted(...) 把结果按顺序列出，所以每次看到的行都相同。",
+      "<= 问的是“左边的集合是不是右边集合的子集？”{1, 2} 是 A 的子集，但 A 不是 B 的子集。",
+      "set() 建立空集。Python 里还有 {}，但它建立的是另一种东西，见下面的常见错误。",
+      "最后一行在这一对集合上用暴力检查验证一条规则：并集的大小等于两个大小相加，再减去重叠部分的大小，这样重叠部分就不会被数两次。这里打印 True。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "empty = {}\nprint(empty | {1})",
+     "why": {
+      "en": "In Python, {} is an empty dictionary, which is a different kind of thing. It cannot be combined with a set, so the second line stops with TypeError. The empty set is written set().",
+      "zh": "在 Python 里，{} 是空字典，是另一种东西。它不能和集合组合，所以第二行以 TypeError 停止。空集要写成 set()。"
+     },
+     "right": "empty = set()\nprint(empty | {1})"
+    },
+    {
+     "wrong": "print({1} in {1, 2})   # prints False",
+     "why": {
+      "en": "The word in asks whether the thing on the left is an element of the set on the right. The elements of {1, 2} are 1 and 2. The set {1} is not one of them, so the answer is False. To ask whether {1} is a subset, use <=.",
+      "zh": "单词 in 问的是左边的东西是不是右边集合的元素。{1, 2} 的元素是 1 和 2，集合 {1} 不在其中，所以答案是 False。要问 {1} 是不是子集，应该用 <=。"
+     },
+     "right": "print({1} <= {1, 2})   # prints True"
+    },
+    {
+     "wrong": "print({\"cat\", \"ant\", \"bee\"})",
+     "why": {
+      "en": "A set has no order, so Python may show the elements in a different order on different runs. Your output then does not match what you expected. Put sorted(...) around the set before printing it.",
+      "zh": "集合没有顺序，所以 Python 在不同次运行时可能以不同的顺序显示元素，你的输出就和预期不一样。打印之前，要在集合外面加上 sorted(...)。"
+     },
+     "right": "print(sorted({\"cat\", \"ant\", \"bee\"}))"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "How many elements does {a, b, a, c} have? And how many does {∅} have, compared with ∅?",
+      "zh": "{a, b, a, c} 有几个元素？{∅} 有几个元素，和 ∅ 比起来如何？"
+     },
+     "a": {
+      "en": "3, because the repeated a counts once and the set is {a, b, c}. The set {∅} has 1 element, the empty set, while ∅ has 0 elements.",
+      "zh": "3 个，因为重复的 a 只算一次，这个集合就是 {a, b, c}。集合 {∅} 有 1 个元素，即空集，而 ∅ 有 0 个元素。"
+     }
+    },
+    {
+     "q": {
+      "en": "Are these true? (a) {1, 2} ⊆ {1, 2}. (b) ∅ ⊆ {1, 2}. (c) 1 ⊆ {1, 2}.",
+      "zh": "下面这些对吗？(a) {1, 2} ⊆ {1, 2}。(b) ∅ ⊆ {1, 2}。(c) 1 ⊆ {1, 2}。"
+     },
+     "a": {
+      "en": "(a) True: every set is a subset of itself. (b) True: ∅ has no elements, so none of them can be missing from {1, 2}. (c) It is not a valid statement, because 1 is an element, not a set. Write 1 ∈ {1, 2}, or {1} ⊆ {1, 2}.",
+      "zh": "(a) 对：每个集合都是自己的子集。(b) 对：∅ 没有元素，所以不会有哪个元素不在 {1, 2} 里。(c) 这不是一个合法的陈述，因为 1 是元素，不是集合。应该写 1 ∈ {1, 2}，或者 {1} ⊆ {1, 2}。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the Python for A ∩ B with A = {1, 2, 3, 4} and B = {2, 4, 6}. What does it print?",
+      "zh": "写出 A = {1, 2, 3, 4}、B = {2, 4, 6} 时 A ∩ B 的 Python 代码。它会打印什么？"
+     },
+     "a": {
+      "en": "print(sorted({1, 2, 3, 4} & {2, 4, 6})) prints [2, 4]. Those are the elements that are in both sets.",
+      "zh": "print(sorted({1, 2, 3, 4} & {2, 4, 6})) 会打印 [2, 4]。这就是同时属于两个集合的元素。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "strings-languages",
+   "title": {
+    "en": "Strings, alphabets and languages",
+    "zh": "字符串、字母表与语言"
+   },
+   "goal": {
+    "en": "After this you can list the strings over a small alphabet, and say what a language is.",
+    "zh": "学完后你能列出一个小字母表上的字符串，并能说明什么是语言。"
+   },
+   "plain": {
+    "en": "An alphabet is a finite set of symbols. We write it Σ, the Greek capital letter sigma. For example Σ = {a, b}, or Σ = {0, 1}. A symbol can be anything: a letter, a digit, a dot. The only rule is that the set is finite.\n\nA string over Σ is a finite row of symbols from Σ, written one after another. The row abba is a string over {a, b}. Order matters: ab and ba are different strings. The length of a string w is written |w|, so |abba| is 4. There is also a string with no symbols at all, the empty string, written ε (Greek epsilon). Its length is 0. The empty string is a real string, even though it is invisible on the page. Joining two strings end to end is called concatenation: ab joined with ba gives abba. Joining ε to any string changes nothing.\n\nΣ* (say \"sigma star\") is the set of all strings over Σ, of every length including 0. For Σ = {a, b} it begins ε, a, b, aa, ab, ba, bb, aaa, and it goes on for ever. There are 2 strings of length 1, 4 of length 2 and 8 of length 3. A string of length k has k positions with 2 choices each, so there are 2 × 2 × ... × 2 = 2^k strings of length k. The set Σ* is infinite, but every single string in it is finite.\n\nA language is any set of strings over Σ. In other words, it is any subset of Σ*. This is not a spoken language, and it does not need a rule. For Σ = {a, b}, the strings that end in b form a language: b, ab, bb, aab, and so on. The set {ab, ba} is a language with two strings. The set ∅, with no strings, is a language. The set {ε}, with one string, the empty string, is another language. The two are different: ∅ has no strings, and {ε} has one string, which happens to be empty.\n\nIn Python a string is text in quotes, such as \"abba\". The empty string is two quotes with nothing between them: \"\". len(...) gives the length and + joins two strings. A list, written in square brackets, is an ordered row of values. A for loop runs its indented lines once for each item of a list. Python uses indentation, the spaces at the start of a line, to show which lines belong inside the loop. Two stars mean \"to the power of\", so 2 ** 3 is 8. The example builds the strings over {a, b} of length 0, 1, 2 and 3, one length at a time. Each string of length k gives two strings of length k + 1, by adding a or b at the end. Then a second loop picks out one language, the strings that end in b.",
+    "zh": "字母表是有限的符号集合。我们把它写作 Σ，即希腊大写字母西格玛。例如 Σ = {a, b}，或者 Σ = {0, 1}。符号可以是任何东西：字母、数字、点。唯一的规则是这个集合是有限的。\n\nΣ 上的字符串是由 Σ 中的符号一个接一个排成的有限序列。序列 abba 是 {a, b} 上的一个字符串。顺序有影响：ab 和 ba 是不同的字符串。字符串 w 的长度写作 |w|，所以 |abba| 是 4。还有一个完全没有符号的字符串，叫作空串，写作 ε（希腊字母厄普西隆）。它的长度是 0。空串是一个真正的字符串，尽管在纸面上看不见。把两个字符串首尾相接叫作连接：ab 与 ba 连接得到 abba。把 ε 连接到任何字符串上，都不改变它。\n\nΣ*（读作“西格玛星”）是 Σ 上所有字符串的集合，包括所有长度，也包括长度 0。对 Σ = {a, b}，它开头是 ε, a, b, aa, ab, ba, bb, aaa，然后一直延续下去。长度为 1 的有 2 个，长度为 2 的有 4 个，长度为 3 的有 8 个。长度为 k 的字符串有 k 个位置，每个位置有 2 种选择，所以长度为 k 的字符串有 2 × 2 × ... × 2 = 2^k 个。集合 Σ* 是无限的，但它里面的每一个字符串都是有限的。\n\n语言就是 Σ 上字符串的任意集合，也就是 Σ* 的任意子集。它不是口语或文字意义上的语言，也不必有什么规则。对 Σ = {a, b}，以 b 结尾的字符串组成一个语言：b、ab、bb、aab，等等。集合 {ab, ba} 是含两个字符串的语言。没有任何字符串的集合 ∅ 也是语言。含一个字符串（空串）的集合 {ε} 是另一个语言。这两个不一样：∅ 没有字符串，{ε} 有一个字符串，只不过这个字符串是空的。\n\n在 Python 里，字符串是引号里的文字，例如 \"abba\"。空串是中间什么也没有的两个引号：\"\"。len(...) 给出长度，+ 把两个字符串连接起来。列表写在方括号里，是按顺序排列的一行值。for 循环对列表的每一项各执行一次它缩进的行。Python 用缩进（行首的空格）表示哪些行在循环里面。两个星号表示“乘方”，所以 2 ** 3 是 8。例子一次一个长度地构造 {a, b} 上长度为 0、1、2、3 的字符串。每个长度为 k 的字符串，在末尾加 a 或加 b，得到两个长度为 k + 1 的字符串。然后第二个循环挑出一个语言：以 b 结尾的字符串。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "alphabet (Σ)",
+      "zh": "字母表（Σ）"
+     },
+     "meaning": {
+      "en": "A finite set of symbols.",
+      "zh": "有限的符号集合。"
+     }
+    },
+    {
+     "term": {
+      "en": "string",
+      "zh": "字符串"
+     },
+     "meaning": {
+      "en": "A finite row of symbols from the alphabet. Order matters.",
+      "zh": "由字母表中的符号排成的有限序列。顺序有影响。"
+     }
+    },
+    {
+     "term": {
+      "en": "empty string (ε)",
+      "zh": "空串（ε）"
+     },
+     "meaning": {
+      "en": "The string with no symbols. Its length is 0.",
+      "zh": "没有符号的字符串，长度是 0。"
+     }
+    },
+    {
+     "term": {
+      "en": "Σ*",
+      "zh": "Σ*"
+     },
+     "meaning": {
+      "en": "The set of all strings over Σ, including ε. It is infinite.",
+      "zh": "Σ 上所有字符串的集合，包括 ε。它是无限的。"
+     }
+    },
+    {
+     "term": {
+      "en": "language",
+      "zh": "语言"
+     },
+     "meaning": {
+      "en": "Any set of strings over Σ, that is, any subset of Σ*.",
+      "zh": "Σ 上字符串的任意集合，也就是 Σ* 的任意子集。"
+     }
+    },
+    {
+     "term": {
+      "en": "concatenation",
+      "zh": "连接"
+     },
+     "meaning": {
+      "en": "Joining two strings end to end. In Python, the + sign.",
+      "zh": "把两个字符串首尾相接。Python 里用 + 号。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "alphabet = [\"a\", \"b\"]\neverything = []\ncurrent = [\"\"]\nfor length in range(4):\n    print(length, len(current), current)\n    everything = everything + current\n    longer = []\n    for s in current:\n        for symbol in alphabet:\n            longer.append(s + symbol)\n    current = longer\n\nends_in_b = []\nfor s in everything:\n    if s.endswith(\"b\"):\n        ends_in_b.append(s)\nprint(ends_in_b)\nprint(len(everything), len(ends_in_b))\n",
+    "output": "0 1 ['']\n1 2 ['a', 'b']\n2 4 ['aa', 'ab', 'ba', 'bb']\n3 8 ['aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb']\n['b', 'ab', 'bb', 'aab', 'abb', 'bab', 'bbb']\n15 7\n",
+    "walk": {
+     "en": [
+      "alphabet is a list of the two symbols. current starts as [\"\"], a list holding one string, the empty string. That is the only string of length 0.",
+      "range(4) gives the numbers 0, 1, 2 and 3, so the outer for runs four times, with length equal to each of them in turn. Each time it prints the length, how many strings there are of that length, and the strings themselves.",
+      "everything = everything + current adds the strings of this length to the list of all strings so far. The + sign joins two lists, just as it joins two strings.",
+      "The two inner loops build the next length. For each string s and each symbol, s + symbol is a longer string, and append puts it at the end of the list longer. Then current = longer moves on to the next length.",
+      "The printed counts are 1, 2, 4, 8: that is 2^length, as the explanation says. The loop never lists all of Σ*, because that is infinite. It lists every string up to length 3.",
+      ".endswith(\"b\") asks whether a string ends with b. The second loop keeps those strings. The empty string is in everything but not in ends_in_b, because it has no last symbol.",
+      "The last line shows 15 strings of length at most 3, of which 7 end in b. So the language \"strings ending in b\", cut off at length 3, has 7 strings."
+     ],
+     "zh": [
+      "alphabet 是含两个符号的列表。current 起初是 [\"\"]，也就是含一个字符串（空串）的列表。长度为 0 的字符串只有这一个。",
+      "range(4) 给出数 0、1、2、3，所以外层 for 执行四次，length 依次取这些值。每次它打印长度、这个长度的字符串有多少个，以及这些字符串本身。",
+      "everything = everything + current 把这个长度的字符串加进“到目前为止所有字符串”的列表。+ 号连接两个列表，就像连接两个字符串一样。",
+      "里面的两层循环构造下一个长度。对每个字符串 s 和每个符号，s + symbol 是一个更长的字符串，append 把它放到列表 longer 的末尾。然后 current = longer 进入下一个长度。",
+      "打印出的个数是 1、2、4、8，也就是 2^length，和讲解中说的一样。循环不会列出 Σ* 的全部，因为它是无限的；它列出的是长度不超过 3 的所有字符串。",
+      ".endswith(\"b\") 问的是一个字符串是否以 b 结尾。第二个循环留下这样的字符串。空串在 everything 里，但不在 ends_in_b 里，因为它没有最后一个符号。",
+      "最后一行显示长度不超过 3 的字符串共 15 个，其中 7 个以 b 结尾。所以“以 b 结尾的字符串”这个语言在长度 3 处截断后，有 7 个字符串。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "print(len([\"\"]))    # expecting 0",
+     "why": {
+      "en": "The empty string \"\" has length 0, but a list that holds the empty string has one item, so its length is 1. This is the same difference as ε against {ε}, and ∅ is like the empty list [], which has length 0.",
+      "zh": "空串 \"\" 的长度是 0，但装着空串的列表有一项，所以它的长度是 1。这和 ε 与 {ε} 的差别是一样的，而 ∅ 就像空列表 []，它的长度是 0。"
+     },
+     "right": "print(len(\"\"), len([\"\"]), len([]))   # 0 1 0"
+    },
+    {
+     "wrong": "empty = \" \"     # a space",
+     "why": {
+      "en": "A space is a symbol like any other, so \" \" is a string of length 1. The empty string has no characters at all. Mixing them up makes counts off by one, and a language that contains ε no longer matches.",
+      "zh": "空格和别的符号一样是一个符号，所以 \" \" 是长度为 1 的字符串。空串一个字符也没有。把两者弄混会让计数差一，包含 ε 的语言也对不上。"
+     },
+     "right": "empty = \"\""
+    },
+    {
+     "wrong": "# \"ab\" and \"ba\" are the same string, just like {a, b} and {b, a}",
+     "why": {
+      "en": "A set ignores order but a string does not. {a, b} and {b, a} are one set, while ab and ba are two different strings. Python agrees: \"ab\" == \"ba\" is False.",
+      "zh": "集合忽略顺序，字符串不忽略。{a, b} 和 {b, a} 是同一个集合，而 ab 和 ba 是两个不同的字符串。Python 也是这样判断的：\"ab\" == \"ba\" 的结果是 False。"
+     },
+     "right": "print(\"ab\" == \"ba\")   # False: a string is a row, order matters"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "How many strings of length 5 are there over Σ = {0, 1, 2}? Check your answer with Python.",
+      "zh": "Σ = {0, 1, 2} 上长度为 5 的字符串有多少个？用 Python 验证你的答案。"
+     },
+     "a": {
+      "en": "Each of the 5 positions has 3 choices, so 3 × 3 × 3 × 3 × 3 = 3^5 = 243. In Python, print(3 ** 5) prints 243.",
+      "zh": "5 个位置每个有 3 种选择，所以是 3 × 3 × 3 × 3 × 3 = 3^5 = 243。在 Python 里，print(3 ** 5) 会打印 243。"
+     }
+    },
+    {
+     "q": {
+      "en": "Is ε in the language of all strings of length at most 2 over {a, b}? Is it in the language of strings that end in b?",
+      "zh": "ε 属于 {a, b} 上“长度不超过 2 的所有字符串”这个语言吗？它属于“以 b 结尾的字符串”这个语言吗？"
+     },
+     "a": {
+      "en": "Yes for the first, because its length 0 is at most 2. No for the second, because ε has no last symbol, so it does not end in b.",
+      "zh": "第一个属于，因为它的长度 0 不超过 2。第二个不属于，因为 ε 没有最后一个符号，所以不以 b 结尾。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict what len(\"ab\" + \"\" + \"ba\") prints.",
+      "zh": "预测 len(\"ab\" + \"\" + \"ba\") 会打印什么。"
+     },
+     "a": {
+      "en": "4. Joining with the empty string changes nothing, so the string is \"abba\", and its length is 4.",
+      "zh": "4。与空串连接不改变任何东西，所以这个字符串是 \"abba\"，长度是 4。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "functions-state",
+   "title": {
+    "en": "Functions and what \"state\" means",
+    "zh": "函数，以及“状态”是什么意思"
+   },
+   "goal": {
+    "en": "After this you can say what a function is, write one as a table, and explain what the state of a machine is.",
+    "zh": "学完后你能说明什么是函数，能把函数写成表，并能解释机器的状态是什么。"
+   },
+   "plain": {
+    "en": "A function is a rule that gives each allowed input exactly one output. The rule f(x) = x + 1 is a function: f(3) is 4. Two things must hold. Every allowed input has an output, so no input is left without an answer. And no input has two different outputs. The set of allowed inputs is called the domain.\n\nWhen there are only a few inputs, a function can be written as a table with one row per input. A table is a function exactly when every input appears in exactly one row. If a row is missing, the function is not defined for that input. If one input appears in two rows with different outputs, the table is not a function.\n\nA state is the information a process remembers right now. Think of a light switch. Its state is \"on\" or \"off\". It does not remember how many times it has been flipped, only what it is at this moment. A machine that reads a string one symbol at a time has to decide what to remember. Remembering the whole string works, but it needs more and more memory as the string grows. Often a tiny amount is enough. To answer \"does this string have an even number of 1s?\" only two things matter: the count so far is even, or the count so far is odd. Those are the two states.\n\nSuch a machine is described by its start state and a transition function. The transition function takes two inputs, the current state and the next symbol, and gives one output, the next state. Because it is a function, it needs a row for every pair of state and symbol. After the last symbol has been read, the state the machine is in gives its answer.\n\nIn Python a dictionary is a table. It pairs keys with values, and delta[key] looks up the value for a key. A pair written in round brackets, such as (\"even\", \"1\"), is called a tuple, and a tuple can be a key. The example stores the transition function as a dictionary. It runs the machine by updating a variable called state once for each symbol. The word if asks a question and runs its indented lines only when the answer is yes, and else covers the other case.",
+    "zh": "函数是这样一条规则：对每个允许的输入，恰好给出一个输出。规则 f(x) = x + 1 是一个函数：f(3) 是 4。有两点必须成立。每个允许的输入都有输出，所以没有哪个输入没有答案。并且没有哪个输入有两个不同的输出。允许输入的集合叫作定义域。\n\n输入只有几个时，函数可以写成表，每个输入一行。当且仅当每个输入都恰好出现在一行里时，这个表才是函数。如果少了一行，函数在那个输入上就没有定义。如果同一个输入出现在两行里而输出不同，这个表就不是函数。\n\n状态是一个过程此刻记住的信息。想想电灯开关。它的状态是“开”或“关”。它不记得被拨动过多少次，只知道此刻是什么样。一台逐个符号读取字符串的机器，必须决定记住什么。记住整个字符串可以做到，但字符串越长，需要的内存越多。通常只需很少的信息就够了。要回答“这个字符串里 1 的个数是偶数吗？”，只有两件事重要：到目前为止的个数是偶数，或者是奇数。这就是两个状态。\n\n这样的机器由起始状态和转移函数来描述。转移函数接收两个输入：当前状态和下一个符号，给出一个输出：下一个状态。因为它是函数，所以对每一对状态和符号都要有一行。读完最后一个符号之后，机器所处的状态就是它的答案。\n\n在 Python 里，字典就是一张表。它把键和值配成对，delta[key] 查出某个键对应的值。用圆括号写成的一对东西，例如 (\"even\", \"1\")，叫作元组，元组可以当键用。例子把转移函数存成字典。它每读一个符号就更新一次名为 state 的变量，以此来运行机器。单词 if 提出问题，只在答案为“是”时执行缩进的行，else 则处理另一种情况。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "function",
+      "zh": "函数"
+     },
+     "meaning": {
+      "en": "A rule giving each allowed input exactly one output.",
+      "zh": "对每个允许的输入恰好给出一个输出的规则。"
+     }
+    },
+    {
+     "term": {
+      "en": "domain",
+      "zh": "定义域"
+     },
+     "meaning": {
+      "en": "The set of allowed inputs of a function.",
+      "zh": "函数允许的输入的集合。"
+     }
+    },
+    {
+     "term": {
+      "en": "state",
+      "zh": "状态"
+     },
+     "meaning": {
+      "en": "What a process remembers right now. A machine with finitely many states can remember only finitely many things.",
+      "zh": "一个过程此刻记住的信息。状态有限的机器只能记住有限的东西。"
+     }
+    },
+    {
+     "term": {
+      "en": "transition function",
+      "zh": "转移函数"
+     },
+     "meaning": {
+      "en": "Takes the current state and the next symbol, and gives the next state. Often written δ.",
+      "zh": "接收当前状态和下一个符号，给出下一个状态。常写作 δ。"
+     }
+    },
+    {
+     "term": {
+      "en": "dictionary",
+      "zh": "字典"
+     },
+     "meaning": {
+      "en": "A Python table that pairs keys with values.",
+      "zh": "Python 中把键和值配成对的表。"
+     }
+    },
+    {
+     "term": {
+      "en": "tuple",
+      "zh": "元组"
+     },
+     "meaning": {
+      "en": "A fixed pair or row of values in round brackets, such as (\"even\", \"1\").",
+      "zh": "圆括号里固定的一对或一行值，例如 (\"even\", \"1\")。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "delta = {\n    (\"even\", \"0\"): \"even\",\n    (\"even\", \"1\"): \"odd\",\n    (\"odd\", \"0\"): \"odd\",\n    (\"odd\", \"1\"): \"even\",\n}\n\ndef run(word):\n    state = \"even\"\n    for symbol in word:\n        state = delta[(state, symbol)]\n    return state\n\nstate = \"even\"\nfor symbol in \"1101\":\n    state = delta[(state, symbol)]\n    print(\"read\", symbol, \"-> state\", state)\n\nfor word in [\"\", \"1\", \"11\", \"0110\", \"10101\"]:\n    if word.count(\"1\") % 2 == 0:\n        expected = \"even\"\n    else:\n        expected = \"odd\"\n    print(repr(word), run(word), run(word) == expected)\n",
+    "output": "read 1 -> state odd\nread 1 -> state even\nread 0 -> state even\nread 1 -> state odd\n'' even True\n'1' odd True\n'11' even True\n'0110' even True\n'10101' odd True\n",
+    "walk": {
+     "en": [
+      "delta is a dictionary with four rows. Each key is a pair (state, symbol), and its value is the next state. This is the transition function written as a table, with a row for every pair.",
+      "def run(word): is a function that starts in state \"even\", reads the word one symbol at a time, and returns the state it ends in. The line state = delta[(state, symbol)] looks up the row and stores the answer back in state.",
+      "The first loop shows the machine on 1101, one step at a time: odd, even, even, odd. The word has three 1s, an odd number, and the machine ends in \"odd\".",
+      "The second loop tests the machine on five words. word.count(\"1\") counts the 1s, and % 2 gives the remainder after dividing by 2, which is 0 for an even count and 1 for an odd count. expected is what the answer should be.",
+      "repr(word) prints the string with quotes, so the empty string shows up as two quotes instead of vanishing. Every line ends in True: the machine agrees with counting.",
+      "The machine never stores the word. It stores only one of two states. That is the whole point of a state."
+     ],
+     "zh": [
+      "delta 是一个有四行的字典。每个键是一对 (状态, 符号)，值是下一个状态。这是写成表的转移函数，每一对都有一行。",
+      "def run(word): 是一个函数，它从状态 \"even\" 开始，一次读一个符号，最后返回所处的状态。state = delta[(state, symbol)] 这一行查到对应的行，并把答案存回 state。",
+      "第一个循环一步步展示机器处理 1101：odd、even、even、odd。这个单词有三个 1，是奇数个，机器最后停在 \"odd\"。",
+      "第二个循环在五个单词上检验机器。word.count(\"1\") 数出 1 的个数，% 2 给出除以 2 的余数：个数为偶数时余数是 0，为奇数时是 1。expected 是答案应有的样子。",
+      "repr(word) 把字符串连同引号一起打印，这样空串显示为两个引号，而不是消失不见。每一行都以 True 结尾：机器的结果与直接数数一致。",
+      "机器从不保存整个单词。它只保存两种状态中的一种。这正是状态的意义所在。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "delta = {\n    (\"even\", \"0\"): \"even\",\n    (\"even\", \"1\"): \"odd\",\n    (\"odd\", \"0\"): \"odd\",\n}",
+     "why": {
+      "en": "There is no row for (\"odd\", \"1\"). The first time the machine is in state odd and reads a 1, Python stops with KeyError: ('odd', '1'). In maths words, the transition function is not defined on every input, so it is not a complete function.",
+      "zh": "没有 (\"odd\", \"1\") 这一行。机器第一次处于状态 odd 并读到 1 时，Python 会以 KeyError: ('odd', '1') 停止。用数学的话说，转移函数没有对每个输入都有定义，所以它不是一个完整的函数。"
+     },
+     "right": "delta = {\n    (\"even\", \"0\"): \"even\",\n    (\"even\", \"1\"): \"odd\",\n    (\"odd\", \"0\"): \"odd\",\n    (\"odd\", \"1\"): \"even\",\n}"
+    },
+    {
+     "wrong": "for symbol in word:\n    delta[(state, symbol)]",
+     "why": {
+      "en": "The lookup finds the next state and then throws it away. state never changes, so the machine answers \"even\" for every word. The result of the lookup has to be stored back in state.",
+      "zh": "查表找到了下一个状态，却把它丢掉了。state 从不改变，所以机器对每个单词都回答 \"even\"。查表的结果必须存回 state。"
+     },
+     "right": "for symbol in word:\n    state = delta[(state, symbol)]"
+    },
+    {
+     "wrong": "delta[[state, symbol]]",
+     "why": {
+      "en": "A dictionary key cannot be a list, because a list can change after it is stored. Python stops with TypeError: unhashable type: 'list'. Round brackets make a tuple, which cannot change, so it can be a key.",
+      "zh": "字典的键不能是列表，因为列表存进去之后还可以改变。Python 会以 TypeError: unhashable type: 'list' 停止。圆括号构成元组，元组不能改变，所以可以做键。"
+     },
+     "right": "delta[(state, symbol)]"
+    },
+    {
+     "wrong": "history = \"\"\nfor symbol in word:\n    history = history + symbol",
+     "why": {
+      "en": "This remembers every symbol read. It does give enough information to answer, but the memory grows with the word, so no fixed number of states could hold it. A machine with finitely many states must forget what does not matter. For parity, two states are enough.",
+      "zh": "这样记住了读过的每个符号。信息确实足以回答问题，但内存会随单词变长而增长，所以任何固定个数的状态都装不下。状态有限的机器必须忘掉不重要的东西。对奇偶性来说，两个状态就够了。"
+     },
+     "right": "state = delta[(state, symbol)]   # two states are enough"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Trace the machine on 0110 by hand. Write the state after each symbol.",
+      "zh": "手动追踪机器处理 0110 的过程，写出每个符号之后的状态。"
+     },
+     "a": {
+      "en": "Start in even. Read 0: even. Read 1: odd. Read 1: even. Read 0: even. The final state is even, which agrees with two 1s being an even number.",
+      "zh": "从 even 开始。读 0：even。读 1：odd。读 1：even。读 0：even。最终状态是 even，与“有两个 1，是偶数个”一致。"
+     }
+    },
+    {
+     "q": {
+      "en": "Is this table a function? (even,0) gives even; (even,0) gives odd; (even,1) gives odd; (odd,0) gives odd; (odd,1) gives even.",
+      "zh": "这张表是函数吗？(even,0) 得 even；(even,0) 得 odd；(even,1) 得 odd；(odd,0) 得 odd；(odd,1) 得 even。"
+     },
+     "a": {
+      "en": "No. The input (even,0) appears twice with different outputs. A function gives exactly one output for each input. A Python dictionary cannot even hold this table: a repeated key keeps only the last value.",
+      "zh": "不是。输入 (even,0) 出现了两次，而输出不同。函数对每个输入只给出一个输出。Python 字典甚至装不下这张表：重复的键只会保留最后一个值。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the transition table for a machine that remembers only whether the last symbol it read was 0 or 1. Call the states \"zero\" and \"one\", and start in \"zero\".",
+      "zh": "写出一台只记住上一个读到的符号是 0 还是 1 的机器的转移表。状态取名 \"zero\" 和 \"one\"，起始状态是 \"zero\"。"
+     },
+     "a": {
+      "en": "delta = {(\"zero\", \"0\"): \"zero\", (\"zero\", \"1\"): \"one\", (\"one\", \"0\"): \"zero\", (\"one\", \"1\"): \"one\"}. Whatever state you are in, reading a symbol sends you to the state named after that symbol.",
+      "zh": "delta = {(\"zero\", \"0\"): \"zero\", (\"zero\", \"1\"): \"one\", (\"one\", \"0\"): \"zero\", (\"one\", \"1\"): \"one\"}。不管处于哪个状态，读到一个符号就会转到以这个符号命名的状态。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "proofs",
+   "title": {
+    "en": "What a proof is: contradiction and induction",
+    "zh": "什么是证明：反证法与归纳法"
+   },
+   "goal": {
+    "en": "After this you can say how a proof differs from testing, and follow a proof by contradiction and a proof by induction.",
+    "zh": "学完后你能说明证明和测试有什么不同，并能读懂一个反证法和一个归纳法的证明。"
+   },
+   "plain": {
+    "en": "A proof is a chain of statements. Each statement is either given, or follows from earlier ones by a step that anyone can check. The last statement is the claim. A proof is different from testing. Testing tries some cases. If one case fails, you have a counterexample, and that disproves the claim. If every case passes, you have evidence, not a proof, because there are always cases you did not try. Python is good at finding counterexamples. It cannot prove a claim about all numbers.\n\nProof by contradiction works like this. To show that a claim is true, assume it is false. Follow the consequences until you reach something impossible, such as a number that is both even and odd. Correct reasoning cannot lead to something impossible, so the assumption must have been wrong, and the claim is true. If the claim has the form \"if P then Q\", the assumption is that P is true and Q is false.\n\nHere is an example. Claim: if n × n is even, then n is even. Suppose, for contradiction, that n × n is even and n is not even. A whole number that is not even is odd, so n = 2m + 1 for some whole number m. Then n × n = 4m² + 4m + 1 = 2(2m² + 2m) + 1, which is odd. But we assumed n × n is even, and no number is both even and odd. That is a contradiction. So the assumption was wrong, and the claim holds.\n\nProof by induction proves a claim for every k = 0, 1, 2, ... with two parts. The base case shows the claim for k = 0. The step assumes the claim for some k and shows it for k + 1. Then the claim holds for 0, so for 1, so for 2, and so on, like a row of dominoes. Example claim: there are exactly 2^k strings of length k over {a, b}. Base case, k = 0: only the empty string has length 0, and 2^0 is 1. Step: every string of length k + 1 is a string of length k followed by one symbol, a or b. By assumption there are 2^k strings of length k, and each gives 2 strings of length k + 1. So there are 2 × 2^k = 2^(k+1).\n\nThe Python example looks for a counterexample to the first claim among the numbers below 1000. An empty list means none was found. That is evidence, and the proof above is what turns it into certainty. Next, it looks for a counterexample to a false claim, and it finds one at once. The word break ends the loop early. Last, it counts the strings of each length up to 6 and compares with 2^k.",
+    "zh": "证明是一串陈述。每一个陈述要么是已知的，要么由前面的陈述通过任何人都能检查的一步推出。最后一个陈述就是要证的命题。证明和测试不同。测试尝试一些情形。只要有一个情形失败，你就得到一个反例，它推翻了这个命题。如果每个情形都通过，你得到的是证据，不是证明，因为总有你没试过的情形。Python 很擅长找反例，却无法证明关于所有数的命题。\n\n反证法是这样的。要说明一个命题为真，先假设它为假。顺着推下去，直到得出某个不可能的结果，比如一个数既是偶数又是奇数。正确的推理不可能导出不可能的事，所以假设一定是错的，命题就为真。如果命题的形式是“如果 P 那么 Q”，要假设的是 P 为真而 Q 为假。\n\n看一个例子。命题：如果 n × n 是偶数，那么 n 是偶数。用反证法，假设 n × n 是偶数而 n 不是偶数。不是偶数的整数就是奇数，所以对某个整数 m，n = 2m + 1。于是 n × n = 4m² + 4m + 1 = 2(2m² + 2m) + 1，这是奇数。但我们假设了 n × n 是偶数，而没有数既是偶数又是奇数。这就是矛盾。所以假设是错的，命题成立。\n\n归纳法分两部分证明对每个 k = 0, 1, 2, ... 成立的命题。基本情形证明命题对 k = 0 成立。归纳步骤假设命题对某个 k 成立，再证明它对 k + 1 成立。这样命题对 0 成立，于是对 1 成立，于是对 2 成立，依此类推，就像一排多米诺骨牌。例子命题：{a, b} 上长度为 k 的字符串恰好有 2^k 个。基本情形，k = 0：只有空串的长度是 0，而 2^0 是 1。归纳步骤：长度为 k + 1 的每个字符串，都是一个长度为 k 的字符串后面加一个符号 a 或 b。由假设，长度为 k 的字符串有 2^k 个，每个得到 2 个长度为 k + 1 的字符串。所以共有 2 × 2^k = 2^(k+1) 个。\n\nPython 例子在 1000 以内的数里寻找第一个命题的反例。结果是空列表，说明没有找到。这是证据，而上面的证明才把它变成确定的结论。接着，它为一个假命题寻找反例，立刻就找到了。单词 break 会提前结束循环。最后，它数出长度到 6 的每个长度的字符串个数，并与 2^k 比较。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "proof",
+      "zh": "证明"
+     },
+     "meaning": {
+      "en": "A chain of statements, each given or following from earlier ones by a checkable step, ending in the claim.",
+      "zh": "一串陈述，每一个要么已知，要么由前面的陈述经可检查的一步推出，最后得到要证的命题。"
+     }
+    },
+    {
+     "term": {
+      "en": "counterexample",
+      "zh": "反例"
+     },
+     "meaning": {
+      "en": "One case where a claim fails. One is enough to disprove the claim.",
+      "zh": "命题失败的一个情形。一个就足以推翻命题。"
+     }
+    },
+    {
+     "term": {
+      "en": "proof by contradiction",
+      "zh": "反证法"
+     },
+     "meaning": {
+      "en": "Assume the claim is false and derive something impossible.",
+      "zh": "假设命题为假，并推出不可能的结果。"
+     }
+    },
+    {
+     "term": {
+      "en": "proof by induction",
+      "zh": "归纳法"
+     },
+     "meaning": {
+      "en": "Show the base case, then show that the claim for k gives the claim for k + 1.",
+      "zh": "证明基本情形，再证明命题对 k 成立能推出命题对 k + 1 成立。"
+     }
+    },
+    {
+     "term": {
+      "en": "even, odd",
+      "zh": "偶数、奇数"
+     },
+     "meaning": {
+      "en": "Even: 2m for some whole number m. Odd: 2m + 1 for some whole number m.",
+      "zh": "偶数：对某个整数 m，等于 2m。奇数：对某个整数 m，等于 2m + 1。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "# Claim 1: if n * n is even, then n is even.\ncounterexamples = []\nfor n in range(1000):\n    if (n * n) % 2 == 0 and n % 2 == 1:\n        counterexamples.append(n)\nprint(\"counterexamples to claim 1:\", counterexamples)\n\n# A false claim: if n * n is even, then n is a multiple of 4.\nfor n in range(1000):\n    if (n * n) % 2 == 0 and n % 4 != 0:\n        print(\"counterexample to the false claim:\", n)\n        break\n\n# Claim 2: there are 2 ** k strings of length k over {a, b}.\nstrings = [\"\"]\nfor k in range(7):\n    print(k, len(strings), 2 ** k)\n    assert len(strings) == 2 ** k\n    longer = []\n    for s in strings:\n        longer.append(s + \"a\")\n        longer.append(s + \"b\")\n    strings = longer\n",
+    "output": "counterexamples to claim 1: []\ncounterexample to the false claim: 2\n0 1 1\n1 2 2\n2 4 4\n3 8 8\n4 16 16\n5 32 32\n6 64 64\n",
+    "walk": {
+     "en": [
+      "The first loop searches for a number n where n * n is even but n is odd. The condition has two parts joined by and, and both must hold. n % 2 is the remainder after dividing by 2, so n % 2 == 1 means n is odd.",
+      "The list is empty: the search found no counterexample below 1000. That agrees with the proof by contradiction, but only the proof covers every number.",
+      "The second loop tests a false claim. At n = 2, n * n is 4, which is even, but 2 is not a multiple of 4. A single counterexample is enough to disprove the claim, and break ends the loop at once.",
+      "The last part builds the strings of each length, as in the previous lesson. Each string becomes two longer strings, one with a added and one with b added. This is the induction step done with actual strings.",
+      "Each line shows k, the number of strings, and 2 ** k, which is 2 to the power k. The two numbers match. The assert would stop the program with AssertionError if they ever differed.",
+      "This checks lengths 0 to 6 only. The induction proof in the explanation covers every length."
+     ],
+     "zh": [
+      "第一个循环寻找一个数 n，使 n * n 是偶数而 n 是奇数。条件由 and 连接的两部分组成，两部分必须同时成立。n % 2 是除以 2 的余数，所以 n % 2 == 1 表示 n 是奇数。",
+      "列表是空的：在 1000 以内没有找到反例。这与反证法的证明一致，但只有证明才覆盖每一个数。",
+      "第二个循环检验一个假命题。n = 2 时，n * n 是 4，是偶数，但 2 不是 4 的倍数。一个反例就足以推翻命题，break 立刻结束循环。",
+      "最后一部分像上一课那样构造每个长度的字符串。每个字符串变成两个更长的字符串，一个加 a，一个加 b。这就是用具体字符串做出来的归纳步骤。",
+      "每一行显示 k、字符串的个数和 2 ** k（2 的 k 次方）。两个数一致。如果它们哪次不同，assert 会让程序以 AssertionError 停止。",
+      "这只检查了长度 0 到 6。讲解里的归纳法证明覆盖每一个长度。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "# 2**n - 1 is prime for n = 2, 3, 5, 7\n# so it is prime for every prime n",
+     "why": {
+      "en": "Four successes are not a proof. The next prime breaks it: at n = 11 the number is 2047, which is 23 times 89. A test can disprove a claim but cannot prove one for all cases.",
+      "zh": "四次成功不是证明。下一个质数就让它失败了：n = 11 时这个数是 2047，等于 23 乘 89。测试能推翻一个命题，却不能证明它对所有情形成立。"
+     },
+     "right": "print(2 ** 11 - 1, 23 * 89)   # 2047 2047"
+    },
+    {
+     "wrong": "Assume n is even. Then n * n is even. Done.",
+     "why": {
+      "en": "This proves the opposite direction: if n is even then n * n is even. The claim was: if n * n is even then n is even. To prove it by contradiction, start from n * n even together with n not even, and derive something impossible.",
+      "zh": "这证明的是相反的方向：如果 n 是偶数，则 n * n 是偶数。而命题是：如果 n * n 是偶数，则 n 是偶数。要用反证法证明它，应当从“n * n 是偶数而 n 不是偶数”出发，推出不可能的结果。"
+     },
+     "right": "Assume n * n is even and n is odd. Then n * n is odd. Contradiction."
+    },
+    {
+     "wrong": "# Claim: a string of length k has k + 1 symbols.\n# Step: if length k has k + 1 symbols, adding one symbol gives k + 2 symbols for length k + 1.\n# So it is true for every k.",
+     "why": {
+      "en": "The step is correct, but the base case was never checked, and the claim is false. The empty string has length 0 and 0 symbols, not 1. A correct step cannot rescue a claim that fails at the start: nobody pushed the first domino.",
+      "zh": "归纳步骤本身是对的，但基本情形从来没有检查，而这个命题是假的。空串的长度是 0，有 0 个符号，不是 1 个。正确的步骤也救不了一个一开始就失败的命题：没有人推第一块骨牌。"
+     },
+     "right": "print(len(\"\"))   # 0, not 1: the base case fails, so the claim is false"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Prove by contradiction that there is no largest even number.",
+      "zh": "用反证法证明：不存在最大的偶数。"
+     },
+     "a": {
+      "en": "Suppose m is the largest even number. Then m + 2 is also even, and it is bigger than m. That contradicts the choice of m as the largest. So the supposition was wrong, and there is no largest even number.",
+      "zh": "假设 m 是最大的偶数。那么 m + 2 也是偶数，并且比 m 大。这与“m 是最大的”矛盾。所以假设是错的，不存在最大的偶数。"
+     }
+    },
+    {
+     "q": {
+      "en": "Prove by induction that 1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1 for n = 1, 2, 3, ...",
+      "zh": "用归纳法证明：对 n = 1, 2, 3, ...，1 + 2 + 4 + ... + 2^(n-1) = 2^n - 1。"
+     },
+     "a": {
+      "en": "Base case n = 1: the left side is 1 and the right side is 2^1 - 1 = 1. Step: assume 1 + 2 + ... + 2^(k-1) = 2^k - 1. Add the next term 2^k to both sides: 2^k - 1 + 2^k = 2 × 2^k - 1 = 2^(k+1) - 1. That is the claim for k + 1.",
+      "zh": "基本情形 n = 1：左边是 1，右边是 2^1 - 1 = 1。归纳步骤：假设 1 + 2 + ... + 2^(k-1) = 2^k - 1。两边都加上下一项 2^k：2^k - 1 + 2^k = 2 × 2^k - 1 = 2^(k+1) - 1。这就是 k + 1 对应的命题。"
+     }
+    },
+    {
+     "q": {
+      "en": "Python finds no counterexample to a claim for n from 1 to 1,000,000. Is the claim proved? Why or why not?",
+      "zh": "Python 在 n 从 1 到 1,000,000 的范围内没有找到某个命题的反例。命题就证明了吗？为什么？"
+     },
+     "a": {
+      "en": "No. It is evidence for one million cases, and there are infinitely many numbers. The 2^n - 1 example above passes four prime cases and fails at the fifth. Only a proof covers all cases.",
+      "zh": "没有。这是一百万个情形的证据，而数有无穷多个。上面 2^n - 1 的例子通过了四个质数，在第五个就失败了。只有证明才覆盖所有情形。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "logic-truth-tables",
+   "title": {
+    "en": "Logic words and truth tables",
+    "zh": "逻辑词与真值表"
+   },
+   "goal": {
+    "en": "After this you can build and read a truth table for and, or, not and implies, and check by brute force that two statements are equivalent.",
+    "zh": "学完后你能画出并读懂“且、或、非、蕴含”的真值表，并能用暴力检查验证两个陈述等价。"
+   },
+   "plain": {
+    "en": "A statement that is either true or false is called a proposition. \"7 is odd\" is a proposition. \"Close the door\" is not. We use letters such as p and q for propositions. Logic builds bigger statements from smaller ones with a few joining words.\n\nHere are the words. \"not p\", written ¬p, is true when p is false. \"p and q\", written p ∧ q, is true only when both are true. \"p or q\", written p ∨ q, is true when at least one is true, and that includes the case where both are. In everyday speech \"or\" often means one or the other but not both. In logic it never does. \"p implies q\", written p → q and also read \"if p then q\", is false in exactly one case: p is true and q is false. In every other case it is true.\n\nThe last one surprises people. Take the promise \"if it rains, I will bring an umbrella\". The promise is broken only if it rains and I bring no umbrella. If it does not rain, the promise is not broken, whatever I do. So p → q is true whenever p is false. Logicians call this vacuously true: nothing was tested, so nothing failed.\n\nA truth table lists every combination of true and false for the letters, and gives the value of the statement in each row. With two letters there are 4 rows, with three letters 8 rows, and with k letters 2^k rows. Two statements are equivalent when their tables have the same value in every row. One example is De Morgan's rule: \"not (p and q)\" is equivalent to \"(not p) or (not q)\".\n\nPython has and, or and not as ordinary words, and True and False as its two truth values. It has no word for implies. We write (not p) or q, which has the same table as p → q. Two loops, one inside the other, visit every row. Here, checking every row is a complete proof, because there are only four rows and the check covers all of them. Brute force is a proof exactly when it covers every case.",
+    "zh": "要么真要么假的陈述叫作命题。“7 是奇数”是命题，“请关门”不是。我们用 p、q 这样的字母代表命题。逻辑用几个连接词，由小的陈述组成大的陈述。\n\n下面是这些词。“非 p”，写作 ¬p，在 p 为假时为真。“p 且 q”，写作 p ∧ q，只有两者都为真时才为真。“p 或 q”，写作 p ∨ q，至少有一个为真时为真，两者都真的情形也包括在内。日常说话里的“或”常常指“二选一，不能都要”，在逻辑里从来没有这个意思。“p 蕴含 q”，写作 p → q，也读作“如果 p 那么 q”，恰好在一种情形下为假：p 为真而 q 为假。其他情形都为真。\n\n最后一个让人惊讶。想想这个承诺：“如果下雨，我就带伞。”只有下了雨而我没带伞，承诺才算被违背。如果没下雨，不管我做什么，承诺都没有被违背。所以只要 p 为假，p → q 就为真。逻辑学家把这叫作空真：什么都没有被检验，所以什么也没有失败。\n\n真值表列出这些字母的真假的每一种组合，并给出陈述在每一行的值。两个字母有 4 行，三个字母有 8 行，k 个字母有 2^k 行。如果两个陈述的真值表在每一行的值都相同，它们就是等价的。德摩根律就是一个例子：“非 (p 且 q)”等价于“(非 p) 或 (非 q)”。\n\nPython 里 and、or、not 是普通的词，True 和 False 是它的两个真值。它没有表示蕴含的词。我们写 (not p) or q，它的真值表和 p → q 相同。两层循环，一个套在另一个里面，就能走遍每一行。在这里，检查每一行就是完整的证明，因为只有四行，而检查覆盖了全部。暴力检查恰好在它覆盖每一个情形时才是证明。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "proposition",
+      "zh": "命题"
+     },
+     "meaning": {
+      "en": "A statement that is either true or false.",
+      "zh": "要么真要么假的陈述。"
+     }
+    },
+    {
+     "term": {
+      "en": "¬ ∧ ∨ →",
+      "zh": "¬ ∧ ∨ →"
+     },
+     "meaning": {
+      "en": "not, and, or, implies. Python: not, and, or, and (not p) or q.",
+      "zh": "非、且、或、蕴含。Python 里：not、and、or，以及 (not p) or q。"
+     }
+    },
+    {
+     "term": {
+      "en": "truth table",
+      "zh": "真值表"
+     },
+     "meaning": {
+      "en": "A table with one row for each combination of true and false for the letters, and the statement's value in each row.",
+      "zh": "每一行对应字母真假的一种组合，并给出陈述在该行的值的表。"
+     }
+    },
+    {
+     "term": {
+      "en": "equivalent",
+      "zh": "等价"
+     },
+     "meaning": {
+      "en": "Two statements are equivalent when their truth tables agree in every row.",
+      "zh": "两个陈述的真值表在每一行都一致，它们就等价。"
+     }
+    },
+    {
+     "term": {
+      "en": "vacuously true",
+      "zh": "空真"
+     },
+     "meaning": {
+      "en": "An implication with a false first part is true because nothing was promised.",
+      "zh": "前半部分为假的蕴含是真的，因为没有承诺任何东西。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def implies(p, q):\n    return (not p) or q\n\nprint(\"p q | p and q | p or q | not p | p implies q\")\nfor p in [True, False]:\n    for q in [True, False]:\n        print(p, q, \"|\", p and q, \"|\", p or q, \"|\", not p, \"|\", implies(p, q))\n\nsame = True\nfor p in [True, False]:\n    for q in [True, False]:\n        if (not (p and q)) != ((not p) or (not q)):\n            same = False\nprint(\"not (p and q) equals (not p) or (not q):\", same)\n",
+    "output": "p q | p and q | p or q | not p | p implies q\nTrue True | True | True | False | True\nTrue False | False | True | False | False\nFalse True | False | True | True | True\nFalse False | False | False | True | True\nnot (p and q) equals (not p) or (not q): True\n",
+    "walk": {
+     "en": [
+      "def implies(p, q): makes a function from the rule: p implies q is the same as (not p) or q. Python has no word for implies, so we build it.",
+      "The two nested loops visit every row. The outer loop gives p each of True and False, and the inner loop gives q each of True and False, so print runs four times.",
+      "Each printed row shows p, q, and then p and q, p or q, not p and implies(p, q). Read the second row: p is True and q is False, so \"p and q\" is False, \"p or q\" is True, \"not p\" is False and \"p implies q\" is False. It is the only row where implies is False.",
+      "In the third and fourth rows p is False, and implies is True. That is the umbrella promise again: nothing was tested, so nothing failed.",
+      "The second part checks De Morgan's rule on all four rows. != means \"is not equal to\". If the two sides ever differ, same becomes False. It stays True, so the two statements are equivalent.",
+      "Because the four rows are all the rows there are, this brute-force check is a complete proof of the equivalence."
+     ],
+     "zh": [
+      "def implies(p, q): 根据规则建立一个函数：p 蕴含 q 与 (not p) or q 相同。Python 没有表示蕴含的词，所以我们自己做一个。",
+      "两层嵌套循环走遍每一行。外层循环让 p 依次取 True 和 False，内层循环让 q 依次取 True 和 False，所以 print 执行四次。",
+      "每个打印出的行显示 p、q，然后是 p and q、p or q、not p 和 implies(p, q)。读第二行：p 是 True，q 是 False，所以“p and q”是 False，“p or q”是 True，“not p”是 False，“p implies q”是 False。这是 implies 为 False 的唯一一行。",
+      "第三、四行 p 是 False，implies 是 True。这又是那个带伞的承诺：什么都没有被检验，所以什么也没有失败。",
+      "第二部分在全部四行上检验德摩根律。!= 的意思是“不等于”。如果两边哪一行不同，same 就会变成 False。它保持为 True，所以这两个陈述等价。",
+      "因为这四行就是所有的行，所以这个暴力检查就是对等价性的完整证明。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "# \"if p then q\" is false whenever p is false",
+     "why": {
+      "en": "It is the other way round. A promise can be broken only when its condition happens. If p is false, nothing was promised, so p → q is true. The only row where p → q is false is p true and q false.",
+      "zh": "恰恰相反。承诺只有在条件发生时才可能被违背。p 为假时没有承诺任何东西，所以 p → q 为真。p → q 为假的唯一一行是 p 真而 q 假。"
+     },
+     "right": "# \"if p then q\" is true whenever p is false"
+    },
+    {
+     "wrong": "# p implies q  means the same as  q implies p",
+     "why": {
+      "en": "q → p is the converse, and it is a different statement. With p False and q True, p → q is True but q → p is False. The statement that is equivalent to p → q is (not q) → (not p), called the contrapositive.",
+      "zh": "q → p 是逆命题，它是另一个陈述。p 为 False、q 为 True 时，p → q 是 True，而 q → p 是 False。与 p → q 等价的是 (not q) → (not p)，叫作逆否命题。"
+     },
+     "right": "implies(p, q) == implies(not q, not p)   # True in all four rows"
+    },
+    {
+     "wrong": "not p and q    # meant: not (p and q)",
+     "why": {
+      "en": "In Python, not applies only to the thing right after it, so this means (not p) and q. With p True and q False it is False, while not (p and q) is True. Put in brackets whenever you mean \"not of the whole thing\".",
+      "zh": "在 Python 里，not 只作用于紧跟在它后面的东西，所以这表示 (not p) and q。p 为 True、q 为 False 时它是 False，而 not (p and q) 是 True。想表达“对整体取非”时，一定要加括号。"
+     },
+     "right": "not (p and q)"
+    },
+    {
+     "wrong": "# True or True is False, because \"or\" means one or the other",
+     "why": {
+      "en": "In everyday speech \"or\" often excludes both. In logic p ∨ q is true when at least one is true, and when both are true as well. Python follows logic.",
+      "zh": "日常说话里的“或”常常排除两者都有的情况。在逻辑里，p ∨ q 在至少一个为真时为真，两者都真时同样为真。Python 遵循逻辑的规定。"
+     },
+     "right": "print(True or True)   # True"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "In which rows of the truth table is p → q false?",
+      "zh": "真值表的哪些行里 p → q 为假？"
+     },
+     "a": {
+      "en": "Only the row where p is true and q is false. In the other three rows p → q is true.",
+      "zh": "只有 p 为真而 q 为假的那一行。其余三行里 p → q 都为真。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a Python expression that is True exactly when p is True and q is False. How does it relate to p → q?",
+      "zh": "写一个 Python 表达式，恰好在 p 为 True 且 q 为 False 时是 True。它和 p → q 是什么关系？"
+     },
+     "a": {
+      "en": "p and (not q). It is True in the one row where p → q is False, and False in the other three. So it is the opposite of p → q: not (p → q) is equivalent to p ∧ ¬q.",
+      "zh": "p and (not q)。它在 p → q 为假的那一行为 True，在其余三行为 False。所以它是 p → q 的反面：非 (p → q) 等价于 p ∧ ¬q。"
+     }
+    },
+    {
+     "q": {
+      "en": "Is p → q equivalent to (not q) → (not p)? Check by listing the four rows.",
+      "zh": "p → q 与 (not q) → (not p) 等价吗？列出四行来检查。"
+     },
+     "a": {
+      "en": "Yes. For (p, q) = (T, T): both true. (T, F): both false. (F, T): both true. (F, F): both true. The tables agree in every row, so the two statements are equivalent.",
+      "zh": "等价。(p, q) 取 (真, 真)：两者都真。(真, 假)：两者都假。(假, 真)：两者都真。(假, 假)：两者都真。真值表在每一行都一致，所以两个陈述等价。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "reading-notation",
+   "title": {
+    "en": "Reading notation: Σ*, δ(q, a) and set-builder",
+    "zh": "读懂记号：Σ*、δ(q, a) 与集合构造记号"
+   },
+   "goal": {
+    "en": "After this you can read a line of course notation aloud, say what it means in words, and write the same idea in Python.",
+    "zh": "学完后你能把课程里的一行记号大声读出来，说出它的意思，并用 Python 写出同样的想法。"
+   },
+   "plain": {
+    "en": "Mathematical notation is shorthand for sentences. A line such as L = {w ∈ Σ* : |w| is even} looks hard, but it is a sentence squeezed into symbols. Reading it means unpacking it. The method has four steps. Say the name of every symbol aloud. Ask what kind of thing each one is: a set, a string, a state or a number. Say the whole line in plain words. Test it on a tiny case. Python can help with the last step, because most of this notation has a Python twin.\n\nΣ and Σ*. The symbol Σ (sigma) is an alphabet, a finite set of symbols. Σ* is the set of all strings over Σ, including the empty string. Σ^k, read \"sigma to the k\", is the set of strings of length exactly k. So {0, 1}^2 is {00, 01, 10, 11}. A small number written below a letter is part of its name: q₀ is one state, the start state, and it is not \"q minus 0\".\n\nSet-builder notation. {x ∈ S : P(x)} is read \"the set of all x in S such that P(x) holds\". The part before the colon says where x comes from. The part after it says which of those x are kept. Some books write a vertical bar | instead of the colon. For example {w ∈ {0, 1}^2 : w ends in 1} is {01, 11}. In Python this is a set built by a loop with a filter: {w for w in S if P(w)}.\n\nδ(q, a). The symbol δ (delta) is the transition function of a machine. Read δ(q, a) as \"the state you reach from state q on reading the symbol a\". It takes one symbol. A Python dictionary such as {(\"q0\", \"1\"): \"q1\", ...} is the same function, and δ(q, a) is delta[(q, a)]. For a whole string the books use a second function, written δ*(q, w), which applies δ once for each symbol of w.\n\nQuantifiers. The symbol ∀ means \"for all\". \"∀w ∈ S : P(w)\" says P holds for every w in S. The symbol ∃ means \"there exists\". \"∃w ∈ S : P(w)\" says at least one w in S satisfies P. Python's all(...) and any(...) do the same on a finite set. Other symbols from the course: ε is the empty string, ∅ is the empty set, ∪ and ∩ are union and intersection, |w| is the length of a string, |S| is the size of a set, and ⊆ means subset.",
+    "zh": "数学记号是句子的速记。像 L = {w ∈ Σ* : |w| 是偶数} 这样的一行看起来很难，其实是压缩成符号的一句话。读它，就是把它展开。方法有四步。把每个符号的名字大声说出来。问清每个符号是哪种东西：集合、字符串、状态还是数。用平常的话把整行说出来。在一个很小的情形上检验它。最后一步 Python 能帮上忙，因为这些记号大多在 Python 里有对应的写法。\n\nΣ 和 Σ*。符号 Σ（西格玛）是字母表，即有限的符号集合。Σ* 是 Σ 上所有字符串的集合，包括空串。Σ^k 读作“西格玛的 k 次方”，是长度恰好为 k 的字符串的集合。所以 {0, 1}^2 是 {00, 01, 10, 11}。写在字母右下方的小数字是名字的一部分：q₀ 是一个状态，即起始状态，不是“q 减 0”。\n\n集合构造记号（描述法）。{x ∈ S : P(x)} 读作“S 中所有使 P(x) 成立的 x 组成的集合”。冒号前面的部分说明 x 从哪里来，冒号后面的部分说明保留哪些 x。有些书用竖线 | 代替冒号。例如 {w ∈ {0, 1}^2 : w 以 1 结尾} 是 {01, 11}。在 Python 里，这是用带筛选条件的循环构造的集合：{w for w in S if P(w)}。\n\nδ(q, a)。符号 δ（德尔塔）是机器的转移函数。δ(q, a) 读作“在状态 q 读到符号 a 时到达的状态”。它只接收一个符号。像 {(\"q0\", \"1\"): \"q1\", ...} 这样的 Python 字典就是同一个函数，δ(q, a) 就是 delta[(q, a)]。对整个字符串，书上用第二个函数，写作 δ*(q, w)，它对 w 的每个符号各用一次 δ。\n\n量词。符号 ∀ 表示“对所有”。“∀w ∈ S : P(w)”说的是 P 对 S 中每个 w 都成立。符号 ∃ 表示“存在”。“∃w ∈ S : P(w)”说的是 S 中至少有一个 w 满足 P。Python 的 all(...) 和 any(...) 在有限集合上做同样的事。课程中的其他符号：ε 是空串，∅ 是空集，∪ 和 ∩ 是并集和交集，|w| 是字符串的长度，|S| 是集合的大小，⊆ 表示子集。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "Σ^k",
+      "zh": "Σ^k"
+     },
+     "meaning": {
+      "en": "The set of strings of length exactly k over Σ.",
+      "zh": "Σ 上长度恰好为 k 的字符串的集合。"
+     }
+    },
+    {
+     "term": {
+      "en": "set-builder notation",
+      "zh": "集合构造记号（描述法）"
+     },
+     "meaning": {
+      "en": "{x ∈ S : P(x)} is the set of all x in S for which P(x) holds. The colon means \"such that\".",
+      "zh": "{x ∈ S : P(x)} 是 S 中所有使 P(x) 成立的 x 组成的集合。冒号的意思是“使得”。"
+     }
+    },
+    {
+     "term": {
+      "en": "δ(q, a)",
+      "zh": "δ(q, a)"
+     },
+     "meaning": {
+      "en": "The state reached from state q on reading the symbol a.",
+      "zh": "在状态 q 读到符号 a 时到达的状态。"
+     }
+    },
+    {
+     "term": {
+      "en": "∀ and ∃",
+      "zh": "∀ 和 ∃"
+     },
+     "meaning": {
+      "en": "\"For all\" and \"there exists\". In Python on a finite set: all(...) and any(...).",
+      "zh": "“对所有”和“存在”。在有限集合上，Python 里是 all(...) 和 any(...)。"
+     }
+    },
+    {
+     "term": {
+      "en": "subscript",
+      "zh": "下标"
+     },
+     "meaning": {
+      "en": "A small number or letter below a symbol that is part of a name, as in q₀.",
+      "zh": "写在符号下方的小数字或小字母，是名字的一部分，如 q₀。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "sigma = {\"0\", \"1\"}                      # Σ, the alphabet\n\n# Σ^2: all strings of length 2 over Σ\nsigma_2 = set()\nfor a in sigma:\n    for b in sigma:\n        sigma_2.add(a + b)\nprint(\"sigma^2 =\", sorted(sigma_2))\n\n# set-builder: {w in Σ^2 : w ends in 1}\nends_in_1 = {w for w in sigma_2 if w.endswith(\"1\")}\nprint(\"ends in 1:\", sorted(ends_in_1))\n\n# δ(q, a): a transition function stored as a table\ndelta = {(\"q0\", \"0\"): \"q0\", (\"q0\", \"1\"): \"q1\", (\"q1\", \"0\"): \"q0\", (\"q1\", \"1\"): \"q1\"}\nprint(\"delta(q0, 1) =\", delta[(\"q0\", \"1\")])\nprint(\"delta(q1, 0) =\", delta[(\"q1\", \"0\")])\n\n# for all, there exists\nprint(\"all have length 2:\", all(len(w) == 2 for w in sigma_2))\nprint(\"some w equals 11:\", any(w == \"11\" for w in sigma_2))\n",
+    "output": "sigma^2 = ['00', '01', '10', '11']\nends in 1: ['01', '11']\ndelta(q0, 1) = q1\ndelta(q1, 0) = q0\nall have length 2: True\nsome w equals 11: True\n",
+    "walk": {
+     "en": [
+      "sigma is the alphabet Σ as a Python set. Text after a # on a line is a comment: Python ignores it, and people read it. The comments show the maths symbol next to its Python twin.",
+      "The two nested loops build Σ^2. For every symbol a and every symbol b, a + b is a string of length 2, and add puts it into the set. Because it is a set, nothing is added twice.",
+      "ends_in_1 is the set-builder line. Read {w for w in sigma_2 if w.endswith(\"1\")} aloud as \"the set of all w in sigma_2 such that w ends in 1\". It matches {w ∈ Σ² : w ends in 1} part for part and gives {01, 11}.",
+      "delta is a table, and delta[(\"q0\", \"1\")] is δ(q0, 1). Reading 1 in state q0 leads to q1, and reading 0 in state q1 leads to q0. Each lookup takes one state and one symbol.",
+      "all(len(w) == 2 for w in sigma_2) is ∀w ∈ Σ² : |w| = 2. It tests every w and answers True only if the test is True for all of them.",
+      "any(w == \"11\" for w in sigma_2) is ∃w ∈ Σ² : w = 11. It answers True if at least one w passes the test. Both answers are True here."
+     ],
+     "zh": [
+      "sigma 是用 Python 集合表示的字母表 Σ。一行里 # 后面的文字是注释：Python 会忽略它，人来读它。注释把数学符号和它在 Python 里的对应写法放在一起。",
+      "两层嵌套循环构造 Σ^2。对每个符号 a 和每个符号 b，a + b 是长度为 2 的字符串，add 把它放进集合。因为是集合，所以不会重复添加。",
+      "ends_in_1 是集合构造记号的那一行。把 {w for w in sigma_2 if w.endswith(\"1\")} 大声读成“sigma_2 中所有 w 以 1 结尾的 w 组成的集合”。它和 {w ∈ Σ² : w 以 1 结尾} 逐部分对应，得到 {01, 11}。",
+      "delta 是一张表，delta[(\"q0\", \"1\")] 就是 δ(q0, 1)。在状态 q0 读到 1 会到达 q1，在状态 q1 读到 0 会到达 q0。每次查表都接收一个状态和一个符号。",
+      "all(len(w) == 2 for w in sigma_2) 就是 ∀w ∈ Σ² : |w| = 2。它检验每一个 w，只有对所有 w 检验都为 True 时才回答 True。",
+      "any(w == \"11\" for w in sigma_2) 就是 ∃w ∈ Σ² : w = 11。只要至少有一个 w 通过检验，它就回答 True。这里两个答案都是 True。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "# Sigma* with Sigma = {0, 1} is {0, 00, 000, ...}",
+     "why": {
+      "en": "That is the set of strings made only of 0s. The star in Σ* means all strings over Σ, with any mix of the symbols, and it includes the empty string. It begins ε, 0, 1, 00, 01, 10, 11, and goes on.",
+      "zh": "那是只由 0 组成的字符串的集合。Σ* 里的星号表示 Σ 上的所有字符串，符号可以任意搭配，并且包括空串。它开头是 ε, 0, 1, 00, 01, 10, 11，然后继续下去。"
+     },
+     "right": "# Sigma* = {epsilon, 0, 1, 00, 01, 10, 11, 000, ...}"
+    },
+    {
+     "wrong": "delta[(\"q0\", \"101\")]",
+     "why": {
+      "en": "δ takes one symbol, not a string. There is no row for the pair (\"q0\", \"101\"), so Python stops with KeyError. To run a whole string, apply δ once per symbol, which is what δ* does.",
+      "zh": "δ 只接收一个符号，不接收字符串。表里没有 (\"q0\", \"101\") 这一行，所以 Python 以 KeyError 停止。要处理整个字符串，应当对每个符号各用一次 δ，这正是 δ* 做的事。"
+     },
+     "right": "state = \"q0\"\nfor symbol in \"101\":\n    state = delta[(state, symbol)]"
+    },
+    {
+     "wrong": "{w: w.endswith(\"1\") for w in sigma_2}",
+     "why": {
+      "en": "In maths the colon means \"such that\". In Python a colon inside curly braces makes a dictionary, here with keys w and values True or False. That is a table, not the set you wanted. In Python the filter is written with if.",
+      "zh": "在数学里，冒号的意思是“使得”。在 Python 里，花括号内的冒号构成字典，这里的键是 w，值是 True 或 False。那是一张表，不是你想要的集合。在 Python 里，筛选条件要用 if 来写。"
+     },
+     "right": "{w for w in sigma_2 if w.endswith(\"1\")}"
+    },
+    {
+     "wrong": "sigma_2 = {\"00\", \"11\"}    # each symbol written twice",
+     "why": {
+      "en": "Σ² is not each symbol squared. It is every string of length 2, so all four combinations. A set with only 00 and 11 misses 01 and 10.",
+      "zh": "Σ² 不是把每个符号各自重复一遍。它是所有长度为 2 的字符串，也就是全部四种组合。只含 00 和 11 的集合漏掉了 01 和 10。"
+     },
+     "right": "sigma_2 = {\"00\", \"01\", \"10\", \"11\"}"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Put L = {w ∈ {a, b}* : |w| is even} into plain words. Give three strings in L and one string that is not.",
+      "zh": "把 L = {w ∈ {a, b}* : |w| 是偶数} 用平常的话说出来。给出 L 中的三个字符串和一个不在 L 中的字符串。"
+     },
+     "a": {
+      "en": "L is the set of all strings of a's and b's whose length is an even number. In L: ε (length 0), ab (length 2) and bbaa (length 4). Not in L: a, which has length 1.",
+      "zh": "L 是所有长度为偶数的、由 a 和 b 组成的字符串的集合。在 L 中的：ε（长度 0）、ab（长度 2）、bbaa（长度 4）。不在 L 中的：a，它的长度是 1。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write the Python for {w ∈ Σ³ : w starts with 0} with Σ = {0, 1}. How many elements does it have?",
+      "zh": "写出 Σ = {0, 1} 时 {w ∈ Σ³ : w 以 0 开头} 的 Python 代码。它有多少个元素？"
+     },
+     "a": {
+      "en": "Build sigma_3 with three nested loops, adding a + b + c each time, then write starts_0 = {w for w in sigma_3 if w.startswith(\"0\")}. It has 4 elements: 000, 001, 010 and 011. That is half of the 8 strings in Σ³.",
+      "zh": "用三层嵌套循环构造 sigma_3，每次加入 a + b + c，然后写 starts_0 = {w for w in sigma_3 if w.startswith(\"0\")}。它有 4 个元素：000、001、010 和 011，是 Σ³ 中 8 个字符串的一半。"
+     }
+    },
+    {
+     "q": {
+      "en": "With the table in the example, what is δ(q1, 1)? Starting in q0 and reading 101 one symbol at a time, which state do you reach?",
+      "zh": "用例子中的表，δ(q1, 1) 是什么？从 q0 出发，一个符号一个符号地读 101，最后到达哪个状态？"
+     },
+     "a": {
+      "en": "δ(q1, 1) is q1. From q0: reading 1 gives q1, reading 0 gives q0, reading 1 gives q1. The final state is q1.",
+      "zh": "δ(q1, 1) 是 q1。从 q0 出发：读 1 到 q1，读 0 到 q0，读 1 到 q1。最终状态是 q1。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Read the Models of Computation (COMP2022) course notes. They start from the strings and languages you met here, then build machines, grammars and logic on top of them.",
+   "zh": "接着阅读《计算模型》（COMP2022）课程笔记。它从你在这里见到的字符串和语言出发，在此之上讲机器、文法和逻辑。"
+  },
+  "href": "courses/comp2022.html",
+  "hrefZh": "courses/comp2022.zh.html"
+ }
+}

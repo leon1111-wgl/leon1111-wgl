@@ -3,7 +3,7 @@
   "title": "Java 面向对象编程",
   "subtitle": "从源代码到可运行应用，逐步追踪值、对象、契约与集合。",
   "description": "通过原创情景、逐步跟踪和设计判断，建立精确的 Java 心智模型。每章把语法与运行行为联系起来，并用迁移问题检查理解。",
-  "coverage": "完整的 Java 8 学习路径涵盖执行、对象契约、输入输出、集合、泛型、异常、测试、递归、回调与应用设计。23 章各含两个独立可运行程序、行为跟踪、引导问答与工程分析。",
+  "coverage": "完整的 Java 8 学习路径涵盖执行、对象契约、输入输出、集合、泛型、异常、测试、递归、回调与应用设计。26 章各含两个独立可运行程序、行为跟踪、引导问答与工程分析。",
   "color": "#38bdf8",
   "prerequisites": [
     "基本编程知识：变量、条件与函数",
@@ -26,6 +26,7 @@
         "control-flow",
         "methods-references",
         "arrays",
+        "memory-diagrams",
         "strings"
       ],
       "purpose": "先理解表达式、分支和引用，再设计较大的对象。"
@@ -57,6 +58,7 @@
       "title": "处理变化与失败",
       "topics": [
         "exceptions",
+        "custom-exceptions",
         "enums-state",
         "testing-contracts",
         "recursion-memoization"
@@ -68,6 +70,7 @@
       "topics": [
         "lambdas",
         "debugging-documentation",
+        "packages-uml",
         "application-design"
       ],
       "purpose": "把可复用行为组合成应用，再测试和解释其工作方式。"
@@ -548,6 +551,218 @@
             "读取 length 前先检查 row!=null。",
             "将 String 数组赋给较宽引用类型，但实际元素类型保留。",
             "捕获刻意触发的存储失败，并检查状态未变。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory-diagrams",
+      "title": "内存图：栈、堆、引用与垃圾回收",
+      "story": "想象酒店前台。每位客人带着一张小房卡，上面写着房间号。房间本身很大，留在大楼里。如果两位客人拿着同一个房间的房卡，其中任何一位挪动家具，两个人都看得到。复制一张房卡得到的是第二张卡，不是第二个房间。房卡也可以是空白的，没有对应任何房间。而一个没有人持卡、走廊里也没有任何指示牌指向的房间，酒店可以把它清空重新使用。\n\n内存图就是把房卡和房间画出来。房卡放在左边的方框里，因为它们是正在运行的方法的变量。房间放在右边，因为它们是对象和数组。从每张卡到它的房间画一个箭头。动手画图，是弄清“为什么一处改了、另一处没变”的最快办法。",
+      "principle": "运行中的 Java 程序有两块和画图有关的区域。栈为每个已经开始、尚未返回的方法调用保存一个帧，帧里放着这次调用的参数和局部变量。方法被调用时压入一个帧，返回时弹出。堆保存所有用 new 创建的对象和数组，只要程序还能到达它们，它们就一直留在那里。\n\n变量画成一个带标签的方框。基本类型变量（int、double、boolean、char 等）的值就放在方框里面。引用变量里放的是一个引用，画成指向对象的箭头，或者写 null 表示没有对象。复制变量就是复制方框里的内容。对引用来说，就是复制箭头，所以现在有两个变量指向同一个对象，这叫别名（alias）。对引用使用 == 是在问两个方框里是不是同一个箭头；对基本类型则比较值。equals 方法比较内容，但前提是这个类这样定义了它。\n\n数组是堆上的一个对象。把它画成一排单元格，每个单元格上方标出下标，旁边写出长度。int[] 的单元格里放数字。Box[] 的单元格里放箭头，开始时都是 null。二维数组是指向数组的箭头组成的数组。String 也是对象，而且创建之后不能修改。\n\n画法约定如下。栈画在左边，每个方法调用一个方框，最新的调用放在最下面。每个变量画一个带标签的小方块。堆画在右边，每个对象是一个方框，写出它的类和字段。每个箭头从变量方框的内部出发，终止在对象的边缘。每执行一条会产生改变的语句，就重新画一幅图，这样就能对比前后的图。静态字段可以放进一个标着 static 的单独方框。\n\n如果从某个根出发有一串箭头能到达一个对象，这个对象就是可达的。根是仍在运行的方法的局部变量，以及静态字段。不可达的对象就是垃圾。程序再也用不到它，Java 系统可能在你无法预测的某个时刻回收它的内存。System.gc() 只是一个请求。一种简单的回收方法是标记清除。标记阶段：从每个根出发，顺着箭头走，给遇到的每个对象做标记。清除阶段：访问每个对象，释放没有标记的对象，并清除标记。因为可达性是从根开始算的，所以两个互相引用的垃圾对象也会被回收。Java 里的“内存泄漏”则是另一种问题：对象仍然可达，例如被一个静态列表保存着，但程序其实已经不需要它们。真正的回收器更复杂，有分代和并发工作，但遵循的都是可达性这个思想。",
+      "formula": "栈（左）                         堆（右）\nmain\n  n  [ 5 ]\n  p  [ * ]------------------->  #1  Box { value = 7 }\n  q  [ * ]------------------->  #1  （箭头指向同一个目标）\n  x  [ * ]------------------->  int[2]  [0]=1  [1]=20\n  r  [ null ]\n\n可达(o)  ：从某个根出发有一串箭头到达 o\n垃圾     = 全部对象 - 可达对象\n标记     ：从每个根出发，标记到达的所有对象\n清除     ：释放每个未标记的对象，然后清除标记",
+      "symbols": "带星号的方框是引用变量。箭头从方框出发，终止在某个对象上。方框里的数字，如 5，是直接存放的基本类型值。“根”是可达性的起点，即仍然有效的局部变量和静态字段。“全部对象减去可达对象”是集合的差：留下的恰好是没有任何根能到达的对象。\n\n这幅图只是一个模型。它省略了对象头、字符串池以及静态字段真正的存放位置等细节，因为这些细节不会改变关于共享和可达性的那些问题的答案。",
+      "example": "先看 int[] a = {4, 6}; 和 int[] b = a;。只有一个数组、两个箭头。执行 b[0] = 9; 之后，a[0] 和 b[0] 都是 9，因为数组是共享的。现在执行 b = new int[]{1};。只有 b 的箭头移到了新数组。旧数组仍然是 {9, 6}，a 依旧能到达它。接着执行 a = null;。现在没有任何变量能到达 {9, 6}，它就成了垃圾，可以被回收。数组 {1} 继续存活，因为 b 能到达它。\n\n再看标记清除模型：共有 9 个对象和两个根。第 1 次回收标记了 6 个对象，即 A、B、D、C、E 和 F，清除了其余 3 个：G、H 和 I。e = null 之后，根只能到达 A、B、D 和 C，所以第 2 次回收清除 E 和 F，堆里还剩 4 个对象。a.right = null 之后，第 3 次回收清除 C，剩下 3 个对象。",
+      "pitfall": "代码复制引用时，不要多画一个对象：Box q = p; 增加的是一个箭头，不是一个方框。把变量设为 null 并不会删除对象，它只是去掉一个箭头；只要还有别的箭头能到达这个对象，它就一直存在。也不要依赖 System.gc() 或终结器去关闭文件、释放资源，应当自己关闭。",
+      "check": {
+        "question": "执行 int[] a = {4, 6}; int[] b = a; b = new int[]{1}; a = null; 之后，数组 {4, 6} 还可达吗？",
+        "answer": "不可达。起初 a 和 b 都能到达它。后来 b 被改指新数组，a 又变成 null，没有任何变量能到达 {4, 6}。它是垃圾，可以被回收。数组 {1} 通过 b 仍然可达。"
+      },
+      "glossary": [
+        {
+          "term": "栈帧",
+          "meaning": "栈中保存一次方法调用的参数和局部变量的部分。"
+        },
+        {
+          "term": "堆",
+          "meaning": "存放对象和数组的区域，它们一直存在到再也无法到达为止。"
+        },
+        {
+          "term": "引用",
+          "meaning": "标识某个对象的值，画成箭头；它也可以是 null。"
+        },
+        {
+          "term": "别名",
+          "meaning": "持有同一个引用的第二个变量，这样两个变量到达同一个对象。"
+        },
+        {
+          "term": "可达",
+          "meaning": "某个根能通过一串引用到达的对象。"
+        },
+        {
+          "term": "标记清除",
+          "meaning": "一种回收方法：先标记从根可达的所有对象，再释放其余对象。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "基本类型变量的方框里放什么？引用变量的方框里放什么？",
+          "answer": "基本类型的方框里放值本身，例如 5。引用变量的方框里放指向对象的箭头，或者 null。"
+        },
+        {
+          "question": "为什么方法里的 b.value = 1 会改变调用者的对象，而 b = new Box(1) 不会？",
+          "answer": "前者顺着箭头去修改共享的对象。后者只移动方法自己的箭头。参数是箭头的副本，不是调用者的变量本身。"
+        },
+        {
+          "question": "互相引用的两个垃圾对象能被回收吗？",
+          "answer": "能。可达性从根开始计算。如果没有根能到达其中任何一个，两者都是垃圾，不管它们引用了什么。"
+        },
+        {
+          "question": "对于值相同的两个盒子，p == r 和 p.equals(r) 有什么区别？",
+          "answer": "p == r 问的是两个箭头是否相同，所以对两个不同的盒子为假。p.equals(r) 只有在类重写了 equals 时才比较内容；默认情况下它也比较身份。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "每条语句画一幅图",
+          "body": "别名造成的错误，表现为第一幅出现两个箭头指向同一个方框的图。如果一个列表像是自己变了，就找出这幅图。它前面的那条语句，通常就是复制了引用而不是复制对象的那一行。每一步都画图只要几分钟，却能省下几小时的猜测。"
+        },
+        {
+          "title": "有垃圾回收的语言里，泄漏就是可达性错误",
+          "body": "一个保存每个请求对象的静态列表，会让它们全部保持可达，所以没有一个能被回收。把根画出来，就能看出静态列表是罪魁祸首。解决办法是删掉不再需要的条目，或者放弃这个静态引用，而不是调用 System.gc()。"
+        },
+        {
+          "title": "模型可以比真实机器更简单",
+          "body": "标记清除模型保存了每个对象的列表，真实的 Java 系统并不需要这样做。真实的回收器还会按对象的年龄分区，因为大多数对象很快就会死去。但是从模型得到的结论依然成立：只有可达的对象才能存活，环不会让垃圾存活。这也是简单的引用计数在环上会失败，而从根开始追踪不会的原因。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "java-reference-diagram-states",
+          "title": "把图打印出来：基本类型、引用和数组",
+          "intro": "每个对象都有一个像 #1 这样的标签，所以输出的每一行都对应一幅图。",
+          "language": "java",
+          "code": "public class Main {\n    static int nextId = 1;\n\n    /** A tiny object: it lives on the heap and has a label like an address. */\n    static final class Box {\n        final int id = nextId++;\n        int value;\n\n        Box(int value) {\n            this.value = value;\n        }\n\n        String show() {\n            return \"#\" + id + \"{value=\" + value + \"}\";\n        }\n    }\n\n    static void change(int n, Box b, int[] a) {\n        n = n + 1;\n        b.value = b.value + 1;\n        a[0] = 99;\n        b = new Box(-1);\n        System.out.println(\"inside change: n=\" + n + \" b=\" + b.show() + \" a[0]=\" + a[0]);\n    }\n\n    public static void main(String[] args) {\n        int n = 5;\n        int m = n;\n        m = 9;\n        System.out.println(\"primitives: n=\" + n + \" m=\" + m);\n\n        Box p = new Box(3);\n        Box q = p;\n        Box r = new Box(3);\n        System.out.println(\"p -> \" + p.show() + \", q -> \" + q.show() + \", r -> \" + r.show());\n        System.out.println(\"p == q: \" + (p == q) + \", p == r: \" + (p == r));\n\n        q.value = 7;\n        System.out.println(\"after q.value = 7: p -> \" + p.show() + \", r -> \" + r.show());\n        q = new Box(1);\n        System.out.println(\"after q = new Box(1): p -> \" + p.show() + \", q -> \" + q.show());\n\n        int[] x = {1, 2};\n        int[] y = x;\n        y[1] = 20;\n        System.out.println(\"x[1]=\" + x[1] + \" y[1]=\" + y[1] + \" same array: \" + (x == y));\n\n        Box[] row = new Box[3];\n        row[0] = p;\n        row[1] = r;\n        System.out.println(\"row[0] -> \" + row[0].show() + \", row[1] -> \" + row[1].show()\n                + \", row[2] -> \" + row[2]);\n\n        change(n, p, x);\n        System.out.println(\"after change: n=\" + n + \" p -> \" + p.show() + \" x[0]=\" + x[0]);\n        System.out.println(\"row[0] sees it too: \" + row[0].show());\n    }\n}\n",
+          "output": "primitives: n=5 m=9\np -> #1{value=3}, q -> #1{value=3}, r -> #2{value=3}\np == q: true, p == r: false\nafter q.value = 7: p -> #1{value=7}, r -> #2{value=3}\nafter q = new Box(1): p -> #1{value=7}, q -> #3{value=1}\nx[1]=20 y[1]=20 same array: true\nrow[0] -> #1{value=7}, row[1] -> #2{value=3}, row[2] -> null\ninside change: n=6 b=#4{value=-1} a[0]=99\nafter change: n=5 p -> #1{value=8} x[0]=99\nrow[0] sees it too: #1{value=8}\n",
+          "explanation": "Java 不显示地址，所以程序在创建每个 Box 时给它编一个号：#1、#2 等等。这个编号只是画图用的辅助，相当于你在图中堆里每个方框上的标签。\n\n第一行复制了一个基本类型。m 是一个独立的方框，里面有自己的 5，所以把 m 改成 9 不影响 n。然后 p、q、r 是三个引用变量。p 和 q 持有指向 #1 的同一个箭头，而 r 指向另一个只是值相同的 Box。所以 p == q 为真，p == r 为假。q.value = 7 顺着箭头修改了 #1，所以 p 也看到 7。q = new Box(1) 只把 q 的箭头移到新方框 #3。\n\n数组的道理一样。x 和 y 指向同一个数组，所以 y[1] = 20 通过 x 也看得到。Box[] 的槽位里放的是箭头，从未填写的槽位是 null。最后一部分调用 change。方法里的副本 n 变成 6，调用者的 n 仍是 5。方法顺着 b 里的箭头给 #1 加 1，又顺着 a 里的箭头设置 a[0]，所以调用者两样都看得到。随后 b = new Box(-1) 只改变方法自己的 b，调用者的 p 仍然指向 #1，它的值现在是 8。",
+          "walkthrough": [
+            "创建对象时给每个对象编号，让输出能指明它。",
+            "复制一个基本类型，说明两个方框相互独立。",
+            "复制一个引用，说明两个变量现在指向同一个对象。",
+            "用 == 比较引用，再单独比较它们的内容。",
+            "把基本类型、对象和数组传给方法，看看调用者能观察到什么。"
+          ],
+          "trace": {
+            "columns": [
+              "语句",
+              "栈上的变量",
+              "堆上的对象"
+            ],
+            "rows": [
+              [
+                "int n = 5; int m = n; m = 9;",
+                "n = 5, m = 9",
+                "-"
+              ],
+              [
+                "Box p = new Box(3); Box q = p; Box r = new Box(3);",
+                "p -> #1, q -> #1, r -> #2",
+                "#1{3}, #2{3}"
+              ],
+              [
+                "q.value = 7;",
+                "p -> #1, q -> #1, r -> #2",
+                "#1{7}, #2{3}"
+              ],
+              [
+                "q = new Box(1);",
+                "p -> #1, q -> #3, r -> #2",
+                "#1{7}, #2{3}, #3{1}"
+              ],
+              [
+                "int[] y = x; y[1] = 20;",
+                "x -> array, y -> array",
+                "一个数组 {1, 20}"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "static int nextId = 1;",
+              "meaning": "static 字段是整个类共用的一个变量，而不是每个对象一个。"
+            },
+            {
+              "syntax": "final int id = nextId++;",
+              "meaning": "字段初始化器对每个新对象运行一次；nextId++ 先使用旧值，再加 1。"
+            },
+            {
+              "syntax": "static final class Box { ... }",
+              "meaning": "写在 Main 里面的类，这样所有内容仍在一个文件里。它的实例放在堆上。"
+            },
+            {
+              "syntax": "Box[] row = new Box[3];",
+              "meaning": "创建一个有三个引用槽位的数组，开始时全为 null。"
+            },
+            {
+              "syntax": "p == q",
+              "meaning": "对引用来说，== 问的是两个变量是否持有同一个箭头。"
+            }
+          ]
+        },
+        {
+          "id": "java-mark-and-sweep-model",
+          "title": "在一个小堆上运行标记清除",
+          "intro": "一个模型堆回收共享对象、可达的环和不可达的环。",
+          "language": "java",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n    /** One heap object with up to two outgoing references. */\n    static final class Obj {\n        final String name;\n        Obj left;\n        Obj right;\n        boolean marked;\n\n        Obj(String name) {\n            this.name = name;\n        }\n    }\n\n    /** A model of the heap: it knows every object, so it can sweep. */\n    static final class Heap {\n        final List<Obj> all = new ArrayList<Obj>();\n\n        Obj alloc(String name) {\n            Obj o = new Obj(name);\n            all.add(o);\n            return o;\n        }\n\n        /** Mark: follow references from a root, flagging everything reached. */\n        void mark(Obj o, StringBuilder order) {\n            if (o == null || o.marked) {\n                return;\n            }\n            o.marked = true;\n            order.append(o.name).append(' ');\n            mark(o.left, order);\n            mark(o.right, order);\n        }\n\n        /** Sweep: drop every unmarked object, then clear the marks for next time. */\n        String sweep() {\n            StringBuilder freed = new StringBuilder();\n            List<Obj> kept = new ArrayList<Obj>();\n            for (Obj o : all) {\n                if (o.marked) {\n                    o.marked = false;\n                    kept.add(o);\n                } else {\n                    freed.append(o.name).append(' ');\n                }\n            }\n            all.clear();\n            all.addAll(kept);\n            return freed.toString().trim();\n        }\n\n        void collect(String title, Obj... roots) {\n            StringBuilder order = new StringBuilder();\n            for (Obj root : roots) {\n                mark(root, order);\n            }\n            String freed = sweep();\n            System.out.println(title);\n            System.out.println(\"  marked in order: \" + order.toString().trim());\n            System.out.println(\"  freed: \" + (freed.isEmpty() ? \"nothing\" : freed));\n            System.out.println(\"  heap now has \" + all.size() + \" objects\");\n        }\n    }\n\n    /** A diamond: A refers to B and C, and both refer to D. Only A is returned. */\n    static Obj buildDiamond(Heap heap) {\n        Obj a = heap.alloc(\"A\");\n        Obj b = heap.alloc(\"B\");\n        Obj c = heap.alloc(\"C\");\n        Obj d = heap.alloc(\"D\");\n        a.left = b;\n        a.right = c;\n        b.left = d;\n        c.left = d;\n        return a;\n    }\n\n    /** A cycle: E and F refer to each other. */\n    static Obj buildCycle(Heap heap) {\n        Obj e = heap.alloc(\"E\");\n        Obj f = heap.alloc(\"F\");\n        e.left = f;\n        f.left = e;\n        return e;\n    }\n\n    /** Its local variables vanish on return, so nothing can reach these objects. */\n    static void leaveGarbage(Heap heap) {\n        heap.alloc(\"G\");\n        Obj h = heap.alloc(\"H\");\n        Obj i = heap.alloc(\"I\");\n        h.left = i;\n        i.left = h;\n    }\n\n    public static void main(String[] args) {\n        Heap heap = new Heap();\n        Obj a = buildDiamond(heap);\n        Obj e = buildCycle(heap);\n        leaveGarbage(heap);\n        System.out.println(\"heap starts with \" + heap.all.size() + \" objects\");\n        System.out.println(\"roots are variables a and e; G and the H-I pair are unreachable\");\n\n        heap.collect(\"collection 1\", a, e);\n\n        e = null;\n        heap.collect(\"collection 2 after e = null\", a);\n\n        a.right = null;\n        heap.collect(\"collection 3 after a.right = null\", a);\n    }\n}\n",
+          "output": "heap starts with 9 objects\nroots are variables a and e; G and the H-I pair are unreachable\ncollection 1\n  marked in order: A B D C E F\n  freed: G H I\n  heap now has 6 objects\ncollection 2 after e = null\n  marked in order: A B D C\n  freed: E F\n  heap now has 4 objects\ncollection 3 after a.right = null\n  marked in order: A B D\n  freed: C\n  heap now has 3 objects\n",
+          "explanation": "这是算法的模型，不是真正的 Java 垃圾回收器。Heap 类保存了它创建的每个对象的列表，这样清除阶段才能访问所有对象。真正的回收器则是通过扫描内存区域来找到对象。\n\n三个辅助方法构建出这张图。buildDiamond 创建 A，它引用 B 和 C，而 B 和 C 都引用 D。buildCycle 创建 E 和 F，它们互相引用。leaveGarbage 创建单独的 G，以及互相引用的 H 和 I。辅助方法返回时，它的局部变量随栈帧一起消失，所以再没有东西能到达 G、H 或 I。唯一的根是 main 里的变量 a 和 e。\n\n第 1 次回收从根出发，顺着引用走。标记顺序是 A、B、D、C、E、F。D 只被访问一次，虽然有两个对象引用它。所有没被标记的对象都被清除：G、H 和 I。H 和 I 虽然还互相引用，但没有任何根能到达它们，所以环并不能让它们存活。执行 e = null 之后，第 2 次回收只有根 a，于是 E 和 F 被清除，尽管它们各自还引用着对方。执行 a.right = null 之后，从 A 已经到不了 C，所以第 3 次回收清除 C；但 D 留下来，因为 B 仍能到达它。",
+          "walkthrough": [
+            "通过堆分配对象，让它之后能列出这些对象。",
+            "在辅助方法里制造垃圾，让它们的局部变量在返回时消失。",
+            "标记：从每个根出发顺着引用走，给到达的每个对象标记一次。",
+            "清除：移除未标记的对象，并为下一次回收清除标记。",
+            "去掉引用后再次回收，观察环和共享对象的表现。"
+          ],
+          "trace": {
+            "columns": [
+              "回收",
+              "根",
+              "被标记",
+              "被清除"
+            ],
+            "rows": [
+              [
+                "1",
+                "a, e",
+                "A B D C E F",
+                "G H I"
+              ],
+              [
+                "2（e = null 之后）",
+                "a",
+                "A B D C",
+                "E F"
+              ],
+              [
+                "3（a.right = null 之后）",
+                "a",
+                "A B D",
+                "C"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "List<Obj> all = new ArrayList<Obj>();",
+              "meaning": "可增长的列表。类型参数 <Obj> 表示每个元素都是 Obj。"
+            },
+            {
+              "syntax": "void collect(String title, Obj... roots)",
+              "meaning": "可变参数：调用者可以列出任意多个根，方法里把它们当数组使用。"
+            },
+            {
+              "syntax": "if (o == null || o.marked) return;",
+              "meaning": "守卫语句：遇到空链接和已访问的对象就停止递归，这也使环不会无限循环。"
+            },
+            {
+              "syntax": "StringBuilder order = new StringBuilder();",
+              "meaning": "一段一段地拼接文本，不必每次都创建新的 String。"
+            },
+            {
+              "syntax": "for (Obj o : all) { ... }",
+              "meaning": "增强 for 循环按顺序访问列表的每个元素。"
+            }
           ]
         }
       ]
@@ -2171,6 +2386,219 @@
       ]
     },
     {
+      "id": "custom-exceptions",
+      "title": "自定义异常：受检查还是非受检查",
+      "story": "一家咖啡馆有个规矩。厨师做不出一份订单时，不会只在店里喊一声“出问题了！”。厨师会递给服务员一张条子，上面写清楚到底出了什么问题：“牛奶用完了”，附上桌号，也许还有缺几杯。服务员就能做点合理的事，比如推荐燕麦奶。如果问题是燃气断供，没人指望服务员去修，那就直接报告给经理。\n\n自定义异常就是这样一张条子：有明确的标题，还带着处理者需要的细节。选择受检查还是非受检查，就是选择哪一种条子。受检查异常是一份文书，路上的每个服务员要么处理，要么转交，而且编译器会检查他们确实这样做了。非受检查异常是一次紧急情况，它跳过文书，直接送到能处理它的人那里。",
+      "principle": "标准异常的名字比较笼统。自定义异常则用你程序自己的语言命名失败，例如 InsufficientFundsException。它可以携带处理者需要的数据，也让调用者能只捕获这一种失败，而不会误捕其他的。\n\n写一个自定义异常：受检查异常继承 Exception，非受检查异常继承 RuntimeException。不要直接继承 Error 或 Throwable。名字以 Exception 结尾。给它两个构造方法，把参数传给 super：一个只有 String 消息，另一个有消息和 Throwable 原因。为处理者需要的数据添加 private final 字段和 getter。Throwable 是可序列化的，所以要加上 serialVersionUID，否则编译器会警告。异常类不能是泛型的。\n\n异常可以组成层次。OrderException 这样的基类代表一个家族，UnknownItemException 这样的子类代表具体的失败。调用者可以捕获基类，也可以捕获子类。要先捕获更具体的类型，因为把父类的 catch 放在子类前面，会让子类的子句永远到不了，这是编译错误。\n\n底层失败时，把它的异常转换成你自己的异常，并把原异常作为原因传进去：throw new OrderException(message, cause)。这样 getCause() 还能给出根本原因，而你的调用者也不用依赖底层的细节。不要丢掉原因。\n\n怎样在受检查和非受检查之间选择？问自己：合理的调用者除了停止之外，能不能做点有用的事？如果能，就设为受检查。例如文件不存在、付款金额不足、用户输入了不存在的代码。如果失败意味着有缺陷或者前置条件被破坏，例如空参数、下标越界，或者别的代码传来了 -1 的数量，就设为非受检查。受检查异常是有代价的：它们出现在方法签名里，每个调用者都必须捕获或声明，而且在 lambda 里用起来很别扭。如果把一切都设为受检查，人们就会为了让编译器闭嘴而写空的 catch 块。非受检查异常容易被忽视，所以要用 @throws 写进文档。不要用异常控制普通流程，想捕获具体类型时不要捕获 Exception，也不要悄悄吞掉异常。",
+      "formula": "class InsufficientFundsException extends Exception          // 受检查\nclass InvalidQuantityException   extends RuntimeException   // 非受检查\n\n构造方法：  (String message)    (String message, Throwable cause)\n\nThrowable\n +-- Error                      （不要继承或捕获）\n +-- Exception                  <- 受检查异常继承它\n      +-- IOException\n      +-- OrderException        （你自己的基类）\n      |     +-- UnknownItemException\n      +-- RuntimeException      <- 非受检查异常继承它\n            +-- IllegalArgumentException\n            +-- InvalidQuantityException\n\n合理的调用者能恢复吗？   能 -> 受检查    不能 -> 非受检查",
+      "symbols": "这棵树表示继承：写在另一个名字下面的，是它的子类。Exception 之下，除了 RuntimeException 及其子类，其余都是受检查的。底部的问题是经验法则，不是定律。它把含糊的“这严重吗？”变成了可以检验的问题：“调用者有没有有用的替代办法？”\n\n这两种构造方法的形状是一个约定，标准库也遵循它。这样以后加上原因也很容易。",
+      "example": "钱包里有 250 美分。pay(200) 成功，剩下 50。pay(100) 差 100 - 50 = 50，所以抛出差额为 50 的 InsufficientFundsException，余额保持 50。处理者补 50，变成 100，现在 pay(100) 成功，剩下 0。调用 pay(-5) 是调用者的缺陷，所以抛出非受检查的 IllegalArgumentException。\n\n再看订单系统。\"tea:2\" 的价格是 300 x 2 = 600 美分。\"juice:1\" 没有价格，抛出 UnknownItemException。\"cake:x3\" 含有字符 x。辅助方法报告了它，上一层把它包装成 OrderException，并保留原异常作为原因。\"cake:0\" 违反了数量至少为 1 的规则，所以抛出非受检查的 InvalidQuantityException。",
+      "pitfall": "不要把所有自定义异常都做成受检查的，再用 catch (Exception e) {} 去堵编译器。也不要把本来可以恢复的失败做成非受检查的，让没人去预先考虑它。包装异常时，一定要把原异常作为原因传进去。没有原因的新异常，会丢掉真正出了什么问题的证据。",
+      "check": {
+        "question": "一个方法解析用户键入的数量。另一个方法从本该检查过的代码那里收到了 -1 的数量。哪一个用受检查异常，哪一个用非受检查异常？",
+        "answer": "解析用户文本用受检查异常，因为程序可以让用户重新输入。从别的代码收到 -1 是调用者的缺陷，所以用非受检查的 IllegalArgumentException。"
+      },
+      "glossary": [
+        {
+          "term": "自定义异常",
+          "meaning": "你自己编写的异常类，用来按你程序的语言命名一种失败。"
+        },
+        {
+          "term": "受检查异常",
+          "meaning": "编译器强制调用者捕获或用 throws 声明的异常。"
+        },
+        {
+          "term": "非受检查异常",
+          "meaning": "不需要 catch 或 throws 的 RuntimeException 或 Error。"
+        },
+        {
+          "term": "原因",
+          "meaning": "保存在新异常里的先前异常，可通过 getCause() 取得。"
+        },
+        {
+          "term": "异常层次",
+          "meaning": "异常类组成的树，其中子类表示更具体的失败。"
+        },
+        {
+          "term": "serialVersionUID",
+          "meaning": "异常类因为可序列化而声明的版本号。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "自定义异常的构造方法为什么要调用 super(message)？",
+          "answer": "消息保存在 Throwable 里。把它传上去，getMessage() 才能返回它。"
+        },
+        {
+          "question": "为什么子类的 catch 必须在父类的 catch 之前？",
+          "answer": "Java 选第一个匹配的子句。父类子句放在前面，会匹配子类能匹配的一切，子类子句永远不会运行，编译器会拒绝。"
+        },
+        {
+          "question": "如果在 catch 块里抛出新异常却不传入原因，会丢失什么？",
+          "answer": "会丢失根本原因和它的堆栈跟踪。之后的读者只能看到你的概括，无法知道是哪个底层失败引起了问题。"
+        },
+        {
+          "question": "异常类什么时候应该有额外的字段？",
+          "answer": "当处理者需要数据才能恢复时，比如钱包例子里的差额。如果处理者不得不从消息字符串里读数字，就说明缺少一个字段。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "异常是方法契约的一部分",
+          "body": "受检查异常出现在方法签名里，所以以后再添加一个，会破坏所有调用者。非受检查异常不出现在签名里，所以必须用 @throws 写进 Javadoc。要尽早决定哪些失败属于契约。许多现代库对大多数失败选用非受检查异常，只在真正需要做决定的情形下才保留受检查异常。"
+        },
+        {
+          "title": "在层与层的边界转换异常，并保留原因",
+          "body": "存储层可能因为底层错误而失败，订单层把它转换成 OrderException。这样订单层的调用者不需要了解存储的细节，而程序顶层的日志仍能打印整条原因链。这就是两种构造方法（带原因和不带原因）都值得写的原因。"
+        },
+        {
+          "title": "字段让处理者更聪明，但消息要保持安全",
+          "body": "shortfall 字段让处理者无需解析文本就能修复问题。这类字段应保持不可变。不要把密码、完整卡号之类的秘密放进消息，因为消息最终会出现在日志里。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "java-checked-custom-exception",
+          "title": "携带数据的受检查异常",
+          "intro": "这个异常告诉调用者还差多少钱，处理者就可以修复问题并重试。",
+          "language": "java",
+          "code": "public class Main {\n    /** Checked: the caller can often fix this, so the compiler makes callers face it. */\n    static final class InsufficientFundsException extends Exception {\n        private static final long serialVersionUID = 1L;\n        private final int shortfall;\n\n        InsufficientFundsException(String message, int shortfall) {\n            super(message);\n            this.shortfall = shortfall;\n        }\n\n        int getShortfall() {\n            return shortfall;\n        }\n    }\n\n    static final class Wallet {\n        private int cents;\n\n        Wallet(int cents) {\n            this.cents = cents;\n        }\n\n        int balance() {\n            return cents;\n        }\n\n        void topUp(int amount) {\n            cents += amount;\n        }\n\n        void pay(int price) throws InsufficientFundsException {\n            if (price <= 0) {\n                throw new IllegalArgumentException(\"price must be positive: \" + price);\n            }\n            if (price > cents) {\n                int missing = price - cents;\n                throw new InsufficientFundsException(\"need \" + missing + \" more cents\", missing);\n            }\n            cents -= price;\n        }\n    }\n\n    public static void main(String[] args) {\n        Wallet wallet = new Wallet(250);\n        try {\n            wallet.pay(200);\n            System.out.println(\"paid 200, balance \" + wallet.balance());\n            wallet.pay(100);\n            System.out.println(\"this line is skipped\");\n        } catch (InsufficientFundsException ex) {\n            System.out.println(\"caught: \" + ex.getMessage());\n            System.out.println(\"balance unchanged: \" + wallet.balance());\n            wallet.topUp(ex.getShortfall());\n            System.out.println(\"topped up \" + ex.getShortfall() + \", balance \" + wallet.balance());\n            try {\n                wallet.pay(100);\n                System.out.println(\"second try paid 100, balance \" + wallet.balance());\n            } catch (InsufficientFundsException again) {\n                System.out.println(\"still short: \" + again.getShortfall());\n            }\n        }\n\n        try {\n            wallet.pay(-5);\n        } catch (InsufficientFundsException ex) {\n            System.out.println(\"not reached: a negative price is not a funds problem\");\n        } catch (IllegalArgumentException ex) {\n            System.out.println(\"programming error: \" + ex.getMessage());\n        }\n    }\n}\n",
+          "output": "paid 200, balance 50\ncaught: need 50 more cents\nbalance unchanged: 50\ntopped up 50, balance 100\nsecond try paid 100, balance 0\nprogramming error: price must be positive: -5\n",
+          "explanation": "InsufficientFundsException 继承 Exception，所以它是受检查异常。它的构造方法把消息传给 super，并额外保存一个字段 shortfall，还提供一个 getter。写 serialVersionUID 是因为异常是可序列化的，否则编译器会给出警告。\n\nWallet.pay 有两种失败，它们对应两种异常。价格小于等于零是调用代码的错误，所以方法抛出标准的非受检查异常 IllegalArgumentException。价格大于余额则是正常的业务情形，所以方法抛出自定义的受检查异常。throws 子句让每个调用者都必须面对它。两项检查都在修改余额之前进行，所以付款失败时钱包保持原样。\n\n在 main 里，从 250 中付 200，剩下 50。接着付 100 失败，差额是 50。catch 块打印消息，说明余额仍是 50，用 ex.getShortfall() 恰好补足缺少的金额，再试一次。第二次付款成功，余额变成 0。这就是自定义异常的价值：如果只有一个消息字符串，处理者就得去解析文本。最后一个 try 块展示 catch 子句的顺序：负的价格不是资金问题，所以落到 IllegalArgumentException 子句。",
+          "walkthrough": [
+            "定义异常，带上消息和一个供处理者使用的额外字段。",
+            "先验证再修改状态：调用者的错误用非受检查异常，需要处理的情形用受检查异常。",
+            "在方法的 throws 子句中声明受检查异常。",
+            "捕获它，读取它携带的数据，修复问题后重试。",
+            "把 catch 子句按从最具体到最一般的类型排序。"
+          ],
+          "trace": {
+            "columns": [
+              "操作",
+              "结果",
+              "余额"
+            ],
+            "rows": [
+              [
+                "pay(200)",
+                "成功",
+                "50"
+              ],
+              [
+                "pay(100)",
+                "抛出 InsufficientFundsException，差额 50",
+                "50"
+              ],
+              [
+                "topUp(50)",
+                "处理者修复问题",
+                "100"
+              ],
+              [
+                "pay(100)",
+                "成功",
+                "0"
+              ],
+              [
+                "pay(-5)",
+                "抛出 IllegalArgumentException",
+                "0"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "class InsufficientFundsException extends Exception",
+              "meaning": "继承 Exception，新类型就成为受检查异常。"
+            },
+            {
+              "syntax": "super(message);",
+              "meaning": "把消息传给父类，getMessage() 才能返回它。"
+            },
+            {
+              "syntax": "void pay(int price) throws InsufficientFundsException",
+              "meaning": "方法提醒每个调用者：这个受检查异常可能抛出。"
+            },
+            {
+              "syntax": "catch (InsufficientFundsException ex) { ... } catch (IllegalArgumentException ex) { ... }",
+              "meaning": "两个处理器；Java 选第一个类型匹配的。"
+            },
+            {
+              "syntax": "private static final long serialVersionUID = 1L;",
+              "meaning": "序列化用的版本号；它让编译器的 lint 检查不再警告。"
+            }
+          ]
+        },
+        {
+          "id": "java-exception-hierarchy-cause",
+          "title": "异常层次、被包装的原因，以及非受检查的契约错误",
+          "intro": "四行订单分别展示具体子类、被转换的底层失败、契约错误，以及 finally。",
+          "language": "java",
+          "code": "public class Main {\n    /** Base type for every problem with an order line. Checked, so callers must plan for it. */\n    static class OrderException extends Exception {\n        private static final long serialVersionUID = 1L;\n\n        OrderException(String message) {\n            super(message);\n        }\n\n        OrderException(String message, Throwable cause) {\n            super(message, cause);\n        }\n    }\n\n    /** A more specific kind of order problem: callers may catch it on its own. */\n    static final class UnknownItemException extends OrderException {\n        private static final long serialVersionUID = 1L;\n        private final String code;\n\n        UnknownItemException(String code) {\n            super(\"no such item: \" + code);\n            this.code = code;\n        }\n\n        String getCode() {\n            return code;\n        }\n    }\n\n    /** Unchecked: a caller that passes a bad number has a bug, not a situation to handle. */\n    static final class InvalidQuantityException extends RuntimeException {\n        private static final long serialVersionUID = 1L;\n\n        InvalidQuantityException(int quantity) {\n            super(\"quantity must be at least 1 but was \" + quantity);\n        }\n    }\n\n    /** Low-level helper: reports the first bad character with a plain unchecked exception. */\n    static int readNumber(String text) {\n        int value = 0;\n        for (int i = 0; i < text.length(); i++) {\n            char c = text.charAt(i);\n            if (c < '0' || c > '9') {\n                throw new IllegalArgumentException(\"'\" + c + \"' is not a digit\");\n            }\n            value = value * 10 + (c - '0');\n        }\n        return value;\n    }\n\n    static int priceOf(String code) throws UnknownItemException {\n        if (code.equals(\"tea\")) {\n            return 300;\n        }\n        if (code.equals(\"cake\")) {\n            return 450;\n        }\n        throw new UnknownItemException(code);\n    }\n\n    /** Translate a low-level failure into this layer's own exception and keep the cause. */\n    static int total(String line) throws OrderException {\n        String[] parts = line.split(\":\");\n        int price = priceOf(parts[0]);\n        int quantity;\n        try {\n            quantity = readNumber(parts[1]);\n        } catch (IllegalArgumentException cause) {\n            throw new OrderException(\"bad quantity in \\\"\" + line + \"\\\"\", cause);\n        }\n        if (quantity < 1) {\n            throw new InvalidQuantityException(quantity);\n        }\n        return price * quantity;\n    }\n\n    public static void main(String[] args) {\n        String[] lines = {\"tea:2\", \"juice:1\", \"cake:x3\", \"cake:0\"};\n        for (String line : lines) {\n            try {\n                System.out.println(line + \" -> \" + total(line) + \" cents\");\n            } catch (UnknownItemException ex) {\n                System.out.println(line + \" -> unknown code \" + ex.getCode());\n            } catch (OrderException ex) {\n                System.out.println(line + \" -> \" + ex.getMessage() + \", cause: \" + ex.getCause().getMessage());\n            } catch (InvalidQuantityException ex) {\n                System.out.println(line + \" -> contract violated: \" + ex.getMessage());\n            } finally {\n                System.out.println(\"  processed \" + line);\n            }\n        }\n    }\n}\n",
+          "output": "tea:2 -> 600 cents\n  processed tea:2\njuice:1 -> unknown code juice\n  processed juice:1\ncake:x3 -> bad quantity in \"cake:x3\", cause: 'x' is not a digit\n  processed cake:x3\ncake:0 -> contract violated: quantity must be at least 1 but was 0\n  processed cake:0\n",
+          "explanation": "OrderException 是一个小家族的基类，而且是受检查的。UnknownItemException 继承它，所以调用者既可以只捕获具体的那一种，也可以捕获整个家族。InvalidQuantityException 继承 RuntimeException，是非受检查的。\n\nreadNumber 是底层辅助方法，用标准的 IllegalArgumentException 报告坏字符。total() 在它的上一层。它不让底层异常直接漏出去，而是捕获它，改抛 OrderException，并把原来的异常作为原因传进去。这样消息说的就是订单的语言，而 getCause() 仍能给出关于坏字符的细节。\n\n看这四行。\"tea:2\" 的价格是 300 x 2 = 600。\"juice:1\" 没有价格，所以 priceOf 抛出 UnknownItemException，由第一个 catch 子句处理。\"cake:x3\" 在 readNumber 里遇到 'x' 而失败。它被包装起来，所以 OrderException 子句先打印消息，再打印原因的消息。\"cake:0\" 通过了解析，却违反了 total() 的契约，因为契约规定数量至少为 1，所以 total() 抛出非受检查的 InvalidQuantityException。在真实程序里，用户键入的数量应当在读取的地方就用受检查异常拒绝；0 能到达 total()，说明调用者跳过了这项检查。finally 块不管走了哪条路线，每一行都打印一次。catch 的顺序也很重要：UnknownItemException 要放在它的父类 OrderException 之前。顺序反过来的话，编译器会报告第一个子句已经捕获了它。",
+          "walkthrough": [
+            "声明一个基类异常、一个具体子类，以及一个用于契约错误的非受检查异常。",
+            "在底层辅助方法里抛出普通的非受检查异常。",
+            "在上一层捕获它，改抛本层自己的异常，并把原异常作为原因。",
+            "先捕获最具体的子句，再捕获整个家族，最后捕获非受检查类型。",
+            "用 finally 完成每条路线上都必须做的事。"
+          ],
+          "trace": {
+            "columns": [
+              "订单行",
+              "发生的事",
+              "运行的子句"
+            ],
+            "rows": [
+              [
+                "tea:2",
+                "600 美分",
+                "无；正常返回"
+              ],
+              [
+                "juice:1",
+                "priceOf 抛出 UnknownItemException",
+                "UnknownItemException"
+              ],
+              [
+                "cake:x3",
+                "readNumber 失败；total 把它包装起来并保留原因",
+                "OrderException"
+              ],
+              [
+                "cake:0",
+                "total 抛出 InvalidQuantityException",
+                "InvalidQuantityException"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "class UnknownItemException extends OrderException",
+              "meaning": "自定义异常的子类；捕获 OrderException 也会捕获它。"
+            },
+            {
+              "syntax": "super(message, cause);",
+              "meaning": "把原来的失败保存在新异常里面。"
+            },
+            {
+              "syntax": "ex.getCause().getMessage()",
+              "meaning": "读取被包装异常的消息。"
+            },
+            {
+              "syntax": "} finally { ... }",
+              "meaning": "这个块在 try 和任何 catch 之后运行，无论从哪条路线离开。"
+            },
+            {
+              "syntax": "line.split(\":\")",
+              "meaning": "在每个冒号处切开字符串，返回由各段组成的字符串数组。"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "enums-state",
       "title": "枚举与有限状态模型",
       "story": "包裹可以等待、运输中或已送达。用便签随意写状态，容易拼错或创造“差不多算送到”等标签。预先印好的正式标记可以收窄词汇。但词汇正确不保证流程合理：从已送达直接回到等待，仍可能违反流程。enum 提供有限标签集合，转移规则控制标签之间如何移动。同时看清两者，才能避免把类型安全状态名误当完整正确的状态机。",
@@ -2762,6 +3190,232 @@
             "先读契约再预测输出。",
             "检查有效位置对及返回距离。",
             "检查文档规定的负数边界拒绝。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "packages-uml",
+      "title": "包、访问控制与类图",
+      "story": "一所学校有几栋楼。理科楼有实验室，艺术楼有工作室。每个房间都有完整的地址，即楼名加房间名，所以两栋楼都可以有“12 号房”而不会混淆。门遵循不同的规则。有的房间只给负责它的老师用。有的给这栋楼的教职工用。有的也给在其他楼工作的实习教师用。前厅则对所有访客开放。\n\n校园地图不会画出每一张课桌。它画出各栋楼、主要房间，以及它们之间的连接。类图就是程序的这种地图。你可以在写任何代码之前手绘它，让你和团队在修改还很便宜的时候讨论设计。",
+      "principle": "包把相关的类归在一个名字下。文件以 package 语句开头，例如 package shop.model;，它所在的文件夹必须与之对应：src/shop/model/Item.java。这个类的全名是 shop.model.Item。包可以防止命名冲突，把相关的类放在一起，还能控制访问。没有 package 语句的文件属于无名的默认包。做小测试没问题，但是它的类不能被导入。包名全部小写，库常常用倒写的域名开头。\n\nimport 语句让你可以写 Item 而不用写 shop.model.Item。import shop.model.*; 导入该包里的所有类，但不包括子包里的类。java.lang 里的类，如 String，不需要导入。import 不会加载任何东西，也不影响速度，只是缩短名字。如果两个包里有同名的类，就导入其中一个，另一个写全名。构建时运行 javac -d out src/shop/model/Item.java src/shop/app/Main.java，编译好的类会写入 out 下对应的文件夹。用 java -cp out shop.app.Main 运行程序。\n\n访问修饰符控制谁可以使用一个类或成员。private 表示只有同一个类，另有一条额外规则：嵌套类和它的顶层类共享私有成员。不写修饰符，叫包级私有，表示同一个包。protected 表示同一个包，并且包括任何地方的子类。public 表示所有人。顶层类只能是 public 或包级私有。protected 成员还有一条规则：其他包里的子类，可以通过 this 或子类类型的引用使用它，但不能通过父类类型的引用使用它。设计上的原则是：给每个成员尽可能小的可见性。字段保持私有，辅助类保持包级私有，只把其他包必须使用的部分设为 public。\n\n包也给应用提供结构。一家商店可以有 shop.model 放领域对象，shop.io 处理文件，shop.app 放 main。依赖应当单向：shop.app 使用 shop.model，而 shop.model 不导入 shop.app。包级私有的类对其他包隐藏了实现。\n\n类图的方框分三部分：名称、属性和操作。符号表示可见性：+ 表示 public，- 表示 private，# 表示 protected，~ 表示包级。静态成员加下划线。抽象类或抽象方法用斜体，或标注 {abstract}。接口加标签 <<interface>>。方框之间的线有各自的含义。泛化（extends）是实线，三角形为空心，指向父类。实现（implements）是虚线，三角形为空心，指向接口。关联是普通的线，可以用箭头表示方向，用 1 或 0..* 之类的数字表示数量。聚合在“整体”一端画空心菱形。组合画实心菱形，表示部分离开整体就不能存在。依赖是虚线箭头，意思是“使用”。泛型类在名字里显示类型参数，例如 Catalog<T extends Shape>。\n\nJavadoc 把以 /** 开头的注释变成 HTML 参考文档。第一句话是摘要。每个参数写 @param 名字，结果写 @return，异常写 @throws 类型和触发条件，相关条目写 @see，版本写 @since，应避免的东西写 @deprecated，句子里的代码写 {@code x}，链接写 {@link Class#method}。要写出调用者需要知道的内容：单位、是否允许 null、异常和副作用。用 javadoc -d docs -sourcepath src -subpackages shop 生成页面。",
+      "formula": "src/\n  shop/\n    model/Item.java      package shop.model;\n    app/Main.java        package shop.app;   import shop.model.Item;\n\n+----------------------+\n| <<interface>>        |\n| Describable          |\n+----------------------+\n| +describe(): String  |\n+----------------------+\n          ^\n          :  虚线加空心三角：implements（实现）\n+----------------------+       +---------------------------+\n| {abstract} Shape     |       | Catalog<T extends Shape>  |\n+----------------------+       +---------------------------+\n| -name: String        |       | -items: List<T>           |\n+----------------------+       +---------------------------+\n| +area(): int         |       | +add(item: T)             |\n| +describe(): String  |       | +largest(): T             |\n+----------------------+       | +size(): int              |\n     ^          ^              +---------------------------+\n     |          |  实线加空心三角：extends（继承）\n+--------+  +----------+\n| Rect   |  | Triangle |\n+--------+  +----------+\n     ^\n     |\n+--------+\n| Square |\n+--------+\n\n+ public   - private   # protected   ~ package",
+      "symbols": "最上面几行显示文件夹如何与 package 语句对应。下面的方框是同一个设计：箭头永远指向被继承或被实现的对象。方框的中间格列出属性（字段），底部格列出操作（方法）。冒号后面是类型，UML 的顺序是“名字: 类型”，与 Java 的顺序相反。\n\n图下方的说明重复列出可见性符号。像 {abstract} 这样带花括号的文字，是附加在方框或操作上的标签。",
+      "example": "假设文件 src/shop/model/Item.java 声明了 public class Item，其中有一行 protected int price;，而文件 src/shop/app/Gift.java 在包 shop.app 里声明了 class Gift extends Item。在 Gift 内部，price 和 this.price 都能编译。方法 Gift.cost(Item other) 如果读取 other.price，则无法编译，因为 other 的类型是 Item，不是 Gift。方法 Gift.cost(Gift other) 读取 other.price 则可以编译。shop.app 里不继承 Item 的类 Main，根本不能读 price。如果 price 不写修饰符，那么连 Gift 也不能使用它，因为 Gift 和 Item 在不同的包里。\n\n再看文档。以一个把宽度分给 n 列的方法为例。注释可以先写摘要“Returns the width of one column.”。接着写 @param n，说明列数至少为 1。再写 @return，说明结果是以像素为单位的宽度。最后写 @throws IllegalArgumentException，说明 n 小于 1 时抛出。读生成页面的人不用打开源码，就知道单位和失败的情形。\n\n再看图。这个设计有 5 个类和 1 个接口，有两条实线空心三角箭头（Rect 和 Triangle 指向 Shape），另一条（Square 指向 Rect），以及一条虚线箭头（Shape 指向 Describable）。",
+      "pitfall": "包级私有是默认值，所以不写修饰符的成员对其他包不可见。构造方法或方法上忘了写 public，是常见的编译错误。文件夹必须与 package 语句对应，否则编译器和 java 都找不到这个类。不要为了让错误消失就把一切设为 public，那样会破坏结构。图中的三角形指向父类，而不是子类。",
+      "check": {
+        "question": "包 car.parts 里的 Engine 有 protected int rpm。包 car.app 里的 Racer 继承 Engine，有一个接收 Engine e 的方法，返回 e.rpm。能编译吗？this.rpm 呢？",
+        "answer": "e.rpm 不能编译。其他包里的子类只能通过自己的类型（this 或 Racer 引用）使用 protected 成员，而 e 的类型是父类 Engine。this.rpm 或者直接写 rpm 可以编译。"
+      },
+      "glossary": [
+        {
+          "term": "包",
+          "meaning": "一组有名字的类，与文件夹对应，并防止命名冲突。"
+        },
+        {
+          "term": "导入",
+          "meaning": "让你可以使用短类名的语句；它什么也不加载。"
+        },
+        {
+          "term": "包级私有",
+          "meaning": "不写修饰符的访问级别：只在同一个包内可见。"
+        },
+        {
+          "term": "protected",
+          "meaning": "在同一个包和子类中可见，对其他包有一条额外规则。"
+        },
+        {
+          "term": "泛化",
+          "meaning": "UML 中表示 extends 的关系：实线，在父类一端有空心三角。"
+        },
+        {
+          "term": "实现",
+          "meaning": "UML 中表示 implements 的关系：虚线，在接口一端有空心三角。"
+        },
+        {
+          "term": "多重性",
+          "meaning": "一个数或一个范围，如 1 或 0..*，表示一条关联中有多少个对象参与。"
+        },
+        {
+          "term": "Javadoc",
+          "meaning": "把 /** */ 注释变成 HTML 文档的工具和注释风格。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "为什么文件夹必须与 package 语句对应？",
+          "answer": "编译器和 java 启动器通过把包名转成文件夹路径来定位类。不匹配就找不到这个类。"
+        },
+        {
+          "question": "import 与包含一个文件有什么不同？",
+          "answer": "import 只是让你可以使用短名字，不复制也不加载任何代码。类在使用时才从类路径上找到。"
+        },
+        {
+          "question": "在 UML 类图中，泛化的三角形指向哪个方向？",
+          "answer": "指向父类，也就是被继承的一方。"
+        },
+        {
+          "question": "@throws 后面应该写什么？",
+          "answer": "异常的类型和触发它的条件，例如“IllegalArgumentException if n is less than 1”。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "用可见性缩小你必须保持稳定的范围",
+          "body": "每个 public 成员都是对其他包的承诺。包级私有的类可以改名或重写，而不必问任何人。放在同一个包里的测试仍然可以访问包级私有成员。所以只有在其他包确实需要时，才把成员设为 public。"
+        },
+        {
+          "title": "画图是为了发现设计问题，而不是装饰",
+          "body": "手绘的包图能很快暴露环，例如 model 导入 app 而 app 又导入 model。可以把共享部分移到第三个包，或者依赖接口来打破环。只画有助于决策的类和连线，让图保持小到可以讨论。"
+        },
+        {
+          "title": "Javadoc 是工具可以阅读的契约",
+          "body": "默认情况下，生成的页面只列出 public 和 protected 成员，这正是其他包所依赖的部分。写错的标签或缺少的 @param，会在 -Xdoclint 下以警告的形式出现。准确的第一句话，加上对每个受检查异常或有文档说明的失败写一行 @throws，就能让页面在不打开源码的情况下也很有用。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "java-visibility-in-one-file",
+          "title": "一个文件内的可见性，以及完整的规则表",
+          "intro": "私有成员在顶层类之间受到强制保护；表格展示其他修饰符在跨包时允许什么。",
+          "language": "java",
+          "code": "/** Not public, so it is package-private: only classes in this package can see the class itself. */\nclass Vault {\n    private int secret = 7;\n    int packageLevel = 1;\n    protected int shared = 2;\n    public int open = 3;\n\n    int reveal() {\n        return secret;\n    }\n}\n\n/** A subclass. Inside one package it can use protected and package-level members. */\nclass Safe extends Vault {\n    int total() {\n        return shared + packageLevel + open;\n    }\n\n    // int bad() { return secret; }   // error: secret has private access in Vault\n}\n\npublic class Main {\n    /** Nested classes share their private members with the enclosing top-level class. */\n    static class Counter {\n        private int hidden = 5;\n    }\n\n    static final int CLASS = 1, PACKAGE = 2, SUBCLASS = 4, ANYONE = 8;\n\n    /** Who may use a member declared with each modifier (JLS 6.6), as a set of places. */\n    static int places(String modifier) {\n        switch (modifier) {\n            case \"private\":\n                return CLASS;\n            case \"(none)\":\n                return CLASS | PACKAGE;\n            case \"protected\":\n                return CLASS | PACKAGE | SUBCLASS;\n            default:\n                return CLASS | PACKAGE | SUBCLASS | ANYONE;\n        }\n    }\n\n    static String yesNo(int set, int place) {\n        return (set & place) != 0 ? \"yes\" : \"no\";\n    }\n\n    public static void main(String[] args) {\n        Vault vault = new Vault();\n        Safe safe = new Safe();\n        System.out.println(\"same package, package-private field: \" + vault.packageLevel);\n        System.out.println(\"same package, protected field: \" + vault.shared);\n        System.out.println(\"private field through a method: \" + vault.reveal());\n        // System.out.println(vault.secret);   // error: secret has private access in Vault\n        System.out.println(\"subclass uses inherited members: \" + safe.total());\n        System.out.println(\"nested private seen by the outer class: \" + new Counter().hidden);\n\n        System.out.println();\n        System.out.println(\"modifier   same class  same package  subclass elsewhere  anyone\");\n        String[] modifiers = {\"private\", \"(none)\", \"protected\", \"public\"};\n        for (String modifier : modifiers) {\n            int set = places(modifier);\n            System.out.println(String.format(\"%-10s %-11s %-13s %-19s %s\", modifier,\n                    yesNo(set, CLASS), yesNo(set, PACKAGE), yesNo(set, SUBCLASS), yesNo(set, ANYONE)));\n        }\n    }\n}\n",
+          "output": "same package, package-private field: 1\nsame package, protected field: 2\nprivate field through a method: 7\nsubclass uses inherited members: 6\nnested private seen by the outer class: 5\n\nmodifier   same class  same package  subclass elsewhere  anyone\nprivate    yes         no            no                  no\n(none)     yes         yes           no                  no\nprotected  yes         yes           yes                 no\npublic     yes         yes           yes                 yes\n",
+          "explanation": "一个文件不可能放进两个包，所以这个程序先展示它能展示的内容，再把其余的规则打印出来。Vault 和 Safe 是顶层类，没有写 public。这使它们成为包级私有的类，而 Main.java 里的所有类都属于同一个包。\n\nVault 的每个访问级别各有一个成员。Main 可以直接读取 packageLevel、shared 和 open，因为三个类在同一个包里。但它不能读取 secret。尝试读取的那一行被注释掉了，因为编译器会以“secret has private access in Vault”拒绝它。Main 只能通过方法 reveal() 取得这个值，这就是类给私有字段提供受控视图的办法。Safe 继承 Vault，把 shared、packageLevel 和 open 当作自己的成员来使用。\n\nCounter 展示了另一件事。它是带私有字段的嵌套类，而 Main 可以读取 counter.hidden。嵌套类和包围它的顶层类可以互相看到对方的私有成员。很多人会对此感到意外，而这在彼此独立的顶层类之间不会发生。\n\n现在把同样的想法分到不同的包里。把 public class Vault 放在 src/shop/vault/Vault.java，属于包 shop.vault。把 Main 放在 src/shop/app/Main.java，属于包 shop.app，并写 import shop.vault.Vault;。这个类必须是 public，其他包才能导入它。这时 Main 可以使用 open；但不能使用 packageLevel，因为它是包级私有成员；也不能使用 shared，因为 Main 不是子类。在 shop.app 中写的 class Safe extends Vault 可以使用 shared 和 open，但仍然不能使用 packageLevel 或 secret。\n\n最后一段打印完整的规则表。每个修饰符是一个允许使用该成员的“地点”集合，用位标志保存。private 只有同一个类。不写修饰符，增加同一个包。protected 再增加其他包里的子类。public 再增加所有人。每一行都包含上一行，所以表格是从右边开始逐步填满的。",
+          "walkthrough": [
+            "在一个类里声明每个访问级别的成员。",
+            "从同一个包的另一个类使用包级和 protected 成员。",
+            "通过方法访问私有字段；直接访问被注释掉，因为它无法通过编译。",
+            "展示嵌套类与外部类共享它的私有成员。",
+            "打印由位标志构建的、每个修饰符对应的使用者表。"
+          ],
+          "trace": {
+            "columns": [
+              "修饰符",
+              "同一个类",
+              "同一个包",
+              "其他包里的子类",
+              "任何人"
+            ],
+            "rows": [
+              [
+                "private",
+                "是",
+                "否",
+                "否",
+                "否"
+              ],
+              [
+                "（不写）",
+                "是",
+                "是",
+                "否",
+                "否"
+              ],
+              [
+                "protected",
+                "是",
+                "是",
+                "是",
+                "否"
+              ],
+              [
+                "public",
+                "是",
+                "是",
+                "是",
+                "是"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "class Vault { ... }",
+              "meaning": "没有 public 的顶层类，只在它所在的包内可见。"
+            },
+            {
+              "syntax": "protected int shared = 2;",
+              "meaning": "在同一个包以及子类中可见，即使子类在其他包里。"
+            },
+            {
+              "syntax": "class Safe extends Vault",
+              "meaning": "Safe 继承了 Vault 的非私有成员。"
+            },
+            {
+              "syntax": "static final int CLASS = 1, PACKAGE = 2, SUBCLASS = 4, ANYONE = 8;",
+              "meaning": "一条声明里的多个常量；每个常量是不同的一位，所以可以用 | 组合。"
+            },
+            {
+              "syntax": "switch (modifier) { case \"private\": ... }",
+              "meaning": "对 String 的 switch 会选择文本匹配的分支。"
+            }
+          ]
+        },
+        {
+          "id": "java-design-to-diagram-javadoc",
+          "title": "从设计到类图和 Javadoc",
+          "intro": "一个接口、一个抽象类、几个子类和一个带上界的泛型类，附有文档注释。",
+          "language": "java",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\n/**\n * Something that can describe itself in one line.\n *\n * @since 1.0\n */\ninterface Describable {\n    /**\n     * Builds the description.\n     *\n     * @return a one-line description, never {@code null}\n     */\n    String describe();\n}\n\n/**\n * A flat shape with a whole-number area.\n *\n * <p>Subclasses supply {@link #area()}; the description is built here once.\n *\n * @see Rect\n * @see Triangle\n */\nabstract class Shape implements Describable {\n    private final String name;\n\n    /**\n     * Creates a shape.\n     *\n     * @param name the label used in descriptions, not {@code null}\n     */\n    protected Shape(String name) {\n        this.name = name;\n    }\n\n    /**\n     * Computes the area.\n     *\n     * @return the area in square units, never negative\n     */\n    public abstract int area();\n\n    @Override\n    public String describe() {\n        return name + \" area=\" + area();\n    }\n}\n\n/** A rectangle. */\nclass Rect extends Shape {\n    private final int width;\n    private final int height;\n\n    /**\n     * Creates a rectangle.\n     *\n     * @param width  the width in units, at least 1\n     * @param height the height in units, at least 1\n     * @throws IllegalArgumentException if either side is less than 1\n     */\n    Rect(int width, int height) {\n        this(\"rect\", width, height);\n    }\n\n    /**\n     * Lets a subclass choose its own label.\n     *\n     * @param name   the label used in descriptions\n     * @param width  the width in units, at least 1\n     * @param height the height in units, at least 1\n     */\n    protected Rect(String name, int width, int height) {\n        super(name);\n        if (width < 1 || height < 1) {\n            throw new IllegalArgumentException(\"sides must be at least 1\");\n        }\n        this.width = width;\n        this.height = height;\n    }\n\n    @Override\n    public int area() {\n        return width * height;\n    }\n}\n\n/** A square is a rectangle whose sides match. */\nclass Square extends Rect {\n    Square(int side) {\n        super(\"square\", side, side);\n    }\n}\n\n/** A triangle given by its base and height. */\nclass Triangle extends Shape {\n    private final int base;\n    private final int height;\n\n    Triangle(int base, int height) {\n        super(\"triangle\");\n        this.base = base;\n        this.height = height;\n    }\n\n    @Override\n    public int area() {\n        return base * height / 2;\n    }\n}\n\n/**\n * A list of shapes of one kind.\n *\n * @param <T> the kind of shape stored; a Catalog&lt;Rect&gt; holds only rectangles\n */\nclass Catalog<T extends Shape> {\n    private final List<T> items = new ArrayList<T>();\n\n    /**\n     * Adds an item.\n     *\n     * @param item the shape to store\n     */\n    void add(T item) {\n        items.add(item);\n    }\n\n    /**\n     * Finds the item with the largest area.\n     *\n     * @return the largest item, or {@code null} when the catalog is empty\n     */\n    T largest() {\n        T best = null;\n        for (T item : items) {\n            if (best == null || item.area() > best.area()) {\n                best = item;\n            }\n        }\n        return best;\n    }\n\n    int size() {\n        return items.size();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Catalog<Shape> shapes = new Catalog<Shape>();\n        shapes.add(new Rect(3, 4));\n        shapes.add(new Triangle(6, 5));\n        shapes.add(new Square(4));\n        System.out.println(\"catalog holds \" + shapes.size() + \" shapes\");\n        System.out.println(\"largest: \" + shapes.largest().describe());\n\n        Catalog<Rect> rects = new Catalog<Rect>();\n        rects.add(new Rect(2, 9));\n        rects.add(new Square(3));\n        Rect widest = rects.largest();\n        System.out.println(\"largest rect: \" + widest.describe());\n\n        Describable d = new Square(5);\n        System.out.println(\"through the interface: \" + d.describe());\n        try {\n            new Rect(0, 3);\n        } catch (IllegalArgumentException ex) {\n            System.out.println(\"rejected: \" + ex.getMessage());\n        }\n        Catalog<Triangle> empty = new Catalog<Triangle>();\n        System.out.println(\"empty catalog largest: \" + empty.largest());\n    }\n}\n",
+          "output": "catalog holds 3 shapes\nlargest: square area=16\nlargest rect: rect area=18\nthrough the interface: square area=25\nrejected: sides must be at least 1\nempty catalog largest: null\n",
+          "explanation": "这个程序就是上面那幅图中的设计，用代码写出来。Describable 是接口。Shape 是实现它的抽象类，它有私有字段 name、受保护的构造方法和抽象方法 area()。Rect 和 Triangle 继承 Shape。Square 继承 Rect。Catalog<T extends Shape> 是泛型类，它的类型参数必须是 Shape 或 Shape 的子类。\n\n对照图来读代码。图中的每一条线，都能在源码里找到：虚线箭头是 implements，带空心三角的实线箭头是 extends，成员前面的符号是访问修饰符，{abstract} 就是关键字 abstract。泛型类把它的上界写在名字里。\n\nCatalog<Shape> 可以接收 Rect、Triangle 和 Square。它们的面积是 12、15 和 16，所以最大的是正方形。Catalog<Rect> 只接收矩形，largest() 返回的就是 Rect，不需要强制转换。通过 Describable 变量调用时，运行的仍是 Shape 里的 describe()，它调用真实对象的 area()。Rect 用 IllegalArgumentException 拒绝为 0 的边长，而空的 catalog 让 largest() 返回 null，和它的文档说的一样。\n\n以 /** 开头的注释是 Javadoc 注释。用 @param 说明每个参数，@return 说明结果，@throws 说明异常和它的触发条件，@see 指向相关的类，@since 说明版本，{@code ...} 在文字中写代码，{@link ...} 创建链接。命令 javadoc -package -d docs Main.java 会把它们生成 HTML 参考文档。这里需要 -package 选项，因为默认只列出 public 和 protected 成员，而这里大多数类是包级私有的。javadoc 工具用 -Xdoclint:all 处理这个文件，没有报告任何问题。",
+          "walkthrough": [
+            "编写带文档注释的接口和抽象类。",
+            "继承抽象类两次，再继承其中一个子类一次。",
+            "声明带上界的泛型类，使它只接收各种形状。",
+            "用不同的类型参数使用同一份 Catalog 代码，看看编译器接受什么。",
+            "用有文档说明的异常拒绝错误输入，对空的 catalog 返回 null。"
+          ],
+          "trace": {
+            "columns": [
+              "图中的元素",
+              "Java 源码",
+              "在输出中的体现"
+            ],
+            "rows": [
+              [
+                "指向接口的虚线箭头",
+                "abstract class Shape implements Describable",
+                "through the interface: square area=25"
+              ],
+              [
+                "带空心三角的实线箭头",
+                "class Square extends Rect",
+                "largest: square area=16"
+              ],
+              [
+                "带上界的类型参数",
+                "class Catalog<T extends Shape>",
+                "Catalog<Rect> 返回 Rect"
+              ],
+              [
+                "抽象操作",
+                "public abstract int area();",
+                "每个子类各自提供"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "interface Describable { String describe(); }",
+              "meaning": "接口只列出没有方法体的方法；实现它的类必须提供这些方法。"
+            },
+            {
+              "syntax": "abstract class Shape implements Describable",
+              "meaning": "抽象类不能用 new 创建；它可以包含抽象方法。"
+            },
+            {
+              "syntax": "class Catalog<T extends Shape>",
+              "meaning": "T 代表由使用者选择的类型，但它必须是 Shape 或 Shape 的子类。"
+            },
+            {
+              "syntax": "Catalog<Rect> rects = new Catalog<Rect>();",
+              "meaning": "为这个变量把 T 固定为 Rect，于是 add 和 largest 都以矩形为对象。"
+            },
+            {
+              "syntax": "/** ... @param x ... @return ... */",
+              "meaning": "文档注释；工具读取它来生成 HTML 参考文档。"
+            }
           ]
         }
       ]

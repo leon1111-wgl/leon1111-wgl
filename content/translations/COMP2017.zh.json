@@ -3,7 +3,7 @@
   "title": "系统编程：C、进程与并发",
   "subtitle": "从一个 C 程序到并行系统，学会推理字节、资源归属和协作过程。",
   "description": "把 C 与系统编程拆成能够跟上的小步骤。从小程序开始，画清内存和资源所有权，再用文件、进程和线程完成实用工具。",
-  "coverage": "包含 24 章、57 份独立程序的 C11 与 POSIX 学习路径。六轮学习计划带你完成三个完整讲解的工程，逐步理解需求、接口、完整源码、调试与测试。深入分支可随时回看。",
+  "coverage": "包含 27 章、65 份独立程序的 C11 与 POSIX 学习路径。六轮学习计划带你完成三个完整讲解的工程，逐步理解需求、接口、完整源码、调试与测试。深入分支可随时回看。",
   "color": "#38bdf8",
   "prerequisites": [
     "掌握变量、循环和函数等基本编程知识。",
@@ -22,11 +22,13 @@
       "title": "C 对象与数据",
       "topics": [
         "representation-control",
+        "number-representation",
         "pointers-arrays",
         "strings-parsing",
         "structured-data",
         "file-streams",
         "allocation-ownership",
+        "memory-layout",
         "linked-structures",
         "callbacks"
       ],
@@ -37,6 +39,7 @@
       "topics": [
         "preprocessing",
         "compilation-linkage",
+        "makefiles-libraries",
         "signals",
         "process-fork",
         "exec-wait"
@@ -192,6 +195,332 @@
             "在数组声明所在位置推导元素数。",
             "每次更新后打印前缀不变式。",
             "比较返回值与未改变的调用者变量。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "number-representation",
+      "title": "进制转换、ASCII、二进制小数与位域",
+      "story": "想象走廊里有一排八个灯开关。第一个开关控制 1 盏灯，下一个控制 2 盏，然后是 4、8、16、32、64 和 128 盏。要正好点亮 202 盏灯，就打开加起来等于 202 的几组：128 + 64 + 8 + 2。用开和关写下来，就是 11001010。这一排开关就是一个二进制数，每个开关是一位（bit）。\n\n一次读八个开关很累，所以人们把它们分成两组，每组四个。四个开关有 16 种图案，一个十六进制数字（0 到 9，再加 A 到 F）就能给每种图案命名。计算机其实也看不到字母，它为每个字符存一个数字，就像剧院里每个座位都有编号，字母 K 就是 75 号座位。\n\n再想象一套只有二分之一、四分之一、八分之一……的量杯。你可以精确量出四分之三，但无论加多少小杯子，都量不出精确的十分之一。这就是有些十进制小数在二进制里不精确的原因。最后，想象一张很小的储物柜标签，要写下日、月、年。你给每项信息分几个开关。C 语言的位域（bit-field）就是替你做这件事。",
+      "principle": "在 B 进制中，从右边数起、位置为 i（从 0 开始）的数字，其值等于该数字乘以 B 的 i 次方。二进制只用数字 0 和 1。十六进制用 0 到 9，再加 A 到 F，其中 A 是 10，F 是 15。二进制转十进制：把为 1 的位所对应的 2 的幂加起来。十进制转二进制：不断除以 2，写下每个余数，直到商为 0。第一个余数是最低位，所以要从最后一个余数读到第一个。二进制和十六进制互转：从右边起每四位分成一组，每组对应一个十六进制数字。C 语言中，开头的 0x 表示十六进制；只有一个 0 开头表示八进制，所以 010 等于 8。0b 前缀不属于 C11。\n\nASCII 给常见字符各分配一个 0 到 127 的编码。数字 '0' 到 '9' 依次是 48 到 57。大写字母 'A' 到 'Z' 是 65 到 90，小写字母是 97 到 122，所以小写字母等于大写字母加 32，也就是单独一位 0x20。char 只是一个小整数，所以 ch - '0' 能把数字字符变成它的数值。C 保证数字字符是连续的，但不保证字母也连续。UTF-8 等其他编码对这些字符沿用 ASCII 编码，其余字符则用更多字节。\n\n小数点之后，位置 i 的值是该数字乘以 2 的 -i 次方，所以 0.75 等于 1/2 + 1/4，二进制写成 0.11。最简分数 p/q 的二进制展开是有限的，当且仅当 q 是 2 的幂。1/10 的分母含有因子 5，所以它的二进制展开会无限重复：0.0001100110011... double 保存一个符号、一个指数和 52 位尾数，因此必须把这串图案截断并舍入。0.1 存下来的值很接近 0.1，但并不相等。因此 0.1 + 0.2 == 0.3 为假。比较 double 要用容差，或者把金额保存为整数分。\n\n位域成员写成 unsigned name : width;，在结构体里占 width 位。无符号位域的值按 2 的 width 次方取模。位域不能取地址。字段的顺序、填充以及字段能否跨越存储单元，都由实现决定；普通 int 字段是否有符号也是如此。位域适合程序内部的紧凑数据。需要精确布局时，例如文件或网络格式，就用固定宽度的无符号类型加移位和掩码自己构造这个值。",
+      "formula": "位 b7 ... b0 表示的数  : 对 b(i) x 2^i 求和\n十进制转二进制        : 反复 n = n / 2（取整），写下 n % 2，\n                        到 0 为止，再从最后一个读到第一个\n一个十六进制数字      = 4 位：0xF = 1111（二进制）= 15\n二进制转十六进制      : 从右边起每 4 位一组\nASCII                 : 'a' - 'A' = 32 ；ch - '0' = 数字的值\n小数部分的位          : 0.b1 b2 b3 ... = 对 b(i) x 2^-i 求和\np/q 的二进制展开有限  <=> 约分后的 q 是 2 的幂\n宽 w、移位 s 的字段   : mask = (1u << w) - 1\n                        value = (word >> s) & mask\n置位 / 清除 / 翻转 k  : x |= 1u << k ; x &= ~(1u << k) ; x ^= 1u << k",
+      "symbols": "b(i) 是位置 i 上的那一位，位置 0 是最右边的一位。“求和”表示把每个 i 对应的项加起来。“n / 2（取整）”指舍去小数部分的整数除法，n % 2 是余数，只会是 0 或 1。符号 <=> 读作“当且仅当”。在字段公式中，w 是字段的位数，s 是它最低位所在的位置，<< 和 >> 把位向左、向右移动。这些位操作假定使用足够宽的无符号类型。\n\n二进制小数的规则讨论的是“能否精确存储”。double 可能打印成 0.1，那是因为打印出来的文字经过了舍入，存下来的值并不恰好等于十分之一。",
+      "example": "把 202 转成二进制。逐步相除得到的余数依次是 0、1、0、1、0、0、1、1（被除的数依次是 202、101、50、25、12、6、3、1）。从最后一个读到第一个：11001010。用 2 的幂检查：128 + 64 + 8 + 2 = 202。每四位一组：1100 是 C，1010 是 A，所以值是 0xCA。在 ASCII 中，K 是 75 = 0x4B，k 是 107 = 0x6B，正好大 32。字符 '7' 的编码是 55，所以 '7' - '0' 等于 7。\n\n再看小数。3/4 的分母 4 是 2 的幂，所以它在二进制中恰好是 0.11。1/10 的分母 10 = 2 x 5，因子 5 使二进制位不断重复，所以 double 只能存一个相近的数：0x3FB999999999999A。因此 0.1 + 0.2 打印出来是 0.30000000000000004。\n\n最后看位域。把日期 2025-11-05 打包进 16 位。年份偏移是 2025 - 1980 = 45，7 位写成 0101101。月份 11 用 4 位写成 1011，日 5 用 5 位写成 00101。拼在一起是 0101 1011 0110 0101，即 0x5B65 = 23397。",
+      "pitfall": "C 中数字前面多写一个 0 就变成八进制：010 等于 8，不是 10。在你的机器上能用的位域结构体，换一个编译器位的顺序就可能不同，所以不要把它直接写进文件或套接字。当你期望得到精确的十进制结果时，也不要用 == 比较计算得到的 double。",
+      "check": {
+        "question": "把 0xB7 写成二进制和十进制。double 能精确存储 0.2 吗？",
+        "answer": "B 是 1011，7 是 0111，所以 0xB7 是 10110111，等于 128 + 32 + 16 + 4 + 2 + 1 = 183。不能：0.2 就是 1/5，5 不是 2 的幂，它的二进制展开会重复，double 只能存下一个很接近的数。"
+      },
+      "glossary": [
+        {
+          "term": "位（bit）",
+          "meaning": "一个二进制数字，0 或 1；存储信息的最小单位。"
+        },
+        {
+          "term": "十六进制数字",
+          "meaning": "0 到 9 和 A 到 F 之一；它代表一组四位。"
+        },
+        {
+          "term": "ASCII 编码",
+          "meaning": "代表一个常见字符的 0 到 127 之间的数。"
+        },
+        {
+          "term": "尾数",
+          "meaning": "浮点数中表示小数部分的位；double 保留其中 52 位。"
+        },
+        {
+          "term": "位域",
+          "meaning": "使用指定位数的结构体成员。"
+        },
+        {
+          "term": "掩码",
+          "meaning": "一个数，与它按位与时，其中为 1 的位决定保留哪些位。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "为什么要从最后一个余数读到第一个？",
+          "answer": "第一个余数是最低位，即个位。最后一个余数是最高位，所以要先写它。"
+        },
+        {
+          "question": "怎样一眼看出 1/10 在二进制里不精确？",
+          "answer": "它的最简分母是 10，含有因子 5。只有最简分母是 2 的幂时，二进制展开才会终止。"
+        },
+        {
+          "question": "位域为什么要声明为 unsigned？",
+          "answer": "普通 int 字段是否有符号取决于编译器。一位的有符号字段只能保存 0 和 -1。"
+        },
+        {
+          "question": "为什么 ch - '0' 对数字安全，而 ch - 'A' 对字母有风险？",
+          "answer": "C 保证数字字符是连续的，但不保证字母也连续，因为有些字符集在字母之间留有空位。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "先手算一遍，再让机器检查",
+          "body": "内存转储把字节显示成两位十六进制数字。如果你会手算转换，就能一眼把 48 65 6C 6C 6F 读成字母 H、e、l、l、o，因为 0x41 到 0x5A 是大写字母，0x61 到 0x7A 是小写字母。同样的能力还能帮你发现写错的 printf 格式，比如用 %d 打印指针。"
+        },
+        {
+          "title": "金额和计数要选用精确的类型",
+          "body": "把 19.99 美元保存为整数 1999 分。整数加法是精确的，许多价格相加的总和不会漂移。只在打印时才换算成美元。double 适合测量值，因为微小误差可以接受；比较时使用与数值大小相称的容差。"
+        },
+        {
+          "title": "位域用可移植性换取紧凑",
+          "body": "假设协议头的一个字节里有 4 位版本号和 4 位长度。两个编译器可能把位域放在这个字节的相反两端，于是线路上的字节就会不同。用 (version << 4) | length 构造这个字节，在任何地方结果都一样，还可以用测试检查确切的值。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "c-base-conversion-ascii",
+          "title": "像手算一样转换 202，并读出 ASCII 编码",
+          "intro": "程序在屏幕上做的事，和你在纸上做的一模一样。随后它把字符当成小整数来使用。",
+          "language": "c",
+          "code": "#include <stdio.h>\n\nstatic char hex_digit(unsigned value) {\n    return \"0123456789ABCDEF\"[value];\n}\n\n/* Turn n into binary by repeated division by 2, as you would on paper. */\nstatic void show_division(unsigned n) {\n    char digits[32];\n    int count = 0;\n    printf(\"convert %u\\n\", n);\n    while (n > 0) {\n        printf(\"  %u / 2 = %u remainder %u\\n\", n, n / 2, n % 2);\n        digits[count++] = (char)('0' + n % 2);\n        n /= 2;\n    }\n    printf(\"read the remainders from last to first: \");\n    for (int i = count - 1; i >= 0; i--)\n        putchar(digits[i]);\n    putchar('\\n');\n}\n\n/* Read a binary text left to right: double what you have, add the next bit. */\nstatic unsigned from_binary(const char *text) {\n    unsigned value = 0;\n    for (; *text != '\\0'; text++)\n        value = value * 2 + (unsigned)(*text - '0');\n    return value;\n}\n\nint main(void) {\n    show_division(202);\n\n    printf(\"group by four bits:\");\n    for (int shift = 4; shift >= 0; shift -= 4) {\n        unsigned nibble = (202u >> shift) & 0xFu;\n        printf(\" \");\n        for (int bit = 3; bit >= 0; bit--)\n            putchar((nibble >> bit) & 1u ? '1' : '0');\n        printf(\"=%c\", hex_digit(nibble));\n    }\n    printf(\"\\nso 202 is 0x%X\\n\", 202u);\n    printf(\"back to decimal: 11001010 -> %u\\n\", from_binary(\"11001010\"));\n\n    char upper = 'K';\n    char lower = 'k';\n    printf(\"'%c' = %d = 0x%X\\n\", upper, upper, (unsigned)upper);\n    printf(\"'%c' = %d = 0x%X\\n\", lower, lower, (unsigned)lower);\n    printf(\"difference = %d, so clearing bit 5 turns '%c' into '%c'\\n\",\n           lower - upper, lower, (char)(lower & ~0x20));\n    char digit = '7';\n    printf(\"'%c' = %d, and '%c' - '0' = %d\\n\", digit, digit, digit, digit - '0');\n    return 0;\n}\n",
+          "output": "convert 202\n  202 / 2 = 101 remainder 0\n  101 / 2 = 50 remainder 1\n  50 / 2 = 25 remainder 0\n  25 / 2 = 12 remainder 1\n  12 / 2 = 6 remainder 0\n  6 / 2 = 3 remainder 0\n  3 / 2 = 1 remainder 1\n  1 / 2 = 0 remainder 1\nread the remainders from last to first: 11001010\ngroup by four bits: 1100=C 1010=A\nso 202 is 0xCA\nback to decimal: 11001010 -> 202\n'K' = 75 = 0x4B\n'k' = 107 = 0x6B\ndifference = 32, so clearing bit 5 turns 'k' into 'K'\n'7' = 55, and '7' - '0' = 7\n",
+          "explanation": "show_division 就是把纸上的算法写成代码。每一轮循环除以 2，打印余数，并把余数保存成一个字符。余数是从最低位开始产生的，所以下一个循环要倒着打印。\n\n分组循环用移位和掩码每次取出四位。202 >> 4 等于 12，二进制是 1100，对应十六进制数字 C。低四位 202 & 0xF 是 1010，对应十六进制 A。所以 202 就是 0xCA。from_binary 做相反的事：每读一位，就把当前值乘以 2 再加上这一位，依次得到 1、3、6、12、25、50、101，最后是 202。\n\n最后几行把 char 当成小整数。'K' 是 75，'k' 是 107，相差 32，也就是单独一位 0x20。清除这一位，小写字母就变成大写。数字字符 '7' 的编码是 55，所以 '7' - '0' 得到数值 7。",
+          "walkthrough": [
+            "每一步都除以 2，并保留余数。",
+            "把余数从最后一个到第一个倒着打印，就得到二进制数。",
+            "把数值切成每四位一组，每组用一个十六进制数字命名。",
+            "用“乘以 2 再加一位”的办法，从二进制文本还原出十进制数。",
+            "把字符编码当作数字使用：比较大小写，并把数字字符变成它的数值。"
+          ],
+          "trace": {
+            "columns": [
+              "除之前的 n",
+              "n % 2（这一位）",
+              "n / 2（除之后的 n）"
+            ],
+            "rows": [
+              [
+                "202",
+                "0",
+                "101"
+              ],
+              [
+                "101",
+                "1",
+                "50"
+              ],
+              [
+                "50",
+                "0",
+                "25"
+              ],
+              [
+                "25",
+                "1",
+                "12"
+              ],
+              [
+                "12",
+                "0",
+                "6"
+              ],
+              [
+                "6",
+                "0",
+                "3"
+              ],
+              [
+                "3",
+                "1",
+                "1"
+              ],
+              [
+                "1",
+                "1",
+                "0"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "\"0123456789ABCDEF\"[value]",
+              "meaning": "对字符串字面量取下标会得到其中一个字符，所以下标 10 得到 A。"
+            },
+            {
+              "syntax": "(202u >> shift) & 0xFu",
+              "meaning": "先把需要的位移到最右边，再只保留低四位。"
+            },
+            {
+              "syntax": "printf(\"0x%X\", n)",
+              "meaning": "%X 用大写十六进制打印无符号数；前面的 0x 只是普通文本。"
+            },
+            {
+              "syntax": "(unsigned)(*text - '0')",
+              "meaning": "减去 '0' 之后，数字字符 '1' 就变成数值 1。"
+            },
+            {
+              "syntax": "for (; *text != '\\0'; text++)",
+              "meaning": "沿着字符串一直走到结尾的零字节，不需要计数变量。"
+            }
+          ]
+        },
+        {
+          "id": "c-binary-fractions",
+          "title": "为什么 0.1 在二进制里不精确",
+          "intro": "先用整数把分数展开成二进制位，再看看 double 内部是什么样。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdint.h>\n#include <string.h>\n\nstatic unsigned gcd(unsigned a, unsigned b) {\n    while (b != 0) {\n        unsigned r = a % b;\n        a = b;\n        b = r;\n    }\n    return a;\n}\n\n/* A fraction ends in binary exactly when its reduced denominator is a power of two. */\nstatic int ends_in_binary(unsigned p, unsigned q) {\n    q /= gcd(p, q);\n    return (q & (q - 1)) == 0;\n}\n\n/* Produce binary digits of num/den by doubling the remainder, like long division. */\nstatic void expand(unsigned num, unsigned den, int digits) {\n    printf(\"%u/%u in binary: 0.\", num, den);\n    unsigned remainder = num;\n    for (int i = 0; i < digits && remainder != 0; i++) {\n        remainder *= 2;\n        putchar(remainder >= den ? '1' : '0');\n        if (remainder >= den)\n            remainder -= den;\n    }\n    printf(\"%s\\n\", remainder == 0 ? \"  (stops)\" : \"...  (keeps going)\");\n}\n\nint main(void) {\n    static const unsigned tests[][2] = {{3, 4}, {7, 8}, {1, 10}, {1, 5}, {1, 3}};\n    for (size_t i = 0; i < sizeof tests / sizeof tests[0]; i++)\n        printf(\"%u/%u ends in binary: %s\\n\", tests[i][0], tests[i][1],\n               ends_in_binary(tests[i][0], tests[i][1]) ? \"yes\" : \"no\");\n\n    expand(3, 4, 12);\n    expand(1, 10, 16);\n\n    printf(\"remainders for 1/10 while doubling:\");\n    unsigned r = 1;\n    for (int i = 0; i < 9; i++) {\n        printf(\" %u\", r);\n        r = (r * 2) % 10;\n    }\n    printf(\"\\n\");\n\n    double tenth = 0.1;\n    uint64_t bits;\n    memcpy(&bits, &tenth, sizeof bits);\n    printf(\"0.1 as a double: 0x%016llX\\n\", (unsigned long long)bits);\n    printf(\"exponent field %llu, stored mantissa 0x%013llX\\n\",\n           (unsigned long long)((bits >> 52) & 0x7FF),\n           (unsigned long long)(bits & 0xFFFFFFFFFFFFFull));\n\n    double sum = 0.1 + 0.2;\n    double diff = sum - 0.3;\n    if (diff < 0)\n        diff = -diff;\n    printf(\"0.1 + 0.2 == 0.3 ? %s\\n\", sum == 0.3 ? \"yes\" : \"no\");\n    printf(\"within 1e-9 of 0.3 ? %s\\n\", diff < 1e-9 ? \"yes\" : \"no\");\n    printf(\"%.17g\\n\", sum);\n    printf(\"10 + 20 cents == 30 cents ? %s\\n\", 10 + 20 == 30 ? \"yes\" : \"no\");\n    return 0;\n}\n",
+          "output": "3/4 ends in binary: yes\n7/8 ends in binary: yes\n1/10 ends in binary: no\n1/5 ends in binary: no\n1/3 ends in binary: no\n3/4 in binary: 0.11  (stops)\n1/10 in binary: 0.0001100110011001...  (keeps going)\nremainders for 1/10 while doubling: 1 2 4 8 6 2 4 8 6\n0.1 as a double: 0x3FB999999999999A\nexponent field 1019, stored mantissa 0x999999999999A\n0.1 + 0.2 == 0.3 ? no\nwithin 1e-9 of 0.3 ? yes\n0.30000000000000004\n10 + 20 cents == 30 cents ? yes\n",
+          "explanation": "ends_in_binary 先用最大公约数约分，再判断分母是不是 2 的幂。2 的幂只有一个 1 位，所以 q & (q - 1) 等于 0。3/4 和 7/8 通过，1/10、1/5 和 1/3 不通过。\n\nexpand 在二进制下做长除法：把余数乘以 2，如果达到分母，这一位就是 1，并减去分母。3/4 的余数在两位之后变成 0，所以结果恰好是 0.11。1/10 的余数依次是 1、2、4、8、6、2、4、8、6。有余数重新出现了，所以二进制位会一直重复：0.0001100110011...\n\ndouble 只保留 52 位尾数，所以无穷的重复图案必须被截断并舍入。memcpy 把 0.1 的八个字节复制进一个 64 位整数，我们就能直接看到它们。指数字段 1019 表示 2 的 1019 - 1023 次方，也就是 2 的 -4 次方。尾数 999999999999A 是重复图案 1001，并在最后一位向上舍入。所以存下来的数比 0.1 略大。0.1 加 0.2 的结果比最接近 0.3 的 double 大一格，因此 == 判断为否，而带容差的判断为是。用整数保存整分，就可以避开这个问题。",
+          "walkthrough": [
+            "先约分，再判断分母是否为 2 的幂。",
+            "用“余数乘以 2”产生二进制位，并留意是否有余数重复出现。",
+            "把 double 复制进 64 位整数，并打印它的原始字段。",
+            "分别用精确比较和带容差的比较，把和与 0.3 对照。",
+            "说明用整数表示的分可以精确相加。"
+          ],
+          "trace": {
+            "columns": [
+              "余数",
+              "乘以 2",
+              "下一位",
+              "之后的余数"
+            ],
+            "rows": [
+              [
+                "1",
+                "2",
+                "0",
+                "2"
+              ],
+              [
+                "2",
+                "4",
+                "0",
+                "4"
+              ],
+              [
+                "4",
+                "8",
+                "0",
+                "8"
+              ],
+              [
+                "8",
+                "16",
+                "1",
+                "6"
+              ],
+              [
+                "6",
+                "12",
+                "1",
+                "2"
+              ],
+              [
+                "2",
+                "4",
+                "0",
+                "4（2、4、8、6 的循环开始重复）"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "(q & (q - 1)) == 0",
+              "meaning": "当 q 只有一个 1 位，也就是 q 是 2 的幂时，才为真。"
+            },
+            {
+              "syntax": "memcpy(&bits, &tenth, sizeof bits)",
+              "meaning": "把 double 的字节复制进整数，既能查看内容，又避免有风险的指针强制转换。"
+            },
+            {
+              "syntax": "uint64_t",
+              "meaning": "正好 64 位的无符号整数，在 stdint.h 中声明。"
+            },
+            {
+              "syntax": "%016llX with (unsigned long long)",
+              "meaning": "把 64 位数值打印成补零的 16 位十六进制；强制转换让类型与格式匹配。"
+            },
+            {
+              "syntax": "%.17g",
+              "meaning": "最多打印 17 位有效数字，足以区分任意两个 double。"
+            },
+            {
+              "syntax": "sizeof tests / sizeof tests[0]",
+              "meaning": "用整张表的大小除以一行的大小，得到行数。"
+            }
+          ]
+        },
+        {
+          "id": "c-bit-fields-and-masks",
+          "title": "用位域和移位打包一个日期",
+          "intro": "三个小数共用 16 位；对比编译器决定的布局和你自己控制的布局。",
+          "language": "c",
+          "code": "#include <stdio.h>\n\n/* Three small numbers share 7 + 4 + 5 = 16 bits. */\nstruct PackedDate {\n    unsigned year : 7;   /* years since 1980, 0..127 */\n    unsigned month : 4;  /* 0..15, we use 1..12 */\n    unsigned day : 5;    /* 0..31, we use 1..31 */\n};\n\n/* Exact layout chosen by us, with shifts and masks:\n   bits 15..9 year, bits 8..5 month, bits 4..0 day. */\nstatic unsigned pack(unsigned year, unsigned month, unsigned day) {\n    return (year << 9) | (month << 5) | day;\n}\n\nstatic void print_bits16(unsigned word) {\n    for (int bit = 15; bit >= 0; bit--) {\n        putchar((word >> bit) & 1u ? '1' : '0');\n        if (bit % 4 == 0 && bit != 0)\n            putchar(' ');\n    }\n}\n\nint main(void) {\n    struct PackedDate date;\n    date.year = 45;\n    date.month = 11;\n    date.day = 5;\n    printf(\"bit-field read back: year=%u month=%u day=%u\\n\", date.year, date.month, date.day);\n\n    unsigned word = pack(45, 11, 5);\n    printf(\"packed word: 0x%04X = \", word);\n    print_bits16(word);\n    printf(\"\\n\");\n\n    unsigned year = (word >> 9) & 0x7Fu;\n    unsigned month = (word >> 5) & 0xFu;\n    unsigned day = word & 0x1Fu;\n    printf(\"unpacked with masks: year=%u month=%u day=%u\\n\", year, month, day);\n\n    unsigned too_big = 17;\n    date.month = too_big;\n    printf(\"stored 17 in a 4-bit field, read back %u\\n\", date.month);\n\n    unsigned flags = 0;\n    flags |= 1u << 2;\n    flags |= 1u << 0;\n    printf(\"flags after setting bits 2 and 0: %u\\n\", flags);\n    printf(\"bit 1 set? %s\\n\", (flags & (1u << 1)) ? \"yes\" : \"no\");\n    flags &= ~(1u << 2);\n    printf(\"flags after clearing bit 2: %u\\n\", flags);\n    flags ^= 1u << 3;\n    printf(\"flags after toggling bit 3: %u\\n\", flags);\n    return 0;\n}\n",
+          "output": "bit-field read back: year=45 month=11 day=5\npacked word: 0x5B65 = 0101 1011 0110 0101\nunpacked with masks: year=45 month=11 day=5\nstored 17 in a 4-bit field, read back 1\nflags after setting bits 2 and 0: 5\nbit 1 set? no\nflags after clearing bit 2: 1\nflags after toggling bit 3: 9\n",
+          "explanation": "带位域的结构体给三个很小的数起了名字，它们共用 16 位：7 位表示 1980 年以来的年数，4 位表示月份，5 位表示日。你可以像普通成员一样读写 date.month，移位和掩码由编译器代劳。\n\n每个字段放在存储单元的什么位置，也由编译器决定，所以结构体本身不能告诉你位的顺序。pack() 则亲手固定布局：年在第 15 到 9 位，月在第 8 到 5 位，日在第 4 到 0 位。于是 45 << 9 是 23040，11 << 5 是 352，再加上日 5，总和是 23397，即 0x5B65，写成二进制是 0101 1011 0110 0101。任何机器都能用同样的掩码把这个字拆开：0x7F 保留 7 位，0xF 保留 4 位，0x1F 保留 5 位。\n\n把 17 存进四位字段，只会保留低四位。17 对 16 取余得 1，运行时没有任何提示。最后一段展示四种日常的位操作：用 | 置位，用 & 测试，用 & ~ 清除，用 ^ 翻转。",
+          "walkthrough": [
+            "在冒号后写宽度，声明位域成员。",
+            "用移位和按位或，把三个值打包进一个 16 位的字。",
+            "右移后用宽度与字段一致的掩码，把值取出来。",
+            "观察过大的值会按“2 的宽度次方”取模回绕。",
+            "对标志字的单个位做置位、测试、清除和翻转。"
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "表达式",
+              "值"
+            ],
+            "rows": [
+              [
+                "年份部分",
+                "45 << 9",
+                "23040"
+              ],
+              [
+                "月份部分",
+                "11 << 5",
+                "352"
+              ],
+              [
+                "日部分",
+                "5",
+                "5"
+              ],
+              [
+                "相加",
+                "23040 | 352 | 5",
+                "23397 = 0x5B65"
+              ],
+              [
+                "取出月份",
+                "(0x5B65 >> 5) & 0xF",
+                "11"
+              ],
+              [
+                "溢出",
+                "把 17 存进 4 位",
+                "1"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "unsigned month : 4;",
+              "meaning": "声明一个占 4 位的成员。使用 unsigned，值就不会是负数。"
+            },
+            {
+              "syntax": "(word >> 5) & 0xFu",
+              "meaning": "先把字段移到最右边，再只保留与其宽度相同的位数。"
+            },
+            {
+              "syntax": "flags |= 1u << 2",
+              "meaning": "置位第 2 位：造一个只有该位为 1 的字，再按位或进去。"
+            },
+            {
+              "syntax": "flags &= ~(1u << 2)",
+              "meaning": "清除第 2 位：把单位字取反，使其余位都是 1，再按位与。"
+            },
+            {
+              "syntax": "flags ^= 1u << 3",
+              "meaning": "翻转第 3 位：异或只翻转该位，其余位不变。"
+            }
           ]
         }
       ]
@@ -1026,6 +1355,309 @@
       ]
     },
     {
+      "id": "memory-layout",
+      "title": "进程内存布局：栈、堆、数据段、bss 段与代码段",
+      "story": "想象一家繁忙的印刷店。门口有一根穿着任务托盘的立柱。新托盘放在最上面，只有最上面的托盘可以处理。任务做完，托盘被取走，下面的托盘就露出来。这根立柱就是调用栈。店后面是一间有编号货架的储藏室。店员按需租用货架，顺序不限，而且谁租的货架就必须由谁归还。这间储藏室就是堆。\n\n墙上挂着开店时就刷好的固定标牌。有些标牌上已经写了内容，它们是数据段。有些是空白板，一开始全是零，它们是 bss 段。操作手册被固定在桌上，谁也不能往里面写字，这就是代码段（text），机器码就放在这里。\n\n只有大家画法一致，画出来的店面图才有用。所以我们约定一套画法：低地址在下，高地址在上，每个方框都标注清楚，用箭头表示东西往哪个方向增长。",
+      "principle": "一个运行中的 C 程序有五个主要区域。代码段（text）保存各个函数的机器码。它是只读的，同一个程序的多次运行可以共享它。字符串字面量通常放在紧挨着它的只读区域，所以修改字面量是未定义行为。数据段（data）保存初始值不为零的全局变量和静态变量，例如 int limit = 7;。bss 段保存初始值为零或没有初始化的全局变量和静态变量。程序文件里只记录它们的总大小，系统在启动时把它们清零。堆保存 malloc、calloc 和 realloc 分配的内存，直到调用 free 才结束，通常向高地址方向增长。栈为每个活动的函数调用保存一个帧。帧里有参数、局部变量、一些保存的寄存器和返回地址。在 x86-64 和 ARM64 等常见系统上，栈向低地址方向增长。调用时压入一个帧，返回时弹出。下一次调用会重用同样的字节，所以指向旧局部变量的指针是悬空的。\n\n我们的画法约定如下。第一，低地址在下，高地址在上，因此代码段在最下面，栈在最上面。第二，每个帧画一个方框，标上函数名和大小，最新的帧放在最低处。第三，把方框最低字节的地址写在它下面那条线上。第四，用箭头表示增长方向：栈向下，堆向上。第五，指针画成从指针所在方框指向目标方框的箭头。这只是一个模型。真实的布局由操作系统和编译器决定，地址随机化还会让它每次运行都不同。\n\n栈有固定的大小上限，在 Linux 上常见的是 8 MiB。递归太深，或者局部数组特别大，都会把它耗尽。下一次压栈就会越过边界，撞上保护页，系统用段错误终止程序。这就是栈溢出。解决办法是限制递归深度、把递归改成循环，或者把大缓冲区放到堆上。\n\n栈破坏则是另一回事。局部变量彼此相邻，也紧挨着保存的返回地址。代码有好几种办法写过局部数组的末尾：使用 gets、没有检查的 strcpy、带 %s 的 scanf，或者循环边界写错。多出来的字节会覆盖邻居：先是其他局部变量，然后是保存的帧指针和返回地址。函数返回时，处理器会跳到那个地址里现在存放的位置。出错会让程序崩溃，而攻击者可能会选定那个值。栈保护机制在返回地址前面放一个秘密的金丝雀值，返回时检查它。不可执行栈和地址随机化会让攻击更难。它们只是减轻漏洞的危害。根本的办法是永远不要写入超过缓冲区容量的字节：传递大小，使用 snprintf 和 fgets，并先检查长度。",
+      "formula": "高地址\n+------------------------------+  栈顶\n| main     帧                  |\n| f        帧                  |  最新的帧在最低处\n+------------------------------+  <- 栈指针\n|   v 栈向下增长               |\n|   （未使用的空间）           |\n|   ^ 堆向上增长               |\n+------------------------------+  <- 堆末端\n| 堆：malloc 分配的块          |\n+------------------------------+\n| bss   （清零）               |\n| data  （已初始化）           |\n| text  （代码，只读）         |\n+------------------------------+\n低地址\n\n帧大小   = 局部变量 + 保存的寄存器 + 返回地址（+ 填充）\n最大深度 = 栈上限 / 帧大小\n栈破坏   = 写入对象的字节数 > 该对象的大小",
+      "symbols": "栈上限是系统允许栈使用的字节数。帧大小是一次调用需要的字节数。两者相除只能得到大致的深度，因为 main 和库函数已经用掉了一部分栈，而且编译器会把帧大小向上取整到 16 的倍数。关于栈破坏的那一行不是计算结果的公式，它说明的是漏洞的成因：任何越过起始对象末尾的写入。\n\n图中展示的是常见系统上的典型布局，它是教学模型。帧内局部变量的顺序、增长方向，以及各区域的确切位置，在不同的系统和编译器上可能不同。",
+      "example": "假设一个递归函数每帧 64 字节，栈上限是 8 MiB，即 8388608 字节。那么 8388608 / 64 = 131072，函数大约能递归 131000 层，栈才会用完。如果每帧是 48 字节，上限是 174762 层。局部数组 int big[3000000] 需要 3000000 x 4 = 12000000 字节，超过整个栈，所以第一次调用这个函数就会失败。同样大小的数组用 malloc 分配则没有问题。\n\n再看一个小程序。main（64 字节）调用 read_line（48 字节），read_line 向 malloc 要 100 字节，然后调用 parse（32 字节）。栈顶是 0x7FFF0000 时，栈指针依次变成 0x7FFEFFC0、0x7FFEFF90、0x7FFEFF70。parse 和 read_line 返回后，指针回到 0x7FFEFFC0，但那个 100 字节的堆块还在。如果 main 从未拿到它的地址，这个块就泄漏了。\n\n再看栈破坏。用 strcpy 把 \"NoahIrisJack\" 复制进 char name[8]。这段文本需要 12 + 1 = 13 字节。前 8 个字节放得下，另外 5 个字节会落在缓冲区后面的任何东西上。",
+      "pitfall": "不要返回局部变量的地址，它的帧会被下一次调用重用。保存在局部变量里的指针会随帧一起消失，但它指向的堆块不会，所以忘了 free 就是泄漏。也不要把这幅图当成保证：地址、增长方向和局部变量的顺序，都取决于系统和编译器。",
+      "check": {
+        "question": "一个递归函数每帧 64 字节。在 8 MiB 的栈上大约能递归多深？有什么办法能让很大的输入也不溢出？",
+        "answer": "8388608 / 64 = 131072 层，实际会略少一些，因为 main 和库代码也占用一部分栈。可以加一个深度上限，超过时返回错误；或者把递归改写成循环。"
+      },
+      "glossary": [
+        {
+          "term": "栈帧",
+          "meaning": "栈内存中的一块，保存一次调用的参数、局部变量和返回地址。"
+        },
+        {
+          "term": "栈指针",
+          "meaning": "保存最新栈帧最低字节地址的寄存器。"
+        },
+        {
+          "term": "堆",
+          "meaning": "用 malloc、calloc 或 realloc 获得的内存，直到被释放才结束。"
+        },
+        {
+          "term": "bss 段",
+          "meaning": "存放初始为零的全局变量和静态变量的区域；文件里只记录它的大小。"
+        },
+        {
+          "term": "栈金丝雀值",
+          "meaning": "放在返回地址之前的秘密值，函数返回前会检查它。"
+        },
+        {
+          "term": "保护页",
+          "meaning": "紧挨栈末尾的一页不可访问内存；一碰到它，程序就会被终止。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "函数内部的 static int hits = 0; 存放在哪里，存活多久？",
+          "answer": "它存放在 bss 段，在程序整个运行期间都存在，虽然只有这个函数能看到它的名字。初始值非零的 static，例如 static int limit = 7;，则存放在数据段。"
+        },
+        {
+          "question": "为什么函数返回之后，指向其局部变量的指针可能是错的？",
+          "answer": "返回时帧被弹出。下一次调用可能把新帧压在同样的字节上，旧地址里现在放的是别的东西。"
+        },
+        {
+          "question": "既然栈这么便宜，为什么还需要堆？",
+          "answer": "栈空间有限，而且其中的对象在调用返回时就消失。堆用于运行时才知道大小的对象、很大的对象，以及必须比创建它们的调用活得更久的对象。"
+        },
+        {
+          "question": "栈金丝雀值能发现什么，又可能漏掉什么？",
+          "answer": "它能发现在冲向返回地址的路上盖过金丝雀值的写入。它可能漏掉只破坏金丝雀值下方相邻变量的写入，或者跳过它的写入。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "先画图，再调试",
+          "body": "程序崩溃时，先问出错的地址属于哪个区域。接近零的地址通常是空指针。刚好落在栈上限下面的地址说明栈溢出。落在已释放堆块里的地址说明释放后使用。每次都用同一套画法画图，这些情况就很容易区分。"
+        },
+        {
+          "title": "根据生命周期和大小决定对象放在哪里",
+          "body": "只在一次调用期间需要的小对象，适合放在局部变量里。必须比调用活得更久，或者大小在运行时才知道的对象，适合放在堆上，并且有一个明确的所有者。整个运行期间都存在的表可以用 static。把 12 MB 的表放成局部数组会失败，并不是堆有什么魔力，而是栈太小。"
+        },
+        {
+          "title": "边界检查比防御机制更重要",
+          "body": "金丝雀值、不可执行栈和地址随机化都值得打开，但它们只是让漏洞更难被利用。每一次没有检查的复制本身仍是缺陷，不管有没有人攻击它。在复制的地方写好长度检查，才是让程序真正正确的修复。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "c-process-map-model",
+          "title": "根据一组数字画出进程内存图",
+          "intro": "用一个地址为虚构的模型，展示栈帧向下增长、堆向上增长，以及中间的固定区域。",
+          "language": "c",
+          "code": "#include <stdio.h>\n\n/* A MODEL of one process. The addresses are chosen for teaching; a real\n   system picks its own and may randomise them on every run. */\n#define TEXT_START 0x00400000ul\n#define TEXT_END   0x00401200ul\n#define DATA_START 0x00601000ul\n#define BSS_START  0x00601040ul\n#define BSS_END    0x00601240ul\n#define HEAP_START 0x01000000ul\n#define STACK_TOP  0x7FFF0000ul\n\nstatic unsigned long heap_next = HEAP_START;\nstatic unsigned long stack_ptr = STACK_TOP;\n\n/* The heap hands out 16-byte units, moving UP. */\nstatic unsigned long model_malloc(unsigned long size, const char *who) {\n    unsigned long block = heap_next;\n    heap_next += (size + 15ul) / 16ul * 16ul;\n    printf(\"%-9s malloc(%3lu) -> 0x%08lX, heap ends at 0x%08lX\\n\", who, size, block, heap_next);\n    return block;\n}\n\n/* A call moves the stack pointer DOWN by the new frame's size. */\nstatic void push_frame(const char *name, unsigned long size) {\n    stack_ptr -= size;\n    printf(\"call %-9s frame %2lu bytes, stack pointer 0x%08lX\\n\", name, size, stack_ptr);\n}\n\nstatic void pop_frame(const char *name, unsigned long size) {\n    stack_ptr += size;\n    printf(\"return %-9s stack pointer back to 0x%08lX\\n\", name, stack_ptr);\n}\n\n/* Each address labels the line BELOW the box above it: the lowest byte of that box. */\nstatic void edge(unsigned long address, const char *note) {\n    printf(\"0x%08lX  +-------------------------------+%s%s\\n\", address, note[0] ? \" \" : \"\", note);\n}\n\nstatic void box(const char *text) {\n    printf(\"            | %-29s |\\n\", text);\n}\n\nint main(void) {\n    unsigned long main_top = STACK_TOP;\n    push_frame(\"main\", 64);\n    unsigned long read_top = stack_ptr;\n    model_malloc(24, \"main\");\n    push_frame(\"read_line\", 48);\n    unsigned long parse_top = stack_ptr;\n    model_malloc(100, \"read_line\");\n    push_frame(\"parse\", 32);\n\n    char line[40];\n    printf(\"\\nhigh addresses at the top, low addresses at the bottom\\n\");\n    edge(main_top, \"top of stack\");\n    box(\"main frame, 64 bytes\");\n    edge(read_top, \"\");\n    box(\"read_line frame, 48 bytes\");\n    edge(parse_top, \"\");\n    box(\"parse frame, 32 bytes\");\n    edge(stack_ptr, \"<- stack pointer\");\n    box(\"v stack grows down\");\n    snprintf(line, sizeof line, \"unused, about %lu MiB\", (stack_ptr - heap_next) >> 20);\n    box(line);\n    box(\"^ heap grows up\");\n    edge(heap_next, \"<- end of heap\");\n    box(\"heap: blocks of 32 and 112\");\n    edge(HEAP_START, \"heap start\");\n    box(\"(unmapped)\");\n    edge(BSS_END, \"\");\n    box(\"bss: zero-filled globals\");\n    edge(BSS_START, \"\");\n    box(\"data: initialised globals\");\n    edge(DATA_START, \"\");\n    box(\"(unmapped)\");\n    edge(TEXT_END, \"\");\n    box(\"text: machine code, read-only\");\n    edge(TEXT_START, \"lowest address\");\n\n    printf(\"\\n\");\n    pop_frame(\"parse\", 32);\n    pop_frame(\"read_line\", 48);\n    printf(\"heap still holds %lu bytes: blocks outlive the frames that asked\\n\",\n           heap_next - HEAP_START);\n    return 0;\n}\n",
+          "output": "call main      frame 64 bytes, stack pointer 0x7FFEFFC0\nmain      malloc( 24) -> 0x01000000, heap ends at 0x01000020\ncall read_line frame 48 bytes, stack pointer 0x7FFEFF90\nread_line malloc(100) -> 0x01000020, heap ends at 0x01000090\ncall parse     frame 32 bytes, stack pointer 0x7FFEFF70\n\nhigh addresses at the top, low addresses at the bottom\n0x7FFF0000  +-------------------------------+ top of stack\n            | main frame, 64 bytes          |\n0x7FFEFFC0  +-------------------------------+\n            | read_line frame, 48 bytes     |\n0x7FFEFF90  +-------------------------------+\n            | parse frame, 32 bytes         |\n0x7FFEFF70  +-------------------------------+ <- stack pointer\n            | v stack grows down            |\n            | unused, about 2031 MiB        |\n            | ^ heap grows up               |\n0x01000090  +-------------------------------+ <- end of heap\n            | heap: blocks of 32 and 112    |\n0x01000000  +-------------------------------+ heap start\n            | (unmapped)                    |\n0x00601240  +-------------------------------+\n            | bss: zero-filled globals      |\n0x00601040  +-------------------------------+\n            | data: initialised globals     |\n0x00601000  +-------------------------------+\n            | (unmapped)                    |\n0x00401200  +-------------------------------+\n            | text: machine code, read-only |\n0x00400000  +-------------------------------+ lowest address\n\nreturn parse     stack pointer back to 0x7FFEFF90\nreturn read_line stack pointer back to 0x7FFEFFC0\nheap still holds 144 bytes: blocks outlive the frames that asked\n",
+          "explanation": "这个程序是一个模型，不是实测。它的地址是为了教学而选的，因为真实系统会自己选地址，而且每次运行都可能不同。\n\nmodel_malloc 以 16 字节为单位，向上分配堆空间。请求 24 字节实际占 32，请求 100 字节占 112，所以堆的末端是 0x01000000 + 32 + 112 = 0x01000090。push_frame 把栈指针向下移。栈顶是 0x7FFF0000。main 占 64 字节，指针变成 0x7FFEFFC0；read_line 再占 48 字节（0x7FFEFF90），parse 再占 32 字节（0x7FFEFF70）。\n\n按本章约定来读这幅图。高地址在上面。每条线上写的地址，是这条线上方那个方框的最低字节。最新的帧 parse 在最下面。栈指针和堆末端之间的大块空隙，是两者今后还能增长的空间。parse 和 read_line 返回时，栈指针只是向上移回去。两个堆块依然存在，因为只有 free 才能结束一个块的生命。",
+          "walkthrough": [
+            "确定模型中代码段、数据段、bss 段、堆和栈各区域的地址。",
+            "每次分配都把堆末端向上移动，并按 16 字节取整。",
+            "每次调用把栈指针向下移，每次返回再向上移。",
+            "按地址从高到低打印各区域，每个块一个方框。",
+            "说明申请它们的栈帧消失之后，堆块依然存在。"
+          ],
+          "trace": {
+            "columns": [
+              "事件",
+              "栈指针",
+              "堆末端"
+            ],
+            "rows": [
+              [
+                "开始",
+                "0x7FFF0000",
+                "0x01000000"
+              ],
+              [
+                "调用 main（64 字节）",
+                "0x7FFEFFC0",
+                "0x01000000"
+              ],
+              [
+                "main 调用 malloc(24)",
+                "0x7FFEFFC0",
+                "0x01000020"
+              ],
+              [
+                "调用 read_line（48 字节）",
+                "0x7FFEFF90",
+                "0x01000020"
+              ],
+              [
+                "read_line 调用 malloc(100)",
+                "0x7FFEFF90",
+                "0x01000090"
+              ],
+              [
+                "调用 parse（32 字节）",
+                "0x7FFEFF70",
+                "0x01000090"
+              ],
+              [
+                "从 parse 返回",
+                "0x7FFEFF90",
+                "0x01000090"
+              ],
+              [
+                "从 read_line 返回",
+                "0x7FFEFFC0",
+                "0x01000090"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "#define STACK_TOP 0x7FFF0000ul",
+              "meaning": "带十六进制常量的宏；后缀 ul 表示 unsigned long，保证地址不会超出 int 的范围。"
+            },
+            {
+              "syntax": "(size + 15ul) / 16ul * 16ul",
+              "meaning": "用整数除法把大小向上取整到 16 的倍数。"
+            },
+            {
+              "syntax": "printf(\"%-9s\", name)",
+              "meaning": "%-9s 在字符串右边补空格到 9 个字符，使各列对齐。"
+            },
+            {
+              "syntax": "snprintf(line, sizeof line, \"...%lu\", n)",
+              "meaning": "把文本格式化到字符数组中，永远不会写出数组的大小。"
+            },
+            {
+              "syntax": "note[0] ? \" \" : \"\"",
+              "meaning": "把字符串的第一个字符当条件：空字符串时为假。"
+            }
+          ]
+        },
+        {
+          "id": "c-real-stack-behavior",
+          "title": "观察真实的栈帧，并让递归保持在预算之内",
+          "intro": "只打印每次运行都成立的事实，因为真实地址每次运行都会变化。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n\n#define LEVELS 4\nstatic uintptr_t where[2][LEVELS];\n\n/* Remember the address of one local variable at each call depth. */\nstatic void descend(int round, int level) {\n    char marker = 0;\n    where[round][level] = (uintptr_t)&marker;\n    if (level + 1 < LEVELS)\n        descend(round, level + 1);\n}\n\n/* Recursion with a depth budget: refuse instead of running out of stack. */\nstatic long sum_to(long n, int depth, int limit) {\n    if (depth > limit)\n        return -1;\n    if (n == 0)\n        return 0;\n    long rest = sum_to(n - 1, depth + 1, limit);\n    if (rest < 0)\n        return -1;\n    return n + rest;\n}\n\nint main(void) {\n    descend(0, 0);\n    descend(1, 0);\n\n    int lower = 1;\n    for (int level = 1; level < LEVELS; level++)\n        if (where[0][level] >= where[0][level - 1])\n            lower = 0;\n    printf(\"each deeper call has a lower local address: %s\\n\", lower ? \"yes\" : \"no\");\n\n    int same = 1;\n    for (int level = 0; level < LEVELS; level++)\n        if (where[0][level] != where[1][level])\n            same = 0;\n    printf(\"a second round reuses the same addresses: %s\\n\", same ? \"yes\" : \"no\");\n\n    void *block = malloc(100);\n    int apart = block != NULL;\n    for (int level = 0; level < LEVELS; level++)\n        if ((uintptr_t)block == where[0][level])\n            apart = 0;\n    printf(\"heap block differs from every frame address: %s\\n\", apart ? \"yes\" : \"no\");\n    free(block);\n\n    printf(\"sum_to(10) with budget 100 = %ld\\n\", sum_to(10, 0, 100));\n    printf(\"sum_to(5000) with budget 100 = %ld\\n\", sum_to(5000, 0, 100));\n\n    size_t stack_bytes = 8u * 1024u * 1024u;\n    size_t frame_bytes = 48;\n    printf(\"an %zu byte stack holds about %zu frames of %zu bytes\\n\",\n           stack_bytes, stack_bytes / frame_bytes, frame_bytes);\n    size_t array_bytes = 3000000u * sizeof(int);\n    printf(\"a local int[3000000] needs %zu bytes: %s\\n\", array_bytes,\n           array_bytes > stack_bytes ? \"too big for the stack, use malloc\" : \"fits\");\n    return 0;\n}\n",
+          "output": "each deeper call has a lower local address: yes\na second round reuses the same addresses: yes\nheap block differs from every frame address: yes\nsum_to(10) with budget 100 = 55\nsum_to(5000) with budget 100 = -1\nan 8388608 byte stack holds about 174762 frames of 48 bytes\na local int[3000000] needs 12000000 bytes: too big for the stack, use malloc\n",
+          "explanation": "这个程序观察真实的栈，但从不打印地址。真实地址每次运行都可能变化，所以输出只报告始终成立的事实。编译时不要开优化：优化器可能把递归变成循环，帧就消失了。\n\ndescend 向下递归四层，每一层都保存一个局部变量的地址。在常见系统上，更深的调用地址更低，因为栈向下增长。再调用一次 descend，得到的地址相同，因为第二次调用重用了第一次释放的字节。这就是为什么函数返回之后，指向它局部变量的指针是错的：下一次调用可能把同样的字节覆盖掉。堆块则在完全不同的地方。\n\nsum_to 展示怎样避免栈溢出。它带着一个深度计数器，超过上限就拒绝继续，返回 -1，而不是耗尽栈空间。最后几行是算术。8 MiB 的栈是 8388608 字节，每帧 48 字节时大约能放 174762 帧。一个 3000000 个 int 的局部数组需要 12000000 字节，超过整个栈，所以这个数组应该放在堆上。",
+          "walkthrough": [
+            "在每一层递归中记录一个局部变量的地址。",
+            "不打印地址，只检查增长方向和帧的重用。",
+            "检查 malloc 得到的块与任何栈帧地址都不重合。",
+            "在深度上限之内递归，超出时返回 -1，而不是溢出。",
+            "根据栈的大小估算能放多少帧，以及最大的安全局部数组。"
+          ],
+          "trace": {
+            "columns": [
+              "量",
+              "计算",
+              "结果"
+            ],
+            "rows": [
+              [
+                "8 MiB 栈能放的帧数",
+                "8388608 / 48",
+                "174762"
+              ],
+              [
+                "局部数组 int[3000000]",
+                "3000000 x 4 字节",
+                "12000000 字节"
+              ],
+              [
+                "栈上限",
+                "8 x 1024 x 1024",
+                "8388608 字节"
+              ],
+              [
+                "sum_to(10), limit 100",
+                "1 + 2 + ... + 10",
+                "55"
+              ],
+              [
+                "sum_to(5000), limit 100",
+                "深度到 101 时被拒绝",
+                "-1"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "uintptr_t",
+              "meaning": "足够容纳指针值的无符号整数类型，在 stdint.h 中声明。"
+            },
+            {
+              "syntax": "(uintptr_t)&marker",
+              "meaning": "把局部变量的地址转成整数，便于比较和保存。"
+            },
+            {
+              "syntax": "static uintptr_t where[2][LEVELS];",
+              "meaning": "一个全局表，由递归填写，因此帧消失之后结果依然保留。"
+            },
+            {
+              "syntax": "if (depth > limit) return -1;",
+              "meaning": "守卫语句：在递归太深之前先停下来。"
+            },
+            {
+              "syntax": "%zu",
+              "meaning": "打印 size_t 值的 printf 格式。"
+            }
+          ]
+        },
+        {
+          "id": "c-stack-smash-model",
+          "title": "安全地模拟一次栈破坏，并阻止它",
+          "intro": "用结构体代表栈帧里相邻的字节，这样溢出也是有明确定义的。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <string.h>\n\n/* A MODEL of neighbouring bytes in one stack frame. A real compiler picks\n   the order of locals itself; the point here is only that they are adjacent. */\nstruct Frame {\n    char name[8];         /* a local buffer */\n    unsigned canary;      /* a guard value stored right after it */\n    unsigned return_tag;  /* stands in for the saved return address */\n};\n\n#define CANARY     0xC0FFEE00u\n#define RETURN_TAG 0xA1B2C3D4u\n\nstatic void reset(struct Frame *f) {\n    memset(f, 0, sizeof *f);\n    f->canary = CANARY;\n    f->return_tag = RETURN_TAG;\n}\n\n/* Like strcpy: copies the text and its zero byte, never asking how big name is.\n   It goes through the whole frame's own bytes so this demo stays well defined;\n   in real code the same mistake is undefined behaviour. */\nstatic void unchecked_copy(struct Frame *f, const char *text) {\n    size_t n = strlen(text) + 1;\n    if (n > sizeof *f)\n        n = sizeof *f;\n    memcpy(f, text, n);\n}\n\n/* Refuse text that does not fit, leaving room for the zero byte. */\nstatic int checked_copy(struct Frame *f, const char *text) {\n    size_t n = strlen(text);\n    if (n >= sizeof f->name)\n        return -1;\n    memcpy(f->name, text, n + 1);\n    return 0;\n}\n\nint main(void) {\n    const char *inputs[] = {\"Mia\", \"NoahIrisJack\", \"NoahIrisJackLeo\"};\n    struct Frame frame;\n    printf(\"model frame: name[%zu], then canary, then return tag\\n\", sizeof frame.name);\n\n    for (int i = 0; i < 3; i++) {\n        reset(&frame);\n        unchecked_copy(&frame, inputs[i]);\n        printf(\"unchecked %-16s name=\\\"%.8s\\\" canary %s, return tag %s\\n\", inputs[i], frame.name,\n               frame.canary == CANARY ? \"intact\" : \"OVERWRITTEN\",\n               frame.return_tag == RETURN_TAG ? \"intact\" : \"OVERWRITTEN\");\n        if (frame.canary != CANARY)\n            printf(\"  guard check fails: stack smashing detected, abort before return\\n\");\n    }\n\n    for (int i = 0; i < 3; i++) {\n        reset(&frame);\n        int status = checked_copy(&frame, inputs[i]);\n        printf(\"checked   %-16s %s, canary %s\\n\", inputs[i],\n               status == 0 ? \"stored\" : \"rejected as too long\",\n               frame.canary == CANARY ? \"intact\" : \"OVERWRITTEN\");\n    }\n    return 0;\n}\n",
+          "output": "model frame: name[8], then canary, then return tag\nunchecked Mia              name=\"Mia\" canary intact, return tag intact\nunchecked NoahIrisJack     name=\"NoahIris\" canary OVERWRITTEN, return tag OVERWRITTEN\n  guard check fails: stack smashing detected, abort before return\nunchecked NoahIrisJackLeo  name=\"NoahIris\" canary OVERWRITTEN, return tag OVERWRITTEN\n  guard check fails: stack smashing detected, abort before return\nchecked   Mia              stored, canary intact\nchecked   NoahIrisJack     rejected as too long, canary intact\nchecked   NoahIrisJackLeo  rejected as too long, canary intact\n",
+          "explanation": "真实的栈破坏属于未定义行为，所以这个程序只是模拟它。struct Frame 把一个 8 字节的缓冲区、一个金丝雀值和一个返回标记放在一起，就像真实栈帧里的缓冲区、金丝雀值和保存的返回地址是三个相邻的东西。真实编译器会自己决定局部变量的顺序，这个模型只表现它们彼此相邻。\n\nunchecked_copy 的行为像 strcpy：复制文本和结尾的零字节，从不问 name 有多大。它通过整个帧的字节来写入，所以程序本身仍是有明确定义的。\"Mia\" 需要 4 字节，放得下。\"NoahIrisJack\" 需要 13 字节，其中 8 字节填满缓冲区，4 字节盖掉金丝雀值，1 字节碰到了返回标记。\"NoahIrisJackLeo\" 需要 16 字节，金丝雀值和整个返回标记都被盖掉。\n\n保护检查就是栈保护机制做的事：函数返回之前，把金丝雀值和秘密值比较，一旦改变就中止。这是防御，不是修复。真正的修复是 checked_copy：先比较长度和缓冲区大小，放不下的文本直接拒绝，金丝雀值就永远碰不到。",
+          "walkthrough": [
+            "声明帧模型：缓冲区、金丝雀值和返回标记并排放置。",
+            "不检查大小就复制文本，看看哪些相邻成员被改变。",
+            "运行金丝雀检查，守卫值不再匹配时就中止。",
+            "带长度检查地复制，拒绝没有给结尾零字节留出空间的文本。",
+            "确认带检查的版本对每个输入都保持金丝雀值不变。"
+          ],
+          "trace": {
+            "columns": [
+              "输入",
+              "复制的字节数",
+              "缓冲区",
+              "金丝雀值",
+              "返回标记"
+            ],
+            "rows": [
+              [
+                "\"Mia\"",
+                "4",
+                "放得下",
+                "完好",
+                "完好"
+              ],
+              [
+                "\"NoahIrisJack\"",
+                "13",
+                "已满",
+                "被覆盖",
+                "第一个字节被覆盖"
+              ],
+              [
+                "\"NoahIrisJackLeo\"",
+                "16",
+                "已满",
+                "被覆盖",
+                "被覆盖"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "struct Frame { char name[8]; unsigned canary; unsigned return_tag; };",
+              "meaning": "依次存放的三个成员，就像栈帧里相邻的字节。"
+            },
+            {
+              "syntax": "memcpy(f, text, n)",
+              "meaning": "从对象的第一个字节开始复制 n 个字节。只要 n 不超过对象大小，就是有明确定义的。"
+            },
+            {
+              "syntax": "sizeof f->name",
+              "meaning": "成员数组的大小，这里是 8。用它来比较长度，而不要再手写一个 8。"
+            },
+            {
+              "syntax": "%.8s",
+              "meaning": "最多打印字符串的 8 个字符，所以即使缓冲区没有结尾零字节，打印也是安全的。"
+            },
+            {
+              "syntax": "#define CANARY 0xC0FFEE00u",
+              "meaning": "一个有名字的守卫值；后缀 u 表示无符号。"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "linked-structures",
       "title": "链表与结构不变式",
       "story": "寻宝路线在每张线索卡上写着下一站。把新卡插入两张旧卡之间，只需改路线，不必挪动后面所有卡。但如果没人知道插入点，仍要沿路线寻找。双向路线还保存回程方向；环形路线则回到起点，没有末尾标记。如果探险者一直等到看见结束标记，就会永远绕圈。\n\n链表编程的关键，是每次更新都保持明确的结构不变式。销毁一张卡之前，还要先保存它指向下一站的路线。",
@@ -1533,6 +2165,217 @@
             "观察二者具有相同词法作用域。",
             "追踪哪个初始化每次调用都发生。",
             "区分对象存储期与函数链接属性。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "makefiles-libraries",
+      "title": "Makefile、静态库与共享库",
+      "story": "一家小面包店卖面包、小圆面包和礼盒。每样产品都有一份配方，列出它需要什么：面包需要面团和烤盘，礼盒需要面包和小圆面包。每天早上，师傅检查一张清单。如果面团是在上一炉面包之后做的，就重新烤。如果一样产品所需的东西自从做好之后都没变过，就别动它。好师傅不会因为一袋面粉变了就把所有东西重烤一遍，也不会忘了重烤用到这袋面粉的东西。Makefile 就是为程序写的这样一张清单。\n\n库就是面包店共用的食谱书。第一种做法是师傅把某样产品需要的几页复印下来，订在产品里面。产品自成一体，但变大了，而且食谱改了就得重新复印。这就是静态库。第二种做法是整本书只在厨房架子上放一份，每样产品只写“见架子上的书”。修正只需要在一处进行，但书要是不见了，厨房就没法工作。这就是共享库。",
+      "principle": "Makefile 是一组规则。规则的形式是“目标: 先决条件”，后面跟着若干配方行，每行以制表符开头。make 比较文件的修改时间：目标不存在，或者任何先决条件比目标新，就重建目标。它先让先决条件变成最新，所以规则构成一个没有环的依赖图。第一条规则是默认目标，直接运行 make 构建的就是它。\n\n变量这样设置：CC = clang，这样使用：$(CC)。在命令行写 make CFLAGS=-O2 可以覆盖文件里的设置。配方里的自动变量有：$@ 表示目标，$< 表示第一个先决条件，$^ 表示全部先决条件。模式规则 %.o: %.c 说明如何用同名的源文件构建任意目标文件。伪目标，如 clean 或 all，表示的是一个动作而不是文件，用 .PHONY 声明。把源文件包含的头文件也列为先决条件；不列的话，只改头文件时 make 不会重新编译。配方行必须以制表符开头，不能用空格。\n\n静态库是目标文件的归档，用 ar rcs libgeo.a a.o b.o 创建。链接时可以直接写出它的名字，如 clang main.o libgeo.a，也可以用 -L. -lgeo，其中 -lgeo 表示文件 libgeo.a 或 libgeo.so。链接器只复制它需要的成员，而且是整个目标文件。它从左到右读取输入，所以库要放在使用它的文件后面。生成的可执行文件自成一体。\n\n共享库在程序启动时加载。它的目标文件要用 -fPIC 编译，生成位置无关代码。代码内部的地址是相对的，所以库可以加载到任意地址，内存里的一份副本可以供许多程序使用。用 clang -shared -o libgeo.so a.o b.o 构建它。用 -L. -lgeo 链接时，可执行文件会把名字 libgeo.so 记录为依赖。运行时，动态加载器必须找到这个文件。它会在标准文件夹、环境变量 LD_LIBRARY_PATH 指定的文件夹，以及用 -Wl,-rpath 存进程序的路径中查找。命令 ldd app 会列出加载器需要的库。找不到文件时，就会出现错误“cannot open shared object file”。在 macOS 上常见的后缀是 .dylib，构建选项是 -dynamiclib，但道理相同。\n\n静态链接得到一个自成一体的文件，运行时不用查找，代价是体积大，而且每次修复都要重新链接。共享链接让程序更小，一次修复就能惠及所有程序，但运行时库必须存在，而且要和程序期望的版本兼容。",
+      "formula": "目标: 先决条件\n<TAB>配方         $@ = 目标   $< = 第一个先决条件\n                  $^ = 全部先决条件\n重建条件：目标不存在，或者有先决条件比它新\n\nCC      = clang\nCFLAGS  = -std=c11 -Wall -Wextra -Werror -pedantic -fPIC\nOBJS    = square.o area.o perim.o\n\nall: app_static app_shared\n\napp_static: main.o libgeo.a\n\t$(CC) main.o libgeo.a -o $@\n\napp_shared: main.o libgeo.so\n\t$(CC) main.o -L. -lgeo -Wl,-rpath,. -o $@\n\nlibgeo.a: $(OBJS)\n\tar rcs $@ $^\n\nlibgeo.so: $(OBJS)\n\t$(CC) -shared -o $@ $^\n\n%.o: %.c geo.h\n\t$(CC) $(CFLAGS) -c $< -o $@\n\nclean:\n\trm -f *.o libgeo.a libgeo.so app_static app_shared\n\n.PHONY: all clean",
+      "symbols": "前两行是每条规则的格式。在它们下面的 Makefile 中，app_static: main.o libgeo.a 这一行说明程序需要这两个文件，它的配方里 $@ 就是 app_static。在规则 %.o: %.c geo.h 中，% 在两边代表同一个名字，所以对 area.o 来说，先决条件是 area.c 和 geo.h。此时 $< 只是 area.c，正是 -c 所需要的；而 $^ 会是 area.c 加 geo.h，会弄坏命令。选项 -Wl,-rpath,. 把 -rpath . 传给链接器，所以程序会在你运行它的文件夹里查找 libgeo.so。\n\nMakefile 是名叫 Makefile 的文本文件。这一份在类 Unix 系统上使用 clang；make 的配方就是普通的 shell 命令。以上说的都是常见的 GNU make 规则。",
+      "example": "以 main.c、util.c 和 util.h 为例，规则是 app: main.o util.o、main.o: main.c util.h 和 util.o: util.c util.h。假设时间是 main.c 为 1，util.c 为 2，util.h 为 3。刚检出时没有目标文件，所以 make 编译 main.o（时间 4）、编译 util.o（时间 5），再链接 app（时间 6）。再运行 make，每个产物都比输入新，什么也不运行。现在修改 util.h（时间 7）。这时 util.h 比 main.o（4）和 util.o（5）都新，所以两个都重新编译（8 和 9），然后 app 再次链接（10）。如果你忘了在规则里写 util.h，make 就会说无事可做，旧的目标文件还会继续使用旧的声明。\n\n再看库。设库里有 square.o（400 字节）、area.o（900 字节）和 perim.o（700 字节），main.o 是 1200 字节。用 libgeo.a 静态链接，会复制 main.o、area.o 和 square.o，共 2500 字节代码，并留下 perim.o。动态链接则在程序里只保留 1200 字节。2000 字节的 libgeo.so 只存在一份，十个程序都可以共享它。",
+      "pitfall": "配方行开头用空格而不是制表符，会得到“missing separator”。漏写头文件这个先决条件，会得到过期的目标文件。把静态库放在需要它的文件前面，会得到“undefined reference”。在你的机器上能运行的共享库程序，换一台机器可能因为“cannot open shared object file”而失败，因为加载器不会在当前文件夹里查找，除非你用 -rpath 或 LD_LIBRARY_PATH 告诉它。",
+      "check": {
+        "question": "在例子里，只有 util.h 改变了。哪些目标会被重建？顺序是什么？",
+        "answer": "会重建 main.o 和 util.o，因为它们都把 util.h 列为先决条件；然后重建 app，因为 make 先访问先决条件再处理目标，而 app 现在有更新的先决条件。源文件 main.c 和 util.c 本身不由任何其他规则编译。"
+      },
+      "glossary": [
+        {
+          "term": "目标",
+          "meaning": "规则要构建的文件或动作。"
+        },
+        {
+          "term": "先决条件",
+          "meaning": "目标所依赖的文件；它如果更新，目标就过期了。"
+        },
+        {
+          "term": "配方",
+          "meaning": "make 为构建目标而运行的 shell 命令行；每行以制表符开头。"
+        },
+        {
+          "term": "自动变量",
+          "meaning": "像 $@、$< 或 $^ 这样由 make 为每条规则自动填写的变量。"
+        },
+        {
+          "term": "伪目标",
+          "meaning": "表示动作而不是文件的目标，例如 clean。"
+        },
+        {
+          "term": "静态库",
+          "meaning": "目标文件的归档；链接时把需要的成员复制进程序。"
+        },
+        {
+          "term": "共享库",
+          "meaning": "程序启动时加载、并由所有使用它的程序共享的库。"
+        },
+        {
+          "term": "位置无关代码",
+          "meaning": "加载到哪里都能工作的代码，-fPIC 会生成这样的代码。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "make 会看文件里面改了什么吗？",
+          "answer": "不会。它只比较修改时间。保存一个没改动内容的文件，也会使它的产物过期；make -n 可以显示将要运行什么，但不真正运行。"
+        },
+        {
+          "question": "为什么静态库在命令行中的位置很重要？",
+          "answer": "链接器从左到右读取，只为已经缺少的名字取出归档成员。放在最前面的库没有东西可解析，所以它的成员被跳过。"
+        },
+        {
+          "question": "为什么共享库需要 -fPIC？",
+          "answer": "加载器可能在每个进程里把它放在不同的地址。位置无关代码使用相对地址，放到哪里都能工作，所以一份副本可以供许多程序使用。"
+        },
+        {
+          "question": "在 %.o: %.c geo.h 中，编译命令为什么用 $< 而不是 $^？",
+          "answer": "$< 是第一个先决条件，即 .c 文件，正是 -c 要编译的文件。$^ 还包含 geo.h，编译器会多收到一个头文件作为输入。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "先画依赖图，再写 Makefile",
+          "body": "左边画源文件和头文件，中间画目标文件，右边画程序。每一条箭头都变成一个先决条件。图上立刻就能看出 main.o 依赖 util.h，而 app 只依赖目标文件。项目变大之后，可以用 -MMD 让编译器替你写出这些头文件箭头，这样就不会漏掉头文件。"
+        },
+        {
+          "title": "用静态库还是共享库，是一个部署决策",
+          "body": "如果你要把一个可执行文件交给一台你无法控制的机器，静态链接可以避免运行时缺库。如果许多程序使用同一个库，而且安全修复必须覆盖所有程序，共享库只需要修一次。两者没有谁永远更好，所以要写下是哪个约束做出了这个决定。"
+        },
+        {
+          "title": "按用户的链接方式测试库",
+          "body": "写一个很小的 main，分别链接归档文件和共享库。这样能发现顺序错误、漏掉的 -fPIC 和没有导出的名字。用 nm 列出目标文件或归档文件里的符号，用 ldd 列出程序运行时需要的库。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "c-mini-make-decisions",
+          "title": "模拟 make 如何决定要重新构建什么",
+          "intro": "用规则表、文件时间和递归访问，重现 make 的决定以及它的自动变量。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <string.h>\n\n/* A tiny model of what make decides. Time is a counter: a bigger number is a newer file. */\n#define MAX_FILES 8\n#define MAX_PREREQS 3\n\nstruct File {\n    const char *name;\n    int mtime;  /* 0 means the file does not exist */\n};\n\nstruct Rule {\n    const char *target;\n    const char *prereqs[MAX_PREREQS + 1];  /* ends with NULL */\n    const char *recipe;\n};\n\nstatic struct File files[MAX_FILES] = {\n    {\"main.c\", 1}, {\"util.c\", 2}, {\"util.h\", 3}, {\"main.o\", 0}, {\"util.o\", 0}, {\"app\", 0}};\nstatic int file_count = 6;\nstatic int clock_now = 3;\n\nstatic const struct Rule rules[] = {\n    {\"app\", {\"main.o\", \"util.o\", NULL}, \"$(CC) $^ -o $@\"},\n    {\"main.o\", {\"main.c\", \"util.h\", NULL}, \"$(CC) $(CFLAGS) -c $< -o $@\"},\n    {\"util.o\", {\"util.c\", \"util.h\", NULL}, \"$(CC) $(CFLAGS) -c $< -o $@\"},\n};\n\nstatic struct File *find_file(const char *name) {\n    for (int i = 0; i < file_count; i++)\n        if (strcmp(files[i].name, name) == 0)\n            return &files[i];\n    return NULL;\n}\n\nstatic const struct Rule *find_rule(const char *target) {\n    for (size_t i = 0; i < sizeof rules / sizeof rules[0]; i++)\n        if (strcmp(rules[i].target, target) == 0)\n            return &rules[i];\n    return NULL;\n}\n\n/* Replace $@, $<, $^, $(CC) and $(CFLAGS) in a recipe template. */\nstatic void expand(const struct Rule *rule, char *out, size_t size) {\n    size_t used = 0;\n    for (const char *p = rule->recipe; *p != '\\0' && used + 1 < size;) {\n        char piece[80] = \"\";\n        size_t length = 1;\n        if (strncmp(p, \"$@\", 2) == 0) {\n            snprintf(piece, sizeof piece, \"%s\", rule->target);\n            length = 2;\n        } else if (strncmp(p, \"$<\", 2) == 0) {\n            snprintf(piece, sizeof piece, \"%s\", rule->prereqs[0]);\n            length = 2;\n        } else if (strncmp(p, \"$^\", 2) == 0) {\n            for (int i = 0; rule->prereqs[i] != NULL; i++)\n                snprintf(piece + strlen(piece), sizeof piece - strlen(piece), \"%s%s\", i ? \" \" : \"\", rule->prereqs[i]);\n            length = 2;\n        } else if (strncmp(p, \"$(CC)\", 5) == 0) {\n            snprintf(piece, sizeof piece, \"clang\");\n            length = 5;\n        } else if (strncmp(p, \"$(CFLAGS)\", 9) == 0) {\n            snprintf(piece, sizeof piece, \"-std=c11 -Wall -Wextra -Werror -pedantic\");\n            length = 9;\n        } else {\n            piece[0] = *p;\n            piece[1] = '\\0';\n        }\n        for (const char *q = piece; *q != '\\0' && used + 1 < size; q++)\n            out[used++] = *q;\n        p += length;\n    }\n    out[used] = '\\0';\n}\n\n/* Returns 1 if the target was rebuilt. Prerequisites are brought up to date first. */\nstatic int build(const char *target) {\n    const struct Rule *rule = find_rule(target);\n    struct File *file = find_file(target);\n    if (rule == NULL)\n        return 0;  /* a source file: nothing to run */\n    int rebuilt = 0, newest = 0;\n    for (int i = 0; rule->prereqs[i] != NULL; i++) {\n        rebuilt |= build(rule->prereqs[i]);\n        int t = find_file(rule->prereqs[i])->mtime;\n        if (t > newest)\n            newest = t;\n    }\n    if (file->mtime == 0 || newest > file->mtime) {\n        char command[160];\n        expand(rule, command, sizeof command);\n        printf(\"  %s\\n\", command);\n        file->mtime = ++clock_now;\n        return 1;\n    }\n    return rebuilt;\n}\n\nstatic void run_make(const char *title) {\n    printf(\"%s\\n\", title);\n    if (!build(\"app\"))\n        printf(\"  make: 'app' is up to date.\\n\");\n}\n\nstatic void touch(const char *name) {\n    find_file(name)->mtime = ++clock_now;\n}\n\nint main(void) {\n    printf(\"Makefile\\n\");\n    for (size_t i = 0; i < sizeof rules / sizeof rules[0]; i++) {\n        printf(\"%s:\", rules[i].target);\n        for (int j = 0; rules[i].prereqs[j] != NULL; j++)\n            printf(\" %s\", rules[i].prereqs[j]);\n        printf(\"\\n\\t%s\\n\", rules[i].recipe);\n    }\n    printf(\"\\n\");\n\n    run_make(\"$ make   (fresh checkout)\");\n    run_make(\"$ make   (again, nothing changed)\");\n    touch(\"util.c\");\n    run_make(\"$ make   (after editing util.c)\");\n    touch(\"util.h\");\n    run_make(\"$ make   (after editing util.h)\");\n    return 0;\n}\n",
+          "output": "Makefile\napp: main.o util.o\n\t$(CC) $^ -o $@\nmain.o: main.c util.h\n\t$(CC) $(CFLAGS) -c $< -o $@\nutil.o: util.c util.h\n\t$(CC) $(CFLAGS) -c $< -o $@\n\n$ make   (fresh checkout)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c main.c -o main.o\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n$ make   (again, nothing changed)\n  make: 'app' is up to date.\n$ make   (after editing util.c)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n$ make   (after editing util.h)\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c main.c -o main.o\n  clang -std=c11 -Wall -Wextra -Werror -pedantic -c util.c -o util.o\n  clang main.o util.o -o app\n",
+          "explanation": "这个程序是 make 的一个微型模型。规则表和下面这份 Makefile 相同，程序先把它打印出来，每条配方前面是真正的制表符。时间是一个计数器：数字越大，文件越新；0 表示文件不存在。\n\nbuild() 做的事和 make 一样。它先让每个先决条件都变成最新，这是一个递归访问。然后找出最新的先决条件。如果目标不存在，或者那个先决条件比目标新，就执行配方，并给目标一个新的时间。expand() 把 $@ 换成目标，把 $< 换成第一个先决条件，把 $^ 换成全部先决条件，并把变量 $(CC) 和 $(CFLAGS) 换成它们的值。\n\n看四次运行。刚检出时什么都不存在，所以依次构建 main.o、util.o 和 app，因为 app 需要先有目标文件。再运行一次，每个产物都比它的输入新，make 就报告 app 已是最新。util.c 变了之后，只重建 util.o 和 app。util.h 变了之后，两个目标文件都包含它，所以都重建，然后再链接 app。",
+          "walkthrough": [
+            "把每条规则描述为目标、先决条件列表和配方模板。",
+            "先访问先决条件；make 就是这样安排工作顺序的。",
+            "目标不存在，或最新的先决条件比目标新时，就重建。",
+            "打印命令之前，先展开 $@、$<、$^ 和变量。",
+            "每次只修改一个文件，看看会运行哪些命令。"
+          ],
+          "trace": {
+            "columns": [
+              "步骤",
+              "什么比它的产物更新",
+              "运行的命令"
+            ],
+            "rows": [
+              [
+                "刚检出时运行 make",
+                "不存在 .o 文件和 app",
+                "编译 main.o、编译 util.o、链接 app"
+              ],
+              [
+                "再运行一次 make",
+                "没有",
+                "无；app 已是最新"
+              ],
+              [
+                "修改 util.c 后运行 make",
+                "util.c 比 util.o 新",
+                "编译 util.o、链接 app"
+              ],
+              [
+                "修改 util.h 后运行 make",
+                "util.h 比 main.o 和 util.o 新",
+                "编译 main.o、编译 util.o、链接 app"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "const char *prereqs[MAX_PREREQS + 1];",
+              "meaning": "以 NULL 结尾的字符串数组，循环据此知道在哪里停止。"
+            },
+            {
+              "syntax": "static const struct Rule rules[] = { {...}, {...} };",
+              "meaning": "用一串花括号写成的结构体表；元素个数由条目数决定。"
+            },
+            {
+              "syntax": "strncmp(p, \"$@\", 2) == 0",
+              "meaning": "检查模板接下来的两个字符是不是 $@。"
+            },
+            {
+              "syntax": "rebuilt |= build(rule->prereqs[i]);",
+              "meaning": "访问一个先决条件，并记住它下面有没有东西被重建。"
+            },
+            {
+              "syntax": "printf(\"\\n\\t%s\\n\", rules[i].recipe);",
+              "meaning": "\\t 打印一个真正的制表符，Makefile 的配方行必须以它开头。"
+            }
+          ]
+        },
+        {
+          "id": "c-static-vs-shared-link",
+          "title": "用静态库和共享库解析符号",
+          "intro": "用链接器模型展示哪些库成员会被复制、为什么顺序重要，以及共享库记录了什么。",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <string.h>\n\n/* A model of how a linker resolves names. Sizes are made up for the story. */\n#define MAX_NAMES 4\n#define MAX_SYMBOLS 8\n\nstruct Unit {  /* an object file, or one member of an archive */\n    const char *name;\n    const char *defines[MAX_NAMES];  /* each list ends with NULL */\n    const char *needs[MAX_NAMES];\n    int bytes;\n    int pulled;\n};\n\nstatic struct Unit main_o = {\"main.o\", {\"main\", NULL}, {\"area_circle\", NULL}, 1200, 0};\nstatic struct Unit library[3];  /* libgeo members, in archive order */\n\nstruct Link {\n    const char *undefined[MAX_SYMBOLS];\n    int undefined_count;\n    const char *defined[MAX_SYMBOLS];\n    int defined_count;\n    int bytes;\n};\n\nstatic int has(const char *const list[], int count, const char *name) {\n    for (int i = 0; i < count; i++)\n        if (strcmp(list[i], name) == 0)\n            return i;\n    return -1;\n}\n\nstatic void take(struct Link *link, struct Unit *unit) {\n    unit->pulled = 1;\n    link->bytes += unit->bytes;\n    for (int i = 0; unit->defines[i] != NULL; i++) {\n        link->defined[link->defined_count++] = unit->defines[i];\n        int at = has(link->undefined, link->undefined_count, unit->defines[i]);\n        if (at >= 0)\n            link->undefined[at] = link->undefined[--link->undefined_count];\n    }\n    for (int i = 0; unit->needs[i] != NULL; i++)\n        if (has(link->defined, link->defined_count, unit->needs[i]) < 0 &&\n            has(link->undefined, link->undefined_count, unit->needs[i]) < 0)\n            link->undefined[link->undefined_count++] = unit->needs[i];\n    printf(\"  take %s\\n\", unit->name);\n}\n\nstatic int wanted(const struct Link *link, const struct Unit *unit) {\n    for (int i = 0; unit->defines[i] != NULL; i++)\n        if (has(link->undefined, link->undefined_count, unit->defines[i]) >= 0)\n            return 1;\n    return 0;\n}\n\n/* A static archive: keep scanning it until no member is newly needed. */\nstatic void scan_archive(struct Link *link) {\n    for (int pass = 1, changed = 1; changed; pass++) {\n        changed = 0;\n        for (int i = 0; i < 3; i++)\n            if (!library[i].pulled && wanted(link, &library[i])) {\n                if (!changed)\n                    printf(\"  pass %d over libgeo.a\\n\", pass);\n                take(link, &library[i]);\n                changed = 1;\n            }\n    }\n}\n\n/* A shared library: names are matched now, but no code is copied. */\nstatic void use_shared(struct Link *link) {\n    for (int i = 0; i < 3; i++)\n        for (int j = 0; library[i].defines[j] != NULL; j++) {\n            int at = has(link->undefined, link->undefined_count, library[i].defines[j]);\n            if (at >= 0) {\n                printf(\"  libgeo.so provides %s: only a dependency is recorded\\n\", library[i].defines[j]);\n                link->undefined[at] = link->undefined[--link->undefined_count];\n            }\n        }\n}\n\nstatic void finish(const struct Link *link) {\n    for (int i = 0; i < link->undefined_count; i++)\n        printf(\"  error: undefined reference to '%s'\\n\", link->undefined[i]);\n    if (link->undefined_count == 0)\n        printf(\"  ok: the executable holds %d bytes of code\\n\", link->bytes);\n}\n\nstatic void reset_units(void) {\n    static const struct Unit fresh[3] = {\n        {\"square.o\", {\"square\", NULL}, {NULL}, 400, 0},\n        {\"area.o\", {\"area_circle\", \"area_rect\", NULL}, {\"square\", NULL}, 900, 0},\n        {\"perim.o\", {\"perim_rect\", NULL}, {NULL}, 700, 0}};\n    memcpy(library, fresh, sizeof fresh);\n    main_o.pulled = 0;\n}\n\nint main(void) {\n    printf(\"build the library\\n\");\n    printf(\"  clang -c -fPIC square.c area.c perim.c\\n\");\n    printf(\"  ar rcs libgeo.a square.o area.o perim.o\\n\");\n    printf(\"  clang -shared -o libgeo.so square.o area.o perim.o\\n\\n\");\n\n    struct Link link;\n\n    printf(\"clang main.o libgeo.a -o app_static\\n\");\n    reset_units();\n    memset(&link, 0, sizeof link);\n    take(&link, &main_o);\n    scan_archive(&link);\n    for (int i = 0; i < 3; i++)\n        if (!library[i].pulled)\n            printf(\"  left out %s\\n\", library[i].name);\n    finish(&link);\n\n    printf(\"\\nclang libgeo.a main.o -o app_wrong_order\\n\");\n    reset_units();\n    memset(&link, 0, sizeof link);\n    scan_archive(&link);\n    printf(\"  nothing is missing yet, so no member is taken\\n\");\n    take(&link, &main_o);\n    finish(&link);\n\n    printf(\"\\nclang main.o -L. -lgeo -o app_shared\\n\");\n    reset_units();\n    memset(&link, 0, sizeof link);\n    take(&link, &main_o);\n    use_shared(&link);\n    finish(&link);\n    printf(\"  libgeo.so (2000 bytes) is loaded when the program starts and shared by every user\\n\");\n    return 0;\n}\n",
+          "output": "build the library\n  clang -c -fPIC square.c area.c perim.c\n  ar rcs libgeo.a square.o area.o perim.o\n  clang -shared -o libgeo.so square.o area.o perim.o\n\nclang main.o libgeo.a -o app_static\n  take main.o\n  pass 1 over libgeo.a\n  take area.o\n  pass 2 over libgeo.a\n  take square.o\n  left out perim.o\n  ok: the executable holds 2500 bytes of code\n\nclang libgeo.a main.o -o app_wrong_order\n  nothing is missing yet, so no member is taken\n  take main.o\n  error: undefined reference to 'area_circle'\n\nclang main.o -L. -lgeo -o app_shared\n  take main.o\n  libgeo.so provides area_circle: only a dependency is recorded\n  ok: the executable holds 1200 bytes of code\n  libgeo.so (2000 bytes) is loaded when the program starts and shared by every user\n",
+          "explanation": "程序首先打印构建库的三条命令。每个源文件都用 -fPIC 编译，ar 把目标文件打包成归档文件 libgeo.a，clang -shared 用同样的目标文件生成 libgeo.so。\n\n然后它模拟三条链接命令。链接器维护一张“已使用但还没定义”的名字表。在 clang main.o libgeo.a 中，它先接收 main.o，而 main.o 需要 area_circle。接着扫描归档文件。第 1 遍，它取出 area.o，因为 area.o 定义了 area_circle，却又需要 square。第 2 遍，它取出 square.o。perim.o 没有定义任何缺少的名字，所以被留下。可执行文件含有 1200 + 900 + 400 = 2500 字节代码，全部复制进来，运行时不需要库。复制的是整个成员，所以即使没人调用 area_rect，它也会跟着 area_circle 一起进来。\n\n在 clang libgeo.a main.o 中，归档文件先被扫描，那时没有缺少的名字，所以不取任何成员。随后 main.o 才加入一个缺少的名字，而链接器不会回头，结果就是未定义的引用。这就是静态库要放在使用它的文件后面的原因。这条从左到右的规则是 Linux 链接器的行为。有些其他链接器比较宽容，但你写命令时应当当作它们并不宽容。共享库的情况下，链接器只检查 libgeo.so 是否提供 area_circle，并记录一个依赖关系。可执行文件保持 1200 字节，2000 字节的库在程序启动时加载，并由所有使用它的程序共享。所有大小都是为了讲解而虚构的数字。",
+          "walkthrough": [
+            "打印构建目标文件、归档文件和共享库的命令。",
+            "按顺序接收目标文件时，维护一张“已使用但还没定义”的名字表。",
+            "反复扫描归档文件，只取出定义了缺少的名字的成员。",
+            "说明放在最前面的归档文件什么也解析不了，最后留下未定义的引用。",
+            "对于共享库，只记录依赖关系，不复制任何代码。"
+          ],
+          "trace": {
+            "columns": [
+              "链接命令",
+              "发生的事",
+              "结果"
+            ],
+            "rows": [
+              [
+                "clang main.o libgeo.a",
+                "接收 main.o，然后 area.o（area_circle），再接收 square.o（square）",
+                "2500 字节代码，perim.o 被留下"
+              ],
+              [
+                "clang libgeo.a main.o",
+                "扫描归档文件时没有缺少的名字；之后 main.o 才需要 area_circle",
+                "未定义的引用"
+              ],
+              [
+                "clang main.o -L. -lgeo",
+                "libgeo.so 提供 area_circle；记录依赖关系",
+                "1200 字节；库在启动时加载"
+              ]
+            ]
+          },
+          "syntax_notes": [
+            {
+              "syntax": "-fPIC",
+              "meaning": "编译成位置无关代码，这样库可以加载到任意地址。"
+            },
+            {
+              "syntax": "ar rcs libgeo.a a.o b.o",
+              "meaning": "r 加入文件，c 创建归档文件且不给出警告，s 写入符号索引。"
+            },
+            {
+              "syntax": "clang -shared -o libgeo.so a.o b.o",
+              "meaning": "把目标文件链接成共享库，而不是程序。"
+            },
+            {
+              "syntax": "-L. -lgeo",
+              "meaning": "-L. 把当前文件夹加入搜索路径；-lgeo 查找 libgeo.so 或 libgeo.a。"
+            },
+            {
+              "syntax": "struct Unit library[3];",
+              "meaning": "三个结构体的全局数组，每个场景开始前都从新的表复制一份。"
+            }
           ]
         }
       ]

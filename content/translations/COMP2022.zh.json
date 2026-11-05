@@ -47,10 +47,12 @@
       "topics": [
         "turing-machine-configurations",
         "turing-machine-design",
+        "turing-machine-variants",
         "universality-simulation",
         "recognizers-deciders",
         "undecidability-diagonalization",
-        "recognizable-closure"
+        "recognizable-closure",
+        "reductions-closure"
       ],
       "purpose": "先逐步跟踪通用机器，再追问哪些问题存在算法解法。"
     },
@@ -61,7 +63,8 @@
         "logical-equivalence",
         "propositional-normal-forms",
         "logical-consequence",
-        "predicate-logic"
+        "predicate-logic",
+        "quantifier-translation"
       ],
       "purpose": "先建立基于真值的推理，再引入对象、谓词和量化陈述。"
     }
@@ -1304,6 +1307,188 @@
       ]
     },
     {
+      "id": "turing-machine-variants",
+      "title": "规则表、三种描述层次与多带机器",
+      "story": "Leon 在一家小面包店里培训新助手。同一份工作，他用三种方式讲。对店主，他说：“每个做好的蛋糕都盖一颗星。”对助手，他说：“沿着货架从左往右走。看每个蛋糕上的标签。写着已完成的，就在蛋糕上盖一颗星，然后往前走。货架走到头就停。”对安全检查员，他递上一本规则册，每种情况一行：“在状态‘行走’，看到‘已完成’标签：盖星，向右一步，保持‘行走’状态。”这三种说法讲的是同一份工作，区别只在于细节的多少。\n\n后来面包店又买了第二个货架，助手可以把蛋糕放在一个货架上，把标签放在另一个货架上。助手并没有变得更有本事，只是更方便了。助手用两个货架能做的事，一个有耐心、只用一个货架的助手来回走动也都能做。这就是机器的“等价”：同样的活都能完成，只是用时不一定相同。",
+      "principle": "图灵机是一本有限的规则册加上一条纸带。形式上它是一个七元组 (Q, Σ, Γ, δ, q₀, q_accept, q_reject)：状态集、输入符号、带符号（包含输入符号和空白）、转移函数、起始状态和两个停机状态。每条规则的意思是：处于状态 q，读到符号 a，就写下 b，磁头移动一格或不动，并转到状态 q′。转移规则表为每一对（状态，读到的符号）列一行。状态图为每个状态画一个圆，为每条规则画一条箭头，标签写成 a/b,D，读作：读到 a，写 b，移动 D。表和图包含的信息完全一样。一定要说明没有适用规则时会发生什么。常见的约定是：缺少规则就算拒绝。\n\n描述一台机器可以有三个层次。高层描述是用普通语言写的算法，不提纸带：“把二进制数加一。”实现层描述说明磁头做什么、纸带上写什么，但不给状态起名：“走到最右端，再向左移动，把每个 1 改成 0，直到遇到 0 或空白，然后写 1。”形式层描述给出整个七元组和完整的表。要选择题目要求的层次，并且要能向下展开一层：高层描述中的每一句话，都应该对应一组有名字的状态和规则。\n\n多轨机器只有一个磁头和一条带，但每个格子里叠放着多个符号，每条轨道一个。在字母表 Γ 上有两条轨道时，一个格子里放的是 Γ × Γ 中的一对符号。把每一对重新命名为一个符号，就得到普通的单带机器，所以多轨没有增加能力。多带机器有 k 条带和 k 个磁头。一条规则同时读取 k 个磁头下的符号，同时在 k 个磁头下写入，各个磁头分别移动，并且只改变那个共享的状态。\n\n两台机器，或者两种机器模型，如果识别同样的语言，计算同样的函数，就是等价的。证明等价要在两个方向上都做模拟。单带机器就是 k = 1 的 k 带机器。另一个方向则要把 k 条带并排存在一条带上，用 # 隔开，并在每个磁头所在的符号上做标记。模拟一步需要扫一遍，读出被标记的符号，再扫一遍，写入并移动标记。如果某条带需要新的格子，它右边的内容整体后移一格。能力等价并不意味着速度相同：k 条带上的 t 步，在一条带上可能需要大约 t² 步。\n\n一个小程序可以对应到这些形状。像 x = x + 1 这样的赋值，对应一小段改变格子的状态路径。语句的顺序对应一条链：前一段的结束状态就是后一段的起始状态。循环对应一个带测试的状态环，测试有一条箭头回到环中重来，另一条箭头离开。变量对应一条带、一条轨道，或者带上用 # 隔出来的一块区域。要说清每个磁头从哪里开始、在哪里结束，因为循环开始时磁头位置不对，就会读错格子。",
+      "formula": "M = (Q, Σ, Γ, δ, q₀, q_accept, q_reject)        δ(q, a) = (q′, b, D),   D ∈ {L, R, S}\nk 条带：   δ : Q × Γᵏ → Q × Γᵏ × {L, R, S}ᵏ\nk 条轨道： 一个磁头，每个格子存放 Γᵏ 中的一个符号\n\n二进制加一。   Q = {start, carry, halt},   Γ = {0, 1, _}\n\n   状态     读     新状态       写      移动\n   start    0      start        0       R\n   start    1      start        1       R\n   start    _      carry        _       L\n   carry    1      carry        0       L\n   carry    0      halt         1       S\n   carry    _      halt         1       S\n\n   0/0,R 1/1,R              1/0,L\n      +---+                  +---+\n      |   v                  |   v\n --> (start) --- _/_,L ---> (carry) --- 0/1,S ---> ((halt))\n                               |                       ^\n                               +-------- _/1,S --------+",
+      "symbols": "Q 是有限的状态集。Σ 是输入字母表，Γ ⊇ Σ 是带字母表。空白符 _ 属于 Γ，但不属于 Σ。δ(q, a) = (q′, b, D) 给出下一个状态、写入的符号和移动方向：L 向左，R 向右，S 不动。在 1/0,L 这样的标签里，斜线前面是读到的符号，斜线后面先是写入的符号，再是移动方向。双圆圈（这里画成 (( ))）表示停机状态。像加一机器这样计算函数的机器，可以只用一个停机状态来代替 q_accept 和 q_reject。\n\nk 是带的条数。轨道是格子中的一层。带是一条独立的纸带，有自己的磁头。# 是分隔符，不出现在输入里。后面的代价估计中，t 表示被模拟的步数，L 表示编码后那条带的格子数。",
+      "example": "在 1011 上跟踪加一机器，1011 是二进制的十一。磁头从最左边的一位开始。在状态 start 下，它向右走过 1、0、1、1（四步），到达空白。随后在状态 carry 下退回最后一位（第 5 步）。这一位是 1，所以写 0 并向左（第 6 步）。再下一位也是 1：写 0，向左（第 7 步）。再下一位是 0：写 1 并停机（第 8 步）。纸带上是 1100，也就是十二。对 111，进位会越过最左端，空白对应的规则写下一个新的最高位 1，输出是 1000。\n\n下面是这台机器的三种层次。高层：“把二进制数加一。”实现层：“向右扫到第一个空白，再退回最后一位。磁头读到 1 就写 0 并向左。读到 0 或空白时，写 1 并停止。”形式层：公式框里的那张表。\n\n再看一个带循环的程序：x = 101（五），然后“重复 3 次：x = x + 1”。用两条带。第 1 条带用二进制存 x，第 2 条带用一进制存计数器 111。状态 start 检查计数器：磁头看到 1，说明还要再做一遍；看到空白，机器停机。状态 scan、carry、back 在第 1 条带上做加一，并让磁头回到最左端，最后一条规则把计数器的磁头向右移一格，用掉一个 1。start、scan、carry、back、start 这个环就是循环。scan 和 carry 是加一，依次经过各个状态就是顺序执行。每次检查时，第 1 条带上依次是 101、110、111、1000。机器在 29 步后停机，x = 1000，也就是八。\n\n要在一条带上运行同一个程序，把两条带存成 #101#111#，并标记每个磁头下的格子。模拟一步要把这个串扫两三遍。如果编码后的串从不超过 12 格，模拟一步最多花大约 3 × 12 = 36 步，29 个被模拟的步骤最多花大约一千步。答案相同，只是更慢。",
+      "pitfall": "只在一个方向上证明等价，或者把“等价”理解为“一样快”。k 带机器显然至少和单带机器一样强，因为可以取 k = 1。真正的工作在另一个方向，而且即使做到了，k 条带上的 t 步在一条带上也可能要花大约 t² 步。",
+      "check": {
+        "question": "为什么两轨机器不需要模拟论证，而两带机器需要？",
+        "answer": "两轨机器的一个格子在同一个磁头下放着一对符号。把每一对重新命名为一个符号，就已经得到普通的单带机器。两条带有两个位置不同的磁头，一条带必须同时存放两个串，并记住每个磁头的位置，所以模拟需要真正的构造。"
+      },
+      "glossary": [
+        {
+          "term": "转移规则表",
+          "meaning": "一张规则列表，为每对（状态，读到的符号）列一行，给出新状态、要写的符号和移动方向。"
+        },
+        {
+          "term": "状态图",
+          "meaning": "一幅图，每个状态一个圆，每条规则一条箭头，标签写成 读/写,移动。"
+        },
+        {
+          "term": "多轨带",
+          "meaning": "一条带、一个磁头，每个格子为每条轨道存放一个符号。"
+        },
+        {
+          "term": "多带机器",
+          "meaning": "有几条带的机器，每条带有自己的磁头，由同一个状态控制。"
+        },
+        {
+          "term": "等价模型",
+          "meaning": "识别同样的语言、计算同样的函数的两种模型，即使其中一个更慢。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "标签 1/0,L 的三部分各是什么意思？",
+          "answer": "读到 1，写下 0，磁头向左移动一格。"
+        },
+        {
+          "question": "实现层和形式层有什么不同？",
+          "answer": "实现层说明磁头做什么、纸带上写什么。形式层要给每个状态命名，列出每条规则，并说明规则缺失时怎么办。"
+        },
+        {
+          "question": "循环在状态图里是什么样子？",
+          "answer": "是一个环：某个状态有箭头回到前面的状态，途中的一个测试还有第二条离开这个环的箭头。"
+        },
+        {
+          "question": "为什么单带模拟要在各条带之间放 #？",
+          "answer": "它标出一条带到哪里结束、下一条带从哪里开始。没有它，模拟器分不清哪些格子属于哪条带。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "选择与论断相配的层次",
+          "body": "要证明一个语言可判定，通常用实现层描述就够了，前提是每个阶段都明确会停机并且正确。高层的“加一”把进位藏起来了。实现层把进位的循环摆出来，终止性论证就在这里：每一步都向左移动，所以循环到 0 或最左端就结束。当具体细节很重要时，比如要数步数或给出一台很小的机器，就用形式层的表。"
+        },
+        {
+          "title": "用边界输入检验小表",
+          "body": "在空输入、单个比特和全是 1 的输入上跑一遍。加一的表在空输入上，于状态 start 读到空白，转到 carry，再读到空白并写 1，输出是 1。要判断这样是否可以接受。这张表还依赖数字左边有一个空白格。如果纸带在左端是封闭的，向左进位的情形就需要额外的移位阶段，表也要随之改变。"
+        },
+        {
+          "title": "等价说的是能力，不是速度",
+          "body": "在两条带上，把长度为 n 的串复制到第二条带只需要大约 n 步。在一条带上，机器必须在两份拷贝之间来回奔走，代价按 n² 增长。有一个经典结果：单带机器判定一个串是否为回文，需要 n² 数量级的步数，而两带机器只需要大约 n 步。所以多加几条带虽然不改变任何语言，却会改变运行时间。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "把规则表变成状态图并跟踪运行",
+          "question": "一台机器有状态 even、odd、acc 和 rej。规则为 (even,0)→(even,0,R)，(even,1)→(odd,1,R)，(even,_)→(acc,_,S)，(odd,0)→(odd,0,R)，(odd,1)→(even,1,R)，(odd,_)→(rej,_,S)。请把状态图写成箭头列表，在 1101 上跟踪运行，并给出高层描述。",
+          "strategy": "把每一行变成一条带标签的箭头。然后一格一格地跟着磁头走，每一步之后写下当前状态。",
+          "steps": [
+            "箭头：even 到 even，标签 0/0,R；even 到 odd，标签 1/1,R；even 到 acc，标签 _/_,S；odd 到 odd，标签 0/0,R；odd 到 even，标签 1/1,R；odd 到 rej，标签 _/_,S。起始状态是 even。",
+            "在 1101 上跟踪：在 even 下读到第一个 1，转到 odd；读到 1，转到 even；读到 0，仍在 even；读到 1，转到 odd；在 odd 下读到空白，转到 rej。",
+            "机器每遇到一个 1 就在 even 与 odd 之间切换，遇到 0 则不变。一共见到三个 1，所以最后停在 odd。状态 odd 读到空白就拒绝。",
+            "高层描述：恰好接受含偶数个 1 的串。"
+          ],
+          "answer": "机器拒绝 1101，因为这个串含有三个 1。高层描述是：它判定含偶数个 1 的串。",
+          "sanity_check": "在空输入上，机器从 even 出发读到空白，于是接受。零是偶数个 1，所以这是对的。"
+        },
+        {
+          "title": "把一个小程序对应到两带机器上",
+          "question": "程序：total = 0；对输入中的每个 1：total = total + 1；total = total + 1。第 1 条带上是输入 111，第 2 条带开始时为空白。规则 (状态, 带1, 带2) → (状态, 写1, 写2, 移动1, 移动2) 为 (first,1,_)→(second,1,1,S,R)，(second,1,_)→(first,1,1,R,R)，(first,_,_)→(halt,_,_,S,S)。请跟踪运行，并指出其中的加一、顺序执行和循环。",
+          "strategy": "跟着状态名走。注意第 2 条带上的磁头只向右移动，所以第 2 条带像一个不断增长的计数器。",
+          "steps": [
+            "第 1 步：状态 first 在第 1 条带上读到 1，在第 2 条带上读到空白。它在第 2 条带上写 1，让那个磁头右移，并转到 second。第 2 条带上是 1。",
+            "第 2 步：状态 second 读到 1 和空白。它在第 2 条带上再写一个 1，两个磁头都右移，转到 first。第 2 条带上是 11，输入磁头前进了一格。",
+            "第 3 到第 6 步对第二个和第三个 1 重复同样的一对动作。第 4 步后第 2 条带上是 1111，第 6 步后是 111111。",
+            "第 7 步：状态 first 在第 1 条带上读到空白，停机。机器共用了 2 × 3 + 1 = 7 步。",
+            "加一就是在第 2 条带上“写 1 并右移”，在 first 和 second 中各出现一次。顺序执行就是先 first 后 second。循环就是从 second 回到 first 的那条箭头，由第 1 条带上的测试决定是继续循环还是停机。"
+          ],
+          "answer": "输出是 111111，三个输入符号对应六个 1：循环每一遍把总数加 2。",
+          "sanity_check": "输入为空时，机器立刻停机，第 2 条带为空，对应循环执行零遍。"
+        },
+        {
+          "title": "数一数轨道，并估算一次模拟的代价",
+          "question": "(a) 一台 3 轨机器的每条轨道上都使用符号 0、1 和空白。与它等价的单轨机器需要多少个不同的符号？(b) 一台 2 带机器 29 步后停机。它在单带上的编码从不超过 12 格，而且每个被模拟的步骤最多花 3 次扫描。给出单带步数的一个上界。",
+          "strategy": "(a) 数一数一个格子可能出现多少种“列”。(b) 把步数乘以模拟一步的代价。",
+          "steps": [
+            "一个格子是一列，有 3 个位置，每个位置有 3 种符号可选。可能的列共有 3 × 3 × 3 = 27 种。",
+            "单轨机器把每一列当作一个符号，所以它的带字母表有 27 个符号，包括全空白的那一列。",
+            "一次扫描最多花 12 步，所以模拟一步最多花 3 × 12 = 36 步。",
+            "模拟 29 步，总共最多 29 × 36 = 1044 步。"
+          ],
+          "answer": "单轨机器需要 27 个符号，单带模拟最多用 1044 步。所识别的语言或所计算的函数不变。",
+          "sanity_check": "27 是 3 的 3 次方。所以 k 条轨道、每条 a 个符号时，字母表有 aᵏ 个符号。只有一条轨道时是 a，符合预期。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "rule-table-simulator",
+          "title": "在一条带和两条带上运行规则表",
+          "intro": "Mia 把机器的规则当作数据来保存。规则表是一个 Python 字典，从（状态，读到的符号）映射到（新状态，写入的符号，移动方向）。一个小模拟器可以运行任意条带的表。第一张表在一条带上给二进制数加一。第二张表在两条带上运行程序“重复 3 次：x = x + 1”。",
+          "language": "python",
+          "code": "def run_tm(rules, tapes, start=\"start\", halt=\"halt\", limit=500):\n    \"\"\"Run a deterministic k-tape machine. Every tape starts with its head on cell 0.\n\n    rules maps (state, symbols read) to (new state, symbols written, moves).\"\"\"\n    cells = [dict(enumerate(t)) for t in tapes]\n    heads = [0] * len(tapes)\n    state, steps, history = start, 0, []\n\n    def snapshot():\n        shown = []\n        for tape, head in zip(cells, heads):\n            used = [i for i, c in tape.items() if c != \"_\"] + [head]\n            lo, hi = min(used), max(used)\n            shown.append(\"\".join(f\"[{tape.get(i, '_')}]\" if i == head else tape.get(i, \"_\")\n                                 for i in range(lo, hi + 1)))\n        return state, shown\n\n    history.append(snapshot())\n    while state != halt:\n        read = tuple(t.get(h, \"_\") for t, h in zip(cells, heads))\n        if (state, read) not in rules:\n            raise RuntimeError(f\"no rule for {state} reading {read}\")\n        state, write, moves = rules[(state, read)]\n        for i, (w, m) in enumerate(zip(write, moves)):\n            cells[i][heads[i]] = w\n            heads[i] += {\"L\": -1, \"R\": 1, \"S\": 0}[m]\n        steps += 1\n        history.append(snapshot())\n        if steps > limit:\n            raise RuntimeError(\"step limit reached\")\n    return steps, history\n\n\ndef contents(history):\n    return [t.replace(\"[\", \"\").replace(\"]\", \"\").strip(\"_\") for t in history[-1][1]]\n\n\n# One tape: add 1 to a binary number. Rules: (state, (read,)) -> (state, (write,), (move,))\nincrement = {}\nfor bit in \"01\":\n    increment[(\"start\", (bit,))] = (\"start\", (bit,), \"R\")      # walk to the right end\nincrement[(\"start\", (\"_\",))] = (\"carry\", (\"_\",), \"L\")           # step back onto the last bit\nincrement[(\"carry\", (\"1\",))] = (\"carry\", (\"0\",), \"L\")           # 1 plus carry: write 0, carry on\nincrement[(\"carry\", (\"0\",))] = (\"halt\", (\"1\",), \"S\")            # 0 plus carry: write 1, done\nincrement[(\"carry\", (\"_\",))] = (\"halt\", (\"1\",), \"S\")            # ran off the left end: new leading 1\n\nfor text in (\"1011\", \"111\"):\n    steps, history = run_tm(increment, [text])\n    print(f\"one tape : {text} + 1 = {contents(history)[0]} in {steps} steps\")\n\n# Two tapes: tape 1 holds x in binary, tape 2 holds a unary counter.\n# Program:  repeat 3 times: x = x + 1\nloop = {}\nfor bit in \"01\":\n    loop[(\"start\", (bit, \"1\"))] = (\"scan\", (bit, \"1\"), \"SS\")    # counter left? do one more pass\n    loop[(\"start\", (bit, \"_\"))] = (\"halt\", (bit, \"_\"), \"SS\")    # counter empty: finished\n    loop[(\"scan\", (bit, \"1\"))] = (\"scan\", (bit, \"1\"), \"RS\")     # find the end of x\n    loop[(\"back\", (bit, \"1\"))] = (\"back\", (bit, \"1\"), \"LS\")     # return to the start of x\nloop[(\"scan\", (\"_\", \"1\"))] = (\"carry\", (\"_\", \"1\"), \"LS\")\nloop[(\"carry\", (\"1\", \"1\"))] = (\"carry\", (\"0\", \"1\"), \"LS\")       # the increment, as before\nloop[(\"carry\", (\"0\", \"1\"))] = (\"back\", (\"1\", \"1\"), \"LS\")\nloop[(\"carry\", (\"_\", \"1\"))] = (\"back\", (\"1\", \"1\"), \"LS\")\nloop[(\"back\", (\"_\", \"1\"))] = (\"start\", (\"_\", \"1\"), \"RR\")        # count one pass, loop again\n\nsteps, history = run_tm(loop, [\"101\", \"111\"])\nprint(f\"two tapes: x = 101, counter 111 -> x = {contents(history)[0]} in {steps} steps\")\nfor state, (tape1, tape2) in history:\n    if state == \"start\":\n        print(f\"  at the loop test: x = {tape1:<8} counter = {tape2}\")\n",
+          "output": "one tape : 1011 + 1 = 1100 in 8 steps\none tape : 111 + 1 = 1000 in 8 steps\ntwo tapes: x = 101, counter 111 -> x = 1000 in 29 steps\n  at the loop test: x = [1]01    counter = [1]11\n  at the loop test: x = [1]10    counter = 1[1]1\n  at the loop test: x = [1]11    counter = 11[1]\n  at the loop test: x = [1]000   counter = 111[_]\n",
+          "walkthrough": [
+            "run_tm 为每条带保存一个格子字典和一个磁头位置。不在字典里的格子都是空白。",
+            "每一步从每条带读一个符号，查规则，在每个磁头下写入，移动每个磁头，并改变状态。缺少规则就抛出错误，这是本程序对“崩溃”的约定。",
+            "加一的表有六条规则：两条用于向右走过各个比特，一条用于在空白处折返，三条用于进位。起始状态是 start，停机状态是 halt。",
+            "循环的表增加了第二条带。计数器磁头下的 1 表示还要再做一遍。状态 start 检查它，状态 scan、carry 和 back 完成加一并回到最左端，最后一条规则把计数器磁头向右移一格。",
+            "snapshot 生成被打印和被跟踪的字符串：每个磁头下的格子用方括号标出。"
+          ],
+          "explanation": "输出的前两行显示，加一机器在 1011 和 111 上都用 8 步，尽管后一个输入的进位一直传到最左边。对 1011，向右走用 5 步（四个比特，再加空白），进位用 3 步。对 111，向右走用 4 步，进位用 4 步，因为最后的进位落在空白上，写下一个新的最高位 1。\n\n循环机器每次重新进入状态 start，也就是每次检查计数器时，都会打印 x 的值：101、110、111 和 1000。方括号显示磁头的位置。第三遍之后，计数器磁头落在空白上，于是下一次检查就结束了循环。机器 29 步后停机。\n\n找一找这三种形状。加一是 scan 和 carry 这一对状态。顺序执行是依次经过 scan、carry 和 back。循环是从 back 回到 start 的那条规则。因为计数器有自己的带，它不会干扰那个数。如果只有一条带，就需要在带上隔出一块区域放计数器，而且每一遍都要跑过去一趟。",
+          "trace": {
+            "columns": [
+              "步数",
+              "状态",
+              "纸带（磁头在方括号内）"
+            ],
+            "rows": [
+              [
+                "0",
+                "start",
+                "[1]011"
+              ],
+              [
+                "1",
+                "start",
+                "1[0]11"
+              ],
+              [
+                "2",
+                "start",
+                "10[1]1"
+              ],
+              [
+                "3",
+                "start",
+                "101[1]"
+              ],
+              [
+                "4",
+                "start",
+                "1011[_]"
+              ],
+              [
+                "5",
+                "carry",
+                "101[1]"
+              ],
+              [
+                "6",
+                "carry",
+                "10[1]0"
+              ],
+              [
+                "7",
+                "carry",
+                "1[0]00"
+              ],
+              [
+                "8",
+                "halt",
+                "1[1]00"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
       "id": "universality-simulation",
       "title": "模拟、通用性与 Church–Turing 论题",
       "story": "通用播放器读取乐谱就能播放不同曲子，无需为每首重造硬件。通用图灵机同样读取机器编码及其输入，逐步解释。类比也显出限制：能跟乐谱不代表事先知道古怪乐谱会否要求无限重复。通用性是模拟任意编码程序的能力，不是无需执行便预测每个程序最终行为的能力。",
@@ -1612,6 +1797,172 @@
           ],
           "answer": "这构造L判定器，与前提矛盾，因此补不可识别。",
           "sanity_check": "可判定语言则无矛盾：两侧均有判定器，因此均有识别器。"
+        }
+      ]
+    },
+    {
+      "id": "reductions-closure",
+      "title": "证明新语言不可判定或不可识别",
+      "story": "Noah 宣布他做出了一个检查器。他说，只要把任意一台机器的说明书交给它，它就能立刻告诉你这台机器是否至少接受一个输入。Iris 并不相信。她没有拿成千上万份说明书去试这个检查器，而是换了一个问题：如果这个检查器真的有效，我还能用它做什么？\n\nIris 已经知道一件谁也做不到的事：给定机器 M 和输入 w，判断 M 是否接受 w。她想到一个办法。根据 M 和 w，她写出一份新的说明书 M_w。新机器对除 w 以外的所有输入都不理会，遇到 w 时就照着 M 的步骤去做。这样，M_w 恰好在 M 接受 w 时才会接受某个输入。Iris 把 M_w 交给 Noah 的检查器，读出答案。如果检查器有效，Iris 就解决了那件谁也做不到的事。所以它不可能有效。\n\n请注意，Iris 只是写出了新说明书，并没有照着去执行。写说明书只要几分钟，照着执行却可能永远没有结果。",
+      "principle": "要证明一个新语言 L 不可判定，先选一个已知不可判定的语言 A，通常是 A_TM，也就是所有满足“机器 M 接受输入 w”的二元组 ⟨M,w⟩。然后用反证法，假设 L 有判定器 R。把 R 当作子程序，造一台判定 A 的机器 S。这样的 S 不可能存在，所以 R 也不可能存在。\n\n一个完整的证明有五个部分：假设、S 的构造、答案为“是”时 S 正确的证明、答案为“否”时 S 正确的证明，以及 S 对每个输入都会停机的证明。最后一部分最容易被忘记。它通常依赖两个事实：构造这一步只是写出一个有限长的串，而 R 是判定器，总会给出答案。\n\n同样的想法还有一种简洁的写法。从 A 到 B 的映射归约是一个可计算的函数 f，它对每个串都有定义，并且 w 属于 A 当且仅当 f(w) 属于 B。记作 A ≤m B。如果 B 可判定，那么 A 也可判定：先算出 f(w)，再请 B 的判定器回答。如果 B 可识别，A 也可识别。反过来读，这些结论正是我们要用的工具：A 不可判定，则 B 不可判定；A 不可识别，则 B 不可识别。方向很重要：已知很难的语言放在左边，新语言放在右边。\n\n封闭性给出第二条往往更短的路。可判定语言对补、并、交、差都封闭，因为判定器总会停机，它们的答案可以组合起来。可识别语言对并和交封闭，但对补不封闭。两类语言之间有一个关键联系：一个语言可判定，当且仅当它和它的补都可识别。因此，要证明 L 不可判定，可以假设它可判定，再用一条封闭规则把它与一个可判定语言组合，重新得到一个已知不可判定的语言。要证明 L 不可识别，则证明它的补可识别但不可判定。",
+      "formula": "A ≤m B：存在可计算的 f，对每个串都有定义，并且  w ∈ A  ⇔  f(w) ∈ B\n\nA ≤m B 且 B 可判定          ⇒  A 可判定\nA ≤m B 且 B 可识别          ⇒  A 可识别\nA ≤m B 且 A 不可判定        ⇒  B 不可判定\nA ≤m B 且 A 不可识别        ⇒  B 不可识别\n\nL 可判定  ⇔  L 与它的补都可识别\n\n证明“L 不可判定”的模板：\n  1. 假设 R 判定 L。\n  2. S 在输入 ⟨M,w⟩ 上：写出 ⟨M′⟩；在 ⟨M′⟩ 上运行 R；给出答案（有时要取反）。\n  3. 证明  M 接受 w  ⇔  S 接受（两个方向都要证）。\n  4. 证明 S 对每个输入都会停机。\n  5. 于是 S 判定了 A_TM，矛盾。",
+      "symbols": "A_TM = {⟨M,w⟩ : M 接受 w} 和 HALT_TM = {⟨M,w⟩ : M 在 w 上停机} 是两个标准的不可判定语言。A_TM 可识别，因为可以模拟 M 在 w 上的运行，但它的补不可识别。记号 ⟨M⟩ 是描述机器 M 的一个串，这样别的机器就能把它当作输入。L(M) 是 M 接受的全部串。E_TM = {⟨M⟩ : L(M) = ∅} 是那些什么也不接受的机器所组成的语言。按照约定，不是合法编码的串，被看作一台什么也不接受的机器的编码。\n\nM′ 和 M_w 是 S 写出来的机器，它们依赖于 M 和 w。映射归约中的函数 f 起的是第 2 步的作用：它是一个总会结束并输出一份描述的程序。Σ* 是所有串的集合，L 的补是 Σ* ∖ L。",
+      "example": "命题：E_TM 不可判定。证明：假设 R 判定 E_TM，来构造 S。输入 ⟨M,w⟩ 时，S 先写出机器 M_w 的代码，M_w 的行为如下：输入 x 时，若 x 不是 w，就拒绝；若 x 是 w，就在 w 上运行 M，M 接受则接受。然后 S 在 ⟨M_w⟩ 上运行 R。R 接受，则 S 拒绝；R 拒绝，则 S 接受。\n\n两个方向都要检查。若 M 接受 w，则 M_w 接受 w 而且只接受 w，于是 L(M_w) = {w} 非空，R 拒绝 ⟨M_w⟩，S 接受。若 M 不接受 w（因为拒绝或者死循环），则 M_w 什么也不接受，L(M_w) = ∅，R 接受，S 拒绝。S 总会停机：写出 ⟨M_w⟩ 只是把 ⟨M⟩ 和 w 抄进一个固定模板，而 R 总会给出答案。所以 S 判定了 A_TM，这是不可能的。因此 R 不存在。\n\n取一台具体的 M：当且仅当串里 1 的个数是偶数时接受。对 w = 1001，串里有两个 1，M 接受，L(M_w) = {1001}，S 回答“是”。对 w = 1011，有三个 1，M 拒绝，L(M_w) = ∅，S 回答“否”。若 M 在 w 上死循环，则 M_w 在 w 上也死循环，L(M_w) 仍然为空，S 仍回答“否”。\n\n再看不可识别的那一半。E_TM 的补，是至少接受一个串的机器的编码所成的语言。这个语言可识别：对串 0、1、00、01、…… 公平地交错运行 M，只要有一次运行接受就接受。如果 E_TM 也可识别，那么 E_TM 就可判定，而这一点刚刚被排除。所以 E_TM 不可识别。",
+      "pitfall": "把归约的方向弄反。如果证明了“用新语言可以解决已知很难的语言”，这才有意义。如果只证明了“用已知很难的语言可以解决新语言”，那只说明新语言不比它更难，并不能说明它是否可判定。",
+      "check": {
+        "question": "在 E_TM 不可判定的证明中，即使 M 在 w 上永远循环，S 为什么仍然可以放心地构造 M_w？",
+        "answer": "构造 M_w 只是写出一份描述：把 M 的代码和串 w 抄进一个固定模板。这一步并不运行 M，所以总会结束。M_w 在 w 上会循环，但 S 也不运行 M_w，它只是把描述交给 R，而 R 是判定器，总会给出答案。"
+      },
+      "glossary": [
+        {
+          "term": "归约",
+          "meaning": "一种可计算的改写，把关于一个语言的问题变成关于另一个语言的问题。"
+        },
+        {
+          "term": "假想的判定器",
+          "meaning": "我们只是为了推出矛盾而假设存在的判定器。"
+        },
+        {
+          "term": "编码 ⟨M⟩",
+          "meaning": "描述机器 M 的一个串，使别的机器可以把它当作输入。"
+        },
+        {
+          "term": "封闭性",
+          "meaning": "如果对一类语言中的成员施行某种运算，结果总还在这一类里，就说这类语言对该运算封闭。"
+        },
+        {
+          "term": "构造件",
+          "meaning": "构造过程中包在 M 和 w 外面的那一小段固定的机器行为。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "我们假设哪个语言有判定器？",
+          "answer": "假设新语言 L 有判定器，也就是我们想证明不可判定的那个语言。对已知很难的语言，我们只用它不可判定这一点。"
+        },
+        {
+          "question": "证明的最后，机器 S 判定的是什么？",
+          "answer": "一个已知不可判定的语言，例如 A_TM。矛盾就出在这里。"
+        },
+        {
+          "question": "为什么要证明“M 接受 w 当且仅当 S 接受”的两个方向？",
+          "answer": "只证一个方向的话，S 仍可能在某些输入上出错，比如拒绝了 M 确实接受的二元组。那样 S 就没有判定 A_TM。"
+        },
+        {
+          "question": "对补封闭怎样帮上忙？",
+          "answer": "如果 L 可判定，把答案“是”和“否”互换，就能判定它的补。所以不可判定语言的补也不可判定。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "先问目标语言在检验什么，再选构造件",
+          "body": "E_TM 检验的是“有没有被接受的串”，所以 M_w 要做成恰好在 M 接受 w 时才接受某个串。如果目标是“机器的语言是正则的”，就要让 M_w 的语言恰好在 M 接受 w 时是正则的：让 M_w 接受所有形如 0ⁿ1ⁿ 的串，对其他串则在 w 上运行 M，M 接受就接受。若 M 接受 w，L(M_w) 是 Σ*，是正则的；否则 L(M_w) 是 {0ⁿ1ⁿ}，不是正则的。套路不变，只换构造件。"
+        },
+        {
+          "title": "只和代码本身有关的性质很容易判定",
+          "body": "“M 的状态数是否超过五个”这个问题，读一遍 ⟨M⟩ 就能回答，所以它可判定，任何构造件都无法把它和接受行为挂上钩。归约证明只适用于那些取决于机器做什么，而不是取决于机器怎么写的性质。动手证明之前，可以先用它快速检查一下。"
+        },
+        {
+          "title": "封闭性论证需要一个可判定的搭档",
+          "body": "如果 X 和 D 都可判定，那么 X ∩ D、X ∪ D 和 X ∖ D 都可判定。使用时，要找一个可判定的 D，把未知语言 X 削成一个已知不可判定的语言。常见的搭档是语法：合法的二元组编码 ⟨M,w⟩ 所成的集合是可判定的，因为机器能在有限步内检查格式。第二道例题就用了这一点。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "证明停机语言不可判定",
+          "question": "设 HALT_TM = {⟨M,w⟩ : M 在 w 上停机}。已知 A_TM 不可判定。请写出完整证明：从 HALT_TM 的假想判定器 H 出发，构造 A_TM 的判定器，从而证明 HALT_TM 不可判定。",
+          "strategy": "要判定的是已知很难的 A_TM。用 H 排除循环的情形，因为只有在 H 保证 M 停机之后，模拟 M 才是安全的。",
+          "steps": [
+            "假设 H 判定 HALT_TM。定义 S：输入 ⟨M,w⟩ 时，先在 ⟨M,w⟩ 上运行 H。",
+            "若 H 拒绝，则 M 在 w 上循环，M 不接受 w，S 拒绝。若 H 接受，则 M 在 w 上停机，所以模拟 M 在 w 上的运行一定会结束。S 进行模拟，并给出相同的答案：M 接受就接受，M 拒绝就拒绝。",
+            "正确性：若 M 接受 w，则 H 接受，模拟接受，S 接受。若 M 拒绝 w，则 H 接受，模拟拒绝，S 拒绝。若 M 循环，则 H 拒绝，S 拒绝。每种情形下，S 接受当且仅当 M 接受 w。",
+            "终止性：H 总会停机。模拟只在 H 说 M 在 w 上停机之后才开始，所以它也会停机。因此 S 对每个输入都停机，并判定了 A_TM，这是不可能的，所以 H 不存在。例如，M 接受含偶数个 1 的串，w = 1011：H 接受（M 在 4 步后停机），模拟结果为拒绝，S 拒绝。"
+          ],
+          "answer": "HALT_TM 不可判定。证明成立，是因为唯一可能循环的那一步，也就是对 M 的模拟，只在 H 证明它会停机之后才开始。",
+          "sanity_check": "如果允许 H 在某些输入上循环，最后一步就不成立：S 也可能循环，S 就不是判定器，也就没有矛盾。"
+        },
+        {
+          "title": "用封闭性证明一个“填充过”的语言不可判定",
+          "question": "设 V 是所有形如 ⟨M,w⟩ 的合法编码的集合，X = A_TM ∪ (Σ* ∖ V)，即 M 接受 w 的二元组，再加上所有不是合法二元组编码的串。只使用 A_TM 不可判定、V 可判定这两条事实，证明 X 不可判定。",
+          "strategy": "假设 X 可判定，再与可判定集合 V 取交，还原出 A_TM。",
+          "steps": [
+            "V 可判定：机器可以在有限步内检查一个串的格式，然后接受或拒绝。可判定语言对交封闭。",
+            "计算 X ∩ V。A_TM 的每个成员都是合法的二元组编码，所以 A_TM ∩ V = A_TM。填充部分 Σ* ∖ V 与 V 没有公共元素，所以 (Σ* ∖ V) ∩ V = ∅。因此 X ∩ V = A_TM。",
+            "假设 X 有判定器 D_X。那么下面这台机器总会停机：输入 z 时，先做 V 的格式检查；z 不合法就拒绝；否则在 z 上运行 D_X 并照抄它的答案。这台机器判定了 A_TM。比如 z = “hello”，格式检查不通过，机器拒绝，这是对的，因为“hello”不在 A_TM 里。",
+            "这与 A_TM 不可判定矛盾，所以 D_X 不存在。"
+          ],
+          "answer": "X 不可判定。给不可判定语言添上容易识别的杂项，并不会让它变得可判定。",
+          "sanity_check": "这个论证要求 V 可判定。如果检查格式本身就不可判定，第 1 步就不成立，第 3 步中的机器也可能不停机。"
+        },
+        {
+          "title": "用带步数上限的构造件证明语言不可识别",
+          "question": "设 ALL_TM = {⟨M⟩ : L(M) = Σ*}。证明 ALL_TM 不可识别。可以使用 A_TM 的补不可识别这一事实。",
+          "strategy": "把 A_TM 的补归约到 ALL_TM。构造件必须恰好在 M 不接受 w 时接受所有串，而加上步数上限就能做到这一点。",
+          "steps": [
+            "定义 f。对合法的二元组 ⟨M,w⟩，f 输出机器 N 的代码，N 对输入 x 的行为是：模拟 M 在 w 上最多 |x| 步；若这时 M 已经接受，就拒绝；否则接受。对不合法的串，f 输出一台接受所有串的机器的代码。写出这些代码总会结束，所以 f 可计算，并且对每个串都有定义。",
+            "若 M 不接受 w（拒绝或循环），则任何模拟都看不到 M 接受，N 接受每个 x，L(N) = Σ*。所以 f(⟨M,w⟩) 属于 ALL_TM，而 ⟨M,w⟩ 属于 A_TM 的补。",
+            "若 M 恰好在 5 步后接受 w，则 N 拒绝所有满足 |x| ≥ 5 的 x，只接受更短的串，所以 L(N) ≠ Σ*。于是 f(⟨M,w⟩) 不属于 ALL_TM，而 ⟨M,w⟩ 不属于 A_TM 的补。不合法的串被映射进 ALL_TM，同时也在补里。所以两边总是一致的。",
+            "假设 Q 识别 ALL_TM。那么“先算 f，再运行 Q”就能识别 A_TM 的补，这是不可能的。所以 Q 不存在。"
+          ],
+          "answer": "ALL_TM 不可识别。步数上限的作用，是把“M 在某个时刻接受 w”变成“N 没有接受所有串”。",
+          "sanity_check": "若 M 在 t 步后接受 w，N 恰好拒绝长度至少为 t 的串。t = 5 时，长度不小于 5 的串都被拒绝，N 漏掉无穷多个串，正符合要求。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "reduction-gadget-demo",
+          "title": "只构造，不运行：构造件演示",
+          "intro": "Emma 想把这个证明的结构写成程序看一看。这里的玩具机器是 Python 生成器：每次 yield 算一步，返回 \"accept\" 或 \"reject\" 表示停机。函数 build_Mw 就是主例子里的归约，它只写出一台新机器，不运行任何东西。判定器 R 的替身在有限步数内寻找被接受的串。真正的 R 并不存在，所以这个替身只是猜测，表格会显示它在哪里出错。",
+          "language": "python",
+          "code": "# A toy machine is a generator function. Each yield is one step.\n# Returning \"accept\" or \"reject\" halts it. Never returning means looping.\n\ndef run(machine, text, budget):\n    \"\"\"Run for at most `budget` steps. Return the answer, or None if unfinished.\"\"\"\n    steps = machine(text)\n    for _ in range(budget):\n        try:\n            next(steps)\n        except StopIteration as done:\n            return done.value\n    return None\n\n\ndef even_ones(text):                 # accepts when the number of 1s is even\n    ones = 0\n    for ch in text:\n        yield\n        ones += ch == \"1\"\n    return \"accept\" if ones % 2 == 0 else \"reject\"\n\n\ndef spin(text):                      # loops forever\n    while True:\n        yield\n\n\ndef slow_accept(text):               # accepts, but only after 5000 steps\n    for _ in range(5000):\n        yield\n    return \"accept\"\n\n\ndef build_Mw(M, w):\n    \"\"\"The reduction. It writes down a new machine and runs nothing.\"\"\"\n    def Mw(x):\n        yield\n        if x != w:\n            return \"reject\"\n        answer = yield from M(w)     # simulate M on w, one step at a time\n        return \"accept\" if answer == \"accept\" else \"reject\"\n    return Mw\n\n\ndef stand_in_for_R(machine, probes, budget):\n    \"\"\"A budgeted guess at 'is the language empty?'. A real decider cannot exist.\"\"\"\n    return all(run(machine, p, budget) != \"accept\" for p in probes)\n\n\ndef S(M, w, budget):\n    Mw = build_Mw(M, w)                              # step 1: always finishes\n    empty = stand_in_for_R(Mw, [w, \"\", \"0\"], budget)  # step 2: ask R\n    return not empty                                 # step 3: flip the answer\n\n\ncases = [(\"even_ones\", even_ones, \"1001\"), (\"even_ones\", even_ones, \"1011\"),\n         (\"spin\", spin, \"1001\"), (\"slow_accept\", slow_accept, \"1001\")]\nprint(\"machine      w     M accepts w  R says empty  S accepts  S correct\")\nfor name, M, w in cases:\n    truth = run(M, w, 20000) == \"accept\"\n    says = S(M, w, 100)\n    print(f\"{name:<12} {w}  {str(truth):<11}  {str(not says):<12}  {str(says):<9}  {says == truth}\")\n\nprint(\"building M_w for a looping M returns at once:\", callable(build_Mw(spin, \"1001\")))\nprint(\"running that M_w on w for 100 steps gives:\", run(build_Mw(spin, \"1001\"), \"1001\", 100))\n",
+          "output": "machine      w     M accepts w  R says empty  S accepts  S correct\neven_ones    1001  True         False         True       True\neven_ones    1011  False        True          False      True\nspin         1001  False        True          False      True\nslow_accept  1001  True         True          False      False\nbuilding M_w for a looping M returns at once: True\nrunning that M_w on w for 100 steps gives: None\n",
+          "walkthrough": [
+            "run 最多运行玩具机器 budget 步，返回它的答案；若机器还没结束，就返回 None。程序不能无限等待，这个函数模拟的正是这种限制。",
+            "even_ones、spin 和 slow_accept 在每个输入上行为各不相同：一台带着答案停机，一台永远循环，一台要到 5000 步以后才接受。",
+            "build_Mw 就是归约。它返回一台新机器：对 w 以外的 x 一律拒绝，遇到 w 时用 yield from 运行 M。调用 build_Mw 时什么也不会运行。",
+            "S 遵循证明的三个步骤：构造 M_w，问 R 的替身 M_w 是不是什么也不接受，然后给出相反的答案。",
+            "最后的循环把 S 和真相作比较。“真相”一列用的是很大的步数上限，这只因为我们事先知道这些玩具机器的行为。对真实的机器，它是算不出来的。"
+          ],
+          "explanation": "表格展示了 S 的逻辑。若 100 步内没有任何探测串被接受，R 的替身就说“空”，S 返回相反的答案。前三行与 M 和 w 的真实情况一致。对 slow_accept，M 确实接受 w，但要等 5000 步。100 步以内 M_w 还没有接受，替身说“空”，S 就答错了。\n\n把步数上限调大，可以修好这台机器，却会在下一台更慢的机器上出错。这正是定理的缩影：不管等多久，都无法把一台永远不接受的机器和一台很晚才接受的机器区分开。真正的判定器 R 必须对每台机器都答对，而这恰恰是不可能存在的。\n\n最后两行说明构造这一步为什么是安全的。对一台循环的机器构造 M_w，会立刻返回，因为构造只是新建一个函数。真正运行这个 M_w 却永远不会结束，程序在 100 步后把它截停。证明从不运行 M_w，只把描述交给 R。",
+          "trace": {
+            "columns": [
+              "情形",
+              "M 在 w 上",
+              "L(M_w)",
+              "R 说“空”",
+              "S 的答案"
+            ],
+            "rows": [
+              [
+                "even_ones, w = 1001",
+                "接受",
+                "{1001}",
+                "False",
+                "接受（正确）"
+              ],
+              [
+                "even_ones, w = 1011",
+                "拒绝",
+                "空",
+                "True",
+                "拒绝（正确）"
+              ],
+              [
+                "spin, w = 1001",
+                "循环",
+                "空",
+                "True",
+                "拒绝（正确）"
+              ],
+              [
+                "slow_accept, w = 1001",
+                "5000 步后接受",
+                "{1001}",
+                "True（步数上限太小）",
+                "拒绝（错误）"
+              ]
+            ]
+          }
         }
       ]
     },
@@ -2051,6 +2402,133 @@
             "检查空集合情形。没有学生时全称命题为真；有学生却没有导师时，原命题为假。"
           ],
           "explanation": "设 S 为学生集合、M 为导师集合，R(x,y) 表示 y 指导 x。第一个命题是“对每个 x∈S，存在 y∈M，使 R(x,y)”；第二个是“存在 y∈M，对每个 x∈S 都有 R(x,y)”。共同见证能证明第二个，进而证明第一个；各自的见证只能证明第一个。\n\n否定第一个命题得到：“存在 x∈S，使每个 y∈M 都不满足 R(x,y)”。删掉 Bo–Noah 后，Bo 就成为这个反例。|S| 名学生、|M| 名导师的直接检查需要 O(|S||M|) 次关系查询，这里假定集合查询平均 O(1)。\n\n程序检查的是一个指定的有限解释。在一张表上成立，并不证明公式在所有解释中都有效，也不能解决任意一阶逻辑有效性。论域假设应写在题目中，不能遇到不想要的结果后再临时改变空集规则。"
+        }
+      ]
+    },
+    {
+      "id": "quantifier-translation",
+      "title": "英语与量词公式的互译",
+      "story": "Iris 在为学校的储物间写使用规则，Leon 负责校对。Iris 写道：“每个学生都有一个储物柜。”Leon 问：你是说每个学生都有自己的储物柜，还是说存在一个所有学生共用的储物柜？在英语里，同一句话两种读法都说得通，可管理员必须按其中一种去执行。谓词逻辑用量词的顺序把这个选择摆到明处。从左往右读，每个量词都是依次做出的一次选择，后面的选择可以依赖前面的选择。\n\n反过来翻译是同一种本领。Leon 把公式当作一个按顺序讲的小故事来读：“任选一个学生。那么有一个储物柜是这个学生拥有的。”按这个顺序慢慢读，再拿一个只有两个学生、两个储物柜的小模型去检验这个故事，大多数错误都能查出来。",
+      "principle": "把一句话翻译成逻辑，分四步。第一步，确定论域：x 可以是哪一类东西？第二步，给谓词起名，例如 Student(x) 和 Has(x, y)。第三步，按出现的顺序列出量词词语：每个、有些、没有、至少、恰好。第四步，确定每个量词的范围。像“每个学生”这样的限定，在 ∀ 后面变成蕴含；“有些学生”则在 ∃ 后面变成合取。公式框里的模式涵盖了常见的句子，包括“没有”“并非每个”“只有”“至多一个”和“恰好一个”。\n\n把公式翻译回英语时，从左到右读出量词，并给每个变量安排角色：“对每个 x，存在 y，使得 ……”。然后把字母换成名词。再用一个小模型检验结果：造一个让这句话为真的模型，再造一个让它为假的模型。如果你的英语读法分不出这两个模型，读法就是错的。\n\n同类量词可以交换：∀x∀y 与 ∀y∀x 含义相同，∃x∃y 与 ∃y∃x 含义相同。不同类的量词则不能交换。在 ∀x∃y φ 中，见证 y 可以依赖 x。在 ∃y∀x φ 中，必须有同一个 y 对所有 x 都成立。所以 ∃y∀x φ 总能推出 ∀x∃y φ，因为那个唯一的 y 对每个 x 都适用，但反过来可能不成立。\n\n量词提取是把量词从公式的一部分里移到外面。只有当该变量在另一部分中不是自由出现时，才允许这样做。如果是自由出现的，就先给约束变量改名。公式框里的规则在论域至少有一个对象时成立，这是通常的假设。要留意蕴含的前件：∀ 一旦从那里移出，就变成 ∃，∃ 则变成 ∀。还要留意合并的陷阱：∀ 对 ∧ 可以分配，对 ∨ 却不行；∃ 对 ∨ 可以分配，对 ∧ 却不行。",
+      "formula": "每个 A 都是 B         ∀x (A(x) → B(x))\n有些 A 是 B           ∃x (A(x) ∧ B(x))\n没有 A 是 B           ∀x (A(x) → ¬B(x))      ≡   ¬∃x (A(x) ∧ B(x))\n并非每个 A 都是 B     ∃x (A(x) ∧ ¬B(x))\n只有 A 才是 B         ∀x (B(x) → A(x))\n至多有一个 A          ∀x ∀y ((A(x) ∧ A(y)) → x = y)\n恰好有一个 A          ∃x (A(x) ∧ ∀y (A(y) → y = x))\n\n同类量词可交换：      ∀x∀y φ ≡ ∀y∀x φ            ∃x∃y φ ≡ ∃y∃x φ\n不同类量词，单向成立： ∃y∀x φ ⊨ ∀x∃y φ           （反方向不成立）\n\n量词提取（x 在 R 中不自由，且论域非空）：\n  (∀x P) ∧ R ≡ ∀x (P ∧ R)       (∃x P) ∧ R ≡ ∃x (P ∧ R)\n  (∀x P) ∨ R ≡ ∀x (P ∨ R)       (∃x P) ∨ R ≡ ∃x (P ∨ R)\n  (∀x P) → R ≡ ∃x (P → R)       (∃x P) → R ≡ ∀x (P → R)\n  R → (∀x P) ≡ ∀x (R → P)       R → (∃x P) ≡ ∃x (R → P)\n不能合并：            (∀x P) ∨ (∀x Q) ≢ ∀x (P ∨ Q)       (∃x P) ∧ (∃x Q) ≢ ∃x (P ∧ Q)",
+      "symbols": "A(x) 和 B(x) 是谓词，也就是一个对象要么具有、要么不具有的性质。P 和 Q 也是谓词，R 是 x 不自由出现的公式，例如 TripOn 这样的一个简单命题。φ 代表任意公式。符号 = 表示两个对象是同一个，≠ 表示不是同一个。符号 ≡ 表示“在每个模型中真值都相同”。符号 ⊨ 表示“凡是使左边为真的模型也使右边为真”。符号 ≢ 表示“不等价”。\n\n论域是变量取值的对象集合。如果周围没有量词捕获某个变量，它就是自由的，否则是约束的。提取规则要求 R 里没有自由的 x，这样移出去的量词才不会把属于 R 的 x 捕获进来。",
+      "example": "取一个有四个人的模型：Leon、Mia、Emma 和 Jack。关系 Admires(x, y) 恰好对四对成立：(Leon, Mia)、(Mia, Emma)、(Emma, Mia) 和 (Jack, Mia)。翻译并判断五个句子。“每个人都敬佩某个人”是 ∀x∃y Admires(x, y)。它为真，而且见证在变：Leon 对应 Mia，Mia 对应 Emma，Emma 对应 Mia，Jack 对应 Mia。“有一个人被所有人敬佩”是 ∃y∀x Admires(x, y)。它为假：Mia 被 Leon、Emma 和 Jack 敬佩，却不被她自己敬佩。“有一个人被其他所有人敬佩”是 ∃y∀x (x ≠ y → Admires(x, y))。取 y = Mia 时为真。“没有人敬佩自己”是 ∀x ¬Admires(x, x)，为真。“恰好有一个人敬佩 Emma”是 ∃x (Admires(x, Emma) ∧ ∀z (Admires(z, Emma) → z = x))，取 x = Mia 时为真。\n\n再把一个公式读回英语。∃x∀y ¬Admires(y, x) 的意思是：有一个人没有被任何人敬佩。它为真，因为没有人敬佩 Leon。它也是 ∀x∃y Admires(y, x)，即“每个人都被某个人敬佩”的否定。\n\n接下来看一次提取。“如果每个人都付了款，旅行就成行”是 (∀x Paid(x)) → TripOn。TripOn 里没有 x，所以规则给出 ∃x (Paid(x) → TripOn)。读出来是：存在某个人，如果这个人付了款，旅行就成行。听起来奇怪，但它恰好在“有人没付款或者旅行成行”时为真，这正是原句的意思。前件里的 ∀ 变成了 ∃。\n\n相反的句子是“如果有人付了款，旅行就成行”。它是 (∃x Paid(x)) → TripOn，等价于 ∀x (Paid(x) → TripOn)：每一个付款的人单独就够了。两种情况下量词都发生翻转，是因为蕴含的前件处于否定的位置。",
+      "pitfall": "把量词从蕴含的前件中移出来，却没有翻转。(∃x Paid(x)) → TripOn 并不等于 ∃x (Paid(x) → TripOn)。前者说只要有人付了款，旅行就成行。后者只要有一个人没付款就为真，哪怕旅行取消了。正确的提取结果是 ∀x (Paid(x) → TripOn)。",
+      "check": {
+        "question": "“每个学生都有一个储物柜”与 ∃y ∀x (Student(x) → Has(x, y)) 是同一个意思吗？",
+        "answer": "不是。那个公式说有一个对象 y 被每个学生拥有，也就是所有学生共用一个储物柜。“每个学生都有一个储物柜”是 ∀x (Student(x) → ∃y (Locker(y) ∧ Has(x, y)))，其中的储物柜 y 可以因学生而不同。"
+      },
+      "glossary": [
+        {
+          "term": "见证",
+          "meaning": "使 ∃ 命题为真的那个对象。在 ∀x∃y 中，y 的见证可以随 x 变化。"
+        },
+        {
+          "term": "量词提取",
+          "meaning": "把量词从公式某个部分的内部移到最前面，而不改变含义。"
+        },
+        {
+          "term": "自由变量",
+          "meaning": "周围没有量词捕获的变量，它的取值必须从外部给定。"
+        },
+        {
+          "term": "反模型",
+          "meaning": "一个小模型，其中一个公式为真而另一个为假，说明二者不等价。"
+        },
+        {
+          "term": "前束范式",
+          "meaning": "所有量词都在最前面，其余部分不再含有量词的公式。"
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "为什么“每个 A 都是 B”用 → 而不用 ∧？",
+          "answer": "这句话只涉及属于 A 的东西。对于不属于 A 的东西，蕴含为真，不会造成妨碍。如果用 ∧，公式就变成了“所有东西既是 A 又是 B”。"
+        },
+        {
+          "question": "“没有 A 是 B”有哪两种写法？",
+          "answer": "写成 ∀x (A(x) → ¬B(x))，即每个 A 都不是 B；或者写成 ¬∃x (A(x) ∧ B(x))，即不存在既是 A 又是 B 的东西。二者等价。"
+        },
+        {
+          "question": "为什么从 (∀x P(x)) ∧ Q(x) 提取之前必须先改名？",
+          "answer": "Q(x) 里的 x 是自由的。把 ∀x 移到 Q(x) 外面会捕获它，改变含义。先把约束变量改名为 z：∀z (P(z) ∧ Q(x))。"
+        },
+        {
+          "question": "为什么 ∃y∀x φ 总能推出 ∀x∃y φ？",
+          "answer": "如果有同一个 y 对每个 x 都成立，那么每个 x 都可以用这个 y 作见证。反过来不行，因为不同的 x 可能需要不同的 y。"
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "用能区分两种读法的模型检验翻译",
+          "body": "造一个小到可以手算的模型，让一种读法为真、另一种为假。对储物柜规则，取学生 Mia 和 Jack，储物柜 1 和 2，Mia 拥有 1，Jack 拥有 2。“每个学生各有一个储物柜”为真，“有一个储物柜被所有学生拥有”为假。如果两种读法在某个模型里结果一样，说明这个模型没有起到检验作用。"
+        },
+        {
+          "title": "提取是改写，所以要逐条规则连着写并标明名称",
+          "body": "一次只用一条规则，把过程写出来。对 (∀x P(x)) → (∃y Q(y))：先把 ∀x 从前件移出，它翻转，得到 ∃x (P(x) → ∃y Q(y))；再把 ∃y 从后件移出，它保持不变，得到 ∃x ∃y (P(x) → Q(y))。要保持量词原来出现的顺序。这个例子里两个量词的先后其实无关紧要，因为 P(x) 和 Q(y) 没有共用变量；但只要有 Admires(x, y) 这样的公式把它们联系起来，顺序就会影响含义。"
+        },
+        {
+          "title": "论域非空这个假设确实在起作用",
+          "body": "有三条提取规则在没有任何对象的论域上不成立。没有对象时，(∀x P) ∧ R 就等于 R，而 ∀x (P ∧ R) 为真。当 R 为假时，二者不同。后面的程序会演示这一点。逻辑课通常假设至少有一个对象，以保证这些规则成立。如果题目允许空论域，就要把每条规则重新检查一遍。"
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "翻译三个句子并在模型上检验",
+          "question": "论域包含学生 Mia、Jack、Iris 和储物柜 L1、L2。Student 和 Locker 是谓词，Has(x, y) 对 (Mia, L1)、(Jack, L2)、(Iris, L2) 成立。请翻译并判断：(a) 每个学生都有一个储物柜；(b) 有某个储物柜被两个不同的学生共用；(c) 没有哪个储物柜被所有学生使用。",
+          "strategy": "按英语词语的顺序写量词，用对应的谓词限定每个量词，并寻找明确的见证或反例。",
+          "steps": [
+            "(a) ∀x (Student(x) → ∃y (Locker(y) ∧ Has(x, y)))。见证：Mia 用 L1，Jack 用 L2，Iris 用 L2。三个学生都满足，所以 (a) 为真。",
+            "(b) ∃y (Locker(y) ∧ ∃x ∃z (x ≠ z ∧ Student(x) ∧ Student(z) ∧ Has(x, y) ∧ Has(z, y)))。取 y = L2，x = Jack，z = Iris。他们是两个不同的学生，都拥有 L2，所以 (b) 为真。",
+            "(c) ∀y (Locker(y) → ¬∀x (Student(x) → Has(x, y)))。对 L1，Jack 没有它。对 L2，Mia 没有它。所以两个储物柜都不被所有学生拥有，(c) 为真。",
+            "“每个学生都有一个储物柜”的共用读法 ∃y (Locker(y) ∧ ∀x (Student(x) → Has(x, y))) 正好与 (c) 相反，所以在这个模型里为假。这个模型把两种读法区分开了。"
+          ],
+          "answer": "在这个模型里，翻译后的三个句子都为真，而“每个学生都有一个储物柜”的共用读法为假。",
+          "sanity_check": "如果 Jack 和 Iris 也都拥有 L1，那么 L1 就被三个学生全部拥有，(c) 就会变成假。"
+        },
+        {
+          "title": "把公式读出声，并比较两种嵌套顺序",
+          "question": "设 F = ∀x (Cat(x) → ∃y (Mouse(y) ∧ Chases(x, y)))，G = ∃y (Mouse(y) ∧ ∀x (Cat(x) → Chases(x, y)))。论域有猫 Tom、Kit 和老鼠 m1、m2，Chases 对 (Tom, m1) 和 (Kit, m2) 成立。请用英语读出二者，判断真假，并证明 G 蕴含 F。",
+          "strategy": "按顺序读每个量词。对 G，逐只检验每只老鼠。要证明蕴含，就取 G 的任一模型，构造出 F 所要求的见证。",
+          "steps": [
+            "F 读作：每只猫都追某只老鼠。G 读作：有一只老鼠被每只猫追。",
+            "F 为真：Tom 追 m1，Kit 追 m2。",
+            "G 为假：m1 没有被 Kit 追，m2 没有被 Tom 追。没有哪只老鼠同时被两只猫追。",
+            "G 蕴含 F：在 G 为真的任何模型中，取那只被每只猫追的老鼠 y。于是每只猫都有一只自己追的老鼠，就是 y，所以 F 成立。反过来不成立，上面的模型就是例子。"
+          ],
+          "answer": "在这个模型里，F 为真，G 为假，所以二者不等价。G 总能推出 F，但 F 推不出 G。",
+          "sanity_check": "如果 Kit 也追 m1，那么 m1 被两只猫都追，G 就变成真。"
+        },
+        {
+          "title": "一步步提取量词并检验结果",
+          "question": "把量词提到最前面。(a) (∀x P(x)) ∧ (∃x Q(x))。(b) (∀x P(x)) → (∃y Q(y))。然后在论域 {1, 2} 上检验 (b)，其中 P 只对 1 成立，Q 对任何对象都不成立。",
+          "strategy": "先确认该变量在另一部分中不是自由的，必要时改名。一次只用一条规则，从前件移出时要把 ∀ 翻转为 ∃。",
+          "steps": [
+            "(a) 两个 x 是不同的约束变量。把第二个改名：(∀x P(x)) ∧ (∃y Q(y))。",
+            "先移出 ∀x：(∃y Q(y)) 中没有自由的 x，规则给出 ∀x (P(x) ∧ ∃y Q(y))。再移出 ∃y：P(x) 中没有自由的 y，规则给出 ∀x ∃y (P(x) ∧ Q(y))。",
+            "(b) 把 ∀x 从前件移出，它翻转：∃x (P(x) → ∃y Q(y))。再把 ∃y 从后件移出，它保持不变：∃x ∃y (P(x) → Q(y))。",
+            "检验 (b)。在论域 {1, 2} 上，P 只对 1 成立，Q 对任何对象都不成立：原式的前件为假，因为 P(2) 不成立，所以原式为真。在结果式中取 x = 2：P(2) 为假，所以对任何 y，蕴含都为真。二者都为真。"
+          ],
+          "answer": "(a) 变成 ∀x ∃y (P(x) ∧ Q(y))。(b) 变成 ∃x ∃y (P(x) → Q(y))。在检验模型中，(b) 的两边都为真。",
+          "sanity_check": "若 P 对 1 和 2 都成立而 Q 对任何对象都不成立，原式是“真蕴含假”，为假。结果式中每一对都是 P(x) 为真、Q(y) 为假，每个蕴含都为假。二者都为假。"
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "quantifier-model-check",
+          "title": "在小模型上检验翻译与提取规则",
+          "intro": "Jack 想在相信自己的翻译之前先检验一下。他在 Python 里保存了一个小模型：一个人名列表和一个有序对集合。Python 的 all 和 any 分别扮演 ∀ 和 ∃。前半部分在例子中的“敬佩”模型上检验五个英语句子。后半部分在所有只有 1 到 3 个对象的模型以及空模型上检验提取规则。",
+          "language": "python",
+          "code": "from itertools import product\n\n# Part 1. English sentences checked on one small model.\npeople = [\"Leon\", \"Mia\", \"Emma\", \"Jack\"]\npairs = {(\"Leon\", \"Mia\"), (\"Mia\", \"Emma\"), (\"Emma\", \"Mia\"), (\"Jack\", \"Mia\")}\n\n\ndef admires(x, y):\n    return (x, y) in pairs\n\n\nsentences = [\n    (\"Everyone admires someone\", all(any(admires(x, y) for y in people) for x in people)),\n    (\"Someone is admired by everyone\", any(all(admires(x, y) for x in people) for y in people)),\n    (\"Someone is admired by everyone else\",\n     any(all(admires(x, y) for x in people if x != y) for y in people)),\n    (\"Nobody admires themselves\", all(not admires(x, x) for x in people)),\n    (\"Exactly one person admires Emma\",\n     any(admires(x, \"Emma\") and all(x == z for z in people if admires(z, \"Emma\"))\n         for x in people)),\n]\nfor text, value in sentences:\n    print(f\"{text}: {value}\")\n\n# Part 2. Test quantifier-extraction rules on every model with 0 to 3 objects.\n# A model is a subset for P, a subset for Q and a truth value for R.\nrules = [\n    (\"(all x P) and R  =  all x (P and R)\",\n     lambda D, P, Q, R: (all(P[x] for x in D) and R) == all(P[x] and R for x in D)),\n    (\"(exists x P) or R  =  exists x (P or R)\",\n     lambda D, P, Q, R: (any(P[x] for x in D) or R) == any(P[x] or R for x in D)),\n    (\"(all x P) -> R  =  exists x (P -> R)\",\n     lambda D, P, Q, R: ((not all(P[x] for x in D)) or R) == any((not P[x]) or R for x in D)),\n    (\"(exists x P) -> R  =  all x (P -> R)\",\n     lambda D, P, Q, R: ((not any(P[x] for x in D)) or R) == all((not P[x]) or R for x in D)),\n    (\"(all x P) or (all x Q)  =  all x (P or Q)\",\n     lambda D, P, Q, R: (all(P[x] for x in D) or all(Q[x] for x in D)) == all(P[x] or Q[x] for x in D)),\n    (\"(exists x P) and (exists x Q)  =  exists x (P and Q)\",\n     lambda D, P, Q, R: (any(P[x] for x in D) and any(Q[x] for x in D)) == any(P[x] and Q[x] for x in D)),\n]\nfor label, rule in rules:\n    verdict = \"holds on every model with 1-3 objects\"\n    for size in (1, 2, 3):\n        D = range(size)\n        for p, q, r in product(product([False, True], repeat=size),\n                               product([False, True], repeat=size), [False, True]):\n            if not rule(D, p, q, r):\n                verdict = f\"fails: {size} objects, P={list(p)}, Q={list(q)}, R={r}\"\n                break\n        if verdict.startswith(\"fails\"):\n            break\n    empty = \"\" if rule(range(0), (), (), False) and rule(range(0), (), (), True) else \"  (fails on 0 objects)\"\n    print(f\"{label}: {verdict}{empty}\")\n",
+          "output": "Everyone admires someone: True\nSomeone is admired by everyone: False\nSomeone is admired by everyone else: True\nNobody admires themselves: True\nExactly one person admires Emma: True\n(all x P) and R  =  all x (P and R): holds on every model with 1-3 objects  (fails on 0 objects)\n(exists x P) or R  =  exists x (P or R): holds on every model with 1-3 objects  (fails on 0 objects)\n(all x P) -> R  =  exists x (P -> R): holds on every model with 1-3 objects  (fails on 0 objects)\n(exists x P) -> R  =  all x (P -> R): holds on every model with 1-3 objects\n(all x P) or (all x Q)  =  all x (P or Q): fails: 2 objects, P=[False, True], Q=[True, False], R=False\n(exists x P) and (exists x Q)  =  exists x (P and Q): fails: 2 objects, P=[False, True], Q=[True, False], R=False\n",
+          "walkthrough": [
+            "people 和 pairs 就是整个模型：一个论域和一个关系。admires(x, y) 判断这一对是否在关系中。",
+            "每个句子都写成嵌套的 all 和 any，顺序与量词的顺序一致。生成器里的条件“if x != y”扮演 ∀ 后面的蕴含 x ≠ y → ……。",
+            "每条规则是一个函数，在一个模型上计算等式两边。一个模型由两个真值列表 P 和 Q（每个对象一个）以及一个真值 R 组成。",
+            "循环遍历所有含 1、2、3 个对象的模型。两边第一次不同的模型被当作反例打印出来。",
+            "最后的检查问：这条规则在没有任何对象时是否也成立。Python 里对空集合做 all 得到 True，做 any 得到 False，正如 ∀ 和 ∃ 在空论域上的表现。"
+          ],
+          "explanation": "前五行与例子一致。看第三个句子：去掉条件 x != y，就得到第二个句子，而它为假，因为没有人敬佩自己。正是这个限定把“所有人”变成了“其他所有人”。\n\n测试的六条规则中，四条在所有小模型上都成立，两条立刻失败。两条合并规则在含两个对象的模型上失败：P 对一个对象成立，Q 对另一个对象成立。这时每个对象都满足 P 或 Q，可是 P 和 Q 都不是对所有对象成立。在同一个模型里，P 和 Q 各自都有见证，但没有哪一个对象同时满足二者。\n\n其中有三条规则在没有对象时也不成立，所以逻辑课通常假设至少有一个对象。通过了最多三个对象的所有模型，只是证据，不是证明。失败则是真正的反例，而通过只是提醒你去找证明。提取规则本身是通过对任意论域进行推理来证明的。"
         }
       ]
     }

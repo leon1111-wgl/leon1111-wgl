@@ -25,6 +25,10 @@ NEEDS_CONTEXT = re.compile(r'\b(?:the|this|that|these|those)\s+(?:example|story|
 MAX_CODE = 80
 
 
+# Review cards a reader could not answer alone a week later, reviewed by hand: they lean on a chapter's own example.
+EXCLUDED = set(json.loads((CONTENT / 'card-exclude.json').read_text())) if (CONTENT / 'card-exclude.json').exists() else set()
+
+
 def both(en, zh):
     return {'en': en, 'zh': zh}
 
@@ -179,6 +183,7 @@ def build():
     # the Python handbook keeps its own exercises; its practice here is authored only
     for cid, source in [(c.lower(), lambda c=c: from_course(c)) for c in COURSES] + [(g, lambda g=g: from_guide(g)) for g in GUIDES] + [('python', lambda: ([], [], []))]:
         cards, predict, worked = source()
+        cards = [c for c in cards if f'{cid}/{c["id"]}' not in EXCLUDED]
         pack = json.loads((practice / f'{cid}.json').read_text()) if (practice / f'{cid}.json').exists() else {}
         data = {'course': cid, 'cards': cards, 'questions': predict + worked + pack.get('questions', []), 'papers': pack.get('papers', []), 'labs': labs_for(cid)}
         (OUT / f'{cid}.json').write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')))

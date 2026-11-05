@@ -50,7 +50,7 @@
   const dialog = document.createElement('dialog');
   dialog.className = 'search-dialog';
   dialog.setAttribute('aria-label', 'Search projects, courses and chapters');
-  dialog.innerHTML = `<form method="dialog" class="search-box"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><input type="search" role="combobox" aria-expanded="true" aria-controls="search-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search projects and 212 chapters · 搜索项目和章节" aria-label="Search"><button type="submit" class="search-close" aria-label="Close search">Esc</button></form><ul id="search-results" role="listbox" aria-label="Results"></ul><p class="search-foot" aria-live="polite"></p>`;
+  dialog.innerHTML = `<form method="dialog" class="search-box"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><input type="search" role="combobox" aria-expanded="true" aria-controls="search-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search projects and chapters · 搜索项目和章节" aria-label="Search"><button type="submit" class="search-close" aria-label="Close search">Esc</button></form><ul id="search-results" role="listbox" aria-label="Results"></ul><p class="search-foot" aria-live="polite"></p>`;
   document.body.append(dialog);
   const input = dialog.querySelector('input');
   const list = dialog.querySelector('ul');

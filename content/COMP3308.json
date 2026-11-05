@@ -23,6 +23,7 @@
       "topics": [
         "search-models",
         "astar-heuristics",
+        "greedy-best-first-dominance",
         "local-search",
         "stochastic-optimization",
         "minimax-pruning",
@@ -34,6 +35,7 @@
       "title": "Learning from labeled examples",
       "topics": [
         "learning-neighbors",
+        "knn-practice",
         "one-rule",
         "naive-bayes",
         "evaluation-design",
@@ -254,6 +256,145 @@
             "Stop when the goal is popped with its current best g. Merely generating a goal is too early."
           ],
           "explanation": "Admissibility means h(v) <= the true remaining cost. Consistency is the stronger edge condition h(u) <= w(u,v)+h(v). Here h(B)=2.5 is admissible, because B->A->G costs 2.5. It is inconsistent on B->A because 2.5 > 0.5+0.\n\nAfter S, A has f=2 and B has f=3.5. Expanding A discovers G at cost 4. Expanding B then improves A to g=1.5. Reopening A improves G to 3.5. Under the stated finite graph, nonnegative edges, admissible finite heuristic and h(goal)=0, reopening preserves the route needed for optimal A* termination. The function assumes the caller supplies these heuristic conditions; it does not verify admissibility.\n\nWith an inconsistent heuristic, states can be expanded many times. Do not claim the usual one-expansion-per-state complexity. In the special case h=0, this search becomes uniform-cost search. In practice, choose a heuristic whose assumptions you can justify and record both solution quality and expansion count."
+        }
+      ]
+    },
+    {
+      "id": "greedy-best-first-dominance",
+      "title": "Greedy search, A* and choosing among heuristics",
+      "story": "Noah is late for a train. At every junction he points a small compass at the station and takes the road that looks closest to it as the crow flies. He never adds up how far he has already walked. Sometimes this works wonderfully. Sometimes the road that points straight at the station is a long winding one, and a different road would have been shorter overall. Noah is playing greedy best-first search.\n\nMia walks with him and keeps a second number in her head: the distance walked so far. She picks the junction where the distance walked plus the compass estimate is smallest. That is A*. Now two friends offer estimates of the remaining walk. Emma gives a rough straight-line guess. Jack also knows about a river that can be crossed only at one bridge, so his estimates are larger, but they never go above the real remaining walk. Jack’s numbers let Mia ignore more roads. But adding Emma’s estimate and Jack’s together would count the same detour twice, and the total could be more than the real distance.",
+      "principle": "Best-first search keeps a frontier of unexplored routes and always expands the one with the smallest value of an evaluation function f. Three well-known searches differ only in f. Uniform-cost search uses f(n) = g(n), the cost already paid. Greedy best-first search uses f(n) = h(n), the estimated remaining cost. A* uses f(n) = g(n) + h(n). Because greedy search ignores g, it can run straight into an expensive route, so it is not optimal. With a closed set in a finite graph it is complete. Without one it can loop forever, because a repeated state may keep looking better than the way out. In the worst case its time and memory are O(bᵐ), where b is the branching factor and m is the maximum depth. A good heuristic can cut this a great deal.\n\nA* with an admissible heuristic is optimal in tree search. With a consistent heuristic it is optimal in graph search with a closed set, and f never decreases along a path. One fact is worth remembering: A* expands every node whose f is below the optimal cost C*, and it never expands a node whose f is above C*. Nodes with f exactly equal to C* may or may not be expanded, depending on how ties are broken.\n\nHeuristic h₂ dominates h₁ when h₂(n) ≥ h₁(n) at every node n and both are admissible, so h₁(n) ≤ h₂(n) ≤ h*(n). If h₂ dominates h₁, then every node that A* with h₂ expands with f₂(n) < C* is also expanded by A* with h₁. The reason is that f₁(n) ≤ f₂(n) < C*, so A* with h₁ must expand that node too. So A* with h₂ expands no more nodes, apart from ties at f = C*. The closer a heuristic is to h*, the fewer nodes A* explores. The extreme cases are h = 0, which makes A* behave like uniform-cost search, and h = h*, which makes A* walk straight to the goal.\n\nChoosing among admissible heuristics takes four checks. First, is each one admissible, and ideally consistent? Second, does one dominate the others? Third, if neither dominates, take the maximum hmax(n) = max(h_a(n), h_b(n)). It is admissible, and it dominates both. Fourth, is the heuristic cheap enough? The total time is roughly the number of nodes handled times the cost of one heuristic call plus one expansion. Do not add heuristics unless they count different parts of the cost, because the sum of two admissible heuristics can exceed the true cost when both count the same work. To compare heuristics by experiment, use the effective branching factor b*: the branching factor of a uniform tree of depth d that holds N + 1 nodes. A smaller b* means a better heuristic. Good heuristics usually come from relaxed problems, in which some rule of the real problem is dropped.",
+      "formula": "Uniform-cost search    f(n) = g(n)\nGreedy best-first     f(n) = h(n)\nA*                    f(n) = g(n) + h(n)\n\nh₂ dominates h₁   ⇔   h₁(n) ≤ h₂(n) ≤ h*(n)   for every node n\nA* expands n  ⇒  f(n) ≤ C*          A* skips n  ⇐  f(n) > C*\nhmax(n) = max(h_a(n), h_b(n))       stays admissible\nhsum(n) = h_a(n) + h_b(n)           can exceed h*(n)\nN + 1 = 1 + b* + (b*)² + … + (b*)ᵈ",
+      "symbols": "g(n) is the cost already paid to reach node n. h(n) is the estimated remaining cost, and h*(n) is the true cheapest remaining cost. C* is the cost of the optimal solution. N is the number of nodes the search generated, d is the depth of the solution, and b* is the effective branching factor, found by solving the last equation for b*.\n\nDominance is checked at every node, not on average. A relaxed problem is the real problem with some restriction removed, so its cheapest solution never costs more than the real one. That is why the cost of a relaxed solution makes a safe estimate.",
+      "example": "The graph has seven one-way roads: S→A costs 4, S→E costs 9, A→B costs 7, A→D costs 6, B→G costs 3, D→E costs 3 and E→G costs 8. S is the start and G is the goal. The cheapest route is S, A, B, G with cost 4 + 7 + 3 = 14. Two heuristics are given. h₁ has S 7, A 5, B 1, D 5, E 4, G 0. h₂ has S 11, A 7, B 1, D 8, E 6, G 0. The true remaining costs are S 14, A 10, B 3, D 11, E 8, so both heuristics are admissible. Checking each road shows both are consistent. Also h₂ ≥ h₁ at every node, so h₂ dominates h₁.\n\nGreedy search with h₂ expands S, then picks E (h = 6) over A (h = 7), then G. It returns S, E, G with cost 9 + 8 = 17 after only 3 expansions. Uniform-cost search expands S (g = 0), A (4), E (9), D (10), B (11) and G (14): 6 expansions and cost 14. A* with h₁ expands S (f = 7), A (9), B (12), E (13) and G (14): 5 expansions and cost 14. A* with h₂ expands S (11), A (11), B (12) and G (14): 4 expansions and cost 14.\n\nWhy does A* with h₁ expand E, while A* with h₂ does not? The optimal cost is C* = 14. With h₁, f(E) = 9 + 4 = 13, which is below 14, so A* must expand E. With h₂, f(E) = 9 + 6 = 15, which is above 14, so A* never does. That is dominance at work: the stronger estimate prunes E.",
+      "pitfall": "Calling any larger heuristic “better.” A larger value helps only while it stays at or below the true remaining cost. One value above h* anywhere can make A* skip the optimal route. The search may look faster while it returns a worse path.",
+      "check": {
+        "question": "Greedy search expanded fewer nodes than A* in the example. Why is it not the better algorithm?",
+        "answer": "It expanded 3 nodes but returned a route of cost 17 instead of 14. It was fast because it ignored the cost already paid. A* spends a few more expansions to guarantee the cheapest route."
+      },
+      "glossary": [
+        {
+          "term": "Best-first search",
+          "meaning": "A search that always expands the frontier node with the smallest value of an evaluation function."
+        },
+        {
+          "term": "Evaluation function f",
+          "meaning": "The number used to rank frontier nodes: g for uniform-cost, h for greedy, g + h for A*."
+        },
+        {
+          "term": "Dominates",
+          "meaning": "Heuristic h₂ dominates h₁ when both are admissible and h₂ is at least as large at every node."
+        },
+        {
+          "term": "Effective branching factor",
+          "meaning": "The branching factor of a uniform tree with the same depth and number of nodes as the search produced."
+        },
+        {
+          "term": "Relaxed problem",
+          "meaning": "The real problem with some restriction removed, whose cheapest solution gives a safe lower bound."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "In code, what is the only difference between uniform-cost search, greedy search and A*?",
+          "answer": "The priority used to order the frontier: g, h or g + h."
+        },
+        {
+          "question": "Can greedy search expand fewer nodes than A* and still be wrong?",
+          "answer": "Yes. In the example it expanded 3 nodes against 4 for A* with h₂, and it returned cost 17 instead of 14."
+        },
+        {
+          "question": "If h₂ dominates h₁, which one makes A* expand fewer nodes?",
+          "answer": "h₂. Any node with f₂ below C* has f₁ below C* too, so A* with h₁ must expand it as well."
+        },
+        {
+          "question": "Why can we not simply add two admissible heuristics?",
+          "answer": "Both may count the same piece of the remaining cost. Their sum can then be larger than the true remaining cost, and A* loses its optimality guarantee."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "Greedy search can loop without a closed set",
+          "body": "Take roads S→A, A→B, B→A, A→C and C→G, with h(S) = 5, h(A) = 3, h(B) = 2, h(C) = 4 and h(G) = 0. Tree-search greedy expands S, then A, whose successors are B (2) and C (4). It expands B, which puts A (3) back on the frontier, expands A again, and so on. C, with h = 4, is never the smallest, so the search never reaches G. A closed set, or a repeated-state check, fixes this."
+        },
+        {
+          "title": "Dominance has to hold at every node",
+          "body": "A heuristic that is larger on average but smaller at one node does not dominate. Then nothing guarantees fewer expansions, and A* with the larger heuristic can even expand a node that the other one skips. The remedy is hmax, which takes the larger value node by node. In the example, ha is larger at A and D, and hb is larger at S, B and E, so neither dominates, but their maximum does."
+        },
+        {
+          "title": "A better heuristic has a price",
+          "body": "Suppose h₁ costs 1 microsecond per call and A* with h₁ evaluates it on 100,000 nodes: 0.1 seconds. Suppose h₂ costs 40 microseconds per call and A* with h₂ evaluates it on 8,000 nodes: 0.32 seconds. The tighter heuristic wins on nodes and loses on time. Always count both the nodes and the cost of computing the estimate."
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "Run greedy, uniform-cost and A* on one table",
+          "question": "All roads are one-way: S→A 1, S→B 2, S→D 3, A→G 10, B→C 3, C→G 2, D→G 20. The heuristic is S 2, A 1, B 4, C 2, D 9, G 0. Give the expansion order and the cost returned by greedy search, uniform-cost search and A*. Check that the heuristic is admissible and consistent.",
+          "strategy": "Compute g for every route, then apply each rule to the frontier. Break no ties: no two candidates have equal priority here.",
+          "steps": [
+            "True remaining costs: C 2, B 5, A 10, D 20, S 7. The heuristic is below each, so it is admissible. On the roads: 2 ≤ 1+1, 2 ≤ 2+4, 2 ≤ 3+9, 1 ≤ 10, 4 ≤ 3+2, 2 ≤ 2 and 9 ≤ 20. So it is consistent.",
+            "Greedy: expand S. The frontier has A (h = 1), B (4) and D (9). Take A, then G (h = 0). The route is S, A, G with cost 1 + 10 = 11 after 3 expansions.",
+            "Uniform-cost: expand S (0), A (1), B (2), D (3), C (5) and G (7). The route is S, B, C, G, with cost 2 + 3 + 2 = 7, after 6 expansions. G via A costs 11, but C (5) is removed first and finds G at 7.",
+            "A*: f values after S are A 2, B 6, D 12. Expand A (2), which adds G with f = 11. Expand B (6), which adds C with f = 7. Expand C (7), which improves G to f = 7. Expand G. The order is S, A, B, C, G with cost 7. D is never expanded, since f(D) = 12 is above C* = 7."
+          ],
+          "answer": "Greedy returns cost 11 after 3 expansions. Uniform-cost search and A* return the optimal cost 7, with 6 and 5 expansions.",
+          "sanity_check": "The three complete routes cost 11 (via A), 7 (via B and C) and 23 (via D). The smallest is 7, so both optimal searches are right."
+        },
+        {
+          "title": "Apply dominance to the expansion counts",
+          "question": "Use the example graph. For each node, take the cheapest known g: S 0, A 4, E 9, D 10, B 11, G 14. Compute f₁ and f₂, list the nodes with f below C* = 14 for each heuristic, and check the dominance claim.",
+          "strategy": "Add g and h at every node, then keep the nodes strictly below 14.",
+          "steps": [
+            "With h₁: f₁ is S 0+7 = 7, A 4+5 = 9, E 9+4 = 13, D 10+5 = 15, B 11+1 = 12, G 14+0 = 14.",
+            "With h₂: f₂ is S 0+11 = 11, A 4+7 = 11, E 9+6 = 15, D 10+8 = 18, B 11+1 = 12, G 14+0 = 14.",
+            "Nodes below 14 for h₁: S, A, B, E. For h₂: S, A, B. The second list is contained in the first, as dominance predicts, because h₂ ≥ h₁ at every node.",
+            "D is above 14 under both heuristics, so neither search expands it. G, with f = 14 = C*, is expanded last by both."
+          ],
+          "answer": "A* with h₂ expands S, A, B, G (4 nodes). A* with h₁ expands S, A, B, E, G (5 nodes). The extra node is E.",
+          "sanity_check": "Nodes expanded in the program: 5 for h₁ and 4 for h₂, which matches these lists."
+        },
+        {
+          "title": "Combine two heuristics that do not dominate each other",
+          "question": "On the example graph, h_a is S 8, A 8, B 1, D 7, E 4 and h_b is S 9, A 7, B 3, D 1, E 6 (both 0 at G). The true remaining costs are S 14, A 10, B 3, D 11, E 8. Compare h_a and h_b, build hmax and hsum, and test admissibility.",
+          "strategy": "Compare node by node. Then take the maximum and the sum and test each against h*.",
+          "steps": [
+            "h_a is larger at A (8 against 7) and D (7 against 1). h_b is larger at S, B and E. So neither dominates.",
+            "hmax is S 9, A 8, B 3, D 7, E 6. Each value is at most the true remaining cost, so hmax is admissible, and it is at least as large as h_a and h_b everywhere.",
+            "hsum is S 17, A 15, B 4, D 8, E 10. At S, 17 is above 14, and also A, B and E exceed their true costs. So the sum is not admissible.",
+            "A* with hmax: f is S 9, then A 12, E 15, then B 14, D 17, then G 14. It expands S, A, B, G (4 nodes). A* with h_a alone expands 5 nodes (S, A, B, E, G) and A* with h_b alone expands 5 nodes (S, A, D, B, G)."
+          ],
+          "answer": "The maximum is admissible and expands 4 nodes, fewer than either heuristic alone. The sum is not admissible.",
+          "sanity_check": "If hsum were used, A* would see f(S) = 17 at the start, above the optimal cost 14, so it could prune the optimal route."
+        },
+        {
+          "title": "Compare two heuristics with the effective branching factor",
+          "question": "A* with a weak heuristic solved a depth-5 problem and generated 230 nodes. A* with a stronger heuristic solved the same problem and generated 52 nodes. Find b* for each by solving N + 1 = 1 + b* + (b*)² + … + (b*)⁵.",
+          "strategy": "Try values of b* until the sum matches N + 1.",
+          "steps": [
+            "For the weak heuristic, N + 1 = 231. Try b* = 2.7: the sum is 1 + 2.7 + 7.29 + 19.68 + 53.14 + 143.49 ≈ 227.3, which is too small. Try 2.71: the sum is about 231.0.",
+            "For the strong heuristic, N + 1 = 53. Try b* = 1.9: the sum is 1 + 1.9 + 3.61 + 6.86 + 13.03 + 24.76 ≈ 51.2, which is too small. Try 1.92: the sum is about 53.4. So b* is just under 1.92.",
+            "Compare: 2.71 for the weak heuristic and about 1.92 for the strong one."
+          ],
+          "answer": "The stronger heuristic has b* ≈ 1.92 against 2.71, so it is much better.",
+          "sanity_check": "A perfect heuristic would expand only the solution path, so N would be about d and b* would be close to 1. Both values are above 1, and the smaller one is closer to perfect."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "greedy-uniform-astar-compare",
+          "title": "Greedy, uniform-cost and A* on one graph",
+          "intro": "Mia types the example graph into Python. One best-first function takes the priority rule as a parameter, so the four searches differ by one line each. The program also checks that h1 and h2 are admissible and consistent, that h2 dominates h1, and what happens when two heuristics are combined with max and with +.",
+          "language": "python",
+          "code": "from heapq import heappop, heappush\n\ngraph = {\"S\": [(\"A\", 4), (\"E\", 9)], \"A\": [(\"B\", 7), (\"D\", 6)], \"B\": [(\"G\", 3)],\n         \"D\": [(\"E\", 3)], \"E\": [(\"G\", 8)], \"G\": []}\nh1 = {\"S\": 7, \"A\": 5, \"B\": 1, \"D\": 5, \"E\": 4, \"G\": 0}    # a rough lower bound\nh2 = {\"S\": 11, \"A\": 7, \"B\": 1, \"D\": 8, \"E\": 6, \"G\": 0}   # a tighter lower bound\n\n\ndef best_first(priority):\n    \"\"\"Expand the frontier node with the smallest priority(g, node).\"\"\"\n    frontier = [(priority(0, \"S\"), 0, \"S\", [\"S\"])]\n    done, expanded = set(), []\n    while frontier:\n        _, g, node, path = heappop(frontier)\n        if node in done:\n            continue\n        done.add(node)\n        expanded.append(node)\n        if node == \"G\":\n            return expanded, path, g\n        for nxt, step in graph[node]:\n            if nxt not in done:\n                heappush(frontier, (priority(g + step, nxt), g + step, nxt, path + [nxt]))\n\n\ndef true_remaining():\n    \"\"\"h*(n): the real cheapest cost from n to G (every edge goes 'forward').\"\"\"\n    cost = {\"G\": 0}\n    for node in [\"E\", \"B\", \"D\", \"A\", \"S\"]:\n        cost[node] = min(step + cost[nxt] for nxt, step in graph[node])\n    return cost\n\n\nstar = true_remaining()\nfor name, h in ((\"h1\", h1), (\"h2\", h2)):\n    admissible = all(h[n] <= star[n] for n in graph)\n    consistent = all(h[a] <= step + h[b] for a in graph for b, step in graph[a])\n    print(f\"{name}: admissible={admissible} consistent={consistent}\")\nprint(\"h2 dominates h1:\", all(h2[n] >= h1[n] for n in graph))\n\nruns = [(\"greedy (h2)\", lambda g, n: h2[n]),\n        (\"uniform-cost\", lambda g, n: g),\n        (\"A* with h1\", lambda g, n: g + h1[n]),\n        (\"A* with h2\", lambda g, n: g + h2[n])]\nfor name, priority in runs:\n    expanded, path, cost = best_first(priority)\n    print(f\"{name:<13} expanded {len(expanded)}: {' '.join(expanded):<13} path {''.join(path):<5} cost {cost}\")\n\n# Two different lower bounds: neither one is above the other at every node.\nha = {\"S\": 8, \"A\": 8, \"B\": 1, \"D\": 7, \"E\": 4, \"G\": 0}\nhb = {\"S\": 9, \"A\": 7, \"B\": 3, \"D\": 1, \"E\": 6, \"G\": 0}\nhmax = {n: max(ha[n], hb[n]) for n in graph}\nhsum = {n: ha[n] + hb[n] for n in graph}\nfor name, h in ((\"ha\", ha), (\"hb\", hb), (\"max(ha,hb)\", hmax), (\"ha+hb\", hsum)):\n    admissible = all(h[n] <= star[n] for n in graph)\n    consistent = all(h[a] <= step + h[b] for a in graph for b, step in graph[a])\n    print(f\"{name:<10} admissible={admissible} consistent={consistent}\")\nfor name, h in ((\"ha\", ha), (\"hb\", hb), (\"max(ha,hb)\", hmax)):\n    expanded, path, cost = best_first(lambda g, n: g + h[n])\n    print(f\"A* with {name:<10} expanded {len(expanded)}: {' '.join(expanded)}\")\nprint(\"ha+hb is above the true remaining cost at:\",\n      \" \".join(n for n in graph if hsum[n] > star[n]))\n",
+          "output": "h1: admissible=True consistent=True\nh2: admissible=True consistent=True\nh2 dominates h1: True\ngreedy (h2)   expanded 3: S E G         path SEG   cost 17\nuniform-cost  expanded 6: S A E D B G   path SABG  cost 14\nA* with h1    expanded 5: S A B E G     path SABG  cost 14\nA* with h2    expanded 4: S A B G       path SABG  cost 14\nha         admissible=True consistent=True\nhb         admissible=True consistent=True\nmax(ha,hb) admissible=True consistent=True\nha+hb      admissible=False consistent=False\nA* with ha         expanded 5: S A B E G\nA* with hb         expanded 5: S A D B G\nA* with max(ha,hb) expanded 4: S A B G\nha+hb is above the true remaining cost at: S A B E\n",
+          "walkthrough": [
+            "graph lists the one-way roads with their costs. h1 and h2 are the two heuristics from the example.",
+            "best_first keeps a heap of (priority, cost so far, node, route). It skips nodes that are already closed, expands the smallest, and stops when it removes G.",
+            "true_remaining computes h* by working backwards from G. The list [\"E\", \"B\", \"D\", \"A\", \"S\"] puts every node after its successors, so one pass is enough.",
+            "The checks compare each heuristic with h*, test every road for consistency, and test dominance node by node.",
+            "The four runs pass different priorities: h for greedy, g for uniform-cost, and g + h for A*. The last part builds hmax and hsum from ha and hb and runs the same tests on them."
+          ],
+          "explanation": "Greedy search finishes first, with only 3 expansions, but its route costs 17. Uniform-cost search and both A* runs return the optimal cost 14. They differ in how much work they do: 6 expansions for uniform-cost, 5 for A* with h1 and 4 for A* with h2. Each step down in expansions comes from a larger admissible estimate.\n\nThe second block uses two heuristics that do not dominate each other. A* with ha alone expands 5 nodes, and A* with hb alone also expands 5, but a different node is wasted each time. Their maximum is admissible and consistent and expands only 4 nodes. Their sum is not admissible: it is above the true remaining cost at S, A, B and E.\n\nThe program checks consistency on every road, not only admissibility. For graph search with a closed set, that stronger test is what justifies never reopening a node."
         }
       ]
     },
@@ -660,6 +801,196 @@
             "Sorting puts inputs 4 and 7 first, with targets 10 and 16.",
             "The mean is 26/2=13; changing k would change the selected set."
           ]
+        }
+      ]
+    },
+    {
+      "id": "knn-practice",
+      "title": "Nearest neighbours in practice: dimensions, categories, scale and cost",
+      "story": "Jack runs the booking desk of a small clinic. To guess whether a new patient will miss an appointment, he looks up the most similar past patients and copies their usual outcome. He soon meets five problems. The booking form has forty questions and most have nothing to do with missed appointments, so patients who look alike on all forty answers are hardly alike on the few that matter. One question asks how the patient wants to be reminded: SMS, email or nothing. Jack cannot say how far apart SMS and email are. Another records the distance to the clinic in metres, next to age in years, and the metres seem to decide everything. Some forms are left blank. And every lookup means walking through the whole filing cabinet, which gets slower as the cabinet grows.\n\nThese are the practical problems of nearest-neighbour learning. Each has a clear remedy, and the remedies are worth learning because nearest neighbours leaves all these choices to you.",
+      "principle": "The curse of dimensionality is a set of effects that appear when the number of features d grows. A neighbourhood that holds a fixed fraction r of uniformly spread data is a cube with edge r^(1/d). For r = 1% that edge is 0.10 in 2 dimensions, but 0.63 in 10 and 0.95 in 100. So a “local” neighbourhood covers almost the whole range of every feature. To keep 10 examples along each axis you need 10^d examples, which soon passes any data set. Distances also bunch together: the nearest and the farthest example become almost equally far, so being nearest tells you little. And every useless feature adds noise to every distance. The cures are to remove or down-weight useless features, to reduce the dimensions, and to collect more data.\n\nNominal features have no order, so they need their own distance. The overlap distance is 0 when two values are equal and 1 when they differ. Coding the values as integers 1, 2, 3 invents an order and a spacing. One-hot coding gives each value its own 0/1 column. Two different values then differ in two columns, so the Euclidean distance between them is √2, the same for every pair. For rows that mix both kinds of feature, compute a gap for each feature and combine the gaps. A number gap is the difference divided by the training range, so it lies between 0 and 1. A category gap is 0 or 1. A common combination is the square root of the sum of squared gaps.\n\nMissing values need a stated policy. One policy treats a missing value as the largest possible gap, 1. A second skips the feature and rescales the distance over the features that are known. A third fills the hole using training data only, for example with the mean or the most common value. A fourth keeps “missing” as a category of its own, which is useful when the fact of being missing carries information. The best choice depends on why the value is missing.\n\nA feature with large numbers dominates a plain distance. Min-max scaling maps each feature to [0, 1] using the training minimum and maximum. Standardising subtracts the training mean and divides by the training standard deviation. Both use only the training data. With min-max scaling, new data can fall outside [0, 1], such as an age that scales to 1.375. Scaling gives every feature an equal say. It does not decide which feature should have the biggest say. If you know that some features matter more, weight them.\n\nK-nearest neighbours is a lazy learner: training only stores the n examples, which costs O(nd) memory. Each prediction compares the query with all n examples, which costs n × d differences, plus a little work to keep the k smallest. For q queries the cost is q × n × d. A decision tree or a linear model reverses this: it pays once during training and then predicts from a small model. Speed-ups for nearest neighbours include kd-trees, which help in a few dimensions and fade as d grows, approximate search, fewer features, and removing stored examples that add nothing.",
+      "formula": "Edge of a cube holding fraction r of uniform data:   e = r^(1/d)\nExamples needed for m per axis:                      m^d\n\nOverlap distance for a category:   δ(a, b) = 0 if a = b, otherwise 1\nNumber feature j:                  δⱼ = |xⱼ − yⱼ| / (maxⱼ − minⱼ)    (training range)\nMissing value, penalty policy:     δⱼ = 1\nMixed distance:                    D(x, y) = √( Σⱼ δⱼ² )\nSkip and rescale:                  D(x, y) = √( (J / K) · Σ over known j of δⱼ² )\n\nMin-max scaling:  x′ = (x − min) / (max − min)       Standardising:  z = (x − μ) / σ\nBrute-force cost: n·d differences per query;  q queries: q·n·d",
+      "symbols": "r is the fraction of the data a neighbourhood should hold, d is the number of features, and e is the edge length of the cube that holds that fraction when the range of every feature is scaled to 1. m is the number of examples we want along each axis. δⱼ is the gap between two examples on feature j. J is the total number of features and K is how many are known for the pair being compared.\n\nμ and σ are the mean and standard deviation of a feature, both taken from the training set. n is the number of stored examples and q is the number of queries. A “difference” in the cost is one subtraction on one feature.",
+      "example": "To capture 1% of uniformly spread data, the edge of the cube is 0.010 in 1 dimension, 0.100 in 2, 0.631 in 10 and 0.955 in 100. With 10 examples per axis you need 10 examples in 1 dimension, 100 in 2, ten billion in 10 and 10^100 in 100. The program below also measures the nearest distance divided by the farthest distance among 100 random points. The average is 0.007 in 1 dimension, 0.053 in 2, 0.384 in 10, 0.765 in 100 and 0.919 in 1000. In high dimensions the nearest point is hardly nearer than the farthest one. Last, it takes a problem that two features separate perfectly and adds useless columns. The 1-nearest-neighbour accuracy falls from 1.000 to 0.990 with 2 extra columns, 0.837 with 10, 0.667 with 50 and 0.577 with 200. Chance is 0.5.\n\nFor categories, code red, green and blue as 1, 2 and 3. Then red and green are 1 apart but red and blue are 2 apart, which says nothing true about colours. Overlap distance gives 1 for every pair of different colours. One-hot coding gives √2 ≈ 1.414 for every pair.\n\nBack at the clinic, the program keeps five records and the query (age 45, 8 km, reminder sms). Record r3 matches the query on age and reminder, but its distance is missing. With the penalty policy, r3 gets a gap of 1 on distance and ranks second, behind r1 at 0.781, which differs by 20 years. With skip-and-rescale, r3 gets distance 0.000 and ranks first. With k = 1 the two policies predict opposite outcomes. With k = 3 they agree.\n\nScaling can also flip the answer. For a query at age 45 and 8000 m, candidate A is aged 25 at 7900 m and candidate B is aged 46 at 6000 m. Unscaled distances are 101.98 for A and 2000.00 for B, so A wins on the strength of the metres alone. After min-max scaling they become 0.500 and 0.176, and B wins. Finally, a store of 100,000 examples with 50 features means 5,000,000 numbers read for one query and 5,000,000,000 for 1,000 queries. A balanced tree over the same examples is only 17 questions deep.",
+      "pitfall": "Adding every available column in the hope that nearest neighbours will find more information. Each useless column makes the neighbours less meaningful. In the program below, a problem that two columns solve perfectly falls to 57.7% accuracy, close to chance, after 200 useless columns are added.",
+      "check": {
+        "question": "Feature A is income in dollars, spread over 20,000 to 90,000. Feature B is age, spread over 20 to 70. Without scaling, which feature mainly decides the nearest neighbour, and why?",
+        "answer": "Income. Gaps in income are in the thousands and gaps in age are in the tens, so the income gap dominates the sum of squares and age hardly matters. Scaling both to [0, 1] with the training ranges gives each an equal say."
+      },
+      "glossary": [
+        {
+          "term": "Curse of dimensionality",
+          "meaning": "The set of effects that make neighbourhoods less local and distances less informative as the number of features grows."
+        },
+        {
+          "term": "Overlap distance",
+          "meaning": "A distance for categories: 0 if the two values are equal and 1 if they differ."
+        },
+        {
+          "term": "One-hot encoding",
+          "meaning": "Giving each category its own 0/1 column, so that exactly one column is 1 for each example."
+        },
+        {
+          "term": "Imputation",
+          "meaning": "Filling in a missing value with an estimate, such as a mean or the most common value taken from the training data."
+        },
+        {
+          "term": "Lazy learning",
+          "meaning": "Storing the training examples and doing the work at prediction time rather than building a model in advance."
+        }
+      ],
+      "guided_questions": [
+        {
+          "question": "Why does a 1% neighbourhood need 63% of every axis in 10 dimensions?",
+          "answer": "The volume of a cube is its edge to the power d. 0.631 to the power 10 is about 0.01, so an edge of 0.631 is needed to hold 1% of the volume."
+        },
+        {
+          "question": "Why use 0 or 1 for the gap between two categories?",
+          "answer": "Categories have no order or spacing. “Same” and “different” are the only facts we can safely use, so the gap is 0 or 1."
+        },
+        {
+          "question": "If a value is missing from the query, how does the penalty policy change the ranking?",
+          "answer": "It adds the same gap of 1 to every distance, so the ranking is unchanged. A value missing from a stored record penalises only that record."
+        },
+        {
+          "question": "What does a tree do at prediction time that nearest neighbours does not?",
+          "answer": "It follows one path of questions through a model built in advance. Nearest neighbours has no such model and compares the query with every stored example."
+        }
+      ],
+      "instructor_notes": [
+        {
+          "title": "A missing value in the query and in a record are different problems",
+          "body": "A value missing from the query adds the same penalty to every distance under the penalty policy, so it changes no ranking. A value missing from a stored record penalises that one record. In the program, record r3 equals the query on both known features yet ranks second under the penalty policy and first under skip-and-rescale, and with k = 1 the predictions differ. Choose the policy by asking why the value is missing, and report the choice."
+        },
+        {
+          "title": "Distances concentrate, so “nearest” loses meaning",
+          "body": "The average ratio of the nearest to the farthest distance rises from 0.007 in one dimension to 0.919 in 1000 dimensions. When the ratio is close to 1, a small amount of noise can change which point is nearest. Before trusting a high-dimensional neighbour search, check the ratio on your own data, and consider selecting features or reducing dimensions."
+        },
+        {
+          "title": "Cheap training is not a cheap system",
+          "body": "Nearest neighbours has almost no training cost, but the bill arrives at prediction time. With n = 100,000 and d = 50, a service that answers 1,000 queries a second would do 5,000,000,000 differences per second, and it must keep all 100,000 examples in memory. Raw stored examples may also hold personal data, which a small trained model would not. Count the serving cost before choosing a lazy learner."
+        }
+      ],
+      "worked_problems": [
+        {
+          "title": "How local is a neighbourhood?",
+          "question": "Data are spread uniformly in the unit cube. A neighbourhood must hold 5% of the data. Find the edge of the cube for d = 1, 2, 5 and 20, and the number of examples needed for 10 per axis.",
+          "strategy": "The volume of a cube with edge e in d dimensions is e^d. Solve e^d = 0.05 for e.",
+          "steps": [
+            "e = 0.05^(1/d). For d = 1 this is 0.05.",
+            "For d = 2, e = √0.05 ≈ 0.224. For d = 5, e = 0.05^0.2 ≈ 0.549. Check: 0.549 to the power 5 is about 0.0499, close to 0.05.",
+            "For d = 20, e ≈ 0.861. A neighbourhood holding only 5% of the data stretches across 86% of every feature range.",
+            "With 10 examples per axis the numbers needed are 10^d: 10, 100, 100,000 and 10^20 for d = 1, 2, 5 and 20."
+          ],
+          "answer": "The edges are 0.05, 0.224, 0.549 and 0.861. The examples needed grow from 10 to 10^20. A neighbourhood is local only in very few dimensions.",
+          "sanity_check": "The edge can never exceed 1, the whole range. As d grows, 0.05^(1/d) moves toward 1, which matches the table."
+        },
+        {
+          "title": "Mixed distance by hand, then change the encoding",
+          "question": "Two clinic patients are x = (age 30, 4 km, reminder sms) and y = (age 50, 10 km, reminder email). Training ranges are age 20 to 60 and distance 2 to 12 km. Compute the mixed distance with overlap for the reminder. Then recompute with the reminder coded sms = 1, email = 2, none = 3 and min-max scaled, with y’s reminder missing under two policies, and with one-hot coding.",
+          "strategy": "Compute one gap per feature, scaled to between 0 and 1, then combine the gaps by the square root of the sum of squares.",
+          "steps": [
+            "Age gap = |30 − 50| / 40 = 0.5. Distance gap = |4 − 10| / 10 = 0.6. Reminder gap with overlap = 1, since sms differs from email. D = √(0.25 + 0.36 + 1) = √1.61 ≈ 1.269.",
+            "Integer coding scaled by range 2: gap = |1 − 2| / 2 = 0.5. D = √(0.25 + 0.36 + 0.25) = √0.86 ≈ 0.927. The invented order made the two patients look closer.",
+            "If y’s reminder is missing: the penalty policy sets the gap to 1, so D = √1.61 ≈ 1.269. Skip-and-rescale uses only the two known gaps and multiplies by 3/2: D = √((0.25 + 0.36) × 1.5) = √0.915 ≈ 0.957.",
+            "One-hot coding gives two columns that differ, so two squared gaps of 1: D = √(0.25 + 0.36 + 2) = √2.61 ≈ 1.616. One-hot weighs the category twice as much as overlap."
+          ],
+          "answer": "The distances are 1.269 (overlap), 0.927 (integer coding), 1.269 or 0.957 (missing, by policy) and 1.616 (one-hot). The same two patients can look near or far depending on the coding.",
+          "sanity_check": "With overlap or integer coding every gap is at most 1, so D is at most √3 ≈ 1.732 for three features. One-hot coding can reach √4 = 2, because it adds two columns. All the results fit these bounds."
+        },
+        {
+          "title": "Scaling flips the nearest neighbour",
+          "question": "Training data span years of experience from 2 to 12 and salary from $30,000 to $90,000. The query is 5 years and $50,000. Candidate A is 5 years and $58,000. Candidate B is 9 years and $52,000. Find the nearest candidate before and after min-max scaling.",
+          "strategy": "Compute plain distances first. Then divide each gap by the training range and compute again.",
+          "steps": [
+            "Unscaled: A has gaps 0 years and 8000 dollars, so the distance is 8000. B has gaps 4 years and 2000 dollars, so the distance is √(16 + 4,000,000) ≈ 2000.004. B is nearest.",
+            "Ranges: 10 years and 60,000 dollars. Scaled gaps for A: 0 and 8000 / 60,000 = 0.133, so the distance is 0.133.",
+            "Scaled gaps for B: 4 / 10 = 0.4 and 2000 / 60,000 = 0.033, so the distance is √(0.16 + 0.00111) ≈ 0.401. A is nearest.",
+            "The salary scale was swamping the experience scale. After scaling, a 4-year gap in experience counts for far more than a $2000 gap."
+          ],
+          "answer": "B is nearest before scaling and A is nearest after scaling. The preprocessing changes the answer, so it must be chosen with care and fitted on training data only.",
+          "sanity_check": "A query of 13 years would scale to 1.1, outside [0, 1]. That is fine, because the ranges come from training data and new data may fall outside them."
+        },
+        {
+          "title": "Price a brute-force query",
+          "question": "A store holds n = 20,000 examples with d = 30 features, stored as 8-byte numbers. A service answers q = 500 queries. Find the differences per query, the total, the memory for the store, and the effect of keeping only 15 features.",
+          "strategy": "Brute force costs n × d differences per query. The store holds n × d numbers.",
+          "steps": [
+            "Per query: 20,000 × 30 = 600,000 differences.",
+            "For 500 queries: 600,000 × 500 = 300,000,000 differences.",
+            "Memory: 20,000 × 30 × 8 bytes = 4,800,000 bytes, about 4.8 MB.",
+            "With 15 features the cost halves: 300,000 per query and 150,000,000 for 500 queries. A balanced tree over 20,000 examples is 15 questions deep, because 2 to the power 14 is 16,384, below 20,000, and 2 to the power 15 is 32,768."
+          ],
+          "answer": "600,000 differences per query, 300,000,000 in total, about 4.8 MB of memory. Halving the features halves the work.",
+          "sanity_check": "Doubling n or d doubles the cost, and doubling q also doubles the total. The cost grows in proportion to each of the three."
+        }
+      ],
+      "code_examples": [
+        {
+          "id": "curse-of-dimensionality-numbers",
+          "title": "Measure the curse of dimensionality",
+          "intro": "Iris wants to see the curse of dimensionality in numbers rather than take it on trust. The first table uses the edge formula and a random experiment with a fixed seed. The second experiment starts with a problem that two columns solve perfectly, then adds columns of pure noise and measures how nearest-neighbour accuracy falls.",
+          "language": "python",
+          "code": "import math\nimport random\n\n# 1. How much room does a neighbourhood need? (uniform data in the unit cube)\nprint(\"dims  edge holding 1% of the cube  points for 10 per axis  nearest/farthest\")\nrng = random.Random(11)\n\n\ndef nearest_over_farthest(dims, points=100, queries=30):\n    total = 0.0\n    for _ in range(queries):\n        data = [[rng.random() for _ in range(dims)] for _ in range(points)]\n        query = [rng.random() for _ in range(dims)]\n        gaps = [math.dist(row, query) for row in data]\n        total += min(gaps) / max(gaps)\n    return total / queries\n\n\nfor dims in (1, 2, 10, 100, 1000):\n    edge = 0.01 ** (1 / dims)\n    print(f\"{dims:>4}  {edge:>27.3f}  {'10^' + str(dims):>21}  {nearest_over_farthest(dims):>16.3f}\")\n\n\n# 2. Add useless columns to a problem that two columns solve.\ndef make_data(extra, seed, per_class=30):\n    rand = random.Random(seed)\n    rows = []\n    for label, centre in enumerate((0.3, 0.7)):\n        for _ in range(per_class):\n            useful = [centre + (rand.random() - 0.5) * 0.3 for _ in range(2)]\n            rows.append((useful + [rand.random() for _ in range(extra)], label))\n    return rows\n\n\ndef leave_one_out_accuracy(rows):\n    right = 0\n    for i, (x, label) in enumerate(rows):\n        others = [(math.dist(x, z), other) for j, (z, other) in enumerate(rows) if j != i]\n        right += min(others)[1] == label\n    return right / len(rows)\n\n\nprint(\"useless columns  1-NN accuracy (mean of 5 data sets)\")\nfor extra in (0, 2, 10, 50, 200):\n    scores = [leave_one_out_accuracy(make_data(extra, seed)) for seed in range(5)]\n    print(f\"{extra:>15}  {sum(scores) / len(scores):.3f}\")\n",
+          "output": "dims  edge holding 1% of the cube  points for 10 per axis  nearest/farthest\n   1                        0.010                   10^1             0.007\n   2                        0.100                   10^2             0.053\n  10                        0.631                  10^10             0.384\n 100                        0.955                 10^100             0.765\n1000                        0.995                10^1000             0.919\nuseless columns  1-NN accuracy (mean of 5 data sets)\n              0  1.000\n              2  0.990\n             10  0.837\n             50  0.667\n            200  0.577\n",
+          "walkthrough": [
+            "random.Random(11) makes a generator with a fixed seed, so every run prints the same numbers.",
+            "nearest_over_farthest draws 100 random points and a query in the unit cube, computes every distance with math.dist, and averages the ratio of the smallest to the largest over 30 queries.",
+            "The edge column is 0.01 ** (1 / dims): the edge of a cube holding 1% of the volume.",
+            "make_data builds two classes whose first two columns are well separated (centres 0.3 and 0.7), then appends extra columns of uniform noise.",
+            "leave_one_out_accuracy lets each row look for its single nearest other row and counts how often the neighbour has the same label. The result is averaged over 5 data sets."
+          ],
+          "explanation": "The first table repeats the numbers from the chapter. The edge grows from 0.010 to 0.995, so a 1% neighbourhood stops being local. The last column rises from 0.007 to 0.919. In 1000 dimensions the nearest of 100 random points is, on average, 92% as far as the farthest one.\n\nThe second table is the practical warning. With only the two useful columns the accuracy is perfect. Adding 2 useless columns costs 1 point, 10 columns costs 16, and 200 columns drops the accuracy to 0.577, near the 0.5 you would get by guessing. Nothing about the two useful columns changed. The noise columns simply dominated the distances.\n\nNotice what the program does not do. It does not tune k, scale the columns or select features. A data set with only the useful columns scores 1.000, as the first row shows, so removing useless columns is the first thing to try before fine-tuning a nearest-neighbour model."
+        },
+        {
+          "id": "mixed-distance-missing-scaling",
+          "title": "Mixed distance, missing values and scaling",
+          "intro": "Jack’s clinic records mix numbers and a category, and one distance is missing. The program compares two missing-value policies and shows that min-max scaling can change which candidate is nearest. It ends by counting the cost of brute-force search.",
+          "language": "python",
+          "code": "from math import ceil, log2, sqrt\n\n# Clinic records: (age, distance in km, reminder, outcome). None marks a missing value.\ntrain = [(25, 2, \"sms\", \"came\"), (65, 12, \"none\", \"missed\"), (45, None, \"sms\", \"missed\"),\n         (35, 10, \"none\", \"missed\"), (55, 4, \"email\", \"came\")]\nquery = (45, 8, \"sms\")\nNUMBER_COLUMNS = (0, 1)           # column 2 is a category\n\n\ndef fit_ranges(rows):\n    \"\"\"Smallest and largest known value of each number column, from training rows only.\"\"\"\n    ranges = {}\n    for col in NUMBER_COLUMNS:\n        known = [row[col] for row in rows if row[col] is not None]\n        ranges[col] = (min(known), max(known))\n    return ranges\n\n\ndef column_gaps(a, b, ranges):\n    gaps = []\n    for col in range(3):\n        if a[col] is None or b[col] is None:\n            gaps.append(None)                      # unknown\n        elif col in NUMBER_COLUMNS:\n            low, high = ranges[col]\n            gaps.append(abs(a[col] - b[col]) / (high - low))\n        else:\n            gaps.append(0.0 if a[col] == b[col] else 1.0)\n    return gaps\n\n\ndef distance(a, b, ranges, policy):\n    gaps = column_gaps(a, b, ranges)\n    known = [g for g in gaps if g is not None]\n    if policy == \"penalty\":                        # an unknown column counts as the largest gap, 1\n        return sqrt(sum(g * g for g in known) + (len(gaps) - len(known)))\n    return sqrt(sum(g * g for g in known) * len(gaps) / len(known))   # skip it and rescale\n\n\nranges = fit_ranges(train)\nprint(\"ranges:\", ranges)\nfor policy in (\"penalty\", \"rescale\"):\n    ranked = sorted((distance(query, row, ranges, policy), i + 1, row[3]) for i, row in enumerate(train))\n    print(policy, [f\"r{i}={d:.3f}\" for d, i, _ in ranked])\n    for k in (1, 3):\n        votes = [label for _, _, label in ranked[:k]]\n        print(f\"  k={k}: {max(set(votes), key=votes.count)}\")\n\n# Scaling: age in years next to distance in metres.\nrows = [(25, 500), (65, 12000), (25, 7900), (46, 6000)]\nspans = [(min(c), max(c)) for c in zip(*rows)]\nq, a, b = (45, 8000), rows[2], rows[3]\nraw = [sqrt(sum((x - y) ** 2 for x, y in zip(q, r))) for r in (a, b)]\nscaled = [sqrt(sum(((x - y) / (hi - lo)) ** 2 for x, y, (lo, hi) in zip(q, r, spans))) for r in (a, b)]\nprint(f\"unscaled: A={raw[0]:.2f} B={raw[1]:.2f} -> nearest is {'A' if raw[0] < raw[1] else 'B'}\")\nprint(f\"scaled:   A={scaled[0]:.3f} B={scaled[1]:.3f} -> nearest is {'A' if scaled[0] < scaled[1] else 'B'}\")\nprint(\"a new person aged 80 scales to\", (80 - spans[0][0]) / (spans[0][1] - spans[0][0]))\n\n# Lazy learning: all the work is paid at query time.\nstored, features, queries = 100_000, 50, 1_000\nprint(f\"one query reads {stored * features:,} numbers; {queries:,} queries read {stored * features * queries:,}\")\nprint(\"a balanced tree over the same examples is\", ceil(log2(stored)), \"questions deep\")\n",
+          "output": "ranges: {0: (25, 65), 1: (2, 12)}\npenalty ['r1=0.781', 'r3=1.000', 'r4=1.050', 'r5=1.106', 'r2=1.187']\n  k=1: came\n  k=3: missed\nrescale ['r3=0.000', 'r1=0.781', 'r4=1.050', 'r5=1.106', 'r2=1.187']\n  k=1: missed\n  k=3: missed\nunscaled: A=101.98 B=2000.00 -> nearest is A\nscaled:   A=0.500 B=0.176 -> nearest is B\na new person aged 80 scales to 1.375\none query reads 5,000,000 numbers; 1,000 queries read 5,000,000,000\na balanced tree over the same examples is 17 questions deep\n",
+          "walkthrough": [
+            "train holds five records with None for the missing distance. fit_ranges computes the smallest and largest known value of each number column, from the training rows only.",
+            "column_gaps returns one gap per column: a number difference divided by the training range, 0 or 1 for the category, and None for anything missing.",
+            "distance combines the gaps. The penalty policy counts each missing gap as 1. The rescale policy sums the known squared gaps and multiplies by the number of columns over the number known.",
+            "The loop prints each policy’s ranking and the vote for k = 1 and k = 3. Ties never occur in this data, so the vote is well defined.",
+            "The scaling part computes plain and scaled distances for candidates A and B, scales an age of 80 with the training range, and finishes with the cost arithmetic."
+          ],
+          "explanation": "The penalty ranking puts r1 (0.781) before r3 (1.000), because r3 pays a full gap for its missing distance. The rescale ranking puts r3 first at 0.000, because on the two columns it does have it equals the query. With k = 1 the policies predict different outcomes, came and missed. With k = 3 they agree on missed. Small k is more sensitive to how you treat missing values.\n\nScaling is the second part. Unscaled, candidate A (aged 25 at 7900 m) is nearer than candidate B (aged 46 at 6000 m), only because metres dwarf years. After min-max scaling B is nearer. The age of 80 scales to 1.375, which shows that a new value can fall outside [0, 1] without breaking anything, because the range comes from the training rows.\n\nThe last lines are the lazy-learning bill: 5,000,000 numbers read for one query, 5,000,000,000 for 1,000 queries, against a tree that needs 17 questions to reach a decision.",
+          "trace": {
+            "columns": [
+              "Record",
+              "Penalty distance",
+              "Skip-and-rescale distance"
+            ],
+            "rows": [
+              [
+                "r1 (25, 2 km, sms, came)",
+                "0.781",
+                "0.781"
+              ],
+              [
+                "r2 (65, 12 km, none, missed)",
+                "1.187",
+                "1.187"
+              ],
+              [
+                "r3 (45, missing, sms, missed)",
+                "1.000",
+                "0.000"
+              ],
+              [
+                "r4 (35, 10 km, none, missed)",
+                "1.050",
+                "1.050"
+              ],
+              [
+                "r5 (55, 4 km, email, came)",
+                "1.106",
+                "1.106"
+              ]
+            ]
+          }
         }
       ]
     },

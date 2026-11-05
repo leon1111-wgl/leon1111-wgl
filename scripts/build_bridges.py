@@ -32,6 +32,34 @@ def example_key(guide, lesson):
     return f'bridges/{guide["id"]}/{lesson["id"]}'
 
 
+def walk_html(rows):
+    """Runs of `a | b | c` lines are dry-run tables; everything else stays a numbered step."""
+    out, table = [], []
+
+    def flush():
+        if table:
+            head, *rest = table
+            out.append('<div class="trace-wrap" tabindex="0"><table class="trace-table"><thead><tr>' + ''.join(f'<th scope="col">{E(c)}</th>' for c in head) + '</tr></thead><tbody>'
+                       + ''.join('<tr>' + ''.join(f'<td>{E(c)}</td>' for c in r) + '</tr>' for r in rest) + '</tbody></table></div>')
+            table.clear()
+    steps = []
+
+    def flush_steps():
+        if steps:
+            out.append('<ol class="execution-steps">' + ''.join(f'<li>{paragraphs(x)}</li>' for x in steps) + '</ol>')
+            steps.clear()
+    for row in rows:
+        if ' | ' in row:
+            flush_steps()
+            table.append([c.strip() for c in row.split(' | ')])
+        else:
+            flush()
+            steps.append(row)
+    flush()
+    flush_steps()
+    return ''.join(out)
+
+
 def example_html(guide, lesson, lang):
     example = lesson.get('example')
     if not example:
@@ -41,9 +69,8 @@ def example_html(guide, lesson, lang):
     key = example_key(guide, lesson)
     code_id = f'code-{lesson["id"]}'
     run = f' data-run="{language}"' if key in RUNNABLE else ''
-    walk = ''.join(f'<li>{paragraphs(x)}</li>' for x in example.get('walk', {}).get(lang, []))
     hidden = (f'<div class="output-block"><h4>{w["output"]}</h4><pre class="code code-output">{E(example["output"])}</pre></div>'
-              + (f'<h4>{w["walk"]}</h4><ol class="execution-steps">{walk}</ol>' if walk else ''))
+              + (f'<h4>{w["walk"]}</h4>{walk_html(example.get("walk", {}).get(lang, []))}' if example.get('walk') else ''))
     return (f'<section class="code-example"{run}><h3>{w["example"]}</h3><div class="code-actions"><span>{RUN_NAMES[language]}</span>'
             f'<button type="button" data-copy-code="{code_id}">{w["copy"]}</button></div>{code_html(example["code"], language, code_id)}'
             f'<details class="try-first"><summary>{w["fold_output"]}</summary><div class="try-body">{hidden}</div></details></section>')

@@ -13,11 +13,11 @@
  },
  "summary": {
   "en": "Run a log-line copier that looks correct, let AddressSanitizer name the exact line and block, fix the size, and learn what ASan still cannot see.",
-  "zh": "运行一个看起来完全正确的日志行复制器,用 AddressSanitizer 找出确切的行和内存块,修好长度,并弄清 ASan 仍然看不到什么。"
+  "zh": "运行一个看起来完全正确的日志行复制器，用 AddressSanitizer 找出确切的行和内存块，修好长度，并弄清 ASan 仍然看不到什么。"
  },
  "scenario": {
-  "en": "Mia owns a small tool called logcopy. It reads access-log lines and prints an escaped copy of each one: a tab becomes the two characters \\t and a double quote becomes \\\". The CSV loader downstream used to choke on those characters. The tool has shipped for a month and nobody has seen a crash.\n\nJack is adding it to the nightly job and asks you to check it with the sanitizer build before he does. Nothing is known to be wrong. Your job is to find out whether the quiet runs mean the code is correct, or only that the bug has not been loud yet.\n\nYou will build it two ways, read what AddressSanitizer reports, fix the cause, prove the fix on the worst input, and then see one overflow that ASan misses.",
-  "zh": "Mia 维护一个叫 logcopy 的小工具。它读取访问日志,为每一行打印一份转义后的副本:制表符变成两个字符 \\t,双引号变成 \\\"。下游的 CSV 加载程序以前会被这些字符搞崩。工具已经上线一个月,没有人见过崩溃。\n\nJack 想把它放进夜间任务,请你先用 sanitizer(运行时检查工具)构建版本检查一遍。目前没有任何已知问题。你要回答的是:这些安静的运行说明代码正确,还是只说明错误还没有吵起来?\n\n你会用两种方式构建它,读懂 AddressSanitizer 的报告,修掉根因,在最坏输入上证明修复有效,最后看一个 ASan 发现不了的溢出。"
+  "en": "Mia owns a small tool called logcopy. It reads access-log lines and prints an escaped copy of each one: a tab becomes the two characters `\\t` and a double quote becomes `\\\"`. The CSV loader downstream used to choke on those characters. The tool has shipped for a month and nobody has seen a crash.\n\nJack is adding it to the nightly job and asks you to check it with the sanitizer build before he does. Nothing is known to be wrong. Your job is to find out whether the quiet runs mean the code is correct, or only that the bug has not been loud yet.\n\nYou will build it two ways, read what AddressSanitizer reports, fix the cause, prove the fix on the worst input, and then see one overflow that ASan misses.",
+  "zh": "Mia 维护一个叫 logcopy 的小工具。它读取访问日志，为每一行打印一份转义后的副本：制表符变成两个字符 `\\t`，双引号变成 `\\\"`。下游的 CSV 加载程序以前会被这些字符搞崩。工具已经上线一个月，没有人见过崩溃。\n\nJack 想把它放进夜间任务，请你先用 sanitizer（运行时检查工具）构建版本检查一遍。目前没有任何已知问题。你要回答的是：这些安静的运行说明代码正确，还是只说明错误还没有吵起来？\n\n你会用两种方式构建它，读懂 AddressSanitizer 的报告，修掉根因，在最坏输入上证明修复有效，最后看一个 ASan 发现不了的溢出。"
  },
  "show": [
   "logcopy.c",
@@ -31,7 +31,7 @@
    },
    "body": {
     "en": "`-std=c11` fixes the language version, `-Wall -Wextra` turns on the compiler's common warnings, `-g` keeps line numbers for tools, and `-o` names the program. The build is clean and the output is right, including the tab and the quotes. This is what Mia has seen for a month.\n\nThe program is still wrong. `malloc(len + 1)` has room for the text and its NUL, but every tab and every quote needs one extra byte for the escape. Line 2 of sample.log has a tab, and line 4 has two quotes. The extra bytes go past the end of the block into memory malloc rounds up and keeps for itself, so nothing crashes. Undefined behaviour does not have to look like a failure.",
-    "zh": "`-std=c11` 固定语言版本,`-Wall -Wextra` 打开编译器常用的警告,`-g` 为工具保留行号,`-o` 指定程序名。构建没有警告,输出也对,制表符和引号都正确转义。这就是 Mia 一个月来看到的结果。\n\n但程序仍然是错的。`malloc(len + 1)` 只给文本和结尾的 NUL 留了位置,而每个制表符、每个引号还要多一个字节放转义符。sample.log 的第 2 行有一个制表符,第 4 行有两个引号。多出的字节越过块的末尾,写进了 malloc 为了对齐而多留的空间,所以不会崩溃。未定义行为不一定表现为失败。"
+    "zh": "`-std=c11` 固定语言版本，`-Wall -Wextra` 打开编译器常用的警告，`-g` 为工具保留行号，`-o` 指定程序名。构建没有警告，输出也对，制表符和引号都正确转义。这就是 Mia 一个月来看到的结果。\n\n但程序仍然是错的。`malloc(len + 1)` 只给文本和结尾的 NUL 留了位置，而每个制表符、每个引号还要多一个字节放转义符。sample.log 的第 2 行有一个制表符，第 4 行有两个引号。多出的字节越过块的末尾，写进了 malloc 为了对齐而多留的空间，所以不会崩溃。未定义行为不一定表现为失败。"
    },
    "command": "clang -std=c11 -Wall -Wextra -g logcopy.c -o logcopy && ./logcopy sample.log",
    "contains": [
@@ -45,7 +45,7 @@
    },
    "body": {
     "en": "`-fsanitize=address` makes the compiler check every memory access against a shadow map and puts guard bytes (red zones) around each heap block. `-fno-omit-frame-pointer` keeps the frame chain so the stack traces are reliable. The source is unchanged. The first bad write stops the program, and the report goes to stderr.\n\nOn Linux the process exits with status 1. On macOS ASan aborts instead (status 134). The report text is the same.",
-    "zh": "`-fsanitize=address` 让编译器用一张影子映射检查每次内存访问,并在每个堆块周围放置保护字节(红区,red zone)。`-fno-omit-frame-pointer` 保留帧指针链,使调用栈更可靠。源代码没有改动。第一次越界写入就会让程序停止,报告输出到 stderr。\n\n在 Linux 上进程以状态 1 退出;在 macOS 上 ASan 改为 abort(状态 134)。报告内容相同。"
+    "zh": "`-fsanitize=address` 让编译器用一张影子映射检查每次内存访问，并在每个堆块周围放置保护字节（红区，red zone）。`-fno-omit-frame-pointer` 保留帧指针链，使堆栈跟踪更可靠。源代码没有改动。第一次越界写入就会让程序停止，报告输出到 stderr。\n\n在 Linux 上进程以状态 1 退出；在 macOS 上 ASan 改为 abort（状态 134）。报告内容相同。"
    },
    "command": "clang -std=c11 -g -fsanitize=address -fno-omit-frame-pointer logcopy.c -o logcopy-asan && ./logcopy-asan sample.log",
    "exit": 1,
@@ -64,17 +64,17 @@
    },
    "body": {
     "en": "Read it in this order, and stop when you have the answer.\n\n1. The first line names the class of error, `heap-buffer-overflow`, and the address.\n2. `WRITE of size 1` says it was a one-byte store, not a read. Stores are the dangerous ones.\n3. Frame `#0` is the exact source line that did it, inside `escape_line`. Frame `#1` is the caller.\n4. `0 bytes after 53-byte region` is the key line. The block was 53 bytes, which is a 52-character line plus a NUL, and the write landed in the first byte after it.\n5. `allocated by thread T0 here` points to the `malloc` call that sized the block.\n\nNow the fix is a question of arithmetic: how many bytes can the output need when the input has `len` characters? Each input byte produces at most two output bytes. The rest of the report (the shadow bytes dump) is for people debugging ASan itself; you rarely need it.",
-    "zh": "按这个顺序读,得到答案就可以停。\n\n1. 第一行给出错误类别 `heap-buffer-overflow` 和地址。\n2. `WRITE of size 1` 说明这是一次单字节写入,不是读取。写入更危险。\n3. 帧 `#0` 就是出错的源代码行,在 `escape_line` 里;帧 `#1` 是调用者。\n4. `0 bytes after 53-byte region` 是关键一行:这个块是 53 字节(52 个字符的行加一个 NUL),写入落在它后面的第一个字节上。\n5. `allocated by thread T0 here` 指向决定了块大小的那次 `malloc`。\n\n现在修复就是一道算术题:输入有 `len` 个字符时,输出最多需要多少字节?每个输入字节最多产生两个输出字节。报告末尾的影子字节(shadow bytes)转储是给调试 ASan 本身的人看的,平时很少需要。"
+    "zh": "按这个顺序读，得到答案就可以停。\n\n1. 第一行给出错误类别 `heap-buffer-overflow` 和地址。\n2. `WRITE of size 1` 说明这是一次单字节写入，不是读取。写入更危险。\n3. 帧 `#0` 就是出错的源代码行，在 `escape_line` 里；帧 `#1` 是调用者。\n4. `0 bytes after 53-byte region` 是关键一行：这个块是 53 字节（52 个字符的行加一个 NUL），写入落在它后面的第一个字节上。\n5. `allocated by thread T0 here` 指向决定了块大小的那次 `malloc`。\n\n现在修复就是一道算术题：输入有 `len` 个字符时，输出最多需要多少字节？每个输入字节最多产生两个输出字节。报告末尾的影子字节（shadow bytes）转储是给调试 ASan 本身的人看的，平时很少需要。"
    }
   },
   {
    "title": {
     "en": "Fix the size and retest under ASan",
-    "zh": "修正大小,用 ASan 重测"
+    "zh": "修正大小，用 ASan 重测"
    },
    "body": {
     "en": "The patch sizes the block for the worst case, `2 * len + 1`, and says why in the comment. Rebuild with the sanitizer and run the same file. No report, exit status 0, and the same output as before.",
-    "zh": "补丁按最坏情况 `2 * len + 1` 分配块,并在注释里写明原因。用 sanitizer 重新构建并运行同一个文件:没有报告,退出状态 0,输出与之前相同。"
+    "zh": "补丁按最坏情况 `2 * len + 1` 分配块，并在注释里写明原因。用 sanitizer 重新构建并运行同一个文件：没有报告，退出状态 0，输出与之前相同。"
    },
    "command": "clang -std=c11 -g -fsanitize=address -fno-omit-frame-pointer logcopy.c -o logcopy-asan && ./logcopy-asan sample.log",
    "contains": [
@@ -89,11 +89,11 @@
   {
    "title": {
     "en": "Prove it on the worst input, and check the output",
-    "zh": "在最坏输入上验证,并检查输出"
+    "zh": "在最坏输入上验证，并检查输出"
    },
    "body": {
     "en": "The old input only touched the bug by a byte or two. worst.log is one line made only of 20 tabs and 10 quotes, so every byte doubles. A pass here is evidence about the bound itself, not about luck.\n\nASan only says that no invalid access happened. It does not say the output is right. The second command compares the output with expected.txt, which was reviewed by hand. Use both in a nightly job: the sanitizer for memory, a diff for behaviour.",
-    "zh": "旧输入只越界了一两个字节。worst.log 只有一行,由 20 个制表符和 10 个引号组成,每个字节都会翻倍。这里通过说明的是上界本身成立,而不是运气好。\n\nASan 只能说明没有发生非法访问,不能说明输出正确。第二条命令把输出和 expected.txt(人工检查过)做比较。夜间任务里两者都要用:sanitizer 管内存,diff 管行为。"
+    "zh": "旧输入只越界了一两个字节。worst.log 只有一行，由 20 个制表符和 10 个引号组成，每个字节都会翻倍。这里通过说明的是上界本身成立，而不是运气好。\n\nASan 只能说明没有发生非法访问，不能说明输出正确。第二条命令把输出和 expected.txt（人工检查过）做比较。夜间任务里两者都要用：sanitizer 管内存，diff 管行为。"
    },
    "command": "./logcopy-asan worst.log && ./logcopy-asan sample.log > actual.txt && diff expected.txt actual.txt && echo \"output matches expected.txt\"",
    "contains": [
@@ -107,7 +107,7 @@
    },
    "body": {
     "en": "record.c has a struct with an 8-byte tag followed by an int level. The loop copies the tag from the command line with no bound. \"WARN-HIGH\" is 9 characters plus a NUL, so it spills 2 bytes into `level`.\n\nBoth bytes are still inside the same struct object. ASan puts red zones around objects, not between fields, so it sees nothing wrong. The program exits 0 and prints `level=72`, the ASCII code of `H`, instead of 1. A clean ASan run is not a clean bill of health.",
-    "zh": "record.c 里有一个结构体:8 字节的 tag 后面跟着 int 类型的 level。循环从命令行复制 tag,没有任何上界。\"WARN-HIGH\" 是 9 个字符加一个 NUL,所以有 2 个字节溢出到 `level` 里。\n\n这两个字节仍然在同一个结构体对象之内。ASan 把红区放在对象周围,而不是字段之间,所以它什么都没看到。程序以 0 退出,打印 `level=72`(字符 `H` 的 ASCII 码),而不是 1。ASan 运行干净,不等于代码没有问题。"
+    "zh": "record.c 里有一个结构体：8 字节的 tag 后面跟着 int 类型的 level。循环从命令行复制 tag，没有任何上界。“WARN-HIGH” 是 9 个字符加一个 NUL，所以有 2 个字节溢出到 `level` 里。\n\n这两个字节仍然在同一个结构体对象之内。ASan 把红区放在对象周围，而不是字段之间，所以它什么都没看到。程序以 0 退出，打印 `level=72`（字符 `H` 的 ASCII 码），而不是 1。ASan 运行干净，不等于代码没有问题。"
    },
    "command": "clang -std=c11 -g -fsanitize=address record.c -o record-asan && ./record-asan WARN-HIGH; echo \"exit status: $?\"",
    "contains": [
@@ -122,7 +122,7 @@
    },
    "body": {
     "en": "`-fsanitize=bounds` is one of the UndefinedBehaviorSanitizer (UBSan) checks. It knows the declared size of `tag` (`char[8]`) and checks every index against it, even inside a struct. `-fno-sanitize-recover=bounds` makes the first finding stop the program, so a CI job fails instead of printing a warning that nobody reads.\n\nUBSan catches this index; it would not catch the same copy written with `memcpy` through a pointer. Each tool has its own blind spots, which is why teams combine them with tests, fuzzing and review.",
-    "zh": "`-fsanitize=bounds` 是 UndefinedBehaviorSanitizer(UBSan)的检查项之一。它知道 `tag` 声明的大小(`char[8]`),并对每个下标做检查,结构体内部也不例外。`-fno-sanitize-recover=bounds` 让第一个发现就终止程序,这样 CI 任务会失败,而不是打印一条没人看的警告。\n\nUBSan 能抓住这个下标;如果同样的复制用指针加 `memcpy` 来写,它就抓不到。每个工具都有自己的盲区,所以团队才要把它们与测试、模糊测试和代码评审结合起来。"
+    "zh": "`-fsanitize=bounds` 是 UndefinedBehaviorSanitizer（UBSan）的检查项之一。它知道 `tag` 声明的大小（`char[8]`），并对每个下标做检查，结构体内部也不例外。`-fno-sanitize-recover=bounds` 让第一个发现就终止程序，这样 CI 任务会失败，而不是打印一条没人看的警告。\n\nUBSan 能抓住这个下标；如果同样的复制用指针加 `memcpy` 来写，它就抓不到。每个工具都有自己的盲区，所以团队才要把它们与测试、模糊测试和代码评审结合起来。"
    },
    "command": "clang -std=c11 -g -fsanitize=bounds -fno-sanitize-recover=bounds record.c -o record-ubsan && ./record-ubsan WARN-HIGH",
    "exit": 1,
@@ -134,57 +134,57 @@
  "review": [
   {
    "en": "Does every allocation size come from the same quantity as the loop that fills it? A comment should state the bound (\"at most two output bytes per input byte\").",
-   "zh": "每次分配的大小,是否与填充它的循环出自同一个量?注释应写明上界(例如\"每个输入字节最多产生两个输出字节\")。"
+   "zh": "每次分配的大小，是否与填充它的循环出自同一个量？注释应写明上界（例如“每个输入字节最多产生两个输出字节”）。"
   },
   {
    "en": "When output can be longer than input (escaping, expansion, formatting), has the maximum growth factor been worked out rather than guessed from sample data?",
-   "zh": "输出可能比输入长时(转义、展开、格式化),是否算出了最大增长倍数,而不是根据样例数据猜?"
+   "zh": "输出可能比输入长时（转义、展开、格式化），是否算出了最大增长倍数，而不是根据样例数据猜？"
   },
   {
    "en": "Do the tests include the worst case (every byte special, empty input, a line at the maximum length), not just typical lines?",
-   "zh": "测试是否包含最坏情况(每个字节都是特殊字符、空输入、恰好最大长度的行),而不只是典型的行?"
+   "zh": "测试是否包含最坏情况（每个字节都是特殊字符、空输入、恰好最大长度的行），而不只是典型的行？"
   },
   {
    "en": "If a counting pass and a writing pass both exist, can they drift apart? One bound used in both places is safer than two loops that must agree.",
-   "zh": "如果同时有计数循环和写入循环,它们会不会逐渐不一致?两处共用同一个上界,比两个必须一致的循环更安全。"
+   "zh": "如果同时有计数循环和写入循环，它们会不会逐渐不一致？两处共用同一个上界，比两个必须一致的循环更安全。"
   },
   {
    "en": "Is the size arithmetic safe against overflow (`2 * len + 1` is fine for an fgets buffer; check it when len comes from outside)?",
-   "zh": "大小的算术是否能防止溢出?(对 fgets 缓冲区来说 `2 * len + 1` 没问题;当 len 来自外部时必须检查。)"
+   "zh": "大小的算术是否能防止溢出？（对 fgets 缓冲区来说 `2 * len + 1` 没问题；当 len 来自外部时必须检查。）"
   },
   {
    "en": "Does CI build and run the tests with `-fsanitize=address,undefined` in a separate build directory, and does it fail on the first report?",
-   "zh": "CI 是否在单独的构建目录里用 `-fsanitize=address,undefined` 构建并运行测试,并在第一个报告处失败?"
+   "zh": "CI 是否在单独的构建目录里用 `-fsanitize=address,undefined` 构建并运行测试，并在第一个报告处失败？"
   },
   {
    "en": "Does a sanitizer pass get paired with an output check (diff against a reviewed expected file)? A clean ASan run says nothing about correctness.",
-   "zh": "sanitizer 通过之后,是否还配有输出检查(与人工检查过的期望文件做 diff)?ASan 干净并不说明结果正确。"
+   "zh": "sanitizer 通过之后，是否还配有输出检查（与人工检查过的期望文件做 diff）？ASan 干净并不说明结果正确。"
   },
   {
    "en": "Are structs with fixed-size char arrays copied with a bounded function and a length check, since ASan will not notice an overflow between fields?",
-   "zh": "含固定长度 char 数组的结构体,是否用带上界的函数并检查长度来复制?ASan 不会发现字段之间的溢出。"
+   "zh": "含固定长度 char 数组的结构体，是否用带上界的函数并检查长度来复制？ASan 不会发现字段之间的溢出。"
   },
   {
    "en": "Is ownership documented (\"caller frees\"), and is the NULL return from malloc handled on every path?",
-   "zh": "所有权是否写明(\"由调用者释放\"),每条路径是否处理了 malloc 返回 NULL 的情况?"
+   "zh": "所有权是否写明（“由调用者释放”），每条路径是否处理了 malloc 返回 NULL 的情况？"
   }
  ],
  "tradeoffs": {
   "en": "**Cost of the tool.** ASan typically slows a program by about 2x and uses 2x to 3x the memory, because it checks every access and keeps freed blocks in quarantine. That is acceptable in tests and CI, and not in most production binaries. Production systems that want some of the protection use sampling allocators (for example GWP-ASan) or hardened libc builds, which catch far fewer bugs. Keep sanitizer objects in their own build directory so they never get linked with normal ones. ASan and ThreadSanitizer cannot be combined in one binary; ASan and UBSan can.\n\n**Cost of the fix.** `2 * len + 1` wastes up to half the block for ordinary lines, for a copy that lives for one loop iteration. A counting pass allocates exactly but gives you two loops that must stay in sync, which is how the next off-by-one appears. For a short-lived copy, the simple bound wins. For a large buffer kept in a cache, count first or grow with `realloc`.\n\n**What ASan cannot catch.** It misses overflows between fields of one object (shown above), reads of uninitialised memory (use MemorySanitizer on clang/Linux, or Valgrind), bugs on paths your inputs never run, overflows that jump over the red zone into another live block, memory handed out by your own pool or arena allocator unless you annotate it, and accesses inside libraries that were not built with ASan (libc string functions are intercepted, so those are covered). It does not find logic errors or data races at all. Leak detection is on by default on Linux and not available on Apple Silicon. For the paths your tests never reach, add fuzzing: clang can build the same function with `-fsanitize=fuzzer,address` and feed it generated lines.\n\n**Reading the result.** Exit status differs by platform (1 on Linux, 134 on macOS), and `ASAN_OPTIONS` tunes behaviour (for example `abort_on_error`). A CI script should treat any non-zero status as failure and keep the report as an artifact.",
-  "zh": "**工具的代价。** ASan 通常让程序慢约 2 倍,内存占用约 2 到 3 倍,因为它检查每次访问,还把释放的块放进隔离区。这在测试和 CI 中可以接受,但多数生产二进制不能这样用。想在生产环境得到一部分保护的系统,会使用采样式分配器(例如 GWP-ASan)或加固的 libc,它们能发现的问题少得多。要把 sanitizer 的目标文件放在单独的构建目录,避免和普通对象文件链接在一起。ASan 和 ThreadSanitizer 不能放进同一个二进制;ASan 和 UBSan 可以。\n\n**修复的代价。** 对普通行来说,`2 * len + 1` 最多浪费一半的块,而这份副本只活一次循环迭代。先计数再分配可以精确,但会得到两个必须保持同步的循环,下一个差一错误正是这样出现的。对短命的副本,简单的上界更好。对缓存里长期保存的大缓冲区,应先计数,或用 `realloc` 增长。\n\n**ASan 抓不到什么。** 它抓不到同一对象内字段之间的溢出(上面演示了)、读取未初始化内存(用 clang/Linux 上的 MemorySanitizer,或 Valgrind)、你的输入没有走到的路径、跳过红区落进另一个有效块的溢出、你自己的内存池或 arena 分配器分出去的内存(除非加标注),以及没有用 ASan 构建的库内部的访问(libc 的字符串函数有拦截,所以这部分有覆盖)。它完全找不到逻辑错误和数据竞争。泄漏检测在 Linux 上默认开启,在 Apple Silicon 上不可用。对测试走不到的路径,要加模糊测试:clang 可以用 `-fsanitize=fuzzer,address` 构建同一个函数,并喂给它生成的日志行。\n\n**解读结果。** 退出状态因平台而异(Linux 为 1,macOS 为 134),`ASAN_OPTIONS` 可以调整行为(例如 `abort_on_error`)。CI 脚本应把任何非零状态当作失败,并把报告保存为产物。"
+  "zh": "**工具的代价。** ASan 通常让程序慢约 2 倍，内存占用约 2 到 3 倍，因为它检查每次访问，还把释放的块放进隔离区。这在测试和 CI 中可以接受，但多数生产二进制不能这样用。想在生产环境得到一部分保护的系统，会使用采样式分配器（例如 GWP-ASan）或加固的 libc，它们能发现的问题少得多。要把 sanitizer 的目标文件放在单独的构建目录，避免和普通对象文件链接在一起。ASan 和 ThreadSanitizer 不能放进同一个二进制；ASan 和 UBSan 可以。\n\n**修复的代价。** 对普通行来说，`2 * len + 1` 最多浪费一半的块，而这份副本只活一次循环迭代。先计数再分配可以精确，但会得到两个必须保持同步的循环，下一个差一错误正是这样出现的。对短命的副本，简单的上界更好。对缓存里长期保存的大缓冲区，应先计数，或用 `realloc` 增长。\n\n**ASan 抓不到什么。** 它抓不到同一对象内字段之间的溢出（上面演示了）、读取未初始化内存（用 clang/Linux 上的 MemorySanitizer，或 Valgrind）、你的输入没有走到的路径、跳过红区落进另一个有效块的溢出、你自己的内存池或 arena 分配器分出去的内存（除非加标注），以及没有用 ASan 构建的库内部的访问（libc 的字符串函数有拦截，所以这部分有覆盖）。它完全找不到逻辑错误和数据竞争。泄漏检测在 Linux 上默认开启，在 Apple Silicon 上不可用。对测试走不到的路径，要加模糊测试：clang 可以用 `-fsanitize=fuzzer,address` 构建同一个函数，并喂给它生成的日志行。\n\n**解读结果。** 退出状态因平台而异（Linux 为 1，macOS 为 134），`ASAN_OPTIONS` 可以调整行为（例如 `abort_on_error`）。CI 脚本应把任何非零状态当作失败，并把报告保存为产物。"
  },
  "done": [
   {
    "en": "You can explain why the plain run printed correct output while the code was wrong.",
-   "zh": "你能解释为什么普通运行输出正确,而代码其实是错的。"
+   "zh": "你能解释为什么普通运行输出正确，而代码其实是错的。"
   },
   {
    "en": "You can point to the three lines of an ASan report that give the kind of error, the bad line, and the allocation that was too small.",
-   "zh": "你能在 ASan 报告里指出三处:错误类别、出错的行、以及过小的那次分配。"
+   "zh": "你能在 ASan 报告里指出三处：错误类别、出错的行、以及过小的那次分配。"
   },
   {
    "en": "logcopy passes under ASan on sample.log and worst.log, and its output matches expected.txt.",
-   "zh": "logcopy 在 sample.log 和 worst.log 上通过 ASan,且输出与 expected.txt 一致。"
+   "zh": "logcopy 在 sample.log 和 worst.log 上通过 ASan，且输出与 expected.txt 一致。"
   },
   {
    "en": "You can name two kinds of bug a clean ASan run does not rule out.",
