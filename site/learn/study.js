@@ -4,10 +4,10 @@ window.LeonStudyInit = (hub) => {
   const { store, esc, icon, frame, BY_ID, DATA, SITE, href } = hub;
   const lang = () => hub.lang();
   const L = (o) => (o && typeof o === 'object' && !Array.isArray(o) ? (o[lang()] ?? o.zh ?? o.en) : o);
-  const para = (s) => String(s ?? '').split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
-  // lab text uses `code` and **bold**
+  // reader text may use `code` and **bold**
   const inline = (s) => esc(s).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*(\S(?:[^*\n]*\S)?)\*\*/g, '<b>$1</b>');
   const rich = (s) => String(s ?? '').split('\n\n').map((p) => `<p>${inline(p).replace(/\n/g, '<br>')}</p>`).join('');
+  const para = rich;
   const now = () => Date.now();
   const F = () => globalThis.LeonFSRS;
   const COURSE_IDS = ['python', 'info1113', 'comp2017', 'comp2123', 'comp2022', 'comp3308', 'start', 'ml', 'dl', 'vision', 'multimodal'];
@@ -346,9 +346,9 @@ window.LeonStudyInit = (hub) => {
   }
   function rubricHtml(q, ticks = []) {
     if (!q.rubric) return '';
-    return `<h4>${t('rubric')}</h4><ul class="rubric">${q.rubric.map((r, i) => `<li><label><input type="checkbox" data-rubric="${i}"${ticks.includes(i) ? ' checked' : ''}><span class="rubric-m">+${r.marks}</span><span>${esc(L(r.text))}</span></label></li>`).join('')}</ul>`;
+    return `<h4>${t('rubric')}</h4><ul class="rubric">${q.rubric.map((r, i) => `<li><label><input type="checkbox" data-rubric="${i}"${ticks.includes(i) ? ' checked' : ''}><span class="rubric-m">+${r.marks}</span><span>${inline(L(r.text))}</span></label></li>`).join('')}</ul>`;
   }
-  const mistakesHtml = (q) => (q.mistakes?.length ? `<h4>${t('mistakes')}</h4><ul class="study-list">${q.mistakes.map((m) => `<li>${esc(L(m))}</li>`).join('')}</ul>` : '');
+  const mistakesHtml = (q) => (q.mistakes?.length ? `<h4>${t('mistakes')}</h4><ul class="study-list">${q.mistakes.map((m) => `<li>${inline(L(m))}</li>`).join('')}</ul>` : '');
   function questionBody(cid, q) {
     const st = qs;
     const answerBox = (placeholder, rows = 6) => `<textarea class="study-answer" data-answer rows="${rows}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="${esc(placeholder)}">${esc(st.answer || '')}</textarea>`;
@@ -359,18 +359,18 @@ window.LeonStudyInit = (hub) => {
       const walk = L(q.walk) || [];
       return `<div class="q-result"><strong>${esc(t('scored')(r.score, q.marks))}</strong></div><div class="study-trace" tabindex="0"><table class="diff"><thead><tr><th></th><th>${t('expected')}</th><th>${t('yours')}</th></tr></thead><tbody>${lines}</tbody></table></div>
         ${q.run && canRun(q.language) ? `<div class="q-actions"><button type="button" class="btn ghost sm" data-run-q>${t('runIt')}</button></div><div class="q-run" data-run-out hidden aria-live="polite"></div>` : ''}
-        ${walk.length ? `<h4>${t('walk')}</h4><ol class="study-list">${walk.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}${q.trace ? `<h4>${t('traceT')}</h4>${traceTable(q.trace)}` : ''}`;
+        ${walk.length ? `<h4>${t('walk')}</h4><ol class="study-list">${walk.map((x) => `<li>${inline(x)}</li>`).join('')}</ol>` : ''}${q.trace ? `<h4>${t('traceT')}</h4>${traceTable(q.trace)}` : ''}`;
     }
     if (q.kind === 'worked') {
       const steps = L(q.steps);
       if (st.stage === 0) return `<p class="q-instruction">${t('workedPrompt')}</p>${answerBox('', 5)}<div class="q-actions"><button type="button" class="btn primary" data-reveal>${t('showMethod')}</button></div>`;
-      const shown = steps.slice(0, st.stage).map((s, i) => `<li><p>${esc(s)}</p><label class="had"><input type="checkbox" data-had="${i}"${st.had?.includes(i) ? ' checked' : ''}>${t('hadStep')}</label></li>`).join('');
+      const shown = steps.slice(0, st.stage).map((s, i) => `<li><p>${inline(s)}</p><label class="had"><input type="checkbox" data-had="${i}"${st.had?.includes(i) ? ' checked' : ''}>${t('hadStep')}</label></li>`).join('');
       const more = st.stage < steps.length;
       return `<h4>${t('strategy')}</h4>${para(L(q.strategy))}<ol class="study-list worked">${shown}</ol>${more ? `<div class="q-actions"><button type="button" class="btn primary" data-more>${t('nextStepBtn')}</button></div>` : `<h4>${t('answer')}</h4>${para(L(q.answer))}<h4>${t('sanity')}</h4>${para(L(q.sanity))}<div class="q-result" tabindex="-1"><strong>${esc(t('scored')(st.had?.length || 0, q.marks))}</strong></div>${st.recorded ? '' : `<div class="q-actions"><button type="button" class="btn primary" data-finish>${t('finishMark')}</button></div>`}`}`;
     }
     if (q.kind === 'mcq') {
       const chosen = st.chosen;
-      const opts = q.options.map((o, i) => `<li class="${st.stage && o.correct ? 'ok' : ''}${st.stage && chosen === i && !o.correct ? ' bad' : ''}"><label><input type="radio" name="mcq" value="${i}"${chosen === i ? ' checked' : ''}${st.stage ? ' disabled' : ''}><span>${esc(L(o.text))}</span></label>${st.stage && o.why ? `<small>${esc(L(o.why))}</small>` : ''}</li>`).join('');
+      const opts = q.options.map((o, i) => `<li class="${st.stage && o.correct ? 'ok' : ''}${st.stage && chosen === i && !o.correct ? ' bad' : ''}"><label><input type="radio" name="mcq" value="${i}"${chosen === i ? ' checked' : ''}${st.stage ? ' disabled' : ''}><span>${inline(L(o.text))}</span></label>${st.stage && o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('');
       return `<ul class="mcq">${opts}</ul>${st.stage ? `<div class="q-result"><strong>${t(markMcq(q, chosen) ? 'correct' : 'wrong')} · ${esc(t('scored')(markMcq(q, chosen), q.marks))}</strong></div>${solutionHtml(q)}` : `<div class="q-actions"><button type="button" class="btn primary" data-check>${t('check')}</button></div>`}`;
     }
     if (q.kind === 'numeric') {
@@ -549,7 +549,7 @@ window.LeonStudyInit = (hub) => {
     const box = (rows, val = a.text || '') => `<textarea class="study-answer" data-exam-text="${q.id}" rows="${rows}" aria-label="${esc(t('yourAnswer'))}: ${esc(L(q.title))}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"${done ? ' readonly' : ''}>${esc(val)}</textarea>`;
     if (!done) {
       let input;
-      if (q.kind === 'mcq') input = `<ul class="mcq">${q.options.map((o, k) => `<li><label><input type="radio" name="x-${q.id}" data-exam-choice="${q.id}" value="${k}"${a.choice === k ? ' checked' : ''}><span>${esc(L(o.text))}</span></label></li>`).join('')}</ul>`;
+      if (q.kind === 'mcq') input = `<ul class="mcq">${q.options.map((o, k) => `<li><label><input type="radio" name="x-${q.id}" data-exam-choice="${q.id}" value="${k}"${a.choice === k ? ' checked' : ''}><span>${inline(L(o.text))}</span></label></li>`).join('')}</ul>`;
       else if (q.kind === 'numeric') input = `<div class="numeric"><input type="text" inputmode="decimal" data-exam-text="${q.id}" aria-label="${esc(t('yourAnswer'))}: ${esc(L(q.title))}" value="${esc(a.text || '')}" placeholder="${t('numberPlaceholder')}">${q.unit ? `<span>${esc(L(q.unit))}</span>` : ''}</div>`;
       else if (q.kind === 'trace') {
         const given = new Set(q.given || []);
@@ -560,14 +560,14 @@ window.LeonStudyInit = (hub) => {
     let result;
     if (AUTO.has(q.kind)) {
       if (q.kind === 'predict') { const m = markPredict(q, a.text || ''); result = `<div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(m.score, q.marks))}</strong></div><h4>${t('yourAnswer')}</h4>${codeBlock(a.text || '')}<h4>${t('expected')}</h4>${codeBlock(q.output)}`; }
-      if (q.kind === 'mcq') result = `<ul class="mcq">${q.options.map((o, k) => `<li class="${o.correct ? 'ok' : ''}${a.choice === k && !o.correct ? ' bad' : ''}"><label><input type="radio" disabled${a.choice === k ? ' checked' : ''}><span>${esc(L(o.text))}</span></label>${o.why ? `<small>${esc(L(o.why))}</small>` : ''}</li>`).join('')}</ul><div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(a.choice == null ? 0 : markMcq(q, a.choice), q.marks))}</strong></div>${solutionHtml(q)}`;
+      if (q.kind === 'mcq') result = `<ul class="mcq">${q.options.map((o, k) => `<li class="${o.correct ? 'ok' : ''}${a.choice === k && !o.correct ? ' bad' : ''}"><label><input type="radio" disabled${a.choice === k ? ' checked' : ''}><span>${inline(L(o.text))}</span></label>${o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('')}</ul><div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(a.choice == null ? 0 : markMcq(q, a.choice), q.marks))}</strong></div>${solutionHtml(q)}`;
       if (q.kind === 'numeric') result = `<p>${t('yourAnswer')}: <b>${esc(a.text || '—')}</b> · ${t('answer')}: <b>${esc(q.answer)}</b></p><div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(markNumeric(q, a.text), q.marks))}</strong></div>${solutionHtml(q)}`;
       if (q.kind === 'trace') { const m = markTrace(q, a.cells || {}); const given = new Set(q.given || []); result = `<div class="study-trace" tabindex="0"><table class="fill"><thead><tr>${L(q.columns).map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${q.rows.map((row, r) => `<tr>${row.map((v, c) => { if (c === 0 || given.has(`${r},${c}`)) return `<td>${esc(v)}</td>`; const got = a.cells?.[`${r},${c}`] ?? ''; const ok = normCell(got) === normCell(v); return `<td class="${ok ? 'ok' : 'bad'}">${ok ? esc(got) : `<s>${esc(got) || '—'}</s> <b>${esc(v)}</b>`}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div><div class="q-result"><strong>${t('examAuto')} · ${esc(t('cellsRight')(m.right, m.total))} · ${esc(t('scored')(m.score, q.marks))}</strong></div>${solutionHtml(q)}`; }
     } else if (q.kind === 'worked') {
       const steps = L(q.steps);
-      result = `<h4>${t('yourAnswer')}</h4>${codeBlock(a.text || '')}<p class="muted">${t('examSelf')}</p><h4>${t('strategy')}</h4>${para(L(q.strategy))}<ol class="study-list worked">${steps.map((s, k) => `<li><p>${esc(s)}</p><label class="had"><input type="checkbox" data-exam-tick="${q.id}" value="${k}"${(a.ticks || []).includes(k) ? ' checked' : ''}>${t('hadStep')}</label></li>`).join('')}</ol><h4>${t('answer')}</h4>${para(L(q.answer))}`;
+      result = `<h4>${t('yourAnswer')}</h4>${codeBlock(a.text || '')}<p class="muted">${t('examSelf')}</p><h4>${t('strategy')}</h4>${para(L(q.strategy))}<ol class="study-list worked">${steps.map((s, k) => `<li><p>${inline(s)}</p><label class="had"><input type="checkbox" data-exam-tick="${q.id}" value="${k}"${(a.ticks || []).includes(k) ? ' checked' : ''}>${t('hadStep')}</label></li>`).join('')}</ol><h4>${t('answer')}</h4>${para(L(q.answer))}`;
     } else {
-      result = `<h4>${t('yourAnswer')}</h4>${codeBlock(a.text || '')}<p class="muted">${t('examSelf')}</p>${solutionHtml(q)}<h4>${t('rubric')}</h4><ul class="rubric">${q.rubric.map((r, k) => `<li><label><input type="checkbox" data-exam-tick="${q.id}" value="${k}"${(a.ticks || []).includes(k) ? ' checked' : ''}><span class="rubric-m">+${r.marks}</span><span>${esc(L(r.text))}</span></label></li>`).join('')}</ul>${mistakesHtml(q)}`;
+      result = `<h4>${t('yourAnswer')}</h4>${codeBlock(a.text || '')}<p class="muted">${t('examSelf')}</p>${solutionHtml(q)}<h4>${t('rubric')}</h4><ul class="rubric">${q.rubric.map((r, k) => `<li><label><input type="checkbox" data-exam-tick="${q.id}" value="${k}"${(a.ticks || []).includes(k) ? ' checked' : ''}><span class="rubric-m">+${r.marks}</span><span>${inline(L(r.text))}</span></label></li>`).join('')}</ul>${mistakesHtml(q)}`;
     }
     return `<section class="panel exam-q" id="q-${q.id}">${head}${result}</section>`;
   }
@@ -758,11 +758,11 @@ window.LeonStudyInit = (hub) => {
       const q = c.q;
       front = `<div class="tags">${badge(q)}</div><h2>${esc(L(q.title))}</h2>${promptHtml(q)}`;
       back = q.kind === 'predict' ? `<h4>${t('expected')}</h4>${codeBlock(q.output)}`
-        : q.kind === 'worked' ? `<h4>${t('strategy')}</h4>${para(L(q.strategy))}<ol class="study-list">${L(q.steps).map((s) => `<li>${esc(s)}</li>`).join('')}</ol><h4>${t('answer')}</h4>${para(L(q.answer))}`
-          : q.kind === 'mcq' ? `<ul class="mcq">${q.options.map((o) => `<li class="${o.correct ? 'ok' : ''}"><span>${esc(L(o.text))}</span>${o.why ? `<small>${esc(L(o.why))}</small>` : ''}</li>`).join('')}</ul>`
+        : q.kind === 'worked' ? `<h4>${t('strategy')}</h4>${para(L(q.strategy))}<ol class="study-list">${L(q.steps).map((s) => `<li>${inline(s)}</li>`).join('')}</ol><h4>${t('answer')}</h4>${para(L(q.answer))}`
+          : q.kind === 'mcq' ? `<ul class="mcq">${q.options.map((o) => `<li class="${o.correct ? 'ok' : ''}"><span>${inline(L(o.text))}</span>${o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('')}</ul>`
             : q.kind === 'numeric' ? `<p>${t('answer')}: <b>${esc(q.answer)}</b></p>${solutionHtml(q)}`
               : q.kind === 'trace' ? `<div class="study-trace" tabindex="0"><table class="fill"><thead><tr>${L(q.columns).map((x) => `<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${q.rows.map((row) => `<tr>${row.map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${solutionHtml(q)}`
-                : `${solutionHtml(q)}${q.rubric ? `<ul class="study-list">${q.rubric.map((r) => `<li>+${r.marks} ${esc(L(r.text))}</li>`).join('')}</ul>` : ''}`;
+                : `${solutionHtml(q)}${q.rubric ? `<ul class="study-list">${q.rubric.map((r) => `<li>+${r.marks} ${inline(L(r.text))}</li>`).join('')}</ul>` : ''}`;
     }
     const s = srs();
     const state = s[key].fresh ? null : s[key];

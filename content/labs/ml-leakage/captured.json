@@ -1,0 +1,8 @@
+{
+ "0": "150 units, 500 sensors, 75 failures\ncross-validated ROC AUC: 0.825 (std 0.042 over 15 folds)\n",
+ "1": "150 units, 500 sensors, 75 failures\ncontrol, labels shuffled: mean ROC AUC 0.818 over 5 shuffles\n",
+ "2": "150 units, 500 sensors, 75 failures\nvariant                                   ROC AUC\nscaler fitted on all rows, then CV          0.676\nselector fitted on all rows, then CV        0.824\nboth fitted on all rows, then CV            0.825\nboth inside a Pipeline                      0.676\n",
+ "3": "labels shuffled, mean over 5 shuffles (the true answer is chance):\nvariant                                   ROC AUC\nscaler fitted on all rows, then CV          0.524\nselector fitted on all rows, then CV        0.818\nboth fitted on all rows, then CV            0.818\nboth inside a Pipeline                      0.524\n",
+ "4": "estimate from CV, both fitted first         0.825\nestimate from CV, Pipeline                  0.676\ndeployed model on 3000 new units            0.679\n",
+ "5": "150 units, 500 sensors, 75 failures\ncross-validated ROC AUC: 0.676 (std 0.087 over 15 folds)\n150 units, 500 sensors, 75 failures\ncontrol, labels shuffled: mean ROC AUC 0.524 over 5 shuffles\n"
+}

@@ -282,6 +282,23 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
   await context.close();
 }
 
+/* the homepage's own links, including the seven project cards and the learning hub */
+{
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const page = await context.newPage();
+  await check('homepage: project order, and every local link resolves', async () => {
+    await page.goto(`${origin}/`);
+    const names = await page.locator('.proj-card h3').allTextContents();
+    assert.deepEqual(names, ['LoopDesk', 'ProofBI', 'AdProof', 'CreditLens', 'EstateGuard', 'FinScope', 'Career Atlas']);
+    const hrefs = await page.locator('main a[href], header a[href]').evaluateAll((els) => [...new Set(els.map((a) => a.href))]);
+    for (const href of hrefs.filter((h) => h.startsWith(origin))) {
+      const status = await page.evaluate((u) => fetch(u.split('#')[0]).then((r) => r.status), href);
+      assert.equal(status, 200, href);
+    }
+  });
+  await context.close();
+}
+
 /* blocked storage: everything must still work for the length of the visit */
 {
   const context = await browser.newContext({ viewport: { width: 375, height: 812 } });

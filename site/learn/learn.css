@@ -699,7 +699,7 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
   .nav-badge { position: absolute; top: 4px; margin-left: 22px; }
   .main-nav .nav-item { position: relative; }
 }
-.lab code { padding: 0 4px; border-radius: 4px; background: var(--panel-2); font: 13px var(--mono); }
+.q-panel code, .exam-q code, .mcq code, .rubric code { padding: 0 4px; border-radius: 4px; background: var(--panel-2); font: 13px var(--mono); }
 .study-code del { color: #f07167; text-decoration: none; }
 .study-code ins { color: #3ecf8e; text-decoration: none; }
 :root[data-theme=light] .study-code del { color: #b4322a; }
