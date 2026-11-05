@@ -223,7 +223,7 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
   await check(`${label}: multiple choice marks the right answer in full`, async () => {
     const q = first('mcq');
     await open(q);
-    await page.locator('input[name="mcq"]').nth(q.options.findIndex((o) => o.correct)).check();
+    await page.locator(`input[name="mcq"][value="${q.options.findIndex((o) => o.correct)}"]`).check();
     await page.click('[data-check]');
     assert.equal((await stored(q)).score, q.marks);
     await noOverflow();
@@ -260,7 +260,7 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
     await page.waitForSelector('[data-exam-clock]');
     const qs = paper.questions.map((id) => data.questions.find((x) => x.id === id));
     for (const q of qs) {
-      if (q.kind === 'mcq') await page.locator(`input[data-exam-choice="${q.id}"]`).nth(q.options.findIndex((o) => o.correct)).check();
+      if (q.kind === 'mcq') await page.locator(`input[data-exam-choice="${q.id}"][value="${q.options.findIndex((o) => o.correct)}"]`).check();
       if (q.kind === 'predict') await page.fill(`[data-exam-text="${q.id}"]`, q.output);
       if (q.kind === 'numeric') await page.fill(`[data-exam-text="${q.id}"]`, String(q.answer));
       if (q.kind === 'trace') for (const input of await page.locator(`[data-exam-cell="${q.id}"]`).all()) { const [r, c] = (await input.getAttribute('data-rc')).split(',').map(Number); await input.fill(q.rows[r][c]); }
@@ -269,7 +269,7 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
     await page.reload();
     await page.waitForSelector('[data-exam-clock]');
     const auto = qs.find((q) => q.kind === 'mcq');
-    assert.ok(await page.locator(`input[data-exam-choice="${auto.id}"]`).nth(auto.options.findIndex((o) => o.correct)).isChecked(), 'answer lost on refresh');
+    assert.ok(await page.locator(`input[data-exam-choice="${auto.id}"][value="${auto.options.findIndex((o) => o.correct)}"]`).isChecked(), 'answer lost on refresh');
     page.once('dialog', (d) => d.accept());
     await page.locator('[data-exam-submit]').first().click();
     await page.waitForSelector('[data-exam-total]');
@@ -290,7 +290,7 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
     await page.goto(`${origin}/`);
     const names = await page.locator('.proj-card h3').allTextContents();
     assert.deepEqual(names, ['LoopDesk', 'ProofBI', 'AdProof', 'CreditLens', 'EstateGuard', 'FinScope', 'Career Atlas']);
-    const hrefs = await page.locator('main a[href], header a[href]').evaluateAll((els) => [...new Set(els.map((a) => a.href))]);
+    const hrefs = await page.locator('main a[href], header a[href]').evaluateAll((els) => [...new Set(els.map((a) => new URL(a.getAttribute('href'), location.href).href))]);
     for (const href of hrefs.filter((h) => h.startsWith(origin))) {
       const status = await page.evaluate((u) => fetch(u.split('#')[0]).then((r) => r.status), href);
       assert.equal(status, 200, href);

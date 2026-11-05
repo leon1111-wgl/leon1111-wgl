@@ -32,7 +32,8 @@ async function compile(data) {
   diagnostics = [];
   c.clearSourceFiles();
   c.clearOutputFiles();
-  c.addSourceFile('Main.java', portable(data.code));
+  // a class written on paper may leave out its imports; practice runs supply the usual one on the first line, so line numbers stay true
+  c.addSourceFile('Main.java', (data.tests && !/^\s*import\s+java\.util\.\*/m.test(data.code) ? 'import java.util.*; ' : '') + portable(data.code));
   if (data.tests) c.addSourceFile('Tests.java', portable(data.tests));
   const ok = c.compile() && c.generateWebAssembly({ outputName: 'app', mainClass: data.tests ? 'Tests' : 'Main', strictMode: true });
   return { c, ok };

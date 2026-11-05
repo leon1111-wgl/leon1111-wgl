@@ -29,6 +29,9 @@ here = os.getcwd()
 os.chdir(tempfile.mkdtemp())
 sys.stdin = io.StringIO(job['stdin'])
 namespace = {'__name__': '__main__'}
+if job.get('tests'):
+    # a function written on paper may leave out its imports, so practice runs supply the usual ones
+    exec('import heapq, math; from collections import Counter, defaultdict, deque', namespace)
 status = 'ok'
 try:
     with contextlib.redirect_stdout(out):

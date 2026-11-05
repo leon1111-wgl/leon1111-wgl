@@ -57,8 +57,12 @@ const typedFailures = await page.evaluate(async ({ typed }) => {
   const { run } = await import('/assets/runner/run.js');
   const failures = [];
   for (const q of typed) {
-    const result = await run({ language: q.language, code: q.code, tests: q.tests });
-    if (result.status !== 'ok' || result.stdout.replace(/\n$/, '') !== q.expected.replace(/\n$/, '')) failures.push(`${q.id}: ${result.status} ${result.stdout.slice(0, 120)} ${result.stderr.slice(0, 160)}`);
+    // as written on paper: the answer without #include or import lines must pass too
+    const bare = q.code.replace(q.language === 'c' ? /^#include.*$/gm : q.language === 'java' ? /^import .*$/gm : /^(import|from) .*$/gm, '');
+    for (const code of [q.code, bare]) {
+      const result = await run({ language: q.language, code, tests: q.tests });
+      if (result.status !== 'ok' || result.stdout.replace(/\n$/, '') !== q.expected.replace(/\n$/, '')) failures.push(`${q.id}${code === bare ? ' (no includes)' : ''}: ${result.status} ${result.stdout.slice(0, 100)} ${result.stderr.slice(0, 160)}`);
+    }
   }
   return failures;
 }, { typed });

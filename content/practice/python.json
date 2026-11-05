@@ -1370,8 +1370,8 @@
    "minutes": 7,
    "language": "python",
    "prompt": {
-    "en": "`drop_negatives(nums)` should remove every negative number from the list `nums` itself (in place) and return nothing. Mia tries it on [1, -2, -3, 4] and expects [1, 4], but the list becomes [1, -3, 4]. Find the bug, explain why it happens, and fix it. The function must still change the caller's list.",
-    "zh": "`drop_negatives(nums)` 应该把列表 `nums` 里所有的负数删掉（原地修改），并且不返回任何值。Mia 用 [1, -2, -3, 4] 试了一下，期望得到 [1, 4]，结果列表变成了 [1, -3, 4]。请找出错误，解释原因，并改正。函数仍然要修改调用者手里的那个列表。"
+    "en": "`drop_negatives(nums)` should remove every negative number from the list `nums` itself (in place) and return nothing. Mia tries it on [1, -2, -3, 4] and expects [1, 4], but the list becomes [1, -3, 4]. Find the bug, explain why it happens, and fix it. The function must still change the caller's list. Then name one list with several negatives in a row that you would test it on.",
+    "zh": "`drop_negatives(nums)` 应该把列表 `nums` 里所有的负数删掉（原地修改），并且不返回任何值。Mia 用 [1, -2, -3, 4] 试了一下，期望得到 [1, 4]，结果列表变成了 [1, -3, 4]。请找出错误，解释原因，并改正。函数仍然要修改调用者手里的那个列表。 再举一个连续出现多个负数的列表，说明你会用它来测试。"
    },
    "code": "def drop_negatives(nums):\n    for n in nums:\n        if n < 0:\n            nums.remove(n)\n",
    "solution": {

@@ -37,9 +37,9 @@ window.LeonStudyInit = (hub) => {
       correct: '正确', wrong: '不对', chooseOne: '选一个答案', numberPlaceholder: '填写数字', toleranceNote: (t) => `允许误差 ±${t}`, traceFill: '不要运行。把空格填完。', cellsRight: (a, n) => `${a} / ${n} 格正确`,
       addReview: '加入复习', addedReview: '已加入复习', autoAdded: '没拿满分的题已加入复习队列。',
       examsTitle: '模拟卷', examIntro: '限时做完再看答案。选择、计算和跟踪题自动判分；写代码和简答题按评分标准自己打分。', examStart: '开始计时', examResume: '继续作答', examRedo: '重新做一次', examSubmit: '交卷', examConfirm: '确定交卷吗？', timeLeft: '剩余', timeUp: '时间到。可以交卷了。', examResult: '成绩', examSelf: '这一题需要你按评分标准自己打分。', examAuto: '自动判分', examByTopic: '各章得分率', examAddMissed: '把丢分的题加入复习', examDone: '已加入', examTotal: (a, b) => `${a} / ${b} 分`, examPaperNote: '建议在纸上作答，再把答案填到框里。', examMins: (m) => `${m} 分钟`, examAgain: '再做一次', examLast: (a, b) => `上次 ${a} / ${b}`,
-      reviewTitle: '复习队列', reviewSub: '每天做一点。系统用 FSRS-6 算法（默认参数）安排下一次复习的时间，快要忘的时候再问你。', dueNow: '现在到期', newCards: '新卡片', allCards: '全部卡片', startReview: '开始复习', nothingDue: '现在没有到期的卡片。', addDeck: '加入复习', addRead: '加入已读章节', addAll: '加入全部', inDeck: (a, b) => `已加入 ${a} / ${b}`, showAnswer: '看答案', again: '忘了', hard: '有点难', good: '记得', easy: '很轻松', days: (d) => (d <= 0 ? '今天' : d === 1 ? '1 天后' : d < 30 ? `${d} 天后` : d < 365 ? `${Math.round(d / 30)} 个月后` : `${(d / 365).toFixed(1)} 年后`), sessionDone: '这一轮复习完了', sessionStats: (n) => `复习了 ${n} 张。明天再来。`, cardOf: (a, n) => `第 ${a} / ${n} 张`, newLimit: (n) => `每天最多 ${n} 张新卡片`, reviewEmpty: '还没有卡片。从下面加入一门课，或者读完一章后再加。',
+      reviewTitle: '复习队列', reviewSub: '每天做一点。系统用 FSRS-6 算法（默认参数）安排下一次复习的时间，快要忘的时候再问你。', dueNow: '现在到期', newCards: '新卡片', allCards: '全部卡片', startReview: '开始复习', nothingDue: '现在没有到期的卡片。', addDeck: '加入复习', addRead: '加入已读章节', addAll: '加入全部', inDeck: (a, b) => `已加入 ${a} / ${b} 张`, missedInDeck: (n) => `另有 ${n} 道错题`, showAnswer: '看答案', again: '忘了', hard: '有点难', good: '记得', easy: '很轻松', days: (d) => (d <= 0 ? '今天' : d === 1 ? '1 天后' : d < 30 ? `${d} 天后` : d < 365 ? `${Math.round(d / 30)} 个月后` : `${(d / 365).toFixed(1)} 年后`), sessionDone: '这一轮复习完了', sessionStats: (n) => `复习了 ${n} 张。明天再来。`, cardOf: (a, n) => `第 ${a} / ${n} 张`, newLimit: (n) => `每天最多 ${n} 张新卡片`, reviewEmpty: '还没有卡片。从下面加入一门课，或者读完一章后再加。',
       backupTitle: '备份进度', backupSub: '进度只在这个浏览器里。换设备前可以导出成文件，再导入。', exportB: '导出', importB: '导入', importedOk: '已导入，页面将刷新。', importBad: '这个文件无法读取。', stageName: '章节',
-      loading: '加载中…', loadFail: '题库没有加载成功。检查网络后再试。', tryAgain: '再试一次',
+      chineseChapters: '题目有中英文；章节是中文', loading: '加载中…', loadFail: '题库没有加载成功。检查网络后再试。', tryAgain: '再试一次',
       resumeRoute: '接着走你的路线', chooseGoal: '先选一个目标', chooseGoalSub: '告诉我们你想做什么，给你一条具体路线。',
       labsTitle: '工程实验', labsSub: '每个实验都在持续集成里实际跑过，页面上是当时的输出。', labSteps: '步骤', labScenario: '场景', labReview: '代码审查清单', labTrade: '生产环境的取舍', labCheck: '做到这些才算完成', labCaptured: '实际输出',
     },
@@ -65,9 +65,9 @@ window.LeonStudyInit = (hub) => {
       correct: 'Correct', wrong: 'Not quite', chooseOne: 'Choose an answer', numberPlaceholder: 'Enter a number', toleranceNote: (t) => `within ±${t}`, traceFill: 'Do not run it. Fill in the blanks.', cellsRight: (a, n) => `${a} of ${n} cells right`,
       addReview: 'Add to review', addedReview: 'In your review queue', autoAdded: 'Questions without full marks were added to your review queue.',
       examsTitle: 'Mock papers', examIntro: 'Finish within the time, then see the answers. Multiple choice, calculations and traces mark themselves; you mark written answers against the rubric.', examStart: 'Start the clock', examResume: 'Continue', examRedo: 'Start again', examSubmit: 'Hand in', examConfirm: 'Hand in now?', timeLeft: 'Left', timeUp: 'Time is up. Hand in when ready.', examResult: 'Result', examSelf: 'Mark this one yourself against the rubric.', examAuto: 'Marked automatically', examByTopic: 'Score rate by chapter', examAddMissed: 'Add lost marks to review', examDone: 'Added', examTotal: (a, b) => `${a} / ${b} marks`, examPaperNote: 'Best done on paper; then type your answers into the boxes.', examMins: (m) => `${m} minutes`, examAgain: 'Sit it again', examLast: (a, b) => `Last time ${a} / ${b}`,
-      reviewTitle: 'Review queue', reviewSub: 'A little each day. The FSRS-6 algorithm with its default parameters schedules each card for when you are about to forget it.', dueNow: 'Due now', newCards: 'New', allCards: 'All cards', startReview: 'Start reviewing', nothingDue: 'Nothing is due right now.', addDeck: 'Add to review', addRead: 'Add chapters I read', addAll: 'Add all', inDeck: (a, b) => `${a} of ${b} added`, showAnswer: 'Show answer', again: 'Forgot', hard: 'Hard', good: 'Good', easy: 'Easy', days: (d) => (d <= 0 ? 'today' : d === 1 ? 'in 1 day' : d < 30 ? `in ${d} days` : d < 365 ? `in ${Math.round(d / 30)} mo` : `in ${(d / 365).toFixed(1)} yr`), sessionDone: 'Round finished', sessionStats: (n) => `You reviewed ${n} card${n === 1 ? '' : 's'}. Come back tomorrow.`, cardOf: (a, n) => `Card ${a} of ${n}`, newLimit: (n) => `At most ${n} new cards a day`, reviewEmpty: 'No cards yet. Add a course below, or add chapters as you finish them.',
+      reviewTitle: 'Review queue', reviewSub: 'A little each day. The FSRS-6 algorithm with its default parameters schedules each card for when you are about to forget it.', dueNow: 'Due now', newCards: 'New', allCards: 'All cards', startReview: 'Start reviewing', nothingDue: 'Nothing is due right now.', addDeck: 'Add to review', addRead: 'Add chapters I read', addAll: 'Add all', inDeck: (a, b) => `${a} of ${b} cards added`, missedInDeck: (n) => `plus ${n} missed question${n === 1 ? '' : 's'}`, showAnswer: 'Show answer', again: 'Forgot', hard: 'Hard', good: 'Good', easy: 'Easy', days: (d) => (d <= 0 ? 'today' : d === 1 ? 'in 1 day' : d < 30 ? `in ${d} days` : d < 365 ? `in ${Math.round(d / 30)} mo` : `in ${(d / 365).toFixed(1)} yr`), sessionDone: 'Round finished', sessionStats: (n) => `You reviewed ${n} card${n === 1 ? '' : 's'}. Come back tomorrow.`, cardOf: (a, n) => `Card ${a} of ${n}`, newLimit: (n) => `At most ${n} new cards a day`, reviewEmpty: 'No cards yet. Add a course below, or add chapters as you finish them.',
       backupTitle: 'Back up your progress', backupSub: 'Progress lives in this browser only. Export it to a file before you change device, then import it.', exportB: 'Export', importB: 'Import', importedOk: 'Imported. The page will reload.', importBad: 'That file could not be read.', stageName: 'Chapter',
-      loading: 'Loading…', loadFail: 'The question bank did not load. Check your connection and try again.', tryAgain: 'Try again',
+      chineseChapters: 'Questions in both languages; its chapters are in Chinese', loading: 'Loading…', loadFail: 'The question bank did not load. Check your connection and try again.', tryAgain: 'Try again',
       resumeRoute: 'Continue your route', chooseGoal: 'Choose a goal first', chooseGoalSub: 'Tell us what you want to do and get a concrete route.',
       labsTitle: 'Engineering labs', labsSub: 'Every lab is run in continuous integration, and the page shows the output of that run.', labSteps: 'Steps', labScenario: 'Scenario', labReview: 'Code review checklist', labTrade: 'Production trade-offs', labCheck: 'Done when', labCaptured: 'Actual output',
     },
@@ -153,6 +153,18 @@ window.LeonStudyInit = (hub) => {
     q.rows.forEach((row, r) => row.forEach((_, c) => { if (!given.has(`${r},${c}`) && c !== 0) out.push([r, c]); }));
     return out;
   };
+  // Options show in a shuffled order fixed per question: position gives nothing away, and a refresh keeps the order.
+  const optionOrder = (q) => {
+    let seed = 0;
+    for (const ch of q.id) seed = (Math.imul(seed, 31) + ch.charCodeAt(0)) >>> 0;
+    const order = q.options.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i -= 1) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const j = seed % (i + 1);
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  };
   const AUTO = new Set(['predict', 'mcq', 'numeric', 'trace']);
   const canRun = (language) => { try { return typeof Worker !== 'undefined' && (language !== 'java' || WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 95, 1, 127, 0]))); } catch (_) { return false; } };
 
@@ -178,7 +190,7 @@ window.LeonStudyInit = (hub) => {
       ['data', { zh: '列表、字典和函数', en: 'Lists, dictionaries and functions' }, { zh: '组织数据，把步骤包成可以反复使用的函数。', en: 'Organise data and wrap steps into reusable functions.' }, 120],
       ['drill', { zh: '做练习，养成每天复习', en: 'Practise, and start a daily review' }, { zh: '先做题，做错的题会进入复习队列。之后每天花 10 分钟，系统在你快忘时再问你。', en: 'Try the questions. The ones you miss join your review queue, and ten minutes a day keeps them fresh.' }, 30],
       ['debug', { zh: '文件和调试', en: 'Files and debugging' }, { zh: '读懂报错，找到问题，处理真实的数据文件。', en: 'Read errors, find the problem and handle real data files.' }, 90],
-      ['project', { zh: '做一个完整小项目', en: 'Finish a small project' }, { zh: '把学过的东西连起来，独立完成一件事。', en: 'Connect what you learned and finish something on your own.' }, 120],
+      ['project', { zh: '做一个完整小项目', en: 'Write small programs on your own' }, { zh: '把学过的东西连起来，独立完成一件事。', en: 'The complete projects are in the Chinese handbook. In English, write small programs from a blank page and check them with the tests.' }, 120],
       ['next', { zh: '选下一门课', en: 'Choose what comes next' }, { zh: '想理解程序设计就学 Java，想学 AI 就读 AI 入门。', en: 'Java for program design, or AI Start for machine learning.' }, 5],
     ],
     exam: [
@@ -216,9 +228,9 @@ window.LeonStudyInit = (hub) => {
         // the full handbook is in Chinese; the first-steps guide is the path in both languages, and goes further in Chinese
         const en = lang() === 'en';
         const guide = `${SITE}bridges/python-first-steps${en ? '' : '.zh'}.html`;
-        return { run: `${guide}#first-program`, values: en ? `${guide}#values-names` : handbook('c02'), flow: en ? `${guide}#decisions` : handbook('c04'), data: en ? `${guide}#lists` : handbook('c07'), drill: '#/practice/python', debug: en ? `${guide}#read-errors` : handbook('c13'), project: en ? null : handbook('c17'), next: '#/route' }[key];
+        return { run: `${guide}#first-program`, values: en ? `${guide}#values-names` : handbook('c02'), flow: en ? `${guide}#decisions` : handbook('c04'), data: en ? `${guide}#lists` : handbook('c07'), drill: '#/practice/python', debug: en ? `${guide}#read-errors` : handbook('c13'), project: en ? '#/practice/python?kind=write' : handbook('c17'), next: '#/route' }[key];
       },
-      exam: (key) => ({ diagnose: firstPaper('diagnostic') ? `#/exam/${c}/${firstPaper('diagnostic').id}` : `#/practice/${c}`, weak: `#/practice/${c}`, review: '#/review', drill: `#/practice/${c}`, sheet: BY_ID[c].sheet ? SITE + BY_ID[c].sheet[BY_ID[c].sheet[lang()] ? lang() : 'zh'] : `#/practice/${c}`, mock: firstPaper('mock') ? `#/exam/${c}/${firstPaper('mock').id}` : `#/practice/${c}`, redo: `#/practice/${c}` }[key]),
+      exam: (key) => ({ diagnose: firstPaper('diagnostic') ? `#/exam/${c}/${firstPaper('diagnostic').id}` : `#/practice/${c}`, weak: `#/practice/${c}`, review: '#/review', drill: `#/practice/${c}`, sheet: BY_ID[c].sheet?.[lang()] ? SITE + BY_ID[c].sheet[lang()] : null, mock: firstPaper('mock') ? `#/exam/${c}/${firstPaper('mock').id}` : `#/practice/${c}`, redo: `#/practice/${c}` }[key]),
       paper: (key) => ({ guide: `${SITE}bridges/${{ comp2017: 'paper-c', info1113: 'paper-java', python: 'paper-python', comp2123: 'paper-python' }[c]}${lang() === 'zh' ? '.zh' : ''}.html`, read: `#/practice/${c}?kind=predict`, trace: `#/practice/${c}?kind=trace`, memory: `#/practice/${c}?kind=memory`, write: `#/practice/${c}?kind=write`, mock: firstPaper('paper') ? `#/exam/${c}/${firstPaper('paper').id}` : `#/practice/${c}?kind=write` }[key]),
       engineer: (key) => ({ labs: `#/labs/${c}`, project: c === 'comp2017' ? `${SITE}projects/comp2017-log-analyzer.${lang() === 'zh' ? 'zh' : 'en'}.html` : null, bugs: `#/practice/${c}?kind=bug`, depth: `#/practice/${c}` }[key]),
     }[g.goal];
@@ -234,7 +246,7 @@ window.LeonStudyInit = (hub) => {
       const options = (goal === 'paper' ? PAPER_LANGS : goal === 'engineer' ? [['comp2017', 'C'], ['info1113', 'Java'], ['comp2123', 'Python'], ['ml', 'AI']] : COURSE_IDS.filter((id) => BY_ID[id]).map((id) => [id, BY_ID[id].code])).filter(([id]) => has(id));
       const buttons = options.map(([id, name]) => {
         const c = BY_ID[id];
-        return `<a class="panel route-card" href="#/goal/${goal}/${id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span><span class="code">${esc(name)}</span><b>${esc(L(c.title))}</b></span></a>`;
+        return `<a class="panel route-card" href="#/goal/${goal}/${id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span><span class="code">${esc(name)}</span><b>${esc(L(c.title))}</b>${lang() === 'en' && !c.read.en ? `<small>${t('chineseChapters')}</small>` : ''}</span></a>`;
       }).join('');
       return frame('start', `${crumbs([t('navStart'), '#/start'], [t('goals')[goal][0]])}<div class="page-head"><div><h1>${esc(t('goals')[goal][0])}</h1><p>${t(goal === 'paper' || goal === 'engineer' ? 'choosePaper' : 'chooseCourse')}</p></div></div><div class="route-cards reveal">${buttons}</div>${unofficial()}`);
     }
@@ -370,7 +382,7 @@ window.LeonStudyInit = (hub) => {
     }
     if (q.kind === 'mcq') {
       const chosen = st.chosen;
-      const opts = q.options.map((o, i) => `<li class="${st.stage && o.correct ? 'ok' : ''}${st.stage && chosen === i && !o.correct ? ' bad' : ''}"><label><input type="radio" name="mcq" value="${i}"${chosen === i ? ' checked' : ''}${st.stage ? ' disabled' : ''}><span>${inline(L(o.text))}</span></label>${st.stage && o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('');
+      const opts = optionOrder(q).map((i) => { const o = q.options[i]; return `<li class="${st.stage && o.correct ? 'ok' : ''}${st.stage && chosen === i && !o.correct ? ' bad' : ''}"><label><input type="radio" name="mcq" value="${i}"${chosen === i ? ' checked' : ''}${st.stage ? ' disabled' : ''}><span>${inline(L(o.text))}</span></label>${st.stage && o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`; }).join('');
       return `<ul class="mcq">${opts}</ul>${st.stage ? `<div class="q-result"><strong>${t(markMcq(q, chosen) ? 'correct' : 'wrong')} · ${esc(t('scored')(markMcq(q, chosen), q.marks))}</strong></div>${solutionHtml(q)}` : `<div class="q-actions"><button type="button" class="btn primary" data-check>${t('check')}</button></div>`}`;
     }
     if (q.kind === 'numeric') {
@@ -549,7 +561,7 @@ window.LeonStudyInit = (hub) => {
     const box = (rows, val = a.text || '') => `<textarea class="study-answer" data-exam-text="${q.id}" rows="${rows}" aria-label="${esc(t('yourAnswer'))}: ${esc(L(q.title))}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"${done ? ' readonly' : ''}>${esc(val)}</textarea>`;
     if (!done) {
       let input;
-      if (q.kind === 'mcq') input = `<ul class="mcq">${q.options.map((o, k) => `<li><label><input type="radio" name="x-${q.id}" data-exam-choice="${q.id}" value="${k}"${a.choice === k ? ' checked' : ''}><span>${inline(L(o.text))}</span></label></li>`).join('')}</ul>`;
+      if (q.kind === 'mcq') input = `<ul class="mcq">${optionOrder(q).map((k) => `<li><label><input type="radio" name="x-${q.id}" data-exam-choice="${q.id}" value="${k}"${a.choice === k ? ' checked' : ''}><span>${inline(L(q.options[k].text))}</span></label></li>`).join('')}</ul>`;
       else if (q.kind === 'numeric') input = `<div class="numeric"><input type="text" inputmode="decimal" data-exam-text="${q.id}" aria-label="${esc(t('yourAnswer'))}: ${esc(L(q.title))}" value="${esc(a.text || '')}" placeholder="${t('numberPlaceholder')}">${q.unit ? `<span>${esc(L(q.unit))}</span>` : ''}</div>`;
       else if (q.kind === 'trace') {
         const given = new Set(q.given || []);
@@ -560,7 +572,7 @@ window.LeonStudyInit = (hub) => {
     let result;
     if (AUTO.has(q.kind)) {
       if (q.kind === 'predict') { const m = markPredict(q, a.text || ''); result = `<div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(m.score, q.marks))}</strong></div><h4>${t('yourAnswer')}</h4>${codeBlock(a.text || '')}<h4>${t('expected')}</h4>${codeBlock(q.output)}`; }
-      if (q.kind === 'mcq') result = `<ul class="mcq">${q.options.map((o, k) => `<li class="${o.correct ? 'ok' : ''}${a.choice === k && !o.correct ? ' bad' : ''}"><label><input type="radio" disabled${a.choice === k ? ' checked' : ''}><span>${inline(L(o.text))}</span></label>${o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('')}</ul><div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(a.choice == null ? 0 : markMcq(q, a.choice), q.marks))}</strong></div>${solutionHtml(q)}`;
+      if (q.kind === 'mcq') result = `<ul class="mcq">${optionOrder(q).map((k) => { const o = q.options[k]; return `<li class="${o.correct ? 'ok' : ''}${a.choice === k && !o.correct ? ' bad' : ''}"><label><input type="radio" disabled${a.choice === k ? ' checked' : ''}><span>${inline(L(o.text))}</span></label>${o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`; }).join('')}</ul><div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(a.choice == null ? 0 : markMcq(q, a.choice), q.marks))}</strong></div>${solutionHtml(q)}`;
       if (q.kind === 'numeric') result = `<p>${t('yourAnswer')}: <b>${esc(a.text || '—')}</b> · ${t('answer')}: <b>${esc(q.answer)}</b></p><div class="q-result"><strong>${t('examAuto')} · ${esc(t('scored')(markNumeric(q, a.text), q.marks))}</strong></div>${solutionHtml(q)}`;
       if (q.kind === 'trace') { const m = markTrace(q, a.cells || {}); const given = new Set(q.given || []); result = `<div class="study-trace" tabindex="0"><table class="fill"><thead><tr>${L(q.columns).map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${q.rows.map((row, r) => `<tr>${row.map((v, c) => { if (c === 0 || given.has(`${r},${c}`)) return `<td>${esc(v)}</td>`; const got = a.cells?.[`${r},${c}`] ?? ''; const ok = normCell(got) === normCell(v); return `<td class="${ok ? 'ok' : 'bad'}">${ok ? esc(got) : `<s>${esc(got) || '—'}</s> <b>${esc(v)}</b>`}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div><div class="q-result"><strong>${t('examAuto')} · ${esc(t('cellsRight')(m.right, m.total))} · ${esc(t('scored')(m.score, q.marks))}</strong></div>${solutionHtml(q)}`; }
     } else if (q.kind === 'worked') {
@@ -691,6 +703,7 @@ window.LeonStudyInit = (hub) => {
   function reviewHome() {
     const st = dueStats();
     const s = srs();
+    const missed = (id) => Object.keys(s).filter((k) => k.startsWith(`q:${id}/`)).length;
     const rows = COURSE_IDS.filter((id) => BY_ID[id]).map((id) => {
       const c = BY_ID[id];
       // the handbook has no chapter cards; its practice questions serve as the deck
@@ -698,7 +711,7 @@ window.LeonStudyInit = (hub) => {
       const inDeck = Object.keys(s).filter((k) => k.startsWith(usesQuestions ? `q:${id}/` : `${id}/`)).length;
       const totalCards = usesQuestions ? Object.values(c.study.kinds).reduce((a, b) => a + b, 0) : c.study.cards;
       if (!totalCards) return '';
-      return `<li style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span class="deck-name"><b>${esc(c.code)}</b><small>${esc(L(c.title))}</small></span><span class="muted deck-count">${esc(t('inDeck')(inDeck, totalCards))}</span>${usesQuestions ? '' : `<button type="button" class="btn ghost sm" data-deck-read="${id}">${t('addRead')}</button>`}<button type="button" class="btn ghost sm" data-deck-all="${id}">${t('addAll')}</button></li>`;
+      return `<li style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span class="deck-name"><b>${esc(c.code)}</b><small>${esc(L(c.title))}</small></span><span class="muted deck-count">${esc(t('inDeck')(inDeck, totalCards))}${!usesQuestions && missed(id) ? ` · ${esc(t('missedInDeck')(missed(id)))}` : ''}</span>${usesQuestions ? '' : `<button type="button" class="btn ghost sm" data-deck-read="${id}">${t('addRead')}</button>`}<button type="button" class="btn ghost sm" data-deck-all="${id}">${t('addAll')}</button></li>`;
     }).join('');
     return frame('review', `<div class="page-head"><div><h1>${t('reviewTitle')}</h1><p>${t('reviewSub')}</p></div></div>
       <section class="panel review-top reveal"><dl class="review-stats"><div><dt>${t('dueNow')}</dt><dd>${st.due}</dd></div><div><dt>${t('newCards')}</dt><dd>${Math.min(st.fresh, st.leftNew)}<small>/${st.fresh}</small></dd></div><div><dt>${t('allCards')}</dt><dd>${st.all}</dd></div></dl>${st.ready ? `<button type="button" class="btn primary lg" data-review-start>${t('startReview')} ${icon('arrow')}</button>` : `<p class="muted">${st.all ? t('nothingDue') : t('reviewEmpty')}</p>`}<p class="muted review-limit">${esc(t('newLimit')(NEW_PER_DAY))}</p></section>
@@ -759,7 +772,7 @@ window.LeonStudyInit = (hub) => {
       front = `<div class="tags">${badge(q)}</div><h2>${esc(L(q.title))}</h2>${promptHtml(q)}`;
       back = q.kind === 'predict' ? `<h4>${t('expected')}</h4>${codeBlock(q.output)}`
         : q.kind === 'worked' ? `<h4>${t('strategy')}</h4>${para(L(q.strategy))}<ol class="study-list">${L(q.steps).map((s) => `<li>${inline(s)}</li>`).join('')}</ol><h4>${t('answer')}</h4>${para(L(q.answer))}`
-          : q.kind === 'mcq' ? `<ul class="mcq">${q.options.map((o) => `<li class="${o.correct ? 'ok' : ''}"><span>${inline(L(o.text))}</span>${o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('')}</ul>`
+          : q.kind === 'mcq' ? `<ul class="mcq">${optionOrder(q).map((k) => q.options[k]).map((o) => `<li class="${o.correct ? 'ok' : ''}"><span>${inline(L(o.text))}</span>${o.why ? `<small>${inline(L(o.why))}</small>` : ''}</li>`).join('')}</ul>`
             : q.kind === 'numeric' ? `<p>${t('answer')}: <b>${esc(q.answer)}</b></p>${solutionHtml(q)}`
               : q.kind === 'trace' ? `<div class="study-trace" tabindex="0"><table class="fill"><thead><tr>${L(q.columns).map((x) => `<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${q.rows.map((row) => `<tr>${row.map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${solutionHtml(q)}`
                 : `${solutionHtml(q)}${q.rubric ? `<ul class="study-list">${q.rubric.map((r) => `<li>+${r.marks} ${inline(L(r.text))}</li>`).join('')}</ul>` : ''}`;
@@ -872,7 +885,7 @@ window.LeonStudyInit = (hub) => {
       if (parts[0] === 'practice') return parts[2] ? { page: 'question', cid: parts[1], qid: parts[2] } : parts[1] ? { page: 'practiceCourse', cid: parts[1] } : { page: 'practice' };
       if (parts[0] === 'exam') return { page: 'exam', cid: parts[1], pid: parts[2] };
       if (parts[0] === 'review') return { page: parts[1] === 'run' ? 'session' : 'review' };
-      if (parts[0] === 'labs') return { page: 'labs', cid: parts[1] };
+      if (parts[0] === 'labs') return parts[2] ? { page: 'lab', cid: parts[1], id: parts[2] } : { page: 'labs', cid: parts[1] };
       if (parts[0] === 'lab') return { page: 'lab', cid: parts[1], id: parts[2] };
       return null;
     },

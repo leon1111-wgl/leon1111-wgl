@@ -4,6 +4,7 @@ import { MemFS, runWasi } from './wasi-lite.js';
 const base = new URL('./c/', import.meta.url);
 const decoder = new TextDecoder();
 const ENV = { INCLUDE: '/usr/include', LIB: '/usr/lib', PATH: '/usr/bin', PWD: '/home', HOME: '/home' };
+const PRELUDE = ['stdio', 'stdlib', 'string', 'stdint', 'stdbool', 'stddef', 'ctype', 'limits', 'math', 'assert'].map((h) => `#include <${h}.h>`).join('\n');
 let toolchain = null;
 
 function load() {
@@ -37,7 +38,8 @@ self.onmessage = async ({ data }) => {
     fs.files = new Map(base2.files);
     fs.dirs = new Set(base2.dirs);
     // a tests block is appended to the same file so it can call the learner's functions
-    fs.write('/home/main.c', data.tests ? `${data.code}\n#line 1 "tests"\n${data.tests}\n` : data.code);
+    // a function written on paper has no #include lines, so the practice harness supplies the usual ones
+    fs.write('/home/main.c', data.tests ? `${PRELUDE}\n#line 1 "main.c"\n${data.code}\n#line 1 "tests"\n${data.tests}\n` : data.code);
     let log = '';
     const keep = (chunk) => { log += decoder.decode(chunk); };
     const compiled = runWasi(module, { args: ['/usr/bin/cc', '-o', '/home/a.out', '/home/main.c'], fs, cwd: '/home', env: ENV, onStdout: keep, onStderr: keep });

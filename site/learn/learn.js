@@ -62,7 +62,7 @@
       howNotes: ['中文和英文章节一一对应', '答案先折叠，自己做完再看', '每章末尾直接跳到下一章'],
       faqEyebrow: '常见问题', faqTitle: '开始之前',
       faq: [
-        ['我完全没学过编程，从哪开始？', '从「Python 零基础实操」开始，第 0 单元会带你把第一段程序跑起来。之后读「AI 入门 8 讲」，补上向量、概率和梯度的直觉，再按学习路线往下走。'],
+        ['我完全没学过编程，从哪开始？', '打开「我的路线」，选「我从没写过代码」。先读 Python 入门指南，例子在网页上就能运行，什么都不用装；之后是「Python 零基础实操」和每日复习。'],
         ['中文版和英文版内容一样吗？', '五门课程和五条 AI 路线都有完整的中英文版本，章节一一对应，阅读时可以在右上角随时切换，会停在同一章。「Python 零基础实操」目前只有中文。'],
         ['需要安装什么？', '先不用装：大多数代码示例可以直接在网页上运行。想在自己电脑上运行时，Python 需要 3.10 或更新版本，Java 需要 JDK 8 或更新版本，C 需要 gcc 或 clang；每门课开头有安装和运行说明。'],
         ['速查表怎么用？', '学完一门课后用来复习。AI 路线的复习页每一条都能点回对应章节；五门课程的速查表有网页版，PDF 版是一页纸，适合打印（英文）。'],
@@ -122,7 +122,7 @@
       howNotes: ['Chinese and English chapters match one to one', 'Answers stay folded until you have tried', 'Each chapter links straight to the next'],
       faqEyebrow: 'FAQ', faqTitle: 'Before you start',
       faq: [
-        ['I have never programmed. Where do I start?', 'Start with Python: Zero to Practice; unit 0 gets your first program running. Then read Start Here, eight short lessons on vectors, probability and gradients, and follow the learning route from there.'],
+        ['I have never programmed. Where do I start?', 'Open My route and choose "I have never programmed". It starts with first steps in Python, whose examples run on the page with nothing to install, then practice and a daily review.'],
         ['Are the Chinese and English editions the same?', 'All five courses and five AI guides have complete Chinese and English editions with matching chapters. Switch at the top right while reading and you stay on the same chapter. The Python handbook is in Chinese only.'],
         ['What do I need to install?', 'Nothing at first: most code examples run right on the page. To run them on your own computer you need Python 3.10 or newer, JDK 8 or newer for Java, and gcc or clang for C; each course opens with setup notes.'],
         ['How do I use the cheatsheets?', 'Use them to review after a course. Each item in an AI guide review links back to its chapter; the five course sheets have a web version and a one-page printable PDF (English).'],

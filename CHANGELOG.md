@@ -4,7 +4,6 @@ One entry per release. Main is the release: a push to it deploys the public site
 
 ## 2026-11 · Teaching for four readers
 
-Status: on branch `teaching-2026-11`, not released yet.
 
 **What changed**
 - Pick a goal (never programmed, exam coming, writing by hand, at work) and get a route of steps that stay ticked.
@@ -18,9 +17,17 @@ Status: on branch `teaching-2026-11`, not released yet.
 - Answers fold until asked for. Phones read one chapter at a time. Reading pages offer to resume. Tapping a defined word shows its meaning. Search finds chapters by what they teach.
 - Python handbook v1.5 to v1.10 merged from the local working copy.
 
-**What was checked:** see the release note at merge.
+**What was checked**
+- In CI before release: all 285 course programs compile, run and match their pages; 258 authored questions run (model answers pass their tests, wrong answers fail them, trace tables match instrumented programs, calculations match); 48 guide examples; 14 labs with their real tools (ASan, TSan, gdb, valgrind, make, JUnit, JaCoCo, pytest, ruff, scikit-learn); FSRS against py-fsrs on every review; every Run button in Chromium; 47 end-to-end checks at desktop and 375 px, including a whole mock paper across a refresh, blocked storage, failed loads, every route's links, and homepage links.
+- By hand: reader flows at desktop and 375 px in both themes. An independent reader sampled questions, guides, chapters and labs in both languages.
 
-**What was left out:** see the release note at merge.
+**What was left out, and why**
+- Older chapters of COMP2022, COMP2123 and COMP3308 are still thin in Chinese. New chapters and practice are full length. This needs its own pass.
+- The AI guides have review cards and predict-the-output drills, but no authored questions or mock papers yet. Their exam route is hidden.
+- 27 of 77 C programs and 2 of 67 Java programs have no Run button, because they need processes, threads, signals or a library part the browser version lacks. Each says so.
+- Browser Java cannot catch division by zero or array store errors, and browser C does not catch memory errors. The pages say so next to the button.
+- No browser-model tutor: see `docs/FRONTIER_REVIEW.md`.
+- Not tested: real iOS Safari, and the setup steps on real Windows machines. Gradle is not covered by the labs.
 
 ## 2026-11 · Homepage (611d4c9)
 
