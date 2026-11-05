@@ -42,7 +42,7 @@ def run_lab(folder, write):
                 target.write_text(text.replace(patch['from'], patch['to'], 1))
             if not step.get('command'):
                 continue
-            env = {**os.environ, 'ASAN_OPTIONS': 'color=never', 'TSAN_OPTIONS': 'color=never', 'PYTHONHASHSEED': '0', 'NO_COLOR': '1'}
+            env = {**os.environ, 'ASAN_OPTIONS': 'color=never', 'TSAN_OPTIONS': 'color=never', 'PYTHONHASHSEED': '0', 'NO_COLOR': '1', 'PYTHONDONTWRITEBYTECODE': '1'}
             done = subprocess.run(['bash', '-c', step['command']], cwd=tmp, env=env, capture_output=True, text=True, timeout=180)
             out = normalise(done.stdout + (('\n' if done.stdout and done.stderr else '') + done.stderr), tmp)
             want = step.get('exit', 0)
