@@ -1,5 +1,4 @@
 """Render and export the teaching blocks shared by courses and AI guides."""
-import json
 from pathlib import Path
 from html import escape as E
 
@@ -64,45 +63,16 @@ def trace_html(trace, lang):
     return f'<div class="trace-wrap" tabindex="0"><table class="trace-table"><caption>{DETAIL_LABELS[lang]["trace"]}</caption><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table></div>'
 
 
-FOLD = {'en': {'answer': 'Think first, then show the answer', 'method': 'Try it first, then show the method', 'output': 'Predict the output first, then show it and the explanation'},
-        'zh': {'answer': '先想一想，再看答案', 'method': '先自己做，再看方法', 'output': '先预测输出，再看结果和讲解'}}
-
-
-def fold(summary, body):
-    return f'<details class="try-first"><summary>{summary}</summary><div class="try-body">{body}</div></details>'
-
-
-def browser_runnable():
-    """Examples checked to print the expected output in the browser (scripts/verify_browser_runners.mjs)."""
-    path = Path(__file__).resolve().parents[1] / 'content' / 'browser-runnable.json'
-    return set(json.loads(path.read_text())) if path.exists() else set()
-
-
-def run_attribute(path, language):
-    return f' data-run="{language}"' if path in RUNNABLE else ''
-
-
-def machine_note(path, language, lang):
-    """Say so when an example needs a real machine, so a missing Run button does not read as a fault."""
-    if path in RUNNABLE or language == 'python':
-        return ''
-    text = {'zh': {'c': '这个程序要用到进程、线程、信号或系统调用，浏览器里跑不了。请下载到自己电脑上运行。',
-                   'java': '这个程序用到了浏览器版 Java 还没有的功能。请用自己电脑上的 JDK 运行。'},
-            'en': {'c': 'This program uses processes, threads, signals or system calls, which a browser cannot run. Download it and run it on your computer.',
-                   'java': 'This program needs a feature the browser Java lacks. Run it with a JDK on your computer.'}}
-    return f'<p class="run-machine">{text[lang][language]}</p>'
-
-
 def teaching_html(topic, group, lang='en'):
     lab = LABELS[lang]; detail = DETAIL_LABELS[lang]
     pieces = []
     questions = topic.get('guided_questions', [])
     if questions:
-        items = ''.join(f'<li><h4>{E(local(x["question"],lang))}</h4>{fold(FOLD[lang]["answer"], paragraphs(local(x["answer"],lang)))}</li>' for x in questions)
+        items = ''.join(f'<li><h4>{E(local(x["question"],lang))}</h4>{paragraphs(local(x["answer"],lang))}</li>' for x in questions)
         pieces.append(f'<section class="guided"><h3>{lab["steps"]}</h3><ol>{items}</ol></section>')
     for i, problem in enumerate(topic.get('worked_problems', []), 1):
         steps = ''.join('<li>'+paragraphs(local(x,lang))+'</li>' for x in problem['steps'])
-        pieces.append(f'<section class="worked-problem"><h3>{detail["problems"]} · {i:02d}</h3><h4>{E(local(problem["title"],lang))}</h4><div class="problem-question">{paragraphs(local(problem["question"],lang))}</div>{fold(FOLD[lang]["method"], f'<h4>{detail["strategy"]}</h4>{paragraphs(local(problem["strategy"],lang))}<ol class="calculation-steps">{steps}</ol><div class="problem-answer"><h4>{detail["answer"]}</h4>{paragraphs(local(problem["answer"],lang))}</div><div class="sanity-check"><h4>{detail["check"]}</h4>{paragraphs(local(problem["sanity_check"],lang))}</div>')}</section>')
+        pieces.append(f'<section class="worked-problem"><h3>{detail["problems"]} · {i:02d}</h3><h4>{E(local(problem["title"],lang))}</h4><div class="problem-question">{paragraphs(local(problem["question"],lang))}</div><h4>{detail["strategy"]}</h4>{paragraphs(local(problem["strategy"],lang))}<ol class="calculation-steps">{steps}</ol><div class="problem-answer"><h4>{detail["answer"]}</h4>{paragraphs(local(problem["answer"],lang))}</div><div class="sanity-check"><h4>{detail["check"]}</h4>{paragraphs(local(problem["sanity_check"],lang))}</div></section>')
     for i, example in enumerate(topic.get('code_examples', []), 1):
         id = f'code-{topic["id"]}-{example["id"]}'
         language = example.get('language','python')
@@ -114,7 +84,7 @@ def teaching_html(topic, group, lang='en'):
         walk = ''
         if example.get('walkthrough'):
             walk = '<h4>'+detail['walk']+'</h4><ol class="execution-steps">'+''.join('<li>'+paragraphs(local(x,lang))+'</li>' for x in example['walkthrough'])+'</ol>'
-        pieces.append(f'''<section class="code-example" id="lab-{topic["id"]}-{example["id"]}" data-reading-id="lab-{topic["id"]}-{example["id"]}"{run_attribute(path,language)}><h3>{detail['code']} · {i:02d}</h3><h4>{E(local(example['title'],lang))}</h4>{paragraphs(local(example['intro'],lang))}<div class="code-actions"><span>{name}</span><button type="button" data-copy-code="{id}">{lab['copy']}</button><a href="../{path}" download>{detail['download']} ↓</a><p class="code-hint">{detail['scroll']}</p></div>{machine_note(path,language,lang)}{code_html(example['code'],language,id)}<details class="example-run"><summary>{detail['command']}</summary><pre class="code">{E(command_for(path,language))}</pre></details>{syntax}{fold(FOLD[lang]['output'], f'<div class="output-block"><h4>{lab["output"]}</h4><pre class="code code-output">{E(example["output"])}</pre></div>{walk}{trace_html(example.get("trace"),lang)}<h4>{lab["explain"]}</h4>{paragraphs(local(example["explanation"],lang))}')}</section>''')
+        pieces.append(f'''<section class="code-example" id="lab-{topic["id"]}-{example["id"]}" data-reading-id="lab-{topic["id"]}-{example["id"]}"><h3>{detail['code']} · {i:02d}</h3><h4>{E(local(example['title'],lang))}</h4>{paragraphs(local(example['intro'],lang))}<div class="code-actions"><span>{name}</span><button type="button" data-copy-code="{id}">{lab['copy']}</button><a href="../{path}" download>{detail['download']} ↓</a><p class="code-hint">{detail['scroll']}</p></div>{code_html(example['code'],language,id)}<details class="example-run"><summary>{detail['command']}</summary><pre class="code">{E(command_for(path,language))}</pre></details><div class="output-block"><h4>{lab['output']}</h4><pre class="code code-output">{E(example['output'])}</pre></div>{syntax}{walk}{trace_html(example.get('trace'),lang)}<h4>{lab['explain']}</h4>{paragraphs(local(example['explanation'],lang))}</section>''')
     cases = topic.get('practice_cases', [])
     if cases:
         items = ''.join(f'<article><h4>{E(local(x["title"],lang))}</h4>{paragraphs(local(x["body"],lang))}</article>' for x in cases)
@@ -243,6 +213,3 @@ def course_reading_tools(code, lang='en'):
     title='第一次运行这些示例？' if zh else 'Running these examples for the first time?'
     download='下载全部 Python、Java 和 C 示例' if zh else 'Download all Python, Java and C examples'
     return f'<div class="reading-tools"><div role="group" aria-label="{lab["size"]}"><span>{lab["size"]}</span><button type="button" data-reading-size="normal" aria-pressed="true">A · {lab["normal"]}</button><button type="button" data-reading-size="large" aria-pressed="false">A+ · {lab["large"]}</button></div><a href="../downloads/guoliang-code-examples.zip" download>{download} ↓</a><details class="run-help"><summary>{title}</summary>{paragraphs(helptext)}<pre class="code">{E(commands)}</pre><p>{reference}</p></details></div>'
-
-
-RUNNABLE = browser_runnable()

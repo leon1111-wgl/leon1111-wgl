@@ -35,7 +35,3 @@ python projects/02_score_report/app.py --help
 ### 验收
 
 运行学习包的 python tools/check_projects.py 核验参考实现；自己的实现按上面手算结果和边界逐项验证。
-
-### 四阶段实操增补
-
-逐步运行 guided 中的四个阶段，再完成工具耗时日志迁移。完整解释、追踪表、练习与解析见 [GUIDE.md](GUIDE.md)。原 TASKS.md 与 starter.py 保留你的内容。

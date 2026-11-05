@@ -4,7 +4,7 @@
 
 部分内容为info1110课程
 
-版本 1.10 · 2026-10-29 · Windows / Mac
+版本 1.4 · 2026-10-21 · Windows / Mac
 
 # 00 从这里开始
 
@@ -703,90 +703,6 @@ print(distance_km / time_hours)
 ### 一个实用的文本清洗流程
 用户输入账号 → 去掉两端空白 → 统一大小写 → 检查是否为空 → 保存。每一步都先打印 repr(text)，就能看到看不见的空格和换行。例如 `repr(" hi\n")` 会显示带引号和转义符的表示。不要为了“清洗”随意删除有意义的内部空格或符号。
 
-### 切片精修：先画索引，再决定往哪边走
-前置只用本章的字符串、索引、切片和 repr；不需要循环、列表或函数。先用 `s = "KLMNOP"` 在纸上画六个格子。窄屏上可横向滑动表格，查看后面的索引和结果：
-
-| 字符 | K | L | M | N | O | P |
-| --- | --- | --- | --- | --- | --- | --- |
-| 正索引 | 0 | 1 | 2 | 3 | 4 | 5 |
-| 负索引 | -6 | -5 | -4 | -3 | -2 | -1 |
-
-负索引是从末尾定位的另一种写法，**不决定移动方向**。`s[-3:]` 从 N 开始，默认步长 +1，结果仍是 NOP。步长为负才向左走。读切片时依次问：从哪里出发？往哪边、每次几格？到哪个位置之前停止？
-
-| 表达式 | 出发与方向 | 真正取到的正索引 | 结果的 repr |
-| --- | --- | --- | --- |
-| s[1:5:2] | 从 1 向右，每次 2 格 | 1、3 | 'LN' |
-| s[4:1:-1] | 从 4 向左，每次 1 格，1 不取 | 4、3、2 | 'ONM' |
-| s[1:4:-1] | 从 1 向左，但终点 4 在右边 | 无，一开始就不满足方向条件 | '' |
-| s[5:0:-1] | 从 5 向左，0 不取 | 5、4、3、2、1 | 'PONML' |
-| s[5::-1] | 从 5 向左，终点省略 | 5、4、3、2、1、0 | 'PONMLK' |
-| s[5:-1:-1] | 末尾 -1 对应正索引 5；起点也是 5 | 无，起点等于排除的终点 | '' |
-
-记忆顺序：**先方向，再定位；起点能取，终点不取。** 在这里有效索引范围内，正步长要求当前位置小于终点，负步长要求当前位置大于终点；起点等于终点时一个字符也不取。越界端点还会按序列长度调整，不能只拿原始数字相减猜长度。
-
-### 为什么倒序时省略终点，不等于填写 -1
-`s[5::-1]` 中空着的 stop 告诉 Python 沿负方向一直取到开头，包含索引 0。`s[5:-1:-1]` 中明确写出的 -1 会先按“倒数第一格”定位到 P，也就是正索引 5；从 5 出发又要在 5 之前停止，因此为空。不要把“省略终点”机械替换成 -1。
-
-相同原则用于省略 start：正步长默认从开头出发，负步长默认从末尾出发。`s[::-1]` 可以完整倒序。空字符串 `""[::-1]` 仍是空字符串；`s[99:]` 也为空，但 `s[99]` 会越界报错。步长 0 不表示“不移动”，而是非法，会抛 ValueError；第 13 章再学如何处理异常。
-
-### 三层练习：读懂、修边界、换场景
-1. **预测：** 遮住示例 03_07 的输出，在上表每一行圈出索引。运行时用 repr 看清空字符串，避免把空白行误认为程序没有执行。
-2. **修边界：** 想得到 ONML，应该把 `s[4:1:-1]` 的 stop 改成什么？先写取到的索引，再改示例副本。答案是 0：索引 4、3、2、1，排除 0。接着把 s 改成空字符串，预测所有切片都为空，再运行。
-3. **迁移：** 完成习题 03_09 的设备短码。复杂切片可以先取一段，再反转这一段；多命名一个中间值，往往比挤在一行更容易检查。
-
-学到第 05 章后再回来比较：`range(5, -1, -1)` 产生数字 5 到 0，里面的 -1 就是数字边界；字符串切片里的 -1 则会按序列末尾解释。因此不能把 range 的三个参数原样搬进切片。第 07 章把这套“位置与顺序”迁移到列表，第 09 章示例 09_11 再处理保留最近消息时的零值边界。
-
-### 文本清理精修：删的是空白、字符，还是一整段标记
-前置只用本章的字符串、方法调用、赋值与 repr，不需要条件、循环或函数。处理用户输入或工具标签前，先把要求说具体：**删什么？从哪里删？最多删几次？** “把文本清理一下”还不足以决定代码。
-
-| 要求 | 方法 | 匹配单位与位置 |
-| --- | --- | --- |
-| 去掉两端空白，保留中间空格 | `text.strip()` | 从左右两端连续去掉空白字符 |
-| 去掉开头的一次完整标记 | `text.removeprefix("tool:")` | 完整的 tool:，必须位于开头，区分大小写 |
-| 去掉结尾的一次完整标记 | `text.removesuffix(".txt")` | 完整的 .txt，必须位于结尾，区分大小写 |
-| 从左端去掉指定字符，直到碰到别的字符 | `text.lstrip("tool:")` | t、o、l、: 中的任意字符，不要求组成 tool: |
-| 替换所有出现的片段 | `text.replace("tool:", "")` | 完整片段，但不限开头；默认替换所有匹配 |
-
-prefix 是“前缀”，suffix 是“后缀”。这两个 remove 方法从 Python 3.9 起提供，本教材的 Python 3.10+ 可以使用。没匹配到就保留原内容，不会报“找不到”的错误；匹配到也只去掉一次。传入空前缀或空后缀时内容不变。这里的所有字符串方法都不原地修改原字符串，想继续使用结果就要赋值接住。
-
-### 逐字符追踪：为什么工具名 lookup 会变成 kup
-离线约定：文本开头的 tool: 是标签，后面的 lookup 才是工具名。它只是预设文本，没有执行工具或调用大模型。
-
-| 步骤 | 表达式 | 结果的 repr | 解释 |
-| --- | --- | --- | --- |
-| 原始输入 | `raw` | `'  tool:lookup  '` | 两边各有两个空格 |
-| 清理空白 | `cleaned = raw.strip()` | `'tool:lookup'` | 中间内容保持原样 |
-| 错误尝试 | `cleaned.lstrip("tool:")` | `'kup'` | 从左边连续删掉 t、o、o、l、:、l、o、o，遇到 k 才停 |
-| 按完整标记处理 | `name = cleaned.removeprefix("tool:")` | `'lookup'` | 只删开头完整的五个字符 tool: |
-| 回看原输入 | `raw` | `'  tool:lookup  '` | 原字符串并未被修改 |
-
-**关键区别：** `lstrip("tool:")` 把参数中的字符当作“允许删除的字符名单”；名单顺序没有意义，重复写 o 也没有额外作用。这里说的名单只是帮助理解，不需要先学第 08 章的集合类型。把它换成 strip 会同时从左右两端做这种删除；换成 rstrip 则只从右端做。参数不自动附加空白，所以对原始 raw 直接调用 `lstrip("tool:")`，遇到第一个空格便停止，内容完全不变。
-
-右端也有同类错误：`"report.txt".rstrip(".txt")` 从右边依次删掉 t、x、t、点，以及 report 本来就有的最后一个 t，结果是 'repor'。若约定只去掉结尾 .txt，应该用 removesuffix，得到 'report'。这只是已知文本标记的练习；真实文件路径的目录、扩展名和打开操作留到第 12 章用 pathlib 学习。
-
-### 顺序也是规则：先保存中间值，再连成一行
-习题 03_10 的约定是：先去两端空白，再去开头一次 tool:，最后去结尾一次 .txt；保留其余内容。用 cleaned、without_prefix、name 三个变量追踪，再考虑链式调用。下面每一行都独立从该行 raw 开始：
-
-| raw 的 repr | cleaned | without_prefix | name 的 repr |
-| --- | --- | --- | --- |
-| `'  tool:lookup.txt  '` | tool:lookup.txt | lookup.txt | `'lookup'` |
-| `'tool:tool:lookup.txt.txt'` | tool:tool:lookup.txt.txt | tool:lookup.txt.txt | `'tool:lookup.txt'` |
-| `'memo:tool:lookup.txt'` | memo:tool:lookup.txt | memo:tool:lookup.txt | `'memo:tool:lookup'` |
-| `'tool:report.txt.bak'` | tool:report.txt.bak | report.txt.bak | `'report.txt.bak'` |
-| `'Tool:lookup.TXT'` | Tool:lookup.TXT | Tool:lookup.TXT | `'Tool:lookup.TXT'` |
-| `'tool:.txt'` | tool:.txt | .txt | `''` |
-
-第一行若先 removeprefix 再 strip，前缀检查时最左边还是空格，因此不会删除 tool:；后来去掉空格，也不会自动回头重做前缀检查。第三行用 `replace("tool:", "", 1)` 同样不对：虽然最多替换一次，它仍会删除中间的 tool:。**完整匹配不等于只匹配开头，删除一次也不等于删除前缀。**
-
-空字符串和全空白输入经过这三步都得到 ''。`"tool: lookup.txt"` 的结果则是 ' lookup'，保留开头那个空格：它原本位于原字符串中间，第一次 strip 没删到它；后面没有第二次 strip。需不需要再去掉它，要由输入约定决定，不能偷偷加一步改变数据。
-
-### 三层实操：预测、纠错、迁移
-1. **预测：** 遮住示例 03_08 的输出，逐字符划掉允许删除的内容。用 repr 看清空白和空串；运行后逐行对照，不只看最后一行。
-2. **纠错：** 将示例的 raw 改成 "topic:python"。预测 lstrip 的结果为 'pic:python'，而 removeprefix 保持 'topic:python'；再改成 "tool:tool:lookup"，观察按完整前缀只删除一次。把文件名改为 "report.txt.bak"，两个右端处理都应保持原样。
-3. **迁移：** 独立完成习题 03_10，再用上表逐行替换 raw，每次只改输入。把空串、全空白和内部空格也试一遍。不要为得到正确显示结果，直接把预期答案写进 print。
-
-知识连接：第 09 章可把三步封装成函数，第 13 章再验证结果是否非空、是否是允许的工具名。清理成功只表示执行了约定的字符串变换；空名称仍可能需要拒绝。这里没有真实 Agent，也不测 token 数。今后接入模型后，工具名格式符合规则也不保证工具存在、调用成功或任务正确。知识图谱的“字符串与切片 ↔ 异常与数据校验”连接帮助你回顾这条链路。
-
 ## 示例 03_01 读字符与切片
 
 路径：examples/ch03/ex03_01.py
@@ -925,67 +841,6 @@ print(f"主题字符数：{len(clean_topic)}")
 解析：输入是带首尾空格的 topic。strip 返回去掉首尾空白的新字符串，原 topic 不会被自动修改；赋值后 clean_topic 是 'Python 列表'。f-string 把两个变量的值插入文字，print 才显示结果。len 在这里数 Python 字符串的 Unicode 码位，空格也算一个；它不是模型 token 数。本例只生成提示词，没有模型回复。
 
 改写：先把 topic 改成只有三个空格，预测清理后的字符数。再把模板改成要求输出一个例子，观察引号内文字与变量名各在哪里。
-
-## 示例 03_07 切片追踪：同样倒着走，为何有时为空
-
-路径：examples/ch03/ex03_07.py
-
-```python
-s = "KLMNOP"
-print(repr(s[1:5:2]))
-print(repr(s[4:1:-1]))
-print(repr(s[1:4:-1]))
-print(repr(s[5:0:-1]))
-print(repr(s[5::-1]))
-print(repr(s[5:-1:-1]))
-```
-
-输出：
-```text
-'LN'
-'ONM'
-''
-'PONML'
-'PONMLK'
-''
-```
-
-解析：每次 print 都从同一个 s 取片段，s 本身不变。第 3 行的方向不匹配；第 6 行的 -1 定位到索引 5，恰好等于起点。这两行都返回空字符串，repr 将它显示为两个引号。第 4 行排除了 K，第 5 行省略终点后才包含 K。
-
-改写：先将第 2 行切片的 stop 从 1 改成 0，手算 ONML；恢复后将 s 改成空字符串，再预测六行输出。不要把切片替换成单个索引来判断空串是否安全。
-
-## 示例 03_08 文本清理：工具标签为什么越删越多
-
-路径：examples/ch03/ex03_08.py
-
-```python
-raw = "  tool:lookup  "
-cleaned = raw.strip()
-wrong = cleaned.lstrip("tool:")
-name = cleaned.removeprefix("tool:")
-print(repr(raw))
-print(repr(cleaned))
-print(repr(wrong))
-print(repr(name))
-
-filename = "report.txt"
-print(repr(filename.rstrip(".txt")))
-print(repr(filename.removesuffix(".txt")))
-```
-
-输出：
-```text
-'  tool:lookup  '
-'tool:lookup'
-'kup'
-'lookup'
-'repor'
-'report'
-```
-
-解析：前四行从原文本到清理空白，再比较按字符与按完整标记的结果。wrong 和 name 都从 cleaned 计算，不把已经损坏的 wrong 再传给 removeprefix；删掉的内容不会自动恢复。后两行独立比较右端处理。repr 额外显示引号，使空格看得见；引号不是字符串里的字符。这里仅模拟工具标签，没有执行工具。
-
-改写：先把 raw 改成 "topic:python"，再改成 "tool:tool:lookup"；每次只改输入并重新手算。最后把 filename 改成 "report.txt.bak"，检查不是结尾的 .txt 会保留。
 
 ## 练习 03_01 邮箱清洗（基础）
 
@@ -1166,65 +1021,6 @@ what is python?
 
 解析：原始文字 → strip 去边缘空白 → lower 统一英文大小写 → len 计数。中间的两个空格和问号都保留。常见错误是对原 question 求长度，或忘了接住方法返回的新字符串。边界试验：空字符串清理后仍为空，长度为 0；中文不因为 lower 而变成英文。
 
-## 练习 03_09 设备短码：先取一段，再反转（迁移）
-
-给定 code = "Q7M2R8"。保存 tail 为最后 3 个字符，head 为前 3 个字符。依次输出 tail、tail 的倒序、head 的倒序，每项一行。最后输出 repr(code[2:-1:-1])，并解释为何它不是前 3 个字符的倒序。本题只用字符串、赋值、切片和 print，不写函数。
-
-作答文件：practice/ch03/ex03_09.py
-
-提示：先用 [-3:] 与 [:3] 定位两段；在中间变量上再用 [::-1]。最后一行的显式 stop=-1 会定位到原字符串索引 5。
-
-参考答案：
-```python
-code = "Q7M2R8"
-tail = code[-3:]
-head = code[:3]
-print(tail)
-print(tail[::-1])
-print(head[::-1])
-print(repr(code[2:-1:-1]))
-```
-
-输出：
-```text
-2R8
-8R2
-M7Q
-''
-```
-
-解析：输入先得到 tail="2R8"、head="Q7M"，反转的是已经截取的片段。最后一行从索引 2 向左走，排除的终点却是索引 5，因此为空。想直接从索引 2 取到开头，可写 code[2::-1]。改成 code="Q7" 后，tail 与 head 都是 Q7，两个倒序都为 7Q；不足三项不报错。改成空串时前三行是空白行，最后一行显示两个引号。真实设备短码若有固定长度要求，还需要另写验证规则。
-
-## 练习 03_10 工具记录名：按约定清理两端（迁移）
-
-raw = "  tool:lookup.txt  "。约定按顺序执行：去掉两端空白，保存为 cleaned；只去掉开头一次完整 tool:，保存为 without_prefix；只去掉结尾一次完整 .txt，保存为 name。大小写必须相符，未匹配到的标记与内部内容保留，不增加第二次空白清理。依次输出 repr(cleaned)、repr(without_prefix)、repr(name)、repr(raw)，各占一行。只用字符串、赋值、方法调用和 print，不写函数。本题练习文本变换，不检查工具名是否可用。
-
-作答文件：practice/ch03/ex03_10.py
-
-提示：每一步都接住前一步的结果。strip() 不传字符参数；后两步使用 removeprefix 和 removesuffix，不能用 lstrip、rstrip 或全局 replace 代替。
-
-参考答案：
-```python
-raw = "  tool:lookup.txt  "
-cleaned = raw.strip()
-without_prefix = cleaned.removeprefix("tool:")
-name = without_prefix.removesuffix(".txt")
-print(repr(cleaned))
-print(repr(without_prefix))
-print(repr(name))
-print(repr(raw))
-```
-
-输出：
-```text
-'tool:lookup.txt'
-'lookup.txt'
-'lookup'
-'  tool:lookup.txt  '
-```
-
-解析：输入先变为 tool:lookup.txt，再变为 lookup.txt，最后才是 lookup；打印原始 raw 可确认它没被改写。把 raw 换成 "tool:tool:lookup.txt.txt"，name 应为 "tool:lookup.txt"：两个标记各去一次。换成 "memo:tool:lookup.txt" 应为 "memo:tool:lookup"，中间标记保留；换成 "tool:report.txt.bak" 应为 "report.txt.bak"。空串、全空白或 "tool:.txt" 都可得到空 name，本题允许这一变换结果；后续校验再决定是否拒绝。换成 "tool: lookup.txt" 得到 " lookup"，前面的空格仍在，用 repr 核对。第 04 章以后可思考怎样另行判断空名称，第 13 章再处理不合约定的值。
-
 ## 记忆要点
 - 索引从 0 开始；切片开始要、结束不要。
 - strip 去两端，split 拆开，join 拼起来。
@@ -1234,8 +1030,6 @@ print(repr(raw))
 - 我能手算 "Python"[1:5:2]。
 - 我能清洗用户输入后生成一句格式化问候。
 - 我能解释为什么 text.upper() 不会改变原字符串。
-- 我能解释反向切片中省略 stop 与写 -1 为什么不同。
-- 我能区分两端空白、字符名单与完整前后缀，并用中间值检查清理顺序。
 
 
 # 04 比较 条件与分支
@@ -2460,52 +2254,6 @@ print(remaining)
 
 **迁移到会话记录：** `messages` 常是“列表里面装字典”。外层 `.copy()` 不能隔离每条字典里的修改。如果只是给复制后的列表追加新消息，外层复制常已够用；如果还要修改旧消息里的字段，就需要明确哪些层应独立。第 08 章先学会读写字典，第 14 章再处理不同会话的独立状态。
 
-### 列表筛选精修：列表变短了，下一次还取原来的位置吗
-前置：第 04 章条件、第 05 章 for，以及本章的索引、append、remove 和 copy。这里不用函数、推导式或深拷贝。目标约定：给定整数列表，保留所有非负数，包括 0；保持它们出现的顺序和次数，原输入不变。
-
-先看示例 07_08 的错误尝试：输入是 `[-2, -1, 0, 4]`，wrong 是它的副本。循环读到负数就调用 `wrong.remove(value)`。这段代码能运行结束，但结果里仍有 -1。为什么“每次遇到负数都删了”，却没删完？
-
-### 追踪错误：元素向左挪，取值位置仍向右走
-本例的列表遍历可按“下次要读哪个索引”来追踪；列表被删短时，这个位置不会自动退回。表中的位置用于解释过程，代码中不需要自己维护它。visited 只记录实际进入过循环体的 value。
-
-| 本次取值位置 | 取值前的 wrong | 拿到的 value | 动作与取值后的 wrong | 下一次取值位置 |
-| --- | --- | --- | --- | --- |
-| 0 | `[-2, -1, 0, 4]` | -2 | 删除 -2，变成 `[-1, 0, 4]` | 1 |
-| 1 | `[-1, 0, 4]` | 0 | 不删除，仍为 `[-1, 0, 4]` | 2 |
-| 2 | `[-1, 0, 4]` | 4 | 不删除，仍为 `[-1, 0, 4]` | 3 |
-| 3 | `[-1, 0, 4]` | 无 | 当前长度为 3，遍历结束 | 不再取值 |
-
-删掉索引 0 后，-1 从原来的索引 1 移到索引 0。下一次却读索引 1，于是直接读到 0，**-1 从未进入判断**。实际访问顺序是 `[-2, 0, 4]`，不是原输入的四项。循环正常走完，只说明没有继续取到元素，不能证明每个原始元素都检查过。
-
-`remove(value)` 按值删除第一个相等元素；`pop(index)` 按位置删除。换成 pop 仍会让后续元素移位，不能靠换一个删除方法修好这个循环。把 wrong 写成原列表的别名还会连带修改原输入，因此示例先 copy，只是为了隔离错误演示；**复制了 wrong，并没有让“遍历 wrong 时修改 wrong”变正确。**
-
-### 修正：从原列表读，向新列表写
-先创建 `kept = []`。每次从 values 取一项，通过 `value >= 0` 才向 kept 追加；不从正在遍历的 values 中删除东西。原输入的四项都会被依次访问。
-
-| 当前 value | value >= 0 | 本轮动作 | 本轮结束后的 kept |
-| --- | --- | --- | --- |
-| -2 | False | 不追加 | `[]` |
-| -1 | False | 不追加 | `[]` |
-| 0 | True | append(0) | `[0]` |
-| 4 | True | append(4) | `[0, 4]` |
-
-记忆法：**读一份，写另一份；先判定，再追加。** “不追加”就完成了过滤，不需要先复制所有数据再删掉坏项。kept 在循环前初始化，否则每轮都会清空之前的结果。`if value:` 不符合本题规则：它会丢掉合法的 0，也会把负数当作真；应明确比较数值范围。
-
-还有一种做法是遍历副本、删除原列表里的元素，它可以避免遍历对象本身缩短，但会修改原输入，和本题约定不同。先写清是否允许修改输入，再选实现。筛选也不是深拷贝：本例元素是整数；将来若元素换成字典，append 保存的仍是那条字典的引用，修改字段前要回顾本章的浅拷贝。
-
-### 先改输入，再判断修正是否可靠
-1. **预测：** 遮住示例 07_08 的输出，在纸上逐轮写出 wrong 和下一次取值位置。用 visited 找出哪项从未被检查，而不是只盯着最后的列表。
-2. **纠错：** 把输入依次换成 `[-2, -1]`、`[-2, 0, -1, 4]` 和 `[0, 4]`。错误版本分别得到 `[-1]`、`[0, 4]`、`[0, 4]`；后两组碰巧正确，不代表程序可靠。正确版本依次得到 `[]`、`[0, 4]`、`[0, 4]`。
-3. **补边界：** 空输入 `[]` 的两个循环都执行零次，kept 仍为 `[]`；`[0, 0, -1, 4, 4]` 应保留 `[0, 0, 4, 4]`。重复的有效项仍要保留，这道题不要求去重。再打印 values，确认原输入没变。
-4. **迁移：** 完成习题 07_09，把一批工具请求按名称分到 accepted 和 rejected。两个列表分别初始化，不能用 `accepted = rejected = []`，否则两个名字会指向同一列表。
-
-### 把筛选迁移到 Agent 的候选请求
-`name in allowed` 表示 name 是否等于 allowed 列表中的某一项；本题精确匹配字符串，区分大小写，不做 strip 或 lower。每次请求只进入 if/else 的一个分支，分别 append 到新列表；两个结果各自保留原有相对顺序和重复次数。
-
-可以先用 `len(accepted) + len(rejected) == len(requests)` 检查总数是否相符，再检查各组内容与顺序。长度相同不能单独证明分类正确。`accepted + rejected` 通常也不等于原 requests，因为交错的请求已被分开；这里没有要求保留两组之间的交错位置。以后需要还原完整顺序时，再记录原位置或请求 ID。
-
-这些名称都是预先写好的字符串，accepted 仅表示“名称在本题允许名单中”。本练习没有发出工具调用、调用模型或读取外部数据，也没有验证参数、权限和结果质量。第 08 章可将每条请求改为字典，第 13 章学习字段校验，第 16 章再连接执行与结果判断。知识图谱的“列表与顺序 ↔ Agent 工具流程”串起这条学习链路。
-
 ## 示例 07_01 基本增删改查
 
 路径：examples/ch07/ex07_01.py
@@ -2676,42 +2424,6 @@ int
 解析：逗号建立元组结构。解包按位置赋值，变量个数与元素个数不匹配会报错。
 
 改写：尝试 a, b, c = point，读懂错误后恢复。
-
-## 示例 07_08 列表筛选：为什么连续的负数漏掉一个
-
-路径：examples/ch07/ex07_08.py
-
-```python
-values = [-2, -1, 0, 4]
-wrong = values.copy()
-visited = []
-for value in wrong:
-    visited.append(value)
-    if value < 0:
-        wrong.remove(value)
-
-kept = []
-for value in values:
-    if value >= 0:
-        kept.append(value)
-
-print("错误遍历访问：", visited)
-print("错误结果：", wrong)
-print("保留结果：", kept)
-print("原输入：", values)
-```
-
-输出：
-```text
-错误遍历访问： [-2, 0, 4]
-错误结果： [-1, 0, 4]
-保留结果： [0, 4]
-原输入： [-2, -1, 0, 4]
-```
-
-解析：wrong 删除 -2 后，-1 移到了刚读过的位置，所以 visited 没有它；没有运行错误也可能漏掉数据。正确循环始终读 values，只向 kept 写入，0 和 4 被依次追加。原输入保留，是因为错误尝试在副本上进行，正确尝试没有修改 values。
-
-改写：依次试连续负数、间隔负数、全有效、空列表和重复有效项。每次只修改 values 的初始值，同时核对 visited、wrong、kept 与原输入。
 
 ## 练习 07_01 保留合格成绩（场景）
 
@@ -2906,39 +2618,6 @@ print(copied)
 
 解析：只 original.copy() 仍共享内层行。本题逐行 copy 解决两层结构，任意深层结构应重新分析或使用适当深拷贝。
 
-## 练习 07_09 Agent 候选请求：分到两份新列表（迁移）
-
-allowed = ["search", "count"]，requests = ["search", "skip", "skip", "count", "search"]，输入保证为字符串列表。用普通 for 和 if/else，把名称在 allowed 中的请求追加到新列表 accepted，其余追加到另一个新列表 rejected。精确匹配，区分大小写，不清理空白；每组保持原有相对顺序和重复次数，不修改 allowed 或 requests，不执行工具。依次打印 accepted、rejected、requests，各占一行。不写函数、集合或推导式。
-
-作答文件：practice/ch07/ex07_09.py
-
-提示：循环前分别写 accepted = [] 和 rejected = []；用 name in allowed 判断，两个分支各追加一次。不要边遍历边 remove，也不要让两个结果共享同一列表。
-
-参考答案：
-```python
-allowed = ["search", "count"]
-requests = ["search", "skip", "skip", "count", "search"]
-accepted = []
-rejected = []
-for name in requests:
-    if name in allowed:
-        accepted.append(name)
-    else:
-        rejected.append(name)
-print(accepted)
-print(rejected)
-print(requests)
-```
-
-输出：
-```text
-['search', 'count', 'search']
-['skip', 'skip']
-['search', 'skip', 'skip', 'count', 'search']
-```
-
-解析：五次循环依次把 search 放入 accepted、两次 skip 分别放入 rejected、count 放入 accepted、最后的 search 再放入 accepted。重复请求不合并。空 requests 得到两份独立的空列表；全不支持时 accepted 为空，rejected 保留所有原项；allowed 为空时同样全部进入 rejected。"Search"、" search " 和空串都不匹配默认名单。总数相符只是第一步，还要核对内容、顺序和原输入。在分类后向 accepted 追加一个标记，rejected 与 requests 都不应变化；随后恢复代码再自检。名称可接受不代表工具已执行或任务成功。
-
 ## 记忆要点
 - append 加一个，extend 逐个加。
 - sort 改原地并返回 None，sorted 给新列表。
@@ -2948,7 +2627,6 @@ print(requests)
 - 我能画出 a、b 与列表对象之间的指向。
 - 我能独立建立两行互不影响的网格。
 - 我能在不修改原列表的情况下筛选与排序。
-- 我能追踪删除后漏掉的元素，并通过建立新列表完成保序筛选与分类。
 
 
 # 08 字典 集合与嵌套数据
@@ -3482,30 +3160,6 @@ print 把内容显示到屏幕，便于人看；return 把对象交还给调用�
 ### 作用域报错的下一站
 在函数里直接写 `rounds += 1`，却没有把 rounds 设成参数或先在本次调用中赋值，会涉及 UnboundLocalError。第 13 章的示例 13_07 提供可运行的错误与修复对照；它会用该章学过的 try/except 捕获错误，便于继续观察修复结果。此处先练好参数与返回值，不必提前记异常处理语法。
 
-### 函数迁移：最近 N 条消息，为什么 N=0 不能直接切
-前置：第 03 章切片、第 04 章 if、第 07 章列表与浅拷贝，以及本章参数和 return。这里只用字符串列表表示按时间从旧到新排列的消息，没有调用模型或网络服务。
-
-先写函数约定：`latest_messages(messages, keep)` 接收字符串列表，keep 已由调用者保证为非负整数（不使用 bool）；返回一个新列表，包含最后至多 keep 条消息，保留原时间顺序。keep=0 表示本次不选历史，返回 []；keep 大于消息条数就选全部；原列表不变。这是本例的产品规则，不是所有聊天程序都必须采用的规则。
-
-常见写法 `messages[-keep:]` 对正数有效，却在 0 时出错：**-0 仍是 0**，因此 `messages[-0:]` 等于 `messages[0:]`，得到全部。语法合法、程序不报错，也可能违反“保留零条”的任务要求。修复方法是先用 if 单独处理零值，并 return；只有正数才继续走末尾切片。
-
-| 输入 messages 均为 ['先读题', '列步骤', '做检查'] | 中间判断 | 实际返回 | 原列表 |
-| --- | --- | --- | --- |
-| keep=2 | 不是 0；从倒数第二项向右取 | ['列步骤', '做检查'] | 不变 |
-| keep=0 | 等于 0；立即 return [] | [] | 不变 |
-| keep=5 | 不是 0；起点越过开头后截到有效范围 | 全部三条，仍按原顺序 | 不变 |
-
-这不是 `messages[:keep]`（取最早的几条），也不是 `messages[::-1][:keep]`（把顺序反过来）。选中最近两条后，仍要先看到“列步骤”，再看到“做检查”。列表切片会新建外层列表，因此对返回列表 append 不会给原列表追加元素；如果以后消息是字典，切片并不会复制每个字典，仍要复习第 07 章的浅拷贝。
-
-### 从保留消息迁移到分开历史：做完再看解析
-1. **预测：** 运行示例 09_11 前写下 keep=2、0、5 时“直接切片”与“按约定选择”的结果，找出唯一不一致的一组。
-2. **改写：** 在自己的副本里试 keep=1、空列表、只有一条消息。每次把原输入也打印出来，检查没有被改动。不要为方便调用而把 messages 设成共享默认列表。
-3. **独立实现：** 完成习题 09_11 的 split_history，将更早与最近的消息分别返回。手算检验：older + recent 必须恰好等于原输入，不能丢失、重复或改变顺序。
-
-本章不为负数、小数或字符串参数定义行为；这些违反上述前提。学完第 13 章后可在函数最前面加 `type(keep) is not int or keep < 0` 的检查并抛 ValueError，再补非法输入测试。第 14 章 RecentMessages 要求 limit 严格大于 0；本例允许 keep=0，约定不同，不要直接照抄边界。
-
-**与大模型的联系：** 这里控制的是消息条数，不是字符数或 token 数。一条很长的消息仍然只算一条；截取成功不保证符合模型上下文长度，更不保证保留了任务所需信息。真实会话还可能需要保留系统规则、成对的工具调用与结果。先用本地规则学会明确输入、边界与返回，再在第二阶段学习具体模型和 tokenizer。
-
 ## 示例 09_01 定义与调用
 
 路径：examples/ch09/ex09_01.py
@@ -3758,42 +3412,6 @@ for _ in range(3):
 解析：第一个循环每次都传入 0，并得到 1，但没有变量接收这三个返回值。第二个循环的右边先计算 next_round(rounds)，然后左边 rounds 才绑定新值；所以下一轮能接着上次的结果计算。下划线只是一个变量名，表示本例不需要循环索引。这是离线计数实验，没有执行真实 Agent 或模型调用。
 
 改写：把初始 rounds 改为 5，先写出全部四行输出再运行。随后只删掉第二个循环中的赋值，解释为什么三次打印都不再增长。
-
-## 示例 09_11 AI / Agent：最近消息的零条边界
-
-路径：examples/ch09/ex09_11.py
-
-```python
-def latest_messages(messages, keep):
-    if keep == 0:
-        return []
-    return messages[-keep:]
-
-messages = ["先读题", "列步骤", "做检查"]
-for keep in [2, 0, 5]:
-    print("keep =", keep)
-    print("直接切片：", messages[-keep:])
-    print("按约定选择：", latest_messages(messages, keep))
-print("原消息：", messages)
-```
-
-输出：
-```text
-keep = 2
-直接切片： ['列步骤', '做检查']
-按约定选择： ['列步骤', '做检查']
-keep = 0
-直接切片： ['先读题', '列步骤', '做检查']
-按约定选择： []
-keep = 5
-直接切片： ['先读题', '列步骤', '做检查']
-按约定选择： ['先读题', '列步骤', '做检查']
-原消息： ['先读题', '列步骤', '做检查']
-```
-
-解析：for 只是安排三次独立调用。keep=0 时函数提前返回，所以不会再执行末尾的切片。keep=5 时选中全部也会新建外层列表；原 messages 不被删除或改序。所有输出由调用者 print，函数本身只返回数据。
-
-改写：在自己的副本追加 result = latest_messages(messages, 2)，再对 result.append("新消息")；预测并打印两个列表。随后用 keep=0 和空 messages 重试，仍应互不追加。
 
 ## 练习 09_01 温度转换函数（基础）
 
@@ -4071,34 +3689,6 @@ print(budget)
 
 解析：第一步 60-15 得到 45，第二步把 45 传回函数，45-50 小于 0，按约定返回 0。若没有保存第一次的返回值，就会错误地从 60 再扣 50。本题的预算是人为设定的整数额度，不是 API 账单或模型 token 数。边界：扣 0 不变、恰好扣完为 0、超过余额也为 0；重复输入应得到相同结果。
 
-## 练习 09_11 AI / Agent：将更早历史与最近消息分开（迁移）
-
-实现 split_history(messages, keep)。messages 是按从旧到新排列的字符串列表；keep 保证为非负整数，不使用 bool。返回 (older, recent)：recent 是最后至多 keep 条且顺序不变，older 是前面的其余消息。keep=0 时 recent=[]、older 包含全部；keep 超过长度时 older=[]、recent 包含全部。两个返回值每次都是新的外层列表，不修改输入，也不在函数内打印。打印对 ["问候", "提问", "检索", "回答"] 分别取 keep=2 与 keep=0 的返回值。
-
-作答文件：practice/ch09/ex09_11.py
-
-提示：先处理 keep==0，此时用 messages[:] 复制全部。正数时，[:-keep] 是边界前的部分，[-keep:] 是边界后的部分。返回两个列表，调用者再 print。
-
-参考答案：
-```python
-def split_history(messages, keep):
-    if keep == 0:
-        return messages[:], []
-    return messages[:-keep], messages[-keep:]
-
-messages = ["问候", "提问", "检索", "回答"]
-print(split_history(messages, 2))
-print(split_history(messages, 0))
-```
-
-输出：
-```text
-(['问候', '提问'], ['检索', '回答'])
-(['问候', '提问', '检索', '回答'], [])
-```
-
-解析：keep=2 的分界在索引 2：older 取 0、1，recent 取 2、3。keep=0 不能直接套同一组切片，否则得到 ([], 全部)，恰好与题意相反。返回 messages 本身虽然内容相同，却没有满足新列表约定；调用者 append 会改动原输入。keep 很大时两段分别为 [] 和全部。更早消息仍在返回结果里，不代表已经被删除、保存到磁盘或摘要化；这是本地列表拆分练习，不是真实模型记忆。
-
 ## 记忆要点
 - def 先定义，括号才调用。
 - print 给人看，return 给程序用。
@@ -4110,7 +3700,6 @@ print(split_history(messages, 0))
 - 我能解释为什么显示了 5，外面却收到 None。
 - 我能写一个不修改输入列表的清洗函数并测空输入。
 - 我能解释丢弃返回值与保存返回值时，外部计数为什么不同。
-- 我能手算 keep=0 的消息选择，并检验旧消息与新消息能按顺序拼回输入。
 
 
 # 10 推导式 排序与常见组合
@@ -4148,30 +3737,6 @@ enumerate 给单个序列配索引；zip 把多个序列配成行。zip 和 enum
 
 ### 先保证正确，再追求简洁
 一行代码不一定更容易维护。清洗文本、解析数字、记录错误同时发生时，普通 for 更清楚。函数职责明确、变量名直白、测试覆盖边界，通常比把所有代码缩成一行重要。
-
-### 配对精修：两列能配起来，不代表每一项都配上了
-前置是第 05 章循环、第 07 章列表与本章 zip。把 `names = ["小青", "小岩"]` 与 `scores = [72]` 写成两列，按同一个位置取值：
-
-| 位置 | names 的当前项 | scores 的当前项 | 默认 zip 的结果 |
-| --- | --- | --- | --- |
-| 0 | 小青 | 72 | 产生 ('小青', 72) |
-| 1 | 小岩 | 已经没有元素 | 停止，不再产生一对 |
-
-`list(zip(names, scores))` 是 `[('小青', 72)]`。它不会自动补出小岩的成绩，也不会说明谁被漏掉。如果再用 `dict(...)`，同样只剩一条记录；姓名有重复时还可能发生字典覆盖。因此“字典创建成功”不能代表数据完整。
-
-示例 10_07 先展示这个反例，再检查两个**列表**的长度。已知它们应当逐项对应时，不等长就先停下来修数据。不要为了让程序运行而随意补 0：缺少成绩与实际得了 0 分是两件事。两列长度相同后，还要确认顺序确实表达同一批对象，第 16 章示例 16_08 会专门演示这种错误。
-
-### strict=True 检查的是长度，不是身份
-`zip(names, scores, strict=True)` 仍按第 0 项配第 0 项、第 1 项配第 1 项；它不会识别姓名或自动查 ID。strict 也不是创建对象时就扫完输入：要在 for 或 list 消费到长度不一致的位置才会抛 ValueError。对上面的数据，严格遍历仍可先给出 ('小青', 72)，再在尝试下一对时失败。
-
-第 13 章学异常、第 15 章学迭代器后，再完整验证这个执行顺序。现在记住：不要把 `pairs = zip(...)` 没报错当作“已检查全部”，也不要把严格循环看成自动撤销已执行操作的机制。示例只使用内存列表，没有写文件或调用外部工具。
-
-### 三步实操：先数行，再看谁与谁对应
-1. **预测：** 遮住 10_07 的输出，写出原两列条数、配对后的条数和漏掉的姓名，然后运行核对。
-2. **改写：** 在分数末尾补上真实已知的 88，预测两对数据。接着将两列都改成空列表：长度相同，得到 []；只有一列为空时则拒绝继续处理。每次只改一种情况。
-3. **迁移：** 回到习题 10_04，解释“姓名唯一”这个前提为什么必要。之后去第 16 章，将身份保留在每条字典里，用 ID 对齐乱序返回的数据。
-
-不要为了观察 zip 内容而先 list 一次、再遍历同一个 zip 对象；第一次已消耗它。要复用配对结果，就保存刚生成的列表，或从原列表重新创建 zip。两种选择的内存与执行时机在第 15 章继续学习。
 
 ## 示例 10_01 循环与推导式等价
 
@@ -4301,33 +3866,6 @@ print(lengths)
 解析：每个输入生成一个键值对。重复单词会覆盖同一键，因此结果不一定与输入长度相等。
 
 改写：用 lower 生成集合，给重复大小写单词去重。
-
-## 示例 10_07 配对追踪：默认 zip 漏掉了谁
-
-路径：examples/ch10/ex10_07.py
-
-```python
-names = ["小青", "小岩"]
-scores = [72]
-pairs = list(zip(names, scores))
-print("默认配对：", pairs)
-print("原条数与配对数：", len(names), len(scores), len(pairs))
-if len(names) != len(scores):
-    print("拒绝继续：姓名与分数条数不同")
-else:
-    print("条数一致：", list(zip(names, scores, strict=True)))
-```
-
-输出：
-```text
-默认配对： [('小青', 72)]
-原条数与配对数： 2 1 1
-拒绝继续：姓名与分数条数不同
-```
-
-解析：默认 zip 只走到分数列表的末尾，所以没有小岩。上面的 pairs 专门用于观察反例，后续遇到长度错误就不把它作为完整成绩表继续处理。len 检查适用于当前两个列表；不要对生成器直接套 len。
-
-改写：将 scores 改为 [72, 88]，预测 2 2 2 和两对记录。随后试两个空列表，以及只让其中一列为空。最后只调换两个分数的位置，解释为什么长度检查已无法发现身份错配。
 
 ## 练习 10_01 平方正数（基础）
 
@@ -4478,7 +4016,6 @@ print(flatten([[1, 2], [], [3]]))
 - 我能把一个推导式展开成普通 for。
 - 我能给记录按分数和姓名排序。
 - 我能解释 zip 不等长时发生什么。
-- 我能区分 zip 的截短、严格长度检查和按身份对齐。
 
 
 # 11 模块 标准库与环境
@@ -6871,53 +6408,6 @@ LLMs-from-scratch 的文本处理章节把文本、token ID、取样与嵌入逐
 
 再手动试“列表和函数有什么不同？”：示例检索器只取第一个命中，不能完整回答比较题。把它记在错题本中，说明“程序按规则执行成功”与“满足用户需求”为什么不同。未来加入模型后，这种对照样例仍有用，不能只根据程序没有报错来判断回答质量。
 
-### 数据对齐：长度相同，准确率为什么仍会算错
-前置：第 08 章字典与集合、第 10 章 zip、第 13 章异常。这里的 predictions 与 labels 都是手写的本地数据，不是实际模型输出。标签是预先给定的正确类别；prediction 是要拿来比较的预测类别，0 和 1 只是类别编号，不代表分数或 token。
-
-第 10 章解决“有没有漏项”；现在还要检查“这两项是不是同一个样本”。示例 16_08 的两组记录各有三条，但排列顺序不同：
-
-| 按位置配对 | 预测所属 ID / 类别 | 标签所属 ID / 类别 | 类别比较结果 | 是否同一条样本 |
-| --- | --- | --- | --- | --- |
-| 第 1 对 | s1 / 1 | s2 / 0 | 不相等 | 否 |
-| 第 2 对 | s2 / 0 | s3 / 1 | 不相等 | 否 |
-| 第 3 对 | s3 / 1 | s1 / 1 | 相等 | 否 |
-
-这三对即使用 strict=True 也不会因长度报错。按位置算出来的 1/3、显示为 33.3%，**不能作为这批样本的准确率**：连最后相等的一对也比较错了对象。不要把“数值相等”与“属于同一条样本”混为一谈。
-
-### 建立查找表，再按原请求顺序取回数据
-示例中已知两边 ID 唯一且完全一致。先按标签的 id 建立 `label_by_id`：s2 对应 0，s3 对应 1，s1 对应 1。字典提供按键查找，不需要你先把两列分别排序。
-
-| 当前预测记录 | 用于查找的键 | 查到的标签 | 合并后的信息 |
-| --- | --- | --- | --- |
-| {'id': 's1', 'prediction': 1} | s1 | 1 | s1：预测 1，标签 1 |
-| {'id': 's2', 'prediction': 0} | s2 | 0 | s2：预测 0，标签 0 |
-| {'id': 's3', 'prediction': 1} | s3 | 1 | s3：预测 1，标签 1 |
-
-对齐后三条都相等，结果 3/3，显示为 100.0%。这只是同一组人为数据在正确对应下的算术结果，不是模型能力证据。打印 ID、预测和标签，比只看最后一个百分比更容易定位错配。
-
-示例分三层：读标签记录建立查找表 → 按预测列表顺序生成 aligned → 只用 aligned 计算比例。它为观察核心过程使用固定且已核对的数据；迁移题再补重复与缺失检查。示例假定非空，空数据下的指标约定仍看习题 16_04。
-
-### 身份校验不能省：重复、缺失与多余分别看
-真实输入先约定 ID 的含义。下面迁移题要求两个列表各自 ID 唯一，而且 ID 集合完全相同：每个请求必须有且仅有一条结果，没有额外结果。重复 ID 必须在放进字典前拒绝，否则后值覆盖前值后就看不出重复了。
-
-| 情况 | 本题要求 | 原因 |
-| --- | --- | --- |
-| 同一请求 ID 出现两次 | ValueError | 无法区分两次请求的身份 |
-| 同一结果 ID 出现两次 | ValueError，即使答案相同 | 没有约定采用哪一次 |
-| 有请求缺少结果 | ValueError | 不能悄悄漏掉未返回的请求 |
-| 结果出现陌生 ID | ValueError | 不能把它配给别的请求 |
-| 两边都是空列表 | 返回 [] | 没有请求需要关联 |
-| 两条问题文字相同、ID 不同 | 分别保留 | 问题内容不等于请求身份 |
-
-两边长度相同也可能一边缺 r2、另一边多出 r9。用集合检查“有哪些 ID”，用列表保留“按什么顺序输出”；不要遍历集合决定输出顺序。若任务允许重试或多次结果，要另行设计请求 ID、尝试编号和选择规则，本题不默选最后一条。ID 校验只核对数据关联，不能证明标签真实或答案正确。
-
-### 分层实操：同样三条数据，先解释再改写
-1. **读懂：** 预测示例 16_08 的两个百分比，逐项写出 aligned。区分“坏配对产生的数字”与“本题正确指标”。
-2. **改写：** 只调换 labels 的顺序。按 ID 对齐后的行与比例应不变；按位置得到的数字可能变。恢复后，只将 s2 的预测从 0 改成 1，正确比例应变为 2/3，即 66.7%。
-3. **迁移：** 独立做习题 16_08，给乱序结果配回原请求。先手画查找表，再写代码。代码跑通后必须试重复 ID、缺失 ID、同长度但 ID 不同、空输入，以及相同问题对应不同 ID。
-
-把这个联系接回知识图谱：列表表示顺序，字典按身份查找，集合比较覆盖范围，异常阻止有问题的数据继续，最后才计算或展示结果。即使工具流程执行成功，也需要核对结果属于哪个请求，再检查内容是否满足任务。
-
 ## 示例 16_01 清洗并保序去重
 
 路径：examples/ch16/ex16_01.py
@@ -7120,61 +6610,6 @@ return 把结果交回调用位置。
 
 改写：把问题改成“什么是张量？”，观察无命中时的结果。把 range(1, 4) 改为 range(1, 2)，确认工具虽执行了但流程还未 finish。最后解释：为什么只把一个函数命名为 agent 并不自动获得规划能力？
 
-## 示例 16_08 AI 数据：同样长度，先按 ID 对齐再计算
-
-路径：examples/ch16/ex16_08.py
-
-```python
-predictions = [
-    {"id": "s1", "prediction": 1},
-    {"id": "s2", "prediction": 0},
-    {"id": "s3", "prediction": 1},
-]
-labels = [
-    {"id": "s2", "label": 0},
-    {"id": "s3", "label": 1},
-    {"id": "s1", "label": 1},
-]
-
-positional_correct = 0
-for prediction, label in zip(predictions, labels, strict=True):
-    if prediction["prediction"] == label["label"]:
-        positional_correct += 1
-print(f"按位置得到的误算值：{positional_correct / len(predictions):.1%}")
-
-# 本例固定数据已确认 ID 唯一且两边完全一致；迁移题再验证这些前提。
-label_by_id = {}
-for row in labels:
-    label_by_id[row["id"]] = row["label"]
-
-aligned = []
-for row in predictions:
-    sample_id = row["id"]
-    aligned.append({"id": sample_id,
-                    "prediction": row["prediction"],
-                    "label": label_by_id[sample_id]})
-
-correct = 0
-for row in aligned:
-    print(row["id"], row["prediction"], row["label"])
-    if row["prediction"] == row["label"]:
-        correct += 1
-print(f"按 ID 对齐后的准确率：{correct / len(aligned):.1%}")
-```
-
-输出：
-```text
-按位置得到的误算值：33.3%
-s1 1 1
-s2 0 0
-s3 1 1
-按 ID 对齐后的准确率：100.0%
-```
-
-解析：第一段故意演示错误关联，zip 的 strict 只检查长度。label_by_id 将 ID 与标签绑定，再遍历 predictions 保持原顺序；数值 0 也是有效类别。最后只在 aligned 上统计。整个示例仅处理内存中的模拟数据，不训练或调用模型。
-
-改写：先做正文的顺序与单项改写。随后思考：若 labels 多出一个重复 s2，这个固定数据演示为何不能检测它？先不要沿用字典覆盖，转到习题写出重复检查。
-
 ## 练习 16_01 文本清洗函数（场景）
 
 实现 normalize(text)，转小写并将连续空白变成单空格，去两端空白。打印对 "  Hello   AI  " 的结果。
@@ -7376,55 +6811,6 @@ done
 
 解析：第 1 步只查找，第 2 步才交付结果，因此 max_steps=1 必须报告 limit。max_steps 很大时也在第 2 步提前返回，不能为了用完预算继续循环。未知问题得到 done/未找到，表示流程已结束但没有证据；不能伪造知识补空缺。先画出 max_steps=0、1、2、5 四条执行轨迹，再运行额外测试。本题是离线规则流程，完成它意味着理解了 Python 控制流与状态传递。
 
-## 练习 16_08 AI / Agent：把乱序结果配回原请求（迁移）
-
-实现 attach_results(requests, results)。输入为列表；每个请求字典有 id、question，每个结果字典有 id、answer。前提：id 是非空字符串，question 与 answer 是字符串（允许空串），所需键都存在；字段类型不属于本题验证范围。两个列表各自的 id 必须唯一，而且两边 id 集合完全相同，否则抛 ValueError。两边都空返回 []。返回新的字典列表，每条只含 id、question、answer，按 requests 原顺序排列；不修改输入，不打印。用请求 r2/今天学什么？、r1/怎么复习？和结果 r1/闭卷重写、r2/练习字典，逐行打印返回的字典。
-
-作答文件：practice/ch16/ex16_08.py
-
-提示：先检查结果 ID 是否重复，再建立 result_by_id。另用集合收集请求 ID 并拒绝重复；用 set(result_by_id) 与请求 ID 集合比较。全部通过后，按 requests 遍历，用 ID 查答案并新建一条字典。
-
-参考答案：
-```python
-def attach_results(requests, results):
-    result_by_id = {}
-    for row in results:
-        request_id = row["id"]
-        if request_id in result_by_id:
-            raise ValueError("结果 ID 重复")
-        result_by_id[request_id] = row["answer"]
-
-    request_ids = set()
-    for row in requests:
-        request_id = row["id"]
-        if request_id in request_ids:
-            raise ValueError("请求 ID 重复")
-        request_ids.add(request_id)
-    if request_ids != set(result_by_id):
-        raise ValueError("请求与结果的 ID 不一致")
-
-    joined = []
-    for row in requests:
-        joined.append({"id": row["id"], "question": row["question"],
-                       "answer": result_by_id[row["id"]]})
-    return joined
-
-requests = [{"id": "r2", "question": "今天学什么？"},
-            {"id": "r1", "question": "怎么复习？"}]
-results = [{"id": "r1", "answer": "闭卷重写"},
-           {"id": "r2", "answer": "练习字典"}]
-for row in attach_results(requests, results):
-    print(row)
-```
-
-输出：
-```text
-{'id': 'r2', 'question': '今天学什么？', 'answer': '练习字典'}
-{'id': 'r1', 'question': '怎么复习？', 'answer': '闭卷重写'}
-```
-
-解析：查找表是 r1→闭卷重写、r2→练习字典；请求遍历顺序是 r2、r1，所以先输出 r2。不能按结果的到达顺序配，也不能把字典强行排序后当作原请求顺序。set(result_by_id) 取键集合；先拒绝重复，避免集合去重把错误藏起来。相同问题可以有不同 ID，仍是两条请求。空答案在题设中允许，它只表示返回了空字符串，不能据此宣布任务完成。这是本地关联模拟，不会发送请求或调用 Agent。
-
 ## 记忆要点
 - 清洗规则先写清，不是删得越多越好。
 - 记录一起打乱，训练数据负责建立统计规则。
@@ -7435,7 +6821,6 @@ for row in attach_results(requests, results):
 - 我能把原始记录整理成没有空文本和重复 ID 的列表。
 - 我能从训练文本建立词表并处理未知词。
 - 我能检查批次末尾、标签对齐与空指标。
-- 我能在长度相同但顺序不同的数据中，按唯一 ID 对齐并拒绝缺失或重复。
 
 
 # 17 四个综合项目
@@ -7511,99 +6896,6 @@ argparse 是标准库命令行参数解析器。add 子命令收 minutes 与 top
 
 ### 5 独立扩展
 增加按主题汇总，不直接改现有统计函数；给新函数写 3 个例子。进一步可做删除记录，但先为每条记录设计稳定 ID，并明确删除规则。
-
-### 6 给命令找位置：参数属于谁
-下面是原项目的补充实操，先读完第 11—13 章再做。所有命令都从学习包根目录运行；Windows 将 python 换成 py，macOS 换成 python3。已有 TASKS.md 和 starter.py 留给你作答，新增说明以这里和项目 README.md 为准。
-
-先读两层帮助，它们只显示说明，不添加记录：
-
-```terminal
-python projects/01_study_log/app.py --help
-python projects/01_study_log/app.py add --help
-```
-
-第一层声明 --store 和 add / summary 两个子命令；第二层只解释 add 的 minutes、topic 和 --date。**本程序的 --store 必须写在 add 或 summary 之前，--date 写在 add 后面。** 这是本项目的参数定义，不是所有命令行程序通用的固定顺序。
-
-把下面的命令按片段读一遍，先不要执行：
-
-```terminal
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" add 30 "Python 循环" --date 2026-10-07
-```
-
-| 命令片段 | 交给哪一层 | 本次意义 |
-| --- | --- | --- |
-| python | 操作系统启动解释器 | Windows / Mac 按前文替换 |
-| projects/01_study_log/app.py | Python | 要执行的脚本 |
-| --store "personal/打卡 练习/round1.json" | 主解析器 | 选择本次读写的文件 |
-| add | 子命令选择 | 本次要添加 |
-| 30 | add 的 minutes | argparse 用 int 转换，再检查非负 |
-| "Python 循环" | add 的 topic | 引号让含空格主题作为一个参数传入 |
-| --date 2026-10-07 | add 的日期选项 | 固定日期，便于复现 |
-
-引号用于划分终端参数，不会作为双引号字符存入主题。先用完整选项名；不需要背 argparse 的全部功能。记忆顺序：**选文件 → 选动作 → 给动作的数据。**
-
-### 7 追踪持久化：关闭程序后，文件还在
-请先在文件管理器确认 personal/打卡 练习/round1.json 不存在；若已有同名文件，给下面每条命令统一换一个新名字，例如 round2.json。不要清空旧文件来凑预期结果。首次有效 add 会自动创建需要的目录。
-
-逐条运行，每运行一条就停下来核对对应表格。每条命令启动一次新的 Python 进程，程序通过同一个 JSON 文件衔接记录。
-
-```terminal
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" summary
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" add 30 "Python 循环" --date 2026-10-07
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" add 0 "复习记录" --date 2026-10-08
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" summary
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" add 30 "Python 循环" --date 2026-10-07
-python projects/01_study_log/app.py --store "personal/打卡 练习/round1.json" summary
-```
-
-| 步骤 | 读入的分钟列表 | 本次动作与中间值 | 文件中的分钟列表 | 精确输出（分号表示换行） |
-| --- | --- | --- | --- | --- |
-| 1 summary | 文件不存在，视作 [] | count=0，total=0，mean=None | 仍不存在 | 记录数：0；总分钟：0；平均分钟：暂无 |
-| 2 add 30 | [] | 验证 → append → 保存 | [30] | 已保存 1 条记录 |
-| 3 add 0 | [30] | 0 合法，追加第二条 | [30, 0] | 已保存 2 条记录 |
-| 4 summary | [30, 0] | count=2，total=30，mean=15.0 | [30, 0]，不重写 | 记录数：2；总分钟：30；平均分钟：15.0 |
-| 5 再次 add 30 | [30, 0] | 同日期、同主题也会追加 | [30, 0, 30] | 已保存 3 条记录 |
-| 6 summary | [30, 0, 30] | count=3，total=60，mean=20.0 | [30, 0, 30]，不重写 | 记录数：3；总分钟：60；平均分钟：20.0 |
-
-表格仅列 minutes 方便手算；真实 JSON 每条记录还含 date 和 topic。可以用编辑器只读查看文件：应有三条记录，前后两条内容相同。这个项目没有去重规则，所以“同一条 add 再执行一次”会继续增加次数，不能当作无影响的重试。summary 只读取并计算，不创建缺失的记录文件，也不把已有记录归零。
-
-相对路径从**终端当前工作目录**算起。上面从学习包根目录运行，文件就在根目录的 personal 下。如果进入 projects/01_study_log 再运行 python app.py，同样的 --store "personal/打卡 练习/round1.json" 会指向项目目录下另一份文件。可先运行以下命令查看当前位置；其中 -c 表示直接执行引号内的这段 Python。
-
-```terminal
-python -c "from pathlib import Path; print(Path.cwd())"
-```
-
-本程序有三种路径情况：显式传入的相对 --store 跟随当前工作目录；显式传入的绝对 --store 指向给定位置；完全省略 --store 时，默认用 app.py 所在目录的 outputs/study_log.json，因为源码用 __file__ 构建默认路径。每条 add 和 summary 都要选同一份文件，参数不会跨进程自动记住。换电脑后绝对路径通常需要修改，练习时优先完整复制学习目录并从根目录启动。
-
-### 8 分层实操：预测、定位错误、迁移到 Agent 日志
-**预测练习。** 接着上表的三条记录，再执行一次 summary，再添加 60 分钟，分别预测记录数、总分钟与平均分钟。然后在新的 round2.json 中只添加 0 分钟并汇总。先写答案，再在你自己的练习文件中验证。
-
-解析：summary 仍是 3、60、20.0；追加 60 后汇总为 4、120、30.0。新文件仅一条 0 时为 1、0、0.0，不是暂无。None 表示没有记录；0.0 表示存在记录且平均值为零。反复运行预测练习前需要重新确认起始文件状态。
-
-**纠错练习。** 以下命令故意把 --store 放错位置，它会报告 unrecognized arguments（无法识别的参数），退出状态为 2，不会保存记录。把 --store 及路径一起移到 add 前面才是本项目的正确写法；修正后会真的追加，先确认选择的是练习文件。
-
-```terminal
-python projects/01_study_log/app.py add 30 "Python 循环" --store "personal/打卡 练习/round1.json" --date 2026-10-07
-```
-
-错误可以发生在不同层。终端通常不会直接显示退出状态数字，先看错误内容；自检脚本会同时检查退出状态与文件内容。
-
-| 改动或文件状态 | 停在哪一层 | 本项目的结果 |
-| --- | --- | --- |
-| 分钟填 abc 或 30.5 | argparse 的 int 转换 | 退出状态 2，记录文件不变 |
-| 分钟填 -1 | validate_record 的非负规则 | 显示 无法完成：分钟必须是非负整数，状态 1，文件不变 |
-| 主题填 "   " | strip 后检查空主题 | 显示 无法完成：主题不能为空，状态 1，文件不变 |
-| 日期填 2026-02-30 | 日历日期验证 | 显示 无法完成 和日期错误，状态 1，文件不变 |
-| 记录文件含 broken | JSON 解析 | 显示 无法完成 和解析错误，状态 1，保留损坏内容 |
-| 记录文件含 {} | 最外层结构检查 | 显示 无法完成：记录文件最外层必须是列表，状态 1，保留内容 |
-
-想试坏文件时，另建 personal/打卡 练习/broken-lab.json，只把这份实验文件的内容设为 broken，再用 --store 指向它运行 summary 或 add。不要改自己的打卡文件。文件不存在可以表示首次使用；已有文件损坏可能装着待恢复的学习记录，不能把解析异常一概改成 return [] 后覆盖。具体英文错误文字可能随 Python 版本变化，重点是错误层级及原字节是否保留。
-
-**迁移练习。** 假设 Agent 的本地日志保存了 request_id、action、status：同一个请求是否只能执行一次？可以只按主题删除重复记录吗？这里只画三条字典记录并写判断，不连接模型或执行工具。
-
-解析：先区分“一个请求”与“它的某次尝试”。同名 action 可以属于不同请求；同一 request_id 又可能有多次尝试，应另记 attempt。像本项目一样重复运行有写入动作的命令，会再次产生记录；仅靠日志字段还不能保证工具没有重复执行。保存成功说明记录写入成功，仍需分别判断工具执行结果和任务答案是否正确。分钟、日志条数与 token 数也不能互换。
-
-知识链路：第 09 章把数据交给函数，第 11 章理解启动脚本，第 12 章定位与读写文件，第 13 章分层处理错误，再到第 16 章跟踪 Agent 的观察与结束条件。可在知识图谱中沿“路径与文件 → CSV / JSON / JSONL → 综合项目与验收”回查对应知识。
 
 ### 运行命令
 
@@ -7739,10 +7031,6 @@ python projects/02_score_report/app.py --help
 
 运行学习包的 python tools/check_projects.py 核验参考实现；自己的实现按上面手算结果和边界逐项验证。
 
-### 四阶段实操增补
-
-逐步运行 guided 中的四个阶段，再完成工具耗时日志迁移。完整解释、追踪表、练习与解析见 [GUIDE.md](GUIDE.md)。原 TASKS.md 与 starter.py 保留你的内容。
-
 
 ```python
 """成绩清洗报告；只覆盖 --out 指定目录中的本项目输出文件。"""
@@ -7824,463 +7112,6 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-# 成绩项目：四阶段实操与工具日志迁移
-
-### 从一个函数走到一个项目
-你已经见过 strip、int、for、字典和 return；现在要练的是让它们各负责一层，再把上一层的返回值交给下一层。先不同时面对文件、命令行和报告保存。
-
-这四阶段沿用原成绩项目的约定。原 app.py 的 analyze 把清洗和统计写在一个函数里；下面把同样的行为拆成小函数，便于你实现自己的 starter.py。它们是教学参考文件，原项目不会自动调用这些新文件。
-
-前置：第 03 章字符串、第 04—05 章条件与循环、第 08—09 章记录与函数、第 10 章排序、第 11—13 章模块、CSV 与异常。卡在一个知识点时，先回图谱看关联例子。
-
-### 开始前：文件放在一起，函数逐层接好
-完整解压学习包，再在根目录运行命令。Windows 把 python 换成 py；macOS 换成 python3。四个阶段文件放在 projects/02_score_report/guided 中，后面的文件会 import 前面的函数；单独下载一个阶段文件会缺少依赖。
-
-每张预期输出都对应未修改的参考文件。改写前，先把 guided 与 data 两个文件夹复制到自己新建的 personal/score-lab 中，保持同级关系。进入下一阶段前恢复副本中的基准数据和规则，或另用新副本：后续会 import 前面的函数与样本；如果保留改动，后续结果也可能变化，需要重新手算。
-
-每个阶段的 main 都给出一个固定小实验，运行时先预测再核对。导入文件时只取得函数，不执行 main 里的演示；这就是第 11 章 __name__ 入口判断的用途。所有阶段把结果打印到终端，第 4 阶段读取项目自带的 CSV。
-
-| 阶段 | 输入 | 返回给下一层 | 暂时不用考虑 |
-| --- | --- | --- | --- |
-| 1 parse_row | 一条字符串字段字典 | 一个含整数 score 的新字典 | 一整张表、重复 ID |
-| 2 collect_rows | 多条原始字典 | (valid, errors) 两个列表 | 文件从哪里读取 |
-| 3 summarize | 通过校验的记录列表 | 统计结果字典 | 重新清洗原始字符串 |
-| 4 read_valid_rows / analyze | CSV 文件路径 | 有效与错误列表 / 完整报告 | 命令行参数和保存报告 |
-
-### 输入约定先说清楚
-本组 parse_row 接受 csv.DictReader 产生的字典：字段值通常是字符串，缺列可能是 None，超出表头列数的字段会收在 None 键下。练习中的内存样例遵循同一约定；任意 JSON 里的布尔值、列表或嵌套对象不属于这个函数的输入范围，应先按第 13 章检查类型。
-
-项目必需列是 student_id、name、score；表头允许声明额外列，清洗结果只保留三个必需字段。分数用 int 转换，再检查 0—100；不是用字符串字典序比较，也不是把非零都当成合格。姓名与学号去掉首尾空白，学号按原大小写精确比较。
-
-## 阶段 1：先把一条记录变正确
-
-### 逐句追踪：字符串怎样变成数字
-给 parse_row 一条记录，它只决定这条记录是否合法，并返回一个新字典。检查失败时 raise ValueError 结束本次调用，由调用者决定怎样记录错误。
-
-| 执行位置 | 中间值 | 为什么需要它 |
-| --- | --- | --- |
-| raw["name"] | " 小林 " | 这是原始文本，包含空白 |
-| name = (...).strip() | "小林" | 返回新字符串，保存到局部名字 |
-| raw["score"] | "60" | 这是 str，还没转成数字 |
-| score = int(...) | 60 | 得到可比较、可累计的 int |
-| 0 <= score <= 100 | True | 转换成功后仍要检查范围 |
-| return {...} | 一个新字典 | 外层 record 接住清洗结果 |
-
-(row.get("score") or "") 中的 or 把缺列的 None 转成空字符串，再由 int 明确报错。这里原始零分是字符串 "0"，不是整数 0，因此不会被 or 丢掉。不要把这句机械套到已经是整数的字典上。
-
-演示输出中的 !r 会显示字符串引号，方便看见空白；type(...).__name__ 只用于显示 int 这样的类型名称。先关注原值与返回值如何变化，不需要在第一遍记住这些显示写法。
-
-try 只包住整数转换；分数范围另行判断。abc 是转换失败，101 是范围失败，0 是有效边界。函数不负责记错误列表，也不负责判断重复学号。
-
-运行：
-```terminal
-python projects/02_score_report/guided/step01_parse.py
-```
-
-预期输出：
-```text
-原始：name=' 小林 '，score='60'
-清洗后：name='小林'，score=60，类型=int
-'0' -> 保留 0
-'abc' -> 拒绝：分数不是整数
-'101' -> 拒绝：分数超出 0 到 100
-```
-
-练习：先不运行：分别把 score 改为 "100"、"-1"、"60.5"、None，预测是返回还是报错。再说明为什么 raw 中的姓名仍有空格。
-
-提示：先看 int 能否完成，再看范围；return 创建了新的字典。
-
-解析：100 返回整数 100；-1 转换成功但超范围；60.5 不是可由 int 直接解析的整数字符串；None 被替换为 "" 后转换失败。strip 返回的新字符串只放进新字典，没有给 raw["name"] 重新赋值。
-
-参考实现：
-```python
-"""阶段 1：一条 CSV 字段字典 -> 一条清洗后的记录。"""
-
-def parse_row(row):
-    """仅接受 DictReader 形式的字段；不修改输入字典。"""
-    if None in row:
-        raise ValueError("字段数超过表头列数")
-    student_id = (row.get("student_id") or "").strip()
-    name = (row.get("name") or "").strip()
-    if not student_id or not name:
-        raise ValueError("ID 或姓名为空")
-    try:
-        score = int(row.get("score") or "")
-    except ValueError:
-        raise ValueError("分数不是整数") from None
-    if not 0 <= score <= 100:
-        raise ValueError("分数超出 0 到 100")
-    return {"student_id": student_id, "name": name, "score": score}
-
-
-def main():
-    raw = {"student_id": "s1", "name": " 小林 ", "score": "60"}
-    record = parse_row(raw)
-    print(f"原始：name={raw['name']!r}，score={raw['score']!r}")
-    print(f"清洗后：name={record['name']!r}，score={record['score']}，类型={type(record['score']).__name__}")
-    for value in ["0", "abc", "101"]:
-        try:
-            result = parse_row({"student_id": "s2", "name": "小安", "score": value})
-            print(f"{value!r} -> 保留 {result['score']}")
-        except ValueError as error:
-            print(f"{value!r} -> 拒绝：{error}")
-
-
-if __name__ == "__main__":
-    main()
-```
-
-## 阶段 2：连接循环、错误列表与去重
-
-### 循环的状态放在哪里
-valid 保存已保留的记录，errors 保存被拒记录的原因，seen 保存已保留的学号。三个容器都在函数内部、循环之前新建：每次调用重新开始，每轮则继续使用同一份状态。
-
-下面固定输入的分数依次是 60、abc、0、90、90；第 2、3 条是同一学号 s2，第 1、4 条是同一学号 s1。
-
-| 记录号 | 当前输入 | 本轮动作 | 本轮后有效数 / 错误数 |
-| --- | --- | --- | --- |
-| 1 | s1 / 60 | 清洗成功，登记 s1 | 1 / 0 |
-| 2 | s2 / abc | 转换失败，只记录错误，不登记 s2 | 1 / 1 |
-| 3 | s2 / 0 | s2 尚未保留，合法零分进入 valid | 2 / 1 |
-| 4 | s1 / 90 | 清洗成功，但 s1 已保留，记重复 | 2 / 2 |
-| 5 | s3 / 90 | 清洗成功，登记 s3 | 3 / 2 |
-
-except 中的 continue 立即开始下一轮，所以失败记录不会进入下面的 seen.add 和 valid.append。错误发生在 parse_row 时，外层 try 也能捕获它；函数调用是正常执行过程的一部分。
-
-return valid, errors 实际返回一个二元组。外层 valid, errors = collect_rows(...) 按位置接住两个列表；这与函数内部局部名字恰好同名无关。此处的 record 是从 1 开始的逻辑记录号，不是 CSV 文件物理行号。
-
-运行：
-```terminal
-python projects/02_score_report/guided/step02_collect.py
-```
-
-预期输出：
-```text
-有效学号： ['s1', 's2', 's3']
-有效分数： [60, 0, 90]
-记录 2：分数不是整数
-记录 4：重复 ID
-```
-
-练习：把第二条 s2/abc 改成 s2/80，其他数据不变，先预测新的有效分数和错误记录号；再预测连续调用 collect_rows 两次是否会累积重复错误。
-
-提示：每个学号保留第一条有效记录；seen 在函数内何时新建？
-
-解析：有效分数变成 [60, 80, 90]。第三条 s2/0 变为重复，第四条 s1/90 仍重复，错误记录号是 3、4。每次调用都新建 seen，因此第二次结果与第一次相同；把 seen 写成共享的默认参数会破坏这个约定。
-
-参考实现：
-```python
-"""阶段 2：内存中的原始记录 -> 有效记录和错误列表。"""
-from step01_parse import parse_row
-
-
-def collect_rows(rows):
-    valid = []
-    errors = []
-    seen = set()
-    for record_number, row in enumerate(rows, start=1):
-        try:
-            record = parse_row(row)
-            if record["student_id"] in seen:
-                raise ValueError("重复 ID")
-        except ValueError as error:
-            errors.append({"record": record_number, "reason": str(error)})
-            continue
-        seen.add(record["student_id"])
-        valid.append(record)
-    return valid, errors
-
-
-def sample_rows():
-    return [
-        {"student_id": "s1", "name": " 小林 ", "score": "60"},
-        {"student_id": "s2", "name": "小安", "score": "abc"},
-        {"student_id": "s2", "name": "小安", "score": "0"},
-        {"student_id": "s1", "name": "小林", "score": "90"},
-        {"student_id": "s3", "name": "小周", "score": "90"},
-    ]
-
-
-def main():
-    valid, errors = collect_rows(sample_rows())
-    print("有效学号：", [row["student_id"] for row in valid])
-    print("有效分数：", [row["score"] for row in valid])
-    for error in errors:
-        print(f"记录 {error['record']}：{error['reason']}")
-
-
-if __name__ == "__main__":
-    main()
-```
-
-## 阶段 3：让返回值进入统计函数
-
-### 两个函数怎样接起来
-collect_rows 接收原始字符串字典；summarize 接收清洗后的有效字典，它依赖 score 已是 0—100 的整数。这是函数之间约定好的接口，不能把错误列表或原始 rows 传进去凑数。
-
-| 顺序 | count | total | passed | 原因 |
-| --- | --- | --- | --- | --- |
-| 开始 | 3 | 0 | 0 | valid 有三条记录 |
-| 读到 60 | 3 | 60 | 1 | 恰好达到及格线 |
-| 读到 0 | 3 | 60 | 1 | 有效，但没有及格 |
-| 读到 90 | 3 | 150 | 2 | 又有一人及格 |
-| 循环结束 | 3 | 150 | 2 | 平均 150/3=50，及格率 2/3 |
-
-分母必须是有效人数 3，不是输入行数 5，也不是去掉零分后剩下的 2。没有有效记录时，平均分和及格率都用 None 表示没有可计算的值；0.0 会误导为已观察到零平均分。
-
-ranking_key 为每条记录返回 (-score, student_id)。负号让高分排前面；分数相同时比较学号。传给 sorted 的是函数名字 ranking_key，排序时 Python 才对每条记录调用它。sorted 创建新的列表，不改变 valid 的顺序。
-
-运行：
-```terminal
-python projects/02_score_report/guided/step03_summary.py
-```
-
-预期输出：
-```text
-有效 3 条，无效 2 条
-总分 150，平均分 50.0
-通过率 66.7%
-排名： ['s3', 's1', 's2']
-空列表：人数 0，平均分 None，通过率 None
-```
-
-练习：在自己的学习副本中，把及格线从 60 改为 70。预测人数、总分、平均分、及格率和排名中，哪些应该变化？不要同时改合法分数的范围。
-
-提示：及格线决定 passed，合法范围决定 valid；它们分别属于哪一层？
-
-解析：只改 summarize 中的 if row["score"] >= 70。三条仍有效，总分仍 150，均值仍 50.0，排名不变；只有 90 及格，比例从 2/3 变为 1/3，显示 33.3%。修改 parse_row 的 0—100 范围会改变样本集合，是另一种需求。
-
-参考实现：
-```python
-"""阶段 3：有效记录 -> 可继续使用的统计结果。"""
-from step02_collect import collect_rows, sample_rows
-
-
-def ranking_key(row):
-    return (-row["score"], row["student_id"])
-
-
-def summarize(records):
-    """前置：records 已清洗，每条 score 是 0—100 的整数。"""
-    count = len(records)
-    total = 0
-    passed = 0
-    for row in records:
-        total += row["score"]
-        if row["score"] >= 60:
-            passed += 1
-    return {
-        "valid_count": count,
-        "total": total,
-        "mean": total / count if count else None,
-        "pass_rate": passed / count if count else None,
-        "ranking": sorted(records, key=ranking_key),
-    }
-
-
-def main():
-    valid, errors = collect_rows(sample_rows())
-    report = summarize(valid)
-    print(f"有效 {report['valid_count']} 条，无效 {len(errors)} 条")
-    print(f"总分 {report['total']}，平均分 {report['mean']:.1f}")
-    print(f"通过率 {report['pass_rate']:.1%}")
-    print("排名：", [row["student_id"] for row in report["ranking"]])
-    empty = summarize([])
-    print(f"空列表：人数 {empty['valid_count']}，平均分 {empty['mean']}，通过率 {empty['pass_rate']}")
-
-
-if __name__ == "__main__":
-    main()
-```
-
-## 阶段 4：接入 CSV，保持前三层不变
-
-### 文件层只负责把记录交出去
-前面三步已在内存小样例上验证。现在 read_valid_rows 用 DictReader 从文件中逐条提供字典，交给 collect_rows；它不重写清洗逻辑。analyze 再把 valid 交给 summarize，并把 errors 放进最终报告。
-
-调用链：analyze(path) → read_valid_rows(path) → collect_rows(reader) → 每轮 parse_row(row)；拿到 valid 后再 summarize(valid)。箭头表示调用顺序，返回时结果会沿调用位置交回去。
-
-return collect_rows(reader) 必须留在 with 内。reader 按需读取文件；如果离开 with 后才遍历，文件已经关闭。collect_rows 在文件仍打开时完成读取，返回的是两个普通列表，因此离开 with 后继续统计没有问题。
-
-encoding="utf-8-sig" 可读取带或不带 UTF-8 BOM 的文件；newline="" 让 csv 处理记录换行。这个项目按逻辑记录编号，带引号的姓名跨两行仍算一条记录。第 13 章 13_09 则刻意记录结束物理行号，两种字段含义不要混用。
-
-默认数据路径相对脚本文件定位：从 guided/step04_file.py 的父目录再上一级，就到 02_score_report，然后读取 data/scores.csv。更换终端工作目录不会改变这个默认文件位置。
-
-### 与完整 app.py 对齐
-这一步用原项目九条记录，应得到有效 5、无效 4、总分 299、均值 59.8、及格率 60.0%。analyze 返回的整个报告与原 app.py 相同；只有函数拆分方式不同。之后再读原项目的 save_report 与 argparse 入口，理解怎样把已经验证过的报告保存到指定目录。
-
-缺失必需表头、找不到文件或 csv 解析器报错会向调用处传播。只有针对某条记录的 ValueError 才由 collect_rows 转成错误记录。不要包住整个项目后静默返回空列表，否则会把失败伪装成“没有成绩”。
-
-运行：
-```terminal
-python projects/02_score_report/guided/step04_file.py
-```
-
-预期输出：
-```text
-有效 5 条，无效 4 条
-总分 299
-平均分 59.8
-通过率 60.0%
-错误记录号： [6, 7, 8, 9]
-```
-
-练习：先在自己的练习目录准备只有表头的 CSV，再准备缺少 score 表头的 CSV。分别预测 analyze 应返回什么，或应该报什么错。
-
-提示：有完整表头但无记录，是合法空输入；缺必需表头，是数据格式约定失败。
-
-解析：只有完整表头：valid_count=0、invalid_count=0、total=0、mean=None、pass_rate=None，ranking/errors 为空列表。缺少 score 表头：抛 ValueError("缺少必需列 student_id、name、score")；不能把它算成零个有效成绩。
-
-参考实现：
-```python
-"""阶段 4：读取项目 CSV，复用前三层，只把报告打印到终端。"""
-import csv
-from pathlib import Path
-from step02_collect import collect_rows
-from step03_summary import summarize
-
-
-def read_valid_rows(path):
-    with path.open(encoding="utf-8-sig", newline="") as file:
-        reader = csv.DictReader(file)
-        required = {"student_id", "name", "score"}
-        if not required.issubset(set(reader.fieldnames or [])):
-            raise ValueError("缺少必需列 student_id、name、score")
-        return collect_rows(reader)
-
-
-def analyze(path):
-    valid, errors = read_valid_rows(path)
-    report = summarize(valid)
-    report["invalid_count"] = len(errors)
-    report["errors"] = errors
-    return report
-
-
-def main():
-    source = Path(__file__).resolve().parent.parent / "data" / "scores.csv"
-    report = analyze(source)
-    print(f"有效 {report['valid_count']} 条，无效 {report['invalid_count']} 条")
-    print(f"总分 {report['total']}")
-    if report["mean"] is None:
-        print("没有有效分数，无法计算平均分与通过率")
-    else:
-        print(f"平均分 {report['mean']:.1f}")
-        print(f"通过率 {report['pass_rate']:.1%}")
-    print("错误记录号：", [error["record"] for error in report["errors"]])
-
-
-if __name__ == "__main__":
-    main()
-```
-
-## 迁移：工具耗时日志
-
-### 迁移练习：把成绩清洗改成工具耗时日志
-先关闭答案，新建自己的 .py 文件实现 clean_tool_rows(rows)。输入仍是类似 CSV 解析结果的字符串字段字典，但字段改为 id、tool、ms。id 与 tool 去首尾空白后非空；ms 可转换成非负整数，0 有效且没有 100 的上限。保留每个 id 的第一条有效记录，不修改原输入。
-
-返回 (valid, errors)。valid 每项只保留 id、tool、ms，其中 ms 为 int。errors 每项用 record（从 1 开始的逻辑记录号）与 reason；按输入顺序记录。错误检查顺序与精确文字如下：
-
-| 检查 | reason |
-| --- | --- |
-| 存在 None 键，表示超出表头列数 | 字段数超过表头列数 |
-| id 或 tool 为空 | ID 或工具名为空 |
-| ms 转整数失败或缺失 | 耗时不是整数 |
-| ms 小于 0 | 耗时不能为负数 |
-| id 已保留 | 重复 ID |
-
-手算以下五条：t1/search/0，t2/fetch/250，t3/search/bad，t3/search/30，t1/fetch/8。预期保留 t1、t2、t3，耗时 [0, 250, 30]，合计 280 毫秒；第 3 条转整数失败，第 5 条重复。再测试空列表，以及同一 ID 的第一条负耗时、第二条 1000 毫秒。
-
-这里是本地日志整理，不调用模型或工具服务。毫秒不是 token 数；耗时能解析也不代表工具执行成功，更不能证明用户任务答对了。真正分析任务正确性时，需要额外的任务结果与评估规则，不能从 ms 推出来。
-
-运行：
-```terminal
-python projects/02_score_report/guided/transfer_tool_rows.py
-```
-
-预期输出：
-```text
-保留 ID： ['t1', 't2', 't3']
-耗时： [0, 250, 30]
-总耗时： 280 毫秒
-记录 3：耗时不是整数
-记录 5：重复 ID
-```
-
-练习：独立写完 clean_tool_rows 后，向一个空列表输入调用两次；再试同一 ID 的 -1 与 1000 毫秒。说明哪些成绩规则能够复用，哪些必须修改。
-
-提示：可以复用字段清洗、错误列表、第一条有效记录保留；重新审视数值字段与合法范围。
-
-解析：两次空输入均返回 ([], [])。-1 记录错误但不登记 ID，1000 被保留。把 score 换成 ms 还不够：必须去掉 100 上限，删去成绩及格率的含义，并把错误原因改成日志领域的用词；不要用耗时推断任务成功。
-
-参考实现：
-```python
-"""迁移参考：只整理固定日志，不调用模型或外部工具。"""
-
-def clean_tool_rows(rows):
-    valid = []
-    errors = []
-    seen = set()
-    for record_number, row in enumerate(rows, start=1):
-        try:
-            if None in row:
-                raise ValueError("字段数超过表头列数")
-            task_id = (row.get("id") or "").strip()
-            tool = (row.get("tool") or "").strip()
-            if not task_id or not tool:
-                raise ValueError("ID 或工具名为空")
-            try:
-                milliseconds = int(row.get("ms") or "")
-            except ValueError:
-                raise ValueError("耗时不是整数") from None
-            if milliseconds < 0:
-                raise ValueError("耗时不能为负数")
-            if task_id in seen:
-                raise ValueError("重复 ID")
-        except ValueError as error:
-            errors.append({"record": record_number, "reason": str(error)})
-            continue
-        seen.add(task_id)
-        valid.append({"id": task_id, "tool": tool, "ms": milliseconds})
-    return valid, errors
-
-
-def sample_logs():
-    return [
-        {"id": "t1", "tool": "search", "ms": "0"},
-        {"id": "t2", "tool": "fetch", "ms": "250"},
-        {"id": "t3", "tool": "search", "ms": "bad"},
-        {"id": "t3", "tool": "search", "ms": "30"},
-        {"id": "t1", "tool": "fetch", "ms": "8"},
-    ]
-
-
-def main():
-    valid, errors = clean_tool_rows(sample_logs())
-    print("保留 ID：", [row["id"] for row in valid])
-    print("耗时：", [row["ms"] for row in valid])
-    print("总耗时：", sum(row["ms"] for row in valid), "毫秒")
-    for error in errors:
-        print(f"记录 {error['record']}：{error['reason']}")
-
-
-if __name__ == "__main__":
-    main()
-```
-
-### 把参考文件里的思路带回自己的骨架
-先打开你已有的 starter.py，只完成 parse_row，用三条手写字典验证；再实现 summarize，验证空列表、0 分、刚好 60 分；最后实现 read_valid_rows，把文件读取、循环收集和重复检查连接起来。
-
-你可以把 collect_rows 作为新辅助函数写入自己的骨架，也可以把同样逻辑放进 read_valid_rows；重点是输入、输出与错误约定一致。不要把这些函数写成只 print 不 return，否则下一层接到的是 None。
-
-改写练习先新建 personal/score-lab，把原项目的 guided 和 data 两个文件夹完整复制进去，形成 personal/score-lab/guided 与 personal/score-lab/data。这样既保留同级模块，也保留第 4 阶段依赖的数据位置。然后运行、修改副本中的文件，例如 python personal/score-lab/guided/step03_summary.py。若同名练习目录已存在，请另取新名字。personal 中的个人练习不会进入维护者发行包。
-
-### 自己验收的顺序
-先单独运行五个参考文件对照预期输出；再从学习包根目录运行 python tools/check_score_walkthrough.py，它只检查本教材的分步参考。python tools/check_projects.py 也包含这些检查，但不会替你运行或判定个人 starter.py。
-
-自己的代码先用手算样例核对，再分别测：空输入、全部无效、零分、60、100、-1、101、缺字段、超列、同分排序、无效记录后出现有效同 ID、重复调用。错误列表也要检查记录号和原因，不能只看最终平均数。
-
-遇到多文件错误时，先看 traceback 最后一行的异常类型，再沿文件名找出调用来自哪一层。ModuleNotFoundError 先检查是否完整解压、同级阶段文件是否齐全；ValueError 先检查对应数据；不要遇到任何错误都重新安装 Python。
 
 
 # 文本语料清洗与词频
@@ -8730,19 +7561,19 @@ v1.1 采用概念与教学组织参考，示例、题目、数据和解析重新
 
 按顺序学会运行、表达、选择、重复，再组织数据和函数。
 
-运行与执行顺序 → 变量、类型与转换 → 字符串与切片 → 条件与边界 → for 与累计 → while 与停止条件 → 列表与顺序 → 字典与记录 → 函数与 return
+运行与执行顺序 → 变量、类型与转换 → 字符串清洗 → 条件与边界 → for 与累计 → while 与停止条件 → 列表与顺序 → 字典与记录 → 函数与 return
 
 ### 做成绩分析
 
 主线是把文件中的字符串变成通过校验的记录，再统计并验收；细节见下方场景链路。
 
-变量、类型与转换 → 字符串与切片 → 条件与边界 → for 与累计 → 字典与记录 → 函数与 return → 路径与文件 → CSV / JSON / JSONL → 异常与数据校验 → 断言与边界测试 → 综合项目与验收
+变量、类型与转换 → 字符串清洗 → 条件与边界 → for 与累计 → 字典与记录 → 函数与 return → 路径与文件 → CSV / JSON / JSONL → 异常与数据校验 → 断言与边界测试 → 综合项目与验收
 
 ### 整理 AI 数据
 
 先练文本规则和去重，随后验证记录，保持文本与标签对齐；暂不训练模型。
 
-字符串与切片 → 列表与顺序 → 集合与去重 → 字典与记录 → 路径与文件 → CSV / JSON / JSONL → 异常与数据校验 → AI 数据与批次
+字符串清洗 → 列表与顺序 → 集合与去重 → 字典与记录 → 路径与文件 → CSV / JSON / JSONL → 异常与数据校验 → AI 数据与批次
 
 ### 理解 Agent
 
@@ -8784,7 +7615,7 @@ v1.1 采用概念与教学组织参考，示例、题目、数据和解析重新
 
 - 建议先会 运行与执行顺序：先能运行并观察值，才能核对变量和类型。
 
-- 后续用途 字符串与切片：字符串也是一种类型；清洗方法的结果仍是字符串。
+- 后续用途 字符串清洗：字符串也是一种类型；清洗方法的结果仍是字符串。
 
 - 后续用途 条件与边界：比较前先区分数值、字符串和缺失值。
 
@@ -8794,29 +7625,25 @@ v1.1 采用概念与教学组织参考，示例、题目、数据和解析重新
 
 解析：前者拼成 "605"，后者算出 65；int("60") 才得到整数。
 
-## 字符串与切片
+## 字符串清洗
 
-第 03 章；网页锚点：#c03-example-03_07
+第 03 章；网页锚点：#c03-example-03_05
 
-索引定位字符，切片选择片段；strip、split、join 组织文本，结果需要接住。
+用 strip、split、join 组织文本；先决定清洗规则，再观察返回的新字符串。
 
-记忆：先方向，再定位；起点能取，终点不取。
+记忆：清洗有返回，接住才保留。
 
-易混点：字符切片与空白分词都不等于模型 tokenizer；字符数量不等于 token 数量。
+易混点：split() 的空白分词不等于模型 tokenizer；字符数量也不等于 token 数量。
 
 - 建议先会 变量、类型与转换：字符串也是一种类型；清洗方法的结果仍是字符串。
 
 - 联想对照：普通 split(",") 不处理带引号逗号；CSV 要交给 csv 解析器。
 
-- 联想对照：字符串与列表都按索引切片；负索引负责定位，负步长才决定倒序。
-
-- 联想对照：03_08 / 03_10 区分空白、字符名单与完整标记；清理后仍可能是空名称，是否有效要另行校验。
-
 - 联想对照：字符数、空白分词数、token 数不可混用。
 
-自测：s="KLMNOP"，s[5::-1] 与 s[5:-1:-1] 为什么不同？
+自测：name.strip() 后 name 一定改变了吗？
 
-解析：前者省略终点，取到索引 0，得到 PONMLK；后者的 -1 定位到索引 5，等于起点，所以为空。
+解析：没有；字符串不可变，通常需要 name = name.strip() 保存返回结果。
 
 ## 条件与边界
 
@@ -8899,12 +7726,6 @@ v1.1 采用概念与教学组织参考，示例、题目、数据和解析重新
 - 后续用途 共享对象与浅拷贝：列表可变，才需要追踪多个名字是否共享它。
 
 - 后续用途 字典与记录：先看一批元素，再用字典描述每条记录的字段。
-
-- 联想对照：字符串与列表都按索引切片；负索引负责定位，负步长才决定倒序。
-
-- 联想对照：用函数封装最近消息选择：09_11 先处理 keep=0，再返回新的列表；习题把两段拼回输入检查边界。
-
-- 联想对照：07_08 追踪遍历时删除的漏项；07_09 用两份新列表分类候选请求，保留顺序和重复次数，名称通过仍不代表已经执行。
 
 自测：把 [2, 3] append 到 [1]，结果是什么？
 
@@ -8990,8 +7811,6 @@ v1.1 采用概念与教学组织参考，示例、题目、数据和解析重新
 
 - 后续用途 Agent 工具流程：工具首先是有明确参数和返回值的可调用函数。
 
-- 联想对照：用函数封装最近消息选择：09_11 先处理 keep=0，再返回新的列表；习题把两段拼回输入检查边界。
-
 - 联想对照：print、list.sort 与显式 return 的返回值要分别核对。
 
 自测：只在函数里 print(5)，外面 result=f() 能得到 5 吗？
@@ -9035,8 +7854,6 @@ v1.1 采用概念与教学组织参考，示例、题目、数据和解析重新
 - 后续用途 综合项目与验收：把有效成绩整理成有稳定规则的排名。
 
 - 联想对照：print、list.sort 与显式 return 的返回值要分别核对。
-
-- 联想对照：两组数据分别排序或打乱可能错配；长度相同仍要检查唯一 ID，再按身份对齐。
 
 自测：成绩相同的时候怎样让排名可重复？
 
@@ -9124,8 +7941,6 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 - 后续用途 Agent 工具流程：在执行工具前检查参数，执行后检查观察结果。
 
-- 联想对照：03_08 / 03_10 区分空白、字符名单与完整标记；清理后仍可能是空名称，是否有效要另行校验。
-
 自测："abc"、"101"、"0" 作为成绩输入分别怎样处理？
 
 解析：abc 转换失败；101 转换成功但超范围；0 转换且校验通过，必须保留。
@@ -9192,13 +8007,13 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 ## AI 数据与批次
 
-第 16 章；网页锚点：#c16-example-16_08
+第 16 章；网页锚点：#c16-example-16_02
 
 清洗记录、保持字段对齐、划分数据、建立词表，再检查二维形状和评估分母。
 
 记忆：先分清样本，再保持对齐。
 
-易混点：ID 对齐不证明标签真实；词表仍只从训练集建立，简化编码不是模型 tokenizer。
+易混点：只在训练集建立词表；本章简化编码不是生产模型的 tokenizer。
 
 - 建议先会 集合与去重：清洗后检查重复样本，避免无意重复统计。
 
@@ -9208,11 +8023,9 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 - 联想对照：字符数、空白分词数、token 数不可混用。
 
-- 联想对照：两组数据分别排序或打乱可能错配；长度相同仍要检查唯一 ID，再按身份对齐。
+自测：为什么不能分别打乱文本和标签？
 
-自测：预测与标签长度相同，zip(strict=True) 就能保证对应正确吗？
-
-解析：不能；zip 按位置配对。先检查唯一 ID 和覆盖范围，再按 ID 查找标签；记录整体移动才能保持关联。
+解析：会破坏一一对应；应将一条记录整体移动和划分。
 
 ## Agent 工具流程
 
@@ -9232,8 +8045,6 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 - 后续用途 通向深度学习与大模型：接入真实模型后，仍需工具契约、错误处理与任务评估。
 
-- 联想对照：07_08 追踪遍历时删除的漏项；07_09 用两份新列表分类候选请求，保留顺序和重复次数，名称通过仍不代表已经执行。
-
 - 联想对照：工具参数格式合法不等于工具已执行，更不等于任务正确。
 
 自测：工具调用没有报错，能说明用户问题答对了吗？
@@ -9242,7 +8053,7 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 ## 综合项目与验收
 
-第 17 章；网页锚点：#c17-score-walkthrough
+第 17 章；网页锚点：#c17-02_score_report
 
 把需求拆成读取、清洗、统计、输出四层；每层先用小样例验证，再连接完整流程。
 
@@ -9302,7 +8113,7 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 输出：{"student_id": "S1", "name": "小林", "score": 60}
 
-联系：字符串与切片、变量、类型与转换、条件与边界、异常与数据校验
+联系：字符串清洗、变量、类型与转换、条件与边界、异常与数据校验
 
 ### 收集与去重
 
@@ -9350,7 +8161,7 @@ import 复用模块中的定义；先分清标准库与第三方包，再确认�
 
 输出：任务与目标；尚未执行工具
 
-联系：字符串与切片、字典与记录
+联系：字符串清洗、字典与记录
 
 ### 决定动作
 

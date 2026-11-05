@@ -45,13 +45,6 @@ The supplied source PDFs and extraction audit remain outside this project. Do no
 - Step-through diagrams: `content/visuals.json` places one after a chapter's worked example; `scripts/visuals.py` writes the empty figure and `site/assets/viz.js` draws it. Each kind replays the chapter's own example with the same numbers, so change the two together.
 - Stars, recent courses and reading position stay in the reader's browser (`leon-learn-*` keys). Nothing is uploaded.
 
-## Practice, review and running code
-
-- `site/learn/study.js` holds the goal routes, practice, mock papers, review queue and labs; `site/learn/fsrs.js` is the scheduler. Progress stays in `leon-learn-*` browser keys and can be backed up from My learning.
-- `scripts/build_study.py` writes `site/learn/data/<course>.json`: review cards, predict-the-output drills and worked problems derived from the lessons, plus authored questions from `content/practice/<course>.json`.
-- `site/assets/run-ui.js` puts Run and Edit on a reading page's examples; `site/assets/runner/` holds the workers. A button appears only for examples listed in `content/browser-runnable.json`. After changing or adding programs, run `node scripts/verify_browser_runners.mjs --write` and rebuild. `site/assets/runner/NOTICE.txt` lists the third-party compilers and `.github/workflows/build-runtimes.yml` rebuilds them.
-- `scripts/validate_study.py`, `scripts/verify_fsrs.py`, `scripts/verify_browser_runners.mjs` and `scripts/test_study.mjs` run in CI before every deploy, with `scripts/verify_examples.py`. See `docs/FRONTIER_REVIEW.md` and `docs/TEACHING_AUDIT.md`.
-
 ## Python — Zero to Practice
 
 The Chinese handbook lives at `site/python-zero-to-practice/`. Its 19 units, 91 runnable examples, 100 self-study exercises with reference solutions, four complete projects and blank note templates come from the author-supplied learning ZIP. The website and profile label it as a Chinese edition. It is separate from the bilingual AI beginner primer.

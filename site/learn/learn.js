@@ -31,14 +31,14 @@
       list: '课程列表', detail: '课程详情', route: '学习路线', sheets: '速查表', mine: '我的学习',
       sList: '课程', sDetail: '详情', sRoute: '路线', sSheets: '速查', sMine: '我的',
       heroA: '从零学会编程', heroB: '中英双语',
-      lead: '从第一行 Python 到算法、系统和人工智能。先选目标，得到一条具体路线：读、练、复习、限时模拟，手写和工程练习都有。中文和英文随时切换。',
+      lead: '从第一行 Python 到算法、系统和人工智能。每章先讲一个小故事，再讲原理和公式，最后用能运行的代码验证。中文和英文随时切换。',
       notSure: '不知道从哪开始？', skip: '下次直接进入课程',
       chips: ['中英双语', '可运行代码', '一页速查表'],
       mapTitle: '学习地图', mapHint: '点一座小屋进入课程。沿着这条路走，就是推荐的学习顺序。', youAreHere: '你在这里', mapEnter: '进入课程',
       resume: '继续上次的阅读', resumeBtn: '接着读',
       statCourses: '门课程与学习路线', statChapters: '个章节', statPrograms: '份可运行代码', statSheets: '张一页速查表',
-      catalogEyebrow: '课程', catalogTitle: '四个阶段，十一门课', catalogSub: '第一次学编程，请从「入门」开始；Java 和 C 默认你已经会一点编程。',
-      howEyebrow: '怎么读', howTitle: '课程章节的基本结构', howSub: '五门课程按这六步走；计算理论和人工智能多数章节用推导题代替代码，AI 路线和 Python 手册有各自的结构。', play: '播放', pause: '暂停', howPanel: '一章里有什么',
+      catalogEyebrow: '课程', catalogTitle: '四个阶段，十一门课', catalogSub: '每门课都能单独读。第一次学编程，建议从「入门」开始。',
+      howEyebrow: '怎么读', howTitle: '每一章都按同样的六步走', howSub: '先有直觉，再有严谨。读完一章，你能用自己的话把它讲清楚。', play: '播放', pause: '暂停', howPanel: '一章里有什么',
       howSteps: [
         ['故事', '从一个日常场景开始', '抽象概念先找一个熟悉的落脚点：排队、点外卖、整理书架。'],
         ['原理', '讲清楚为什么这样做', '解释背后的机制和前提，也说明类比在哪里不再成立。'],
@@ -47,27 +47,27 @@
         ['代码', '能直接运行的程序', '复制就能运行，并附上预期输出，方便你核对。'],
         ['自测', '一道新题检验自己', '换一个问题再想一遍，答案折叠在下面，想好了再看。'],
       ],
-      howNotes: ['中文和英文章节一一对应', '答案先折叠，自己做完再看', '每章末尾直接跳到下一章'],
+      howNotes: ['中文和英文章节一一对应', '专业术语首次出现都有解释', '每章末尾直接跳到下一章'],
       faqEyebrow: '常见问题', faqTitle: '开始之前',
       faq: [
         ['我完全没学过编程，从哪开始？', '从「Python 零基础实操」开始，第 0 单元会带你把第一段程序跑起来。之后读「AI 入门 8 讲」，补上向量、概率和梯度的直觉，再按学习路线往下走。'],
         ['中文版和英文版内容一样吗？', '五门课程和五条 AI 路线都有完整的中英文版本，章节一一对应，阅读时可以在右上角随时切换，会停在同一章。「Python 零基础实操」目前只有中文。'],
-        ['需要安装什么？', '先不用装：大多数代码示例可以直接在网页上运行。想在自己电脑上运行时，Python 需要 3.10 或更新版本，Java 需要 JDK 8 或更新版本，C 需要 gcc 或 clang；每门课开头有安装和运行说明。'],
+        ['需要安装什么？', 'Python 课程需要 Python 3.12 或更新版本；Java 课程需要 JDK 8 或更新版本；C 课程需要 gcc 或 clang。每门课开头都写了安装和运行步骤。'],
         ['速查表怎么用？', '学完一门课后用来复习。AI 路线的复习页每一条都能点回对应章节；五门课程的速查表有网页版，PDF 版是一页纸，适合打印（英文）。'],
-        ['我的进度保存在哪里？', '收藏、阅读位置、练习得分和复习进度只保存在你自己的浏览器里，不会上传。换电脑前可以在「我的学习」导出备份，清除浏览器数据后没有备份就会丢失。'],
-        ['这些是官方课程吗？', '不是。课程编号只表示内容对应的课程方向。这些是独立整理的学习笔记，不是官方教材。练习题和模拟卷全部原创，不是往年考题，也不代表任何真实考试的内容或形式。'],
+        ['我的进度保存在哪里？', '收藏、最近浏览和上次读到的位置只保存在你自己的浏览器里，不会上传。换电脑或清除浏览器数据后会消失。'],
+        ['这些是官方课程吗？', '不是。课程编号只表示内容对应的课程方向。这些是独立整理的学习笔记，不是官方教材，也不包含作业或考试材料。'],
       ],
       endTitle: '准备好了就开始', endSub: '从第一章开始，或者直接挑一门感兴趣的课。',
       listSub: (n, ch) => `${n} 门课程与学习路线 · 共 ${ch} 章`,
       all: '全部', search: '搜索课程、章节或编号', colCourse: '课程',
       chapterHits: '匹配的章节', hitCount: (n) => `${n} 个章节`, chapterNo: (n) => `第 ${n} 章`,
-      hitsMore: (n) => `只显示前 ${n} 个。换一个更具体的词可以缩小范围。`, noChapter: '没有章节包含这个词。',
+      hitsMore: (n) => `只显示前 ${n} 个。换一个更具体的词可以缩小范围。`, noChapter: '没有章节标题包含这个词。',
       status: (a, b) => `${a} 门课程、${b} 个章节匹配`,
       onRoute: '在学习路线上', routeStop: (k, n) => `第 ${k} / ${n} 站`, prevCourse: '上一站', nextCourse: '下一站',
       sameStage: (s) => `同在「${s}」阶段`, seeRoute: '查看完整路线', progressOf: (a, n) => `读到第 ${a} 章 · 共 ${n} 章`,
       toLight: '切换到浅色主题', toDark: '切换到深色主题', skipMain: '跳到正文', colChapters: '章节', colCode: '代码', colLang: '语言',
       chaptersUnit: '章', programsUnit: '份', bilingual: '中英双语', zhOnly: '仅中文', both: '中 · EN',
-      read: '阅读', details: '详情', star: '收藏', unstar: '取消收藏', noMatch: '没有找到匹配的课程。', noCourseOnly: '没有课程名称匹配；提到这个词的章节在下面。',
+      read: '阅读', details: '详情', star: '收藏', unstar: '取消收藏', noMatch: '没有找到匹配的课程。', noCourseOnly: '没有课程名称匹配；标题里含这个词的章节在下面。',
       readTo: (n) => `读到第 ${n} 章`, readCount: (n) => `已读完 ${n} 章`, readMark: '已读完',
       facts: { chapters: '章节', programs: '可运行代码', problems: '推导例题', exercises: '练习', projects: '综合项目', language: '语言' },
       toc: '章节目录', chaptersCount: (n) => `${n} 章`,
@@ -91,14 +91,14 @@
       list: 'Courses', detail: 'Course', route: 'Learning route', sheets: 'Cheatsheets', mine: 'My learning',
       sList: 'Courses', sDetail: 'Course', sRoute: 'Route', sSheets: 'Sheets', sMine: 'Mine',
       heroA: 'Learn to code from zero', heroB: 'Chinese & English',
-      lead: 'From your first line of Python to algorithms, systems and AI. Pick a goal and get a concrete route: read, practise, review and sit timed mocks, with paper-coding drills and engineering labs. Switch between Chinese and English at any time.',
+      lead: 'From your first line of Python to algorithms, systems and AI. Each chapter starts with a short story, explains the idea and the formula, and ends with code you can run. Switch between Chinese and English at any time.',
       notSure: 'Not sure where to start?', skip: 'Skip this page next time',
       chips: ['Chinese and English', 'Runnable code', 'One-page cheatsheets'],
       mapTitle: 'Learning map', mapHint: 'Tap a house to open its course. The road follows the suggested order.', youAreHere: 'You are here', mapEnter: 'Open course',
       resume: 'Pick up where you left off', resumeBtn: 'Keep reading',
       statCourses: 'courses and guides', statChapters: 'chapters', statPrograms: 'runnable programs', statSheets: 'one-page cheatsheets',
-      catalogEyebrow: 'COURSES', catalogTitle: 'Four stages, eleven courses', catalogSub: 'New to programming? Begin with Get started; the Java and C courses assume you can already program a little.',
-      howEyebrow: 'HOW IT WORKS', howTitle: 'How a course chapter works', howSub: 'The five courses follow these six steps; most computation and AI chapters use worked problems instead of code, and the AI guides and Python handbook have their own structure.', play: 'Play', pause: 'Pause', howPanel: 'Inside a chapter',
+      catalogEyebrow: 'COURSES', catalogTitle: 'Four stages, eleven courses', catalogSub: 'Every course stands on its own. New to programming? Begin with Get started.',
+      howEyebrow: 'HOW IT WORKS', howTitle: 'Every chapter follows the same six steps', howSub: 'Intuition first, then rigour. After a chapter you can explain the idea in your own words.', play: 'Play', pause: 'Pause', howPanel: 'Inside a chapter',
       howSteps: [
         ['Story', 'Begin with an everyday scene', 'An abstract idea first gets a familiar place to stand: a queue, a food order, a bookshelf.'],
         ['Principle', 'Why it works', 'The mechanism and its assumptions, and where the analogy stops.'],
@@ -107,27 +107,27 @@
         ['Code', 'Programs you can run', 'Copy, run, and compare with the expected output shown underneath.'],
         ['Check', 'Test yourself on a new question', 'A fresh problem with a folded answer. Think first, then open it.'],
       ],
-      howNotes: ['Chinese and English chapters match one to one', 'Answers stay folded until you have tried', 'Each chapter links straight to the next'],
+      howNotes: ['Chinese and English chapters match one to one', 'Every term is defined when it first appears', 'Each chapter links straight to the next'],
       faqEyebrow: 'FAQ', faqTitle: 'Before you start',
       faq: [
         ['I have never programmed. Where do I start?', 'Start with Python: Zero to Practice; unit 0 gets your first program running. Then read Start Here, eight short lessons on vectors, probability and gradients, and follow the learning route from there.'],
         ['Are the Chinese and English editions the same?', 'All five courses and five AI guides have complete Chinese and English editions with matching chapters. Switch at the top right while reading and you stay on the same chapter. The Python handbook is in Chinese only.'],
-        ['What do I need to install?', 'Nothing at first: most code examples run right on the page. To run them on your own computer you need Python 3.10 or newer, JDK 8 or newer for Java, and gcc or clang for C; each course opens with setup notes.'],
+        ['What do I need to install?', 'Python 3.12 or newer for the Python material, JDK 8 or newer for Java, and gcc or clang for C. Each course opens with setup and run steps.'],
         ['How do I use the cheatsheets?', 'Use them to review after a course. Each item in an AI guide review links back to its chapter; the five course sheets have a web version and a one-page printable PDF (English).'],
-        ['Where is my progress saved?', 'Stars, reading position, practice scores and review progress stay in your own browser. Nothing is uploaded. Before changing computers, export a backup from My learning; clearing browser data without one loses them.'],
-        ['Are these official courses?', 'No. A course code only shows which subject the material follows. These are independent study notes, not official course material. Practice questions and mock papers are all original: they are not past papers and do not indicate what a real exam will contain.'],
+        ['Where is my progress saved?', 'Stars, recently viewed courses and your last reading position stay in your own browser. Nothing is uploaded. They disappear if you change computers or clear browser data.'],
+        ['Are these official courses?', 'No. A course code only shows which subject the material follows. These are independent study notes, not official course material, and they contain no assignments or exams.'],
       ],
       endTitle: 'Ready when you are', endSub: 'Begin at chapter one, or pick any course that interests you.',
       listSub: (n, ch) => `${n} courses and guides · ${ch} chapters`,
       all: 'All', search: 'Search courses, chapters or codes', colCourse: 'Course',
       chapterHits: 'Matching chapters', hitCount: (n) => `${n} chapter${n === 1 ? '' : 's'}`, chapterNo: (n) => `Chapter ${n}`,
-      hitsMore: (n) => `Showing the first ${n}. A more specific word narrows the list.`, noChapter: 'No chapter contains this word.',
+      hitsMore: (n) => `Showing the first ${n}. A more specific word narrows the list.`, noChapter: 'No chapter title contains this word.',
       status: (a, b) => `${a} course${a === 1 ? '' : 's'} and ${b} chapter${b === 1 ? '' : 's'} match`,
       onRoute: 'On the learning route', routeStop: (k, n) => `Stop ${k} of ${n}`, prevCourse: 'Before this', nextCourse: 'Next',
       sameStage: (s) => `Also in ${s}`, seeRoute: 'See the whole route', progressOf: (a, n) => `At chapter ${a} of ${n}`,
       toLight: 'Switch to light theme', toDark: 'Switch to dark theme', skipMain: 'Skip to content', colChapters: 'Chapters', colCode: 'Code', colLang: 'Language',
       chaptersUnit: 'chapters', programsUnit: 'programs', bilingual: 'Chinese + English', zhOnly: 'Chinese only', both: '中 · EN',
-      read: 'Read', details: 'Details', star: 'Star', unstar: 'Remove star', noMatch: 'No course matches.', noCourseOnly: 'No course title matches; chapters that mention it are listed below.',
+      read: 'Read', details: 'Details', star: 'Star', unstar: 'Remove star', noMatch: 'No course matches.', noCourseOnly: 'No course title matches; chapters whose titles contain it are listed below.',
       readTo: (n) => `At chapter ${n}`, readCount: (n) => `${n} read to the end`, readMark: 'read',
       facts: { chapters: 'Chapters', programs: 'Runnable programs', problems: 'Worked problems', exercises: 'Exercises', projects: 'Projects', language: 'Language' },
       toc: 'Chapters', chaptersCount: (n) => `${n} chapters`,
@@ -229,7 +229,7 @@
         <div>
           <h1 class="reveal">${t('heroA')}<br><span class="hl">${t('heroB')}</span></h1>
           <p class="lead reveal d1">${t('lead')}</p>
-          <div class="cta reveal d2"><a class="btn primary lg" href="${href.list}">${t('enter')} ${icon('arrow')}</a><a class="btn ghost lg" href="#/start">${t('notSure')}</a></div>
+          <div class="cta reveal d2"><a class="btn primary lg" href="${href.list}">${t('enter')} ${icon('arrow')}</a><a class="btn ghost lg" href="${href.route}">${t('notSure')}</a></div>
           ${resume}
           <label class="skip-intro reveal d2"><input type="checkbox" data-skip ${store.get('leon-learn-skip-intro', false) ? 'checked' : ''}>${t('skip')}</label>
           <div class="chips reveal d3">${t('chips').map((c) => `<span>${icon('check')}${c}</span>`).join('')}</div>
@@ -324,26 +324,18 @@
   }
 
   /* ------------------------------------------------------------ workspace frame */
-  const NAV = [['start', 'route', 'navStart', 'sStart'], ['list', 'grid', 'list', 'sList'], ['practice', 'quiz', 'navPractice', 'sPractice'], ['review', 'check', 'navReview', 'sReview'], ['sheets', 'sheet', 'sheets', 'sSheets'], ['mine', 'user', 'mine', 'sMine']];
-  const dueBadge = () => { const n = study.dueStats().ready; return n > 99 ? '99+' : n || ''; };
+  const NAV = [['list', 'grid', 'list', 'sList'], ['detail', 'book', 'detail', 'sDetail'], ['route', 'route', 'route', 'sRoute'], ['sheets', 'sheet', 'sheets', 'sSheets'], ['mine', 'user', 'mine', 'sMine']];
   function frame(active, body) {
-    const goal = store.get('leon-learn-goal', null);
-    const to = { start: goal ? `#/goal/${goal.goal}${goal.course ? `/${goal.course}` : ''}` : '#/start', list: href.list, practice: '#/practice', review: '#/review', sheets: href.sheets, mine: href.mine };
-    const label = (key) => (key.startsWith('nav') || key === 'sStart' || key === 'sPractice' || key === 'sReview' ? study.t(key) : t(key));
+    const lastCourse = recent()[0] || DATA.courses[0].id;
+    const to = { list: href.list, detail: href.course(lastCourse), route: href.route, sheets: href.sheets, mine: href.mine };
     return `<button type="button" class="skip-link" data-skip>${t('skipMain')}</button><header class="topbar">${brand(href.intro)}
-      <nav class="main-nav" aria-label="${t('brand')}">${NAV.map(([key, ic, long, short]) => `<a class="nav-item${active === key ? ' active' : ''}" href="${to[key]}"${active === key ? ' aria-current="page"' : ''}>${icon(ic)}<span class="nav-long">${label(long)}</span><span class="nav-short">${label(short)}</span>${key === 'review' && dueBadge() ? `<span class="nav-badge">${dueBadge()}</span>` : ''}</a>`).join('')}</nav>
+      <nav class="main-nav" aria-label="${t('brand')}">${NAV.map(([key, ic, long, short]) => `<a class="nav-item${active === key ? ' active' : ''}" href="${to[key]}"${active === key ? ' aria-current="page"' : ''}>${icon(ic)}<span class="nav-long">${t(long)}</span><span class="nav-short">${t(short)}</span></a>`).join('')}</nav>
       <div class="top-actions"><a class="top-link" href="${SITE}index.html">${t('home')} ↗</a>${themeToggle()}${langToggle()}</div>
     </header><main class="shell" id="main" tabindex="-1">${body}</main>${footer()}`;
   }
 
   /* ------------------------------------------------------------ list */
-  const ui = { filter: 'all', q: '', keywords: null };
-  // chapter keywords (glossary terms and the functions a chapter's programs call) load with the first search
-  const loadKeywords = (done) => {
-    if (ui.keywords || ui.keywordsLoading) return;
-    ui.keywordsLoading = true;
-    fetch('data/keywords.json').then((r) => r.json()).then((k) => { ui.keywords = k; done(); }).catch(() => {});
-  };
+  const ui = { filter: 'all', q: '' };
   const matches = (c) => {
     if (ui.filter !== 'all' && c.track !== ui.filter) return false;
     const q = ui.q.trim().toLowerCase();
@@ -375,7 +367,7 @@
     const q = ui.q.trim().toLowerCase();
     if (!q) return [];
     return DATA.courses.filter((c) => ui.filter === 'all' || c.track === ui.filter).flatMap((c) =>
-      c.chapters.map((ch, i) => ({ c, ch, i })).filter(({ ch }) => [ch.title.zh, ch.title.en, ui.keywords?.[c.id]?.[ch.id]].some((s) => String(s || '').toLowerCase().includes(q))));
+      c.chapters.map((ch, i) => ({ c, ch, i })).filter(({ ch }) => [ch.title.zh, ch.title.en].some((s) => String(s || '').toLowerCase().includes(q))));
   };
   const highlight = (s) => {
     const text = String(s ?? ''); const q = ui.q.trim();
@@ -392,7 +384,6 @@
   function listView() {
     const filters = [['all', t('all')], ...Object.keys(DATA.tracks).map((k) => [k, L(DATA.tracks[k])])];
     return frame('list', `<div class="page-head"><div><h1>${t('list')}</h1><p>${t('listSub')(DATA.totals.courses, DATA.totals.chapters)}</p></div></div>
-      <div data-goal-banner>${study.goalBanner()}</div>
       <section class="panel reveal">
         <div class="toolbar"><div class="filters" role="group" aria-label="${t('stage')}">${filters.map(([k, label]) => `<button type="button" data-filter="${k}" aria-pressed="${ui.filter === k}">${esc(label)}</button>`).join('')}</div>
           <label class="search">${icon('find')}<input type="search" data-q value="${esc(ui.q)}" placeholder="${t('search')}" aria-label="${t('search')}" enterkeyhint="search"><kbd aria-hidden="true">/</kbd></label></div>
@@ -406,7 +397,6 @@
       app.querySelector('[data-hits]').innerHTML = hitsHtml();
       app.querySelector('[data-status]').textContent = ui.q.trim() ? t('status')(DATA.courses.filter(matches).length, chapterHits().length) : '';
     };
-    app.querySelector('[data-q]')?.addEventListener('focus', () => loadKeywords(refresh));
     app.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => {
       ui.filter = b.dataset.filter;
       app.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -572,29 +562,21 @@
     return frame('mine', `<div class="page-head"><div><h1>${t('mine')}</h1><p>${t('mineSub')}</p></div><button type="button" class="btn ghost sm" data-clear>${t('clear')}</button></div>
       <div class="mine-grid reveal"><section class="panel"><div class="panel-head"><h2>${t('last')}</h2></div>${last}</section>
       <section class="panel"><div class="panel-head"><h2>${t('starred')}</h2></div>${starred}</section>
-      <section class="panel"><div class="panel-head"><h2>${t('recentT')}</h2></div>${rec}</section></div>${study.backupPanel()}`);
+      <section class="panel"><div class="panel-head"><h2>${t('recentT')}</h2></div>${rec}</section></div>`);
   }
 
   function notFoundView() {
     return frame('', `<div class="panel empty" style="padding:60px 20px"><p>${t('notFound')}</p><p style="margin-top:14px"><a class="btn ghost" href="${href.list}">${t('back')}</a></p></div>`);
   }
 
-  /* ------------------------------------------------------------ goals, practice and review live in study.js */
-  const leaving = [];
-  const study = window.LeonStudyInit({
-    app, store, esc, icon, frame, BY_ID, DATA, SITE, href, lang: () => lang,
-    render: () => render(), notFound: () => notFoundView(), onLeave: (fn) => leaving.push(fn),
-    refreshBanner: () => { const slot = app.querySelector('[data-goal-banner]'); if (slot) slot.innerHTML = study.goalBanner(); },
-  });
-
   /* ------------------------------------------------------------ router */
   const parse = () => {
-    const parts = location.hash.replace(/^#\/?/, '').split('?')[0].split('/').filter(Boolean);
+    const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
     if (!parts.length) return { page: 'intro' };
     if (parts[0] === 'courses') return { page: 'list' };
     if (parts[0] === 'course') return { page: 'detail', id: parts[1] };
     if (['route', 'sheets', 'mine'].includes(parts[0])) return { page: parts[0] };
-    return study.match(parts) || { page: 'missing' };
+    return { page: 'missing' };
   };
   const TITLES = { intro: () => `${t('brand')} · ${t('heroA')}`, list: () => t('list'), route: () => t('route'), sheets: () => t('sheets'), mine: () => t('mine') };
   let lastPage = '';
@@ -607,16 +589,12 @@
     document.documentElement.dataset.theme = theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0b0d12' : '#f4f6fa');
     const views = { intro: introView, list: listView, detail: () => detailView(r.id), route: routeView, sheets: sheetsView, mine: mineView, missing: notFoundView };
-    leaving.splice(0).forEach((fn) => fn());
-    const isStudy = !views[r.page];
-    app.innerHTML = isStudy ? study.view(r) : views[r.page]();
-    const name = isStudy ? study.title(r) : r.page === 'detail' && BY_ID[r.id] ? `${BY_ID[r.id].code} · ${L(BY_ID[r.id].title)}` : (TITLES[r.page] || (() => t('brand')))();
+    app.innerHTML = views[r.page]();
+    const name = r.page === 'detail' && BY_ID[r.id] ? `${BY_ID[r.id].code} · ${L(BY_ID[r.id].title)}` : (TITLES[r.page] || (() => t('brand')))();
     document.title = r.page === 'intro' ? name : `${name} · ${t('brand')}`;
     if (r.page === 'intro') wireIntro();
     if (r.page === 'list') wireList();
-    if (r.page === 'mine') study.wireBackup();
-    if (isStudy) study.wire(r);
-    const key = r.page + (r.id || '') + (r.cid || '') + (r.qid || '') + (r.pid || '') + (r.goal || '') + (r.course || '');
+    const key = r.page + (r.id || '');
     if (key !== lastPage) {
       window.scrollTo(0, 0);
       // after moving to another view, start keyboard and screen-reader users at its heading
@@ -648,7 +626,7 @@
       return;
     }
     if (e.target.closest('[data-clear]')) {
-      ['leon-learn-stars', 'leon-learn-recent', 'leon-learn-progress', 'leon-learn-goal', 'leon-learn-attempts', 'leon-learn-srs', 'leon-learn-srs-day'].forEach(store.remove);
+      ['leon-learn-stars', 'leon-learn-recent', 'leon-learn-progress'].forEach(store.remove);
       render();
     }
   });

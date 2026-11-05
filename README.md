@@ -1,8 +1,8 @@
 <!-- Edited by hand, except the Projects table: scripts/build_readme.py writes it from the homepage project list. The template in scripts/build_profile.py is older: do not regenerate this file from it. -->
-<a href="https://leon1111-wgl.github.io/leon1111-wgl/"><img src="site/assets/profile-banner-motion.svg" width="100%" alt="Leon Wang — spatial intelligence, long-video understanding and grounding, embodied AI, enterprise AI agents. Click to enter my website." /></a>
+<a href="https://leon1111-wgl.github.io/"><img src="site/assets/profile-banner-motion.svg" width="100%" alt="Leon Wang — spatial intelligence, long-video understanding and grounding, embodied AI, enterprise AI agents. Click to enter my website." /></a>
 
 <p align="center">
-  <a href="https://leon1111-wgl.github.io/leon1111-wgl/"><strong>Website ↗</strong></a> &nbsp;·&nbsp;
+  <a href="https://leon1111-wgl.github.io/"><strong>Website ↗</strong></a> &nbsp;·&nbsp;
   <a href="#background">Background</a> &nbsp;·&nbsp;
   <a href="#教程--tutorials">Tutorials</a> &nbsp;·&nbsp;
   <a href="#projects">Projects</a> &nbsp;·&nbsp;
@@ -24,11 +24,7 @@
 
 ## 教程 · Tutorials
 
-<a href="https://leon1111-wgl.github.io/leon1111-wgl/learn/"><img src="site/assets/profile-learn.svg" width="100%" alt="Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、362 份可运行代码。点击进入。" /></a>
-
-**从目标开始 · Start from your goal：** [我从没写过代码 Never programmed](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/zero) · [我要考试 Exam coming](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/exam) · [我要手写代码 Writing by hand](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/paper) · [我在工作中写代码 At work](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/engineer)
-
-选好目标后给你一条路线：练习、每日复习、Python · Java · C 都能在浏览器里运行。Pick a goal and get a route, with practice, a daily review queue, and Python, Java and C running in the browser.
+<a href="https://leon1111-wgl.github.io/leon1111-wgl/learn/"><img src="site/assets/profile-learn.svg" width="100%" alt="Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、356 份可运行代码。点击进入。" /></a>
 
 <sub>关键词 · Keywords：Python 零基础教程 · Java 面向对象 · C 语言与系统编程 · 算法与数据结构 · 计算理论 · 机器学习 · 深度学习 · 计算机视觉 · 多模态 · 中英双语 · free bilingual programming and AI tutorials with runnable code</sub>
 
@@ -37,7 +33,7 @@
 
 | | | |
 | :--- | :--- | :--- |
-| `INFO1110` | **[Python 零基础实操](https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html)**<br>19 个单元、111 个可运行示例、119 道练习、4 个小项目 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/python) |
+| `INFO1110` | **[Python 零基础实操](https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html)**<br>19 个单元、105 个可运行示例、114 道练习、4 个小项目 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/python) |
 | `INFO1113` | **[Java 面向对象编程](https://leon1111-wgl.github.io/leon1111-wgl/courses/info1113.zh.html)**<br>23 章：对象、集合、泛型、异常、测试与应用设计 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/info1113)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/info1113.html)&nbsp;·&nbsp;[INFO1113 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/INFO1113-cheatsheet.pdf) |
 | `COMP2123` | **[算法设计与分析](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2123.zh.html)**<br>26 章：图算法、贪心、分治与随机化 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2123)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2123.html)&nbsp;·&nbsp;[COMP2123 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2123-cheatsheet.pdf) |
 | `COMP2017` | **[系统编程：C、进程与并发](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.zh.html)**<br>24 章、57 个独立程序，外加 3 个完整工程项目 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp2017)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp2017.html)&nbsp;·&nbsp;[COMP2017 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP2017-cheatsheet.pdf) |
@@ -108,4 +104,4 @@
 
 `Python` `Java` `C` `LLM Agents` `RAG` `Multimodal Evaluation` `Distillation` `Quantization` · Mandarin, English (IELTS 7.5)
 
-<p align="center"><sub><a href="mailto:zetongw6@gmail.com">zetongw6@gmail.com</a> · <a href="https://leon1111-wgl.github.io/leon1111-wgl/">leon1111-wgl.github.io</a></sub></p>
+<p align="center"><sub><a href="mailto:zetongw6@gmail.com">zetongw6@gmail.com</a> · <a href="https://leon1111-wgl.github.io/">leon1111-wgl.github.io</a></sub></p>

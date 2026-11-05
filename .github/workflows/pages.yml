@@ -15,39 +15,8 @@ jobs:
     uses: ./.github/workflows/python-course.yml
     permissions:
       contents: read
-  verify-teaching:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '8'
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-      - name: Install tools
-        run: |
-          pip install -q -r requirements.txt fsrs==6.3.2
-          sudo apt-get update -qq && sudo apt-get install -y -qq clang
-          npm install --no-save --silent playwright-core@1.56.1
-          npx playwright-core install --with-deps chromium
-      - name: Study data is consistent
-        run: python3 scripts/validate_study.py
-      - name: Every program compiles, runs and prints what the page says
-        run: python3 scripts/verify_examples.py
-      - name: Review scheduler matches the reference
-        run: python3 scripts/verify_fsrs.py
-      - name: Run buttons work in a real browser
-        run: node scripts/verify_browser_runners.mjs
-      - name: Learning features work at desktop and phone width
-        run: node scripts/test_study.mjs
   deploy:
-    needs: [verify-python, verify-teaching]
+    needs: verify-python
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
