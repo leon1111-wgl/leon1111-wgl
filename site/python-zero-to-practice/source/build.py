@@ -7,14 +7,26 @@ from starter_templates import STARTERS
 from refinements import apply_refinements
 from refinement_v12 import apply_v12
 from refinement_v13 import apply_v13
+from refinement_v16 import apply_v16
+from refinement_v17 import apply_v17
+from refinement_v18 import apply_v18
+from refinement_v19 import apply_v19
+from study_log_walkthrough import attach_study_log_walkthrough
 from knowledge_map import NODES, render_map, chapter_connections, map_markdown
+from score_walkthrough import STAGES, FOLDER as SCORE_FOLDER, walkthrough_text, walkthrough_html, attach_checks
 ROOT = Path(__file__).resolve().parent.parent
 ESC = html.escape
-VERSION = "1.4"
-RELEASE_DATE = "2026-10-21"
+VERSION = "1.10"
+RELEASE_DATE = "2026-10-29"
 apply_refinements(CHAPTERS)
 apply_v12(CHAPTERS)
 apply_v13(CHAPTERS)
+apply_v16(CHAPTERS)
+apply_v17(CHAPTERS)
+apply_v18(CHAPTERS)
+apply_v19(CHAPTERS)
+attach_checks(PROJECTS)
+attach_study_log_walkthrough(PROJECTS)
 
 # 定时维护前先检查生成文件是否被手工编辑，避免覆盖学习者的修改。
 GENERATED = {}
@@ -143,11 +155,20 @@ for p in PROJECTS:
     for path,data in p['data'].items(): write(folder+'/'+path,data)
     steps='\n\n'.join(f'### {i+1} {title}\n{body}' for i,(title,body) in enumerate(p['steps']))
     text=f'# {p["title"]}\n\n前置：{p["prerequisites"]}\n\n{p["task"]}\n\n{steps}\n\n### 运行命令\n\n从学习包根目录执行。Windows 用 py，Mac 用 python3，激活环境后可用 python。\n\n```terminal\n{p["commands"]}\n```\n\n### 预期结果\n\n{p["expected"]}\n\n### 验收\n\n运行学习包的 python tools/check_projects.py 核验参考实现；自己的实现按上面手算结果和边界逐项验证。\n'
+    guide_html = ''
+    if folder == SCORE_FOLDER:
+        for stage in STAGES:
+            write(folder+'/guided/'+stage['file'],stage['code'])
+        guide_text = walkthrough_text()
+        write(folder+'/GUIDE.md',guide_text)
+        guide_html = walkthrough_html(md,codeblock)
+        text += '\n### 四阶段实操增补\n\n逐步运行 guided 中的四个阶段，再完成工具耗时日志迁移。完整解释、追踪表、练习与解析见 [GUIDE.md](GUIDE.md)。原 TASKS.md 与 starter.py 保留你的内容。\n'
     write(folder+'/README.md',text)
     write(folder+'/TASKS.md',text+'\n\n## 独立实现记录\n\n- 输入约定：\n- 输出约定：\n- 最小样例手算：\n- 空数据测试：\n- 边界测试：\n- 错误输入测试：\n- 我的新增功能：\n',preserve=True)
     write(folder+'/starter.py',STARTERS[p['folder']],preserve=True)
-    block=f'<section class="project" id="c17-{p["folder"]}"><div class="eyebrow">PROJECT {p["folder"][:2]}</div><h3>{ESC(p["title"])}</h3><p class="muted">前置：{ESC(p["prerequisites"])}</p><p>{ESC(p["task"])}</p>{md(steps,"p"+p["folder"])}<h4>运行命令</h4>{codeblock(p["commands"],"终端命令")}<h4>预期结果与输出位置</h4><p>{ESC(p["expected"])}</p><p><a download href="{folder}/TASKS.md">保存项目任务书</a> · <a download href="{folder}/app.py">保存完整参考代码</a></p><details><summary>展开完整实现（建议先尝试）</summary>{codeblock(p["code"])}<p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section>'
-    project_html.append(block); project_text.append(text+'\n\n```python\n'+p['code']+'```\n')
+    block=f'<section class="project" id="c17-{p["folder"]}"><div class="eyebrow">PROJECT {p["folder"][:2]}</div><h3>{ESC(p["title"])}</h3><p class="muted">前置：{ESC(p["prerequisites"])}</p><p>{ESC(p["task"])}</p>{md(steps,"p"+p["folder"])}{guide_html}<h4>运行命令</h4>{codeblock(p["commands"],"终端命令")}<h4>预期结果与输出位置</h4><p>{ESC(p["expected"])}</p><p><a download href="{folder}/TASKS.md">保存项目任务书</a> · <a download href="{folder}/app.py">保存完整参考代码</a></p><details><summary>展开完整实现（建议先尝试）</summary>{codeblock(p["code"])}<p>逐步对照任务书，确认每个函数在处理哪一层数据。</p></details></section>'
+    project_html.append(block); project_text.append(text+'\n\n```python\n'+p['code']+'```\n'+(guide_text if folder == SCORE_FOLDER else ''))
+write('tools/score_walkthrough.json',json.dumps([{'file':s['file'],'output':s['output']} for s in STAGES],ensure_ascii=False,indent=2))
 write('tools/project_checks.json',json.dumps([{k:p[k] for k in ['folder','checks']} for p in PROJECTS],ensure_ascii=False,indent=2))
 
 SIMS={
@@ -155,7 +176,7 @@ SIMS={
 7: '<section class="lab" data-lab="alias"><div class="eyebrow">动手看对象关系</div><h3>赋值与浅拷贝为什么不同</h3><label>选择写法 <select class="alias-mode"><option value="share">b = a（共享）</option><option value="copy">b = a.copy()（复制外层）</option></select></label><div class="lab-screen" aria-live="polite"></div><div class="lab-actions"><button data-step="-1">上一步</button><button data-step="1">下一步</button><button data-reset>重新开始</button></div><p class="muted">本演示的列表元素是整数；嵌套列表的浅拷贝请继续看示例 07_05。</p></section>',
 9: '<section class="lab" data-lab="function"><div class="eyebrow">动手看调用与返回</div><h3>result = add(2, 3) 经历了什么</h3><div class="lab-screen" aria-live="polite"></div><div class="lab-actions"><button data-step="-1">上一步</button><button data-step="1">下一步</button><button data-reset>重新开始</button></div><p class="muted">观察参数如何进入函数，返回值如何交回调用位置。</p></section>'}
 
-search=[]; chapters_html=[]; all_md=[]
+search=[{'target':'c17-score-'+s['key'],'title':'项目分步 · '+s['title'],'text':s['body']+' '+s['task'],'kind':'项目实操'} for s in STAGES]; chapters_html=[]; all_md=[]
 for c in CHAPTERS:
     n=c['number']; cid=f'c{n:02d}'
     title=f'{n:02d} {c["title"]}'
@@ -164,7 +185,7 @@ for c in CHAPTERS:
     goals='<ul>'+''.join('<li>'+ESC(g)+'</li>' for g in c['goals'])+'</ul>'
     inner=f'<header class="chapter-header"><div class="eyebrow">第一阶段 / CHAPTER {n:02d}</div><h2>{ESC(c["title"])}</h2><p class="lead">{ESC(c["subtitle"])}</p><div class="chapter-meta">{metadata}</div></header><section class="goals"><h3>本章学会什么</h3>{goals}</section>'
     if n==0:
-        inner=f'<div class="course-intro"><div class="eyebrow">OFFLINE LEARNING KIT · v{VERSION}</div><h1>从零开始<br><span>学会 Python 实操</span></h1><p class="course-caption">部分内容为info1110课程</p><p>逐步理解语法，亲手完成练习。<br>穿插大模型与 Agent 场景，为后续学习打好基础。</p><div class="hero-stats"><span><b>{len(CHAPTERS)}</b>个学习单元</span><span><b>{len(EXAMPLES)}</b>个运行示例</span><span><b>{len(EXERCISES)}</b>道分层习题</span><span><b>{len(PROJECTS)}</b>个完整项目</span></div><a class="primary-link" href="#c01">已装好 Python，开始第一课 →</a><p class="muted">Windows / Mac · 阅读完全离线 · 运行练习需 Python 3.10+</p><p class="muted">本轮新增：可交互知识图谱、五条目标路线与项目 / Agent 场景链路。<a href="#c00-knowledge-map">打开知识图谱 →</a> <a href="#c18">查看学习路线与开源参考 →</a></p></div>'+inner
+        inner=f'<div class="course-intro"><div class="eyebrow">OFFLINE LEARNING KIT · v{VERSION}</div><h1>从零开始<br><span>学会 Python 实操</span></h1><p class="course-caption">部分内容为info1110课程</p><p>逐步理解语法，亲手完成练习。<br>穿插大模型与 Agent 场景，为后续学习打好基础。</p><div class="hero-stats"><span><b>{len(CHAPTERS)}</b>个学习单元</span><span><b>{len(EXAMPLES)}</b>个运行示例</span><span><b>{len(EXERCISES)}</b>道分层习题</span><span><b>{len(PROJECTS)}</b>个完整项目</span></div><a class="primary-link" href="#c01">已装好 Python，开始第一课 →</a><p class="muted">Windows / Mac · 阅读完全离线 · 运行练习需 Python 3.10+</p><p class="muted">本轮新增：打卡项目命令行、文件位置与重复追加实操。<a href="#c17-01_study_log">进入打卡实操 →</a> 成绩项目：<a href="#c17-score-walkthrough">进入分步实操 →</a> <a href="#c00-knowledge-map">打开知识图谱 →</a> <a href="#c18">查看学习路线与开源参考 →</a></p></div>'+inner
     if n == 0: inner += render_map()
     else: inner += chapter_connections(n)
     inner+=md(c['body'],cid)
@@ -198,6 +219,9 @@ for c in CHAPTERS:
     all_md.append(chapter_md+'\n## 记忆要点\n'+''.join('- '+s+'\n' for s in c['recall'])+'\n## 通关检查\n'+''.join('- '+s+'\n' for s in c['checkpoint']))
 write('知识图谱.md', map_markdown())
 all_md.append(map_markdown())
+for project in PROJECTS:
+    search.append({'target': 'c17-'+project['folder'], 'title': project['title'],
+                   'text': project['task']+' '+ ' '.join(title+' '+body for title,body in project['steps']), 'kind': '项目'})
 for node in NODES:
     search.append({'target': 'c00-map-'+node['id'], 'title': '知识图谱 · '+node['title'], 'text': node['idea']+' '+node['pitfall']+' '+node['question'], 'kind': '知识连接'})
 write('textbook.md',f'# Python 零基础实操教程\n\n> Leon · Python — Zero to Practice\n\n部分内容为info1110课程\n\n版本 {VERSION} · {RELEASE_DATE} · Windows / Mac\n\n'+ '\n\n'.join(all_md))

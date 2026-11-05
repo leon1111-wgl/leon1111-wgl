@@ -105,7 +105,7 @@ def python_handbook():
         'read': {'zh': 'python-zero-to-practice/index.html'},
         'chapters': chapters,
         'stages': [{'title': t, 'chapters': [ids[i] for i in r]} for t, r in PYTHON_STAGES],
-        'stats': {'chapters': 19, 'programs': 105, 'exercises': 114, 'projects': 4},
+        'stats': {'chapters': 19, 'programs': 111, 'exercises': 119, 'projects': 4},
         'sheet': {'zh': 'python-zero-to-practice/index.html#c18'},
         'notes': {'zh': 'downloads/Python-Zero-to-Practice.zip'},
         'notesKind': 'zip',
@@ -181,8 +181,14 @@ def catalogue():
         guide(paths / 'vision.json', 'ai', 'step', 'eye'),
         guide(paths / 'multimodal.json', 'ai', 'step', 'media'),
     ]
+    summary_file = SITE / 'learn' / 'data' / 'summary.json'
+    summary = json.loads(summary_file.read_text()) if summary_file.exists() else {}
+    bridges = {'python': 'python-first-steps', 'info1113': 'java-first-steps', 'comp2017': 'c-first-steps', 'comp2123': 'algorithms-first-steps', 'comp2022': 'computation-first-steps'}
     for c in items:
+        if c['id'] in bridges and (CONTENT / 'bridges' / f"{bridges[c['id']]}.json").exists():
+            c['bridge'] = bridges[c['id']]
         c['color'] = COURSE_COLORS[c['id']]
+        c['study'] = summary.get(c['id'], {'cards': 0, 'kinds': {}, 'papers': 0, 'labs': 0})
         c['short'] = both(SHORT[c['id']][1], SHORT[c['id']][0])
         assert c['id'] in MAP, f"{c['id']} has no place on the learning map"
         c['map'] = list(MAP[c['id']])
@@ -265,7 +271,7 @@ def build():
 <meta name="theme-color" content="#0b0d12"><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="learn.css?v={version('learn.css')}">
 <script id="learn-data" type="application/json">{payload}</script>
-<script defer src="learn.js?v={version('learn.js')}"></script>
+<script defer src="fsrs.js?v={version('fsrs.js')}"></script><script defer src="study.js?v={version('study.js')}"></script><script defer src="learn.js?v={version('learn.js')}"></script>
 </head><body><div id="app"><noscript><main class="noscript"><h1>Leon 学习中心</h1><p>请启用 JavaScript 使用课程目录。也可以直接打开：</p><ul>{links}</ul></main></noscript></div></body></html>
 '''
     (SITE / 'learn' / 'index.html').write_text(page)

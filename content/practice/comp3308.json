@@ -1,0 +1,355 @@
+{
+ "course": "comp3308",
+ "questions": [
+  {
+   "id": "info-gain-device",
+   "kind": "numeric",
+   "topic": "decision-tree-information",
+   "title": {
+    "en": "Information gain of a split",
+    "zh": "一次划分的信息增益"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "Mia has 12 customers. Each one either bought a plan (Yes) or did not (No). 7 bought and 5 did not. She wants to split them by the device they use.\n\nWork in bits (log base 2). What is the information gain of splitting on Device? Give the answer to 3 decimal places.",
+    "zh": "Mia 有 12 位客户，每位客户要么购买了套餐（Yes），要么没有购买（No）。其中 7 位购买，5 位没有购买。她想按客户使用的设备来划分这些客户。\n\n请用比特（以 2 为底的对数）计算：按 Device 划分的信息增益是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.25,
+   "tolerance": 0.005,
+   "solution": {
+    "en": "Parent entropy. p(Yes) = 7/12 and p(No) = 5/12.\nlog2(7/12) = 2.807 - 3.585 = -0.778 and log2(5/12) = 2.322 - 3.585 = -1.263.\nH = 0.583 x 0.778 + 0.417 x 1.263 = 0.454 + 0.526 = 0.980.\n\nChildren.\nPhone: 4 Yes of 6, so H(2/3) = 0.918.\nLaptop: 1 Yes of 4, so H(1/4) = 0.811.\nTablet: pure, so H = 0.\n\nWeighted child entropy = 6/12 x 0.918 + 4/12 x 0.811 + 2/12 x 0 = 0.459 + 0.270 = 0.729.\n\nInformation gain = 0.980 - 0.729 = 0.251. The exact value is 0.2503, so any answer within 0.005 is accepted.\n\nCalculator-free: log2 3 = 1.585, log2 5 = 2.322, log2 7 = 2.807, and log2 12 = 2 + log2 3 = 3.585. Three decimals are enough. The pure Tablet branch needs no calculation at all.",
+    "zh": "先算父节点的熵。p(Yes) = 7/12，p(No) = 5/12。\nlog2(7/12) = 2.807 - 3.585 = -0.778，log2(5/12) = 2.322 - 3.585 = -1.263。\nH = 0.583 x 0.778 + 0.417 x 1.263 = 0.454 + 0.526 = 0.980。\n\n再算各个子节点。\nPhone：6 位里有 4 位 Yes，熵为 H(2/3) = 0.918。\nLaptop：4 位里有 1 位 Yes，熵为 H(1/4) = 0.811。\nTablet：两位都是 Yes，节点是纯的，熵为 0。\n\n加权子节点熵 = 6/12 x 0.918 + 4/12 x 0.811 + 2/12 x 0 = 0.459 + 0.270 = 0.729。\n\n信息增益 = 0.980 - 0.729 = 0.251。精确值是 0.2503，所以误差在 0.005 以内的答案都算对。\n\n免计算器做法：记住 log2 3 = 1.585，log2 5 = 2.322，log2 7 = 2.807，log2 12 = 2 + log2 3 = 3.585。保留三位小数就够了。纯的 Tablet 分支不需要任何计算。"
+   },
+   "verify_code": "from math import log2\n\n\ndef H(*counts):\n    n = sum(counts)\n    return -sum(c / n * log2(c / n) for c in counts if c)\n\n\ngroups = {'Phone': (4, 2), 'Laptop': (1, 3), 'Tablet': (2, 0)}\nassert sum(sum(g) for g in groups.values()) == 12\nbought = sum(g[0] for g in groups.values())\nparent = H(bought, 12 - bought)\nchild = sum(sum(g) / 12 * H(*g) for g in groups.values())\nprint(round(parent - child, 4))\n",
+   "code": "Device   Customers   Bought   Did not buy\nPhone        6          4          2\nLaptop       4          1          3\nTablet       2          2          0"
+  },
+  {
+   "id": "gain-ratio-region",
+   "kind": "numeric",
+   "topic": "tree-generalization",
+   "title": {
+    "en": "Gain ratio with three branches",
+    "zh": "三个分支的增益率"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "A tree node holds 10 loan records: 6 were repaid and 4 defaulted. The attribute Region has three values.\n\nGain ratio = information gain / split information. Split information is the entropy of the branch sizes: -sum of (n_v / n) x log2(n_v / n), where n_v is the number of records in branch v. Use bits.\n\nWhat is the gain ratio of Region? Give the answer to 3 decimal places.",
+    "zh": "一个决策树节点里有 10 条贷款记录：6 条已还款，4 条违约。属性 Region 有三个取值。\n\n增益率 = 信息增益 / 分裂信息。分裂信息是各分支大小的熵：-Σ (n_v / n) x log2(n_v / n)，其中 n_v 是分支 v 中的记录数。请使用比特。\n\nRegion 的增益率是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.225,
+   "tolerance": 0.005,
+   "solution": {
+    "en": "Parent entropy: H(6/10) = H(0.4) = 0.971.\nNorth: 4 repaid, 1 default, H(1/5) = 0.722.\nSouth: 2 repaid, 1 default, H(1/3) = 0.918.\nEast: pure, H = 0.\nWeighted = 0.5 x 0.722 + 0.3 x 0.918 + 0.2 x 0 = 0.361 + 0.275 = 0.636.\nInformation gain = 0.971 - 0.636 = 0.335.\n\nSplit information uses the branch sizes 5, 3, 2 out of 10:\n-(0.5 log2 0.5 + 0.3 log2 0.3 + 0.2 log2 0.2)\n= 0.5 x 1 + 0.3 x 1.737 + 0.2 x 2.322 = 0.5 + 0.521 + 0.464 = 1.485.\n(log2(1/0.3) = log2 10 - log2 3 = 3.322 - 1.585 = 1.737.)\n\nGain ratio = 0.335 / 1.485 = 0.2252, so the answer is about 0.225.\n\nWhy this matters. An ID column with 10 different values has gain 0.971 and split information log2 10 = 3.322, so its gain ratio is 0.292. That is larger than Region. The gain ratio shrinks the advantage of many-valued attributes but does not remove it, so practical tree learners also ask for a minimum gain or a minimum branch size.\n\nCalculator-free: H(0.4) = 0.971, H(0.2) = 0.722, H(1/3) = 0.918, log2 3 = 1.585, log2 5 = 2.322. Round to 3 decimals; the tolerance is 0.005.",
+    "zh": "父节点的熵：H(6/10) = H(0.4) = 0.971。\nNorth：4 条还款、1 条违约，H(1/5) = 0.722。\nSouth：2 条还款、1 条违约，H(1/3) = 0.918。\nEast：两条都违约，节点是纯的，H = 0。\n加权熵 = 0.5 x 0.722 + 0.3 x 0.918 + 0.2 x 0 = 0.361 + 0.275 = 0.636。\n信息增益 = 0.971 - 0.636 = 0.335。\n\n分裂信息用 10 条记录里三个分支的大小 5、3、2：\n-(0.5 log2 0.5 + 0.3 log2 0.3 + 0.2 log2 0.2)\n= 0.5 x 1 + 0.3 x 1.737 + 0.2 x 2.322 = 0.5 + 0.521 + 0.464 = 1.485。\n（log2(1/0.3) = log2 10 - log2 3 = 3.322 - 1.585 = 1.737。）\n\n增益率 = 0.335 / 1.485 = 0.2252，所以答案约为 0.225。\n\n这道题的启示：一个有 10 个不同取值的 ID 列，信息增益是 0.971，分裂信息是 log2 10 = 3.322，增益率为 0.292，比 Region 还高。增益率削弱了多取值属性的优势，却没有消除它，所以实际的树学习算法还会要求最小增益或最小分支大小。\n\n免计算器做法：记住 H(0.4) = 0.971，H(0.2) = 0.722，H(1/3) = 0.918，log2 3 = 1.585，log2 5 = 2.322。中间结果保留 3 位小数，容差为 0.005。"
+   },
+   "verify_code": "from math import log2\n\n\ndef H(*counts):\n    n = sum(counts)\n    return -sum(c / n * log2(c / n) for c in counts if c)\n\n\nbranches = {'North': (4, 1), 'South': (2, 1), 'East': (0, 2)}\nn = sum(sum(b) for b in branches.values())\nassert n == 10\nrepaid = sum(b[0] for b in branches.values())\ngain = H(repaid, n - repaid) - sum(sum(b) / n * H(*b) for b in branches.values())\nsplit = -sum(sum(b) / n * log2(sum(b) / n) for b in branches.values())\nprint(round(gain / split, 4))\n",
+   "code": "Region   Records   Repaid   Defaulted\nNorth       5         4          1\nSouth       3         2          1\nEast        2         0          2"
+  },
+  {
+   "id": "nb-rainy-event",
+   "kind": "numeric",
+   "topic": "naive-bayes",
+   "title": {
+    "en": "Naive Bayes with add-one smoothing",
+    "zh": "带加一平滑的朴素贝叶斯"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "A cafe recorded 9 days. For each day it noted the weather (Sunny, Cloudy or Rainy), whether a local event took place (Yes or No) and whether the cafe was busy (Yes or No).\n\nA new day is Rainy and has an event (Event = Yes). Use naive Bayes.\n- Priors: plain class frequencies.\n- Likelihoods: add-one (Laplace) smoothing, P(value | class) = (count + 1) / (class size + number of values of that attribute).\n\nWhat is the posterior probability P(Busy = Yes | Rainy, Event = Yes)? Give the answer to 3 decimal places.",
+    "zh": "一家咖啡馆记录了 9 天的情况：天气（Sunny、Cloudy 或 Rainy）、当天是否有本地活动（Yes 或 No），以及咖啡馆是否繁忙（Yes 或 No）。\n\n新的一天是 Rainy，并且有活动（Event = Yes）。请使用朴素贝叶斯。\n- 先验概率：直接用类别的出现频率。\n- 似然：用加一（拉普拉斯）平滑，P(取值 | 类别) = (计数 + 1) / (类别样本数 + 该属性的取值个数)。\n\n后验概率 P(Busy = Yes | Rainy, Event = Yes) 是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.348,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Class sizes: Busy = Yes on 4 days, Busy = No on 5 days. Priors are 4/9 and 5/9.\nWeather has 3 values and Event has 2 values.\n\nBusy = Yes: Rainy never occurred (0 of 4), Event = Yes occurred on 3 of 4.\nP(Rainy | Yes) = (0 + 1) / (4 + 3) = 1/7\nP(Event = Yes | Yes) = (3 + 1) / (4 + 2) = 2/3\nScore = 4/9 x 1/7 x 2/3 = 8/189 = 0.0423\n\nBusy = No: Rainy on 3 of 5, Event = Yes on 1 of 5.\nP(Rainy | No) = (3 + 1) / (5 + 3) = 1/2\nP(Event = Yes | No) = (1 + 1) / (5 + 2) = 2/7\nScore = 5/9 x 1/2 x 2/7 = 5/63 = 15/189 = 0.0794\n\nPosterior = 8 / (8 + 15) = 8/23 = 0.348.\n\nWithout smoothing the Yes score would be 0 because Rainy was never seen on a busy day, so the three busy days with an event could never count. Smoothing keeps that small but real evidence. Note that the denominator uses the number of attribute values (3 for Weather, 2 for Event), not the number of classes.\n\nCalculator-free: keep everything as fractions with the common denominator 189, then divide once at the end. The tolerance is 0.002.",
+    "zh": "类别样本数：Busy = Yes 有 4 天，Busy = No 有 5 天。先验分别是 4/9 和 5/9。\nWeather 有 3 个取值，Event 有 2 个取值。\n\nBusy = Yes：Rainy 一次也没出现（4 天里 0 天），Event = Yes 出现了 3 天。\nP(Rainy | Yes) = (0 + 1) / (4 + 3) = 1/7\nP(Event = Yes | Yes) = (3 + 1) / (4 + 2) = 2/3\n得分 = 4/9 x 1/7 x 2/3 = 8/189 = 0.0423\n\nBusy = No：Rainy 出现 3 天（共 5 天），Event = Yes 出现 1 天（共 5 天）。\nP(Rainy | No) = (3 + 1) / (5 + 3) = 1/2\nP(Event = Yes | No) = (1 + 1) / (5 + 2) = 2/7\n得分 = 5/9 x 1/2 x 2/7 = 5/63 = 15/189 = 0.0794\n\n后验 = 8 / (8 + 15) = 8/23 = 0.348。\n\n如果不平滑，Yes 的得分会变成 0，因为 Rainy 从没在繁忙的日子里出现过，那三个有活动的繁忙日子就永远不起作用。平滑保留了这份虽小却真实的证据。注意分母加的是该属性的取值个数（Weather 是 3，Event 是 2），不是类别个数。\n\n免计算器做法：全部写成分数，通分到 189，最后只做一次除法。容差为 0.002。"
+   },
+   "verify_code": "rows = [\n    ('Sunny', 'Yes', 'Yes'), ('Sunny', 'Yes', 'Yes'), ('Cloudy', 'No', 'Yes'), ('Cloudy', 'Yes', 'Yes'),\n    ('Rainy', 'No', 'No'), ('Rainy', 'No', 'No'), ('Cloudy', 'No', 'No'), ('Rainy', 'Yes', 'No'), ('Sunny', 'No', 'No'),\n]\nquery = ('Rainy', 'Yes')\nvalues = [{'Sunny', 'Cloudy', 'Rainy'}, {'Yes', 'No'}]\nscore = {}\nfor cls in ('Yes', 'No'):\n    members = [r for r in rows if r[2] == cls]\n    s = len(members) / len(rows)\n    for j, v in enumerate(query):\n        count = sum(1 for r in members if r[j] == v)\n        s *= (count + 1) / (len(members) + len(values[j]))\n    score[cls] = s\nprint(round(score['Yes'] / (score['Yes'] + score['No']), 4))\n",
+   "code": "Day   Weather   Event   Busy\n1     Sunny     Yes     Yes\n2     Sunny     Yes     Yes\n3     Cloudy    No      Yes\n4     Cloudy    Yes     Yes\n5     Rainy     No      No\n6     Rainy     No      No\n7     Cloudy    No      No\n8     Rainy     Yes     No\n9     Sunny     No      No"
+  },
+  {
+   "id": "knn-mixed-scaled",
+   "kind": "numeric",
+   "topic": "learning-neighbors",
+   "title": {
+    "en": "k-NN with scaling and a nominal attribute",
+    "zh": "带缩放与名义属性的 k 近邻"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "Noah predicts a customer's monthly spend with k-nearest neighbours: k = 3, and the prediction is the plain average of the three nearest spends.\n\nDistance rule.\n1. Scale age and income to [0, 1] with the minimum and maximum of these six records: x' = (x - min) / (max - min).\n2. Distance squared = (difference in scaled age)^2 + (difference in scaled income)^2 + 1 if Owns differs, otherwise + 0.\n\nNew customer: age 35, income 48 (thousand dollars), Owns = Y.\n\nWhat is the predicted spend in dollars?",
+    "zh": "Noah 用 k 近邻预测客户的月消费：k = 3，预测值是三个最近邻消费额的简单平均。\n\n距离规则：\n1. 用这六条记录里的最小值和最大值，把年龄和收入缩放到 [0, 1]：x' = (x - 最小值) / (最大值 - 最小值)。\n2. 距离的平方 = (缩放后年龄之差)^2 + (缩放后收入之差)^2，如果 Owns 不同再加 1，相同则加 0。\n\n新客户：年龄 35，收入 48（千美元），Owns = Y。\n\n预测的月消费是多少美元？"
+   },
+   "answer": 280,
+   "tolerance": 0.5,
+   "solution": {
+    "en": "Ranges from the six records: age 26 to 50 (range 24), income 34 to 80 (range 46).\n\nSquared distances to the new customer (35, 48, Y):\nRecord 2 (36, 46, Y): (1/24)^2 + (2/46)^2 = 0.002 + 0.002 = 0.004\nRecord 5 (40, 52, Y): (5/24)^2 + (4/46)^2 = 0.043 + 0.008 = 0.051\nRecord 6 (26, 34, Y): (9/24)^2 + (14/46)^2 = 0.141 + 0.093 = 0.233\nRecord 3 (50, 49, Y): (15/24)^2 + (1/46)^2 = 0.391 + 0.000 = 0.391\nRecord 1 (33, 80, Y): (2/24)^2 + (32/46)^2 = 0.007 + 0.484 = 0.491\nRecord 4 (30, 44, N): (5/24)^2 + (4/46)^2 + 1 = 0.051 + 1 = 1.051\n\nThe three nearest are records 2, 5 and 6, with spends 310, 330 and 200. Prediction = (310 + 330 + 200) / 3 = 280.\n\nYou can rank by squared distance, so no square roots are needed. The gap between the third (0.233) and the fourth (0.391) is large, so rounding the scaled differences to 2 decimals does not change the choice.\n\nWhy scaling matters. If income were used in dollars without scaling, income differences (thousands) would swamp age differences (tens). Record 3 would then be the nearest, and record 6 would drop out. The mismatch penalty also shows how a nominal attribute can join the distance: a different home status counts as a full unit of distance.\n\nCalculator-free: round scaled differences to 2 decimals; the answer is exact because it is an average of three given spends.",
+    "zh": "六条记录里的范围：年龄 26 到 50（范围 24），收入 34 到 80（范围 46）。\n\n到新客户 (35, 48, Y) 的距离平方：\n记录 2 (36, 46, Y)：(1/24)^2 + (2/46)^2 = 0.002 + 0.002 = 0.004\n记录 5 (40, 52, Y)：(5/24)^2 + (4/46)^2 = 0.043 + 0.008 = 0.051\n记录 6 (26, 34, Y)：(9/24)^2 + (14/46)^2 = 0.141 + 0.093 = 0.233\n记录 3 (50, 49, Y)：(15/24)^2 + (1/46)^2 = 0.391 + 0.000 = 0.391\n记录 1 (33, 80, Y)：(2/24)^2 + (32/46)^2 = 0.007 + 0.484 = 0.491\n记录 4 (30, 44, N)：(5/24)^2 + (4/46)^2 + 1 = 0.051 + 1 = 1.051\n\n最近的三条是记录 2、5、6，消费额分别是 310、330、200。预测值 = (310 + 330 + 200) / 3 = 280。\n\n只需比较距离平方，所以不用开方。第三名（0.233）和第四名（0.391）差距很大，把缩放后的差值取两位小数也不会改变选择。\n\n缩放为什么重要：如果收入直接用美元而不缩放，收入的差（几千）会压过年龄的差（几十），记录 3 会成为最近邻，记录 6 则被挤出。惩罚项还展示了名义属性如何进入距离：住房状态不同，就算作整整 1 个单位的距离。\n\n免计算器做法：缩放后的差值取两位小数即可；因为结果是三个已知消费额的平均，所以答案是精确的。"
+   },
+   "verify_code": "train = [(33, 80, 'Y', 400), (36, 46, 'Y', 310), (50, 49, 'Y', 290), (30, 44, 'N', 270), (40, 52, 'Y', 330), (26, 34, 'Y', 200)]\nquery = (35, 48, 'Y')\na_lo, a_hi = min(t[0] for t in train), max(t[0] for t in train)\ni_lo, i_hi = min(t[1] for t in train), max(t[1] for t in train)\nranked = sorted(\n    ((((t[0] - query[0]) / (a_hi - a_lo)) ** 2 + ((t[1] - query[1]) / (i_hi - i_lo)) ** 2 + (0 if t[2] == query[2] else 1), t[3])\n     for t in train))\nassert ranked[2][0] < ranked[3][0] - 0.1\nprint(sum(spend for _, spend in ranked[:3]) / 3)\n",
+   "code": "Record   Age   Income   Owns   Spend\n1        33     80       Y      400\n2        36     46       Y      310\n3        50     49       Y      290\n4        30     44       N      270\n5        40     52       Y      330\n6        26     34       Y      200",
+   "unit": {
+    "en": "dollars",
+    "zh": "美元"
+   }
+  },
+  {
+   "id": "perceptron-two-updates",
+   "kind": "numeric",
+   "topic": "perceptron",
+   "title": {
+    "en": "Two perceptron updates",
+    "zh": "连续两次感知机更新"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "A perceptron has two inputs. It outputs a = 1 if z = w1 x1 + w2 x2 + b >= 0, otherwise a = 0.\n\nStart with w1 = 1, w2 = -1, b = 0.5. The learning rate is 0.5. After each example, update w_i <- w_i + 0.5 (t - a) x_i and b <- b + 0.5 (t - a).\n\nPresent example 1 (x = (2, 1), target 0) and update. Then present example 2 (x = (-1, 1), target 1) and update.\n\nFinally compute the score z of example 1 again with the new weights. What is z?",
+    "zh": "一个感知机有两个输入。当 z = w1 x1 + w2 x2 + b >= 0 时输出 a = 1，否则输出 a = 0。\n\n初始值 w1 = 1，w2 = -1，b = 0.5，学习率为 0.5。每个样本之后按 w_i <- w_i + 0.5 (t - a) x_i 与 b <- b + 0.5 (t - a) 更新。\n\n先输入样本 1（x = (2, 1)，目标 0）并更新；再输入样本 2（x = (-1, 1)，目标 1）并更新。\n\n最后用新的权重重新计算样本 1 的得分 z。z 是多少？"
+   },
+   "answer": -1.5,
+   "tolerance": 0.001,
+   "solution": {
+    "en": "Example 1: z = 1 x 2 + (-1) x 1 + 0.5 = 1.5, so a = 1. Target is 0, so error t - a = -1.\nw = (1, -1) + 0.5 x (-1) x (2, 1) = (0, -1.5). b = 0.5 + 0.5 x (-1) = 0.\n\nExample 2: z = 0 x (-1) + (-1.5) x 1 + 0 = -1.5, so a = 0. Target is 1, so error = +1.\nw = (0, -1.5) + 0.5 x (+1) x (-1, 1) = (-0.5, -1). b = 0 + 0.5 = 0.5.\n\nExample 1 again: z = (-0.5) x 2 + (-1) x 1 + 0.5 = -1.5.\n\nSanity check: example 1 now gives a = 0, which matches its target, so the first update was not undone by the second. The score moved from +1.5 to -1.5, which is the intended direction.\n\nCalculator-free: all numbers are multiples of 0.5, so no approximation is needed.",
+    "zh": "样本 1：z = 1 x 2 + (-1) x 1 + 0.5 = 1.5，所以 a = 1。目标是 0，误差 t - a = -1。\nw = (1, -1) + 0.5 x (-1) x (2, 1) = (0, -1.5)。b = 0.5 + 0.5 x (-1) = 0。\n\n样本 2：z = 0 x (-1) + (-1.5) x 1 + 0 = -1.5，所以 a = 0。目标是 1，误差 = +1。\nw = (0, -1.5) + 0.5 x (+1) x (-1, 1) = (-0.5, -1)。b = 0 + 0.5 = 0.5。\n\n再算样本 1：z = (-0.5) x 2 + (-1) x 1 + 0.5 = -1.5。\n\n合理性检查：样本 1 现在输出 a = 0，与目标一致，说明第二次更新没有把第一次更新的效果抵消。得分从 +1.5 变成 -1.5，方向正是我们想要的。\n\n免计算器做法：所有数字都是 0.5 的倍数，不需要任何近似。"
+   },
+   "verify_code": "w = [1.0, -1.0]\nb = 0.5\neta = 0.5\n\n\ndef score(x):\n    return w[0] * x[0] + w[1] * x[1] + b\n\n\nfor x, t in [((2, 1), 0), ((-1, 1), 1)]:\n    a = 1 if score(x) >= 0 else 0\n    e = t - a\n    w = [w[0] + eta * e * x[0], w[1] + eta * e * x[1]]\n    b = b + eta * e\nprint(score((2, 1)))\n"
+  },
+  {
+   "id": "backprop-one-step",
+   "kind": "numeric",
+   "topic": "backpropagation",
+   "title": {
+    "en": "One backpropagation step",
+    "zh": "一步反向传播"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "A tiny network has two inputs, one hidden unit and one output unit. Both units use the sigmoid s(z) = 1 / (1 + e^-z). The loss is L = 1/2 (a_out - t)^2.\n\nHidden unit: weights w1 = 1 and w2 = -0.5, bias 0.\nOutput unit: weight v = 2 from the hidden unit, bias c = -0.5.\n\nInput x = (1, 2), target t = 1, learning rate 0.5. Do one forward pass and one backward pass for this single example. Compute all gradients with the OLD weights, then update every weight.\n\nYou may use s(0) = 0.5 and s(0.5) = 0.6225.\n\nWhat is the new value of w2? Give the answer to 3 decimal places.",
+    "zh": "一个小网络有两个输入、一个隐藏单元和一个输出单元。两个单元都用 sigmoid：s(z) = 1 / (1 + e^-z)。损失为 L = 1/2 (a_out - t)^2。\n\n隐藏单元：权重 w1 = 1，w2 = -0.5，偏置 0。\n输出单元：来自隐藏单元的权重 v = 2，偏置 c = -0.5。\n\n输入 x = (1, 2)，目标 t = 1，学习率 0.5。对这一个样本做一次前向传播和一次反向传播。所有梯度都用旧权重计算，然后再更新每个权重。\n\n可以直接使用 s(0) = 0.5 和 s(0.5) = 0.6225。\n\nw2 更新后的新值是多少？答案保留 3 位小数。"
+   },
+   "answer": -0.456,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Forward pass.\nHidden: z_h = 1 x 1 + (-0.5) x 2 + 0 = 0, so a_h = s(0) = 0.5.\nOutput: z_o = 2 x 0.5 - 0.5 = 0.5, so a_o = s(0.5) = 0.6225.\n\nBackward pass.\nOutput delta: d_o = (a_o - t) x a_o (1 - a_o) = (0.6225 - 1) x 0.6225 x 0.3775 = -0.3775 x 0.2350 = -0.0887.\nHidden delta uses the OLD output weight v = 2: d_h = a_h (1 - a_h) x v x d_o = 0.25 x 2 x (-0.0887) = -0.0444.\n\nGradient for w2 is d_h x x2 = -0.0444 x 2 = -0.0887.\nNew w2 = w2 - 0.5 x gradient = -0.5 - 0.5 x (-0.0887) = -0.5 + 0.0444 = -0.4556.\n\nSo the answer is about -0.456.\n\nTwo things to check. First, the sign: the output is too low (0.6225 against target 1), so the hidden delta is negative, and the update pushes w2 up toward zero, which raises z_h and then a_o. Second, the hidden delta must use v = 2, not the updated v = 2 + 0.5 x 0.0887 x 0.5 = 2.022.\n\nCalculator-free: a(1 - a) for 0.6225 is 0.6225 x 0.3775 = 0.235. Keep 4 decimals in the deltas. The tolerance is 0.002.",
+    "zh": "前向传播。\n隐藏单元：z_h = 1 x 1 + (-0.5) x 2 + 0 = 0，所以 a_h = s(0) = 0.5。\n输出单元：z_o = 2 x 0.5 - 0.5 = 0.5，所以 a_o = s(0.5) = 0.6225。\n\n反向传播。\n输出层 delta：d_o = (a_o - t) x a_o (1 - a_o) = (0.6225 - 1) x 0.6225 x 0.3775 = -0.3775 x 0.2350 = -0.0887。\n隐藏层 delta 要用旧的输出权重 v = 2：d_h = a_h (1 - a_h) x v x d_o = 0.25 x 2 x (-0.0887) = -0.0444。\n\nw2 的梯度是 d_h x x2 = -0.0444 x 2 = -0.0887。\n新的 w2 = w2 - 0.5 x 梯度 = -0.5 - 0.5 x (-0.0887) = -0.5 + 0.0444 = -0.4556。\n\n所以答案约为 -0.456。\n\n两点检查：第一，符号。输出偏低（0.6225，目标是 1），所以隐藏层 delta 为负，更新把 w2 推向 0，从而提高 z_h，进而提高 a_o。第二，隐藏层 delta 必须用 v = 2，而不是更新后的 v = 2 + 0.5 x 0.0887 x 0.5 = 2.022。\n\n免计算器做法：0.6225 的 a(1 - a) 是 0.6225 x 0.3775 = 0.235。delta 保留 4 位小数。容差为 0.002。"
+   },
+   "verify_code": "from math import exp\n\n\ndef sig(z):\n    return 1 / (1 + exp(-z))\n\n\nx = (1.0, 2.0)\nt = 1.0\neta = 0.5\nw = [1.0, -0.5]\nbh = 0.0\nv = 2.0\nc = -0.5\nah = sig(w[0] * x[0] + w[1] * x[1] + bh)\nao = sig(v * ah + c)\ndo = (ao - t) * ao * (1 - ao)\ndh = ah * (1 - ah) * v * do\nprint(round(w[1] - eta * dh * x[1], 4))\n"
+  },
+  {
+   "id": "f1-medium-class",
+   "kind": "numeric",
+   "topic": "classification-metrics",
+   "title": {
+    "en": "F1 for one class of three",
+    "zh": "三分类中某一类的 F1"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "A model sorts 105 parcels into Low, Medium and High priority. Each row is the true class and each column is the predicted class.\n\nTreat Medium as the positive class and the other two classes together as the negative class. What is the F1 score of the Medium class? Give the answer to 3 decimal places.",
+    "zh": "一个模型把 105 个包裹分成 Low、Medium、High 三个优先级。每一行是真实类别，每一列是预测类别。\n\n把 Medium 当作正类，把另外两类合起来当作负类。Medium 类的 F1 分数是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.583,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Read the Medium row and the Medium column.\nTP = 21 (true Medium, predicted Medium).\nFN = 8 + 6 = 14 (true Medium, predicted something else; the rest of the row).\nFP = 6 + 10 = 16 (predicted Medium, truly Low or High; the rest of the column).\n\nPrecision = 21 / (21 + 16) = 21/37 = 0.568.\nRecall = 21 / (21 + 14) = 21/35 = 0.600.\nF1 = 2TP / (2TP + FP + FN) = 42 / (42 + 16 + 14) = 42/72 = 0.5833.\n\nThe shortcut form needs only one division. Do not use the 30 and 18 on the other diagonal cells: they are true negatives for this class and F1 ignores them.\n\nCalculator-free: 42/72 = 7/12 = 0.583.",
+    "zh": "看 Medium 这一行和 Medium 这一列。\nTP = 21（真实是 Medium，预测也是 Medium）。\nFN = 8 + 6 = 14（真实是 Medium，却预测成别的；就是这一行的其余格子）。\nFP = 6 + 10 = 16（预测为 Medium，真实却是 Low 或 High；就是这一列的其余格子）。\n\n精确率 = 21 / (21 + 16) = 21/37 = 0.568。\n召回率 = 21 / (21 + 14) = 21/35 = 0.600。\nF1 = 2TP / (2TP + FP + FN) = 42 / (42 + 16 + 14) = 42/72 = 0.5833。\n\n用这个简写形式只需要做一次除法。不要用到另外两个对角线上的 30 和 18：对 Medium 这一类来说它们是真负例，而 F1 不使用真负例。\n\n免计算器做法：42/72 = 7/12 = 0.583。"
+   },
+   "verify_code": "matrix = [[30, 6, 4], [8, 21, 6], [2, 10, 18]]\nassert sum(map(sum, matrix)) == 105\nk = 1\ntp = matrix[k][k]\nfn = sum(matrix[k]) - tp\nfp = sum(row[k] for row in matrix) - tp\nprint(round(2 * tp / (2 * tp + fp + fn), 4))\n",
+   "code": "              Pred Low   Pred Medium   Pred High\nTrue Low         30           6            4\nTrue Medium       8          21            6\nTrue High         2          10           18"
+  },
+  {
+   "id": "paired-t-five-splits",
+   "kind": "numeric",
+   "topic": "evaluation-design",
+   "title": {
+    "en": "A paired t statistic",
+    "zh": "配对 t 统计量"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Leon compares model A with model B on five independent random train/test splits of the same data. For each split he records (accuracy of A) - (accuracy of B), in percentage points:\n\n+4, +1, +3, +5, +2\n\nCompute the paired t statistic t = mean(d) / (s_d / sqrt(k)), where k = 5 and s_d is the sample standard deviation (divide the sum of squares by k - 1). Give the answer to 3 decimal places.",
+    "zh": "Leon 在同一份数据的五次独立随机训练/测试划分上比较模型 A 和模型 B。每次他记录（A 的准确率）-（B 的准确率），单位是百分点：\n\n+4, +1, +3, +5, +2\n\n请计算配对 t 统计量 t = mean(d) / (s_d / sqrt(k))，其中 k = 5，s_d 是样本标准差（平方和除以 k - 1）。答案保留 3 位小数。"
+   },
+   "answer": 4.243,
+   "tolerance": 0.01,
+   "solution": {
+    "en": "Mean difference = (4 + 1 + 3 + 5 + 2) / 5 = 3.\nDeviations from the mean: +1, -2, 0, +2, -1. Sum of squares = 1 + 4 + 0 + 4 + 1 = 10.\nSample variance = 10 / (5 - 1) = 2.5. Standard error = sqrt(2.5 / 5) = sqrt(0.5) = 0.7071.\nt = 3 / 0.7071 = 4.243.\n\nWith k - 1 = 4 degrees of freedom the two-sided 95% critical value is 2.776, so the difference is clearly larger than split-to-split noise. This reading assumes the five differences are roughly independent. Folds of one cross-validation overlap in their training data, so the same t value would be less trustworthy there.\n\nCalculator-free: sqrt(0.5) = 0.7071, or write t = 3 / sqrt(0.5) = 3 sqrt 2 = 4.243. The tolerance is 0.01.",
+    "zh": "平均差 = (4 + 1 + 3 + 5 + 2) / 5 = 3。\n各项与均值的偏差：+1、-2、0、+2、-1。平方和 = 1 + 4 + 0 + 4 + 1 = 10。\n样本方差 = 10 / (5 - 1) = 2.5。标准误 = sqrt(2.5 / 5) = sqrt(0.5) = 0.7071。\nt = 3 / 0.7071 = 4.243。\n\n自由度为 k - 1 = 4 时，双侧 95% 的临界值是 2.776，所以这个差异明显大于不同划分之间的随机波动。这一结论假设五个差值大致相互独立。同一次交叉验证的各折训练集互相重叠，同样的 t 值在那里就没那么可靠。\n\n免计算器做法：sqrt(0.5) = 0.7071，或者写成 t = 3 / sqrt(0.5) = 3 sqrt 2 = 4.243。容差为 0.01。"
+   },
+   "verify_code": "from math import sqrt\n\nd = [4, 1, 3, 5, 2]\nk = len(d)\nmean = sum(d) / k\nsd = sqrt(sum((x - mean) ** 2 for x in d) / (k - 1))\nprint(round(mean / (sd / sqrt(k)), 4))\n"
+  },
+  {
+   "id": "kmeans-final-objective",
+   "kind": "numeric",
+   "topic": "kmeans",
+   "title": {
+    "en": "Run k-means to the end",
+    "zh": "把 k-means 运行到收敛"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "Six points lie on a line: 1, 2, 4, 9, 11, 12. Run k-means with k = 2. The starting centroids are 1 and 2.\n\nIn each round, assign every point to its nearest centroid, then move each centroid to the mean of its points. Repeat until no assignment changes.\n\nWhat is the final objective J, the sum of squared distances from each point to its centroid? Give the answer to 2 decimal places.",
+    "zh": "一条直线上有六个点：1、2、4、9、11、12。运行 k = 2 的 k-means，初始质心为 1 和 2。\n\n每一轮先把每个点分给最近的质心，再把每个质心移到其所属点的均值。重复到分配不再变化为止。\n\n最终的目标函数 J（每个点到其质心的距离平方之和）是多少？答案保留 2 位小数。"
+   },
+   "answer": 9.33,
+   "tolerance": 0.01,
+   "solution": {
+    "en": "Round 1 (centroids 1 and 2). Point 1 goes to centroid 1. Points 2, 4, 9, 11, 12 are all nearer to 2. New centroids: 1 and (2 + 4 + 9 + 11 + 12) / 5 = 7.6.\n\nRound 2 (centroids 1 and 7.6). Point 2 is 1 from the first and 5.6 from the second: first. Point 4 is 3 from the first and 3.6 from the second: first. Points 9, 11, 12 go to the second. New centroids: (1 + 2 + 4) / 3 = 7/3 = 2.333 and (9 + 11 + 12) / 3 = 32/3 = 10.667.\n\nRound 3. Point 4 is 1.667 from 2.333 and 6.667 from 10.667: first. Point 9 is 6.667 from 2.333 and 1.667 from 10.667: second. Nothing changes, so stop.\n\nJ for {1, 2, 4} with mean 7/3: (4/3)^2 + (1/3)^2 + (5/3)^2 = 16/9 + 1/9 + 25/9 = 42/9 = 4.667.\nJ for {9, 11, 12} with mean 32/3: (5/3)^2 + (1/3)^2 + (4/3)^2 = 25/9 + 1/9 + 16/9 = 42/9 = 4.667.\nTotal J = 84/9 = 28/3 = 9.33.\n\nNotice that the poor start (centroids 1 and 2) still reached the natural grouping here. In general k-means only reaches a local minimum, so the start can matter.\n\nCalculator-free: use fractions with denominator 9. No approximation is needed.",
+    "zh": "第 1 轮（质心 1 和 2）。点 1 归第一个质心；点 2、4、9、11、12 都离 2 更近。新质心：1 和 (2 + 4 + 9 + 11 + 12) / 5 = 7.6。\n\n第 2 轮（质心 1 和 7.6）。点 2 离第一个质心 1、离第二个 5.6：归第一个。点 4 离第一个 3、离第二个 3.6：归第一个。点 9、11、12 归第二个。新质心：(1 + 2 + 4) / 3 = 7/3 = 2.333 和 (9 + 11 + 12) / 3 = 32/3 = 10.667。\n\n第 3 轮。点 4 离 2.333 为 1.667、离 10.667 为 6.667：归第一个。点 9 离 2.333 为 6.667、离 10.667 为 1.667：归第二个。没有任何变化，停止。\n\n{1, 2, 4} 的均值为 7/3：(4/3)^2 + (1/3)^2 + (5/3)^2 = 16/9 + 1/9 + 25/9 = 42/9 = 4.667。\n{9, 11, 12} 的均值为 32/3：(5/3)^2 + (1/3)^2 + (4/3)^2 = 25/9 + 1/9 + 16/9 = 42/9 = 4.667。\n总 J = 84/9 = 28/3 = 9.33。\n\n注意，这个不太好的初始值（质心 1 和 2）这次还是找到了自然的分组。一般情况下 k-means 只能到达局部最小，所以初始值可能有影响。\n\n免计算器做法：用分母为 9 的分数计算，不需要任何近似。"
+   },
+   "verify_code": "pts = [1, 2, 4, 9, 11, 12]\ncent = [1.0, 2.0]\nprev = None\nwhile True:\n    assign = [min(range(2), key=lambda k: abs(p - cent[k])) for p in pts]\n    if assign == prev:\n        break\n    prev = assign\n    cent = [sum(p for p, a in zip(pts, assign) if a == k) / assign.count(k) for k in range(2)]\nprint(round(sum((p - cent[a]) ** 2 for p, a in zip(pts, assign)), 4))\n"
+  },
+  {
+   "id": "bayes-three-machines",
+   "kind": "numeric",
+   "topic": "probability-reasoning",
+   "title": {
+    "en": "Which machine made the defect?",
+    "zh": "次品来自哪台机器"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "A workshop has three machines. Leon's machine makes 50% of all parts, Mia's makes 30% and Emma's makes 20%. The defect rates are 2% for Leon's, 4% for Mia's and 10% for Emma's.\n\nA part is picked at random and it is defective. What is the probability that it came from Emma's machine? Give the answer to 3 decimal places.",
+    "zh": "一个车间有三台机器。Leon 的机器生产全部零件的 50%，Mia 的生产 30%，Emma 的生产 20%。次品率分别是：Leon 的 2%，Mia 的 4%，Emma 的 10%。\n\n随机抽出一个零件，发现它是次品。它来自 Emma 的机器的概率是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.476,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Bayes rule with the law of total probability.\nP(defective) = 0.5 x 0.02 + 0.3 x 0.04 + 0.2 x 0.10 = 0.010 + 0.012 + 0.020 = 0.042.\nP(Emma and defective) = 0.2 x 0.10 = 0.020.\nP(Emma | defective) = 0.020 / 0.042 = 10/21 = 0.476.\n\nEmma makes only 20% of the parts but 47.6% of the defects, because her defect rate is high. The posterior mixes the prior (how many parts) with the likelihood (how often each machine fails).\n\nCalculator-free: 0.020 / 0.042 = 20/42 = 10/21. Dividing 10 by 21 gives 0.476.",
+    "zh": "用贝叶斯公式和全概率公式。\nP(次品) = 0.5 x 0.02 + 0.3 x 0.04 + 0.2 x 0.10 = 0.010 + 0.012 + 0.020 = 0.042。\nP(Emma 且次品) = 0.2 x 0.10 = 0.020。\nP(Emma | 次品) = 0.020 / 0.042 = 10/21 = 0.476。\n\nEmma 只生产 20% 的零件，却造成 47.6% 的次品，因为她的次品率很高。后验概率把先验（各机器产量多少）和似然（各机器出次品的频率）合在一起。\n\n免计算器做法：0.020 / 0.042 = 20/42 = 10/21。10 除以 21 得 0.476。"
+   },
+   "verify_code": "share = {'Leon': 0.5, 'Mia': 0.3, 'Emma': 0.2}\nrate = {'Leon': 0.02, 'Mia': 0.04, 'Emma': 0.10}\np_def = sum(share[m] * rate[m] for m in share)\nprint(round(share['Emma'] * rate['Emma'] / p_def, 4))\n"
+  },
+  {
+   "id": "adaboost-weight-update",
+   "kind": "numeric",
+   "topic": "ensemble-learning",
+   "title": {
+    "en": "One AdaBoost reweighting round",
+    "zh": "AdaBoost 的一轮样本重加权"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "AdaBoost has five training examples with current weights D = (0.05, 0.15, 0.25, 0.30, 0.25). They sum to 1.\n\nA weak classifier is wrong on examples 1 and 2 only, and right on examples 3, 4 and 5.\n\nLet e be its weighted error and a = 1/2 ln((1 - e) / e). Multiply the weight of a wrong example by e^a and the weight of a right example by e^-a. Then divide all weights by their sum so they add to 1.\n\nWhat is the new weight of example 2? Give the answer to 3 decimal places.",
+    "zh": "AdaBoost 有五个训练样本，当前权重为 D = (0.05, 0.15, 0.25, 0.30, 0.25)，总和为 1。\n\n一个弱分类器只在样本 1 和样本 2 上出错，在样本 3、4、5 上正确。\n\n设它的加权错误率为 e，a = 1/2 ln((1 - e) / e)。出错样本的权重乘以 e^a，答对样本的权重乘以 e^-a，然后把所有权重除以它们的总和，使总和为 1。\n\n样本 2 的新权重是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.375,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Weighted error: e = 0.05 + 0.15 = 0.20.\na = 1/2 ln(0.8 / 0.2) = 1/2 ln 4 = ln 2 = 0.693.\nSo e^a = 2 and e^-a = 0.5. You can skip the logarithm: e^a = sqrt((1 - e) / e) = sqrt 4 = 2.\n\nUnnormalised weights:\nExample 1 (wrong): 0.05 x 2 = 0.10\nExample 2 (wrong): 0.15 x 2 = 0.30\nExample 3 (right): 0.25 x 0.5 = 0.125\nExample 4 (right): 0.30 x 0.5 = 0.15\nExample 5 (right): 0.25 x 0.5 = 0.125\nSum = 0.80. (This always equals 2 sqrt(e (1 - e)) = 2 x 0.4 = 0.8.)\n\nNew weight of example 2 = 0.30 / 0.80 = 0.375.\n\nCheck: the new weights are 0.125, 0.375, 0.156, 0.1875, 0.156. The two wrong examples now hold 0.5 in total, up from 0.2, and the right ones hold 0.5. That is how AdaBoost makes the next learner face a task where the previous one was no better than a coin flip.\n\nCalculator-free: use e^a = sqrt((1 - e) / e) = 2, so no logarithm or exponential is needed.",
+    "zh": "加权错误率：e = 0.05 + 0.15 = 0.20。\na = 1/2 ln(0.8 / 0.2) = 1/2 ln 4 = ln 2 = 0.693。\n所以 e^a = 2，e^-a = 0.5。其实可以跳过对数：e^a = sqrt((1 - e) / e) = sqrt 4 = 2。\n\n未归一化的权重：\n样本 1（错）：0.05 x 2 = 0.10\n样本 2（错）：0.15 x 2 = 0.30\n样本 3（对）：0.25 x 0.5 = 0.125\n样本 4（对）：0.30 x 0.5 = 0.15\n样本 5（对）：0.25 x 0.5 = 0.125\n总和 = 0.80。（这个总和总是等于 2 sqrt(e (1 - e)) = 2 x 0.4 = 0.8。）\n\n样本 2 的新权重 = 0.30 / 0.80 = 0.375。\n\n检查：新权重是 0.125、0.375、0.156、0.1875、0.156。两个出错样本的权重总和从 0.2 升到 0.5，答对的样本合计也是 0.5。这就是 AdaBoost 的做法：让下一个学习器面对的任务里，上一个学习器的表现只相当于抛硬币。\n\n免计算器做法：用 e^a = sqrt((1 - e) / e) = 2，既不需要对数也不需要指数。"
+   },
+   "verify_code": "from math import exp, log\n\nD = [0.05, 0.15, 0.25, 0.30, 0.25]\nwrong = {0, 1}\ne = sum(D[i] for i in wrong)\na = 0.5 * log((1 - e) / e)\nnew = [D[i] * (exp(a) if i in wrong else exp(-a)) for i in range(5)]\ntotal = sum(new)\nprint(round(new[1] / total, 4))\n"
+  },
+  {
+   "id": "expectiminimax-three-moves",
+   "kind": "numeric",
+   "topic": "bounded-stochastic-games",
+   "title": {
+    "en": "Expectiminimax value",
+    "zh": "期望极小极大值"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "MAX chooses one of three moves. Each move leads to a chance node. Each outcome of a chance node leads to a MIN node, and MIN picks the smaller of its two leaf utilities (utilities are for MAX).\n\nWhat is the expectiminimax value of the root? Give the answer to 2 decimal places.",
+    "zh": "MAX 在三个走法中选一个。每个走法都通向一个机会节点。机会节点的每个结果都通向一个 MIN 节点，MIN 在它的两个叶子效用中取较小者（效用是对 MAX 而言的）。\n\n根节点的期望极小极大值是多少？答案保留 2 位小数。"
+   },
+   "answer": 3.8,
+   "tolerance": 0.01,
+   "solution": {
+    "en": "Work from the leaves up.\nMove a: MIN nodes give min(8, 3) = 3 and min(5, 9) = 5. Chance value = 0.6 x 3 + 0.4 x 5 = 1.8 + 2.0 = 3.8.\nMove b: MIN nodes give min(2, 12) = 2 and min(6, 4) = 4. Chance value = 0.3 x 2 + 0.7 x 4 = 0.6 + 2.8 = 3.4.\nMove c: MIN nodes give min(7, 1) = 1 and min(10, 6) = 6. Chance value = 0.5 x 1 + 0.5 x 6 = 3.5.\n\nMAX takes the largest: max(3.8, 3.4, 3.5) = 3.8, by move a.\n\nCommon slips: taking the larger leaf under MIN, using the average of the two leaves instead of the minimum, or taking the maximum over the chance outcomes. At a chance node the value is the probability-weighted average of the child values.\n\nCalculator-free: the arithmetic is exact with one decimal place.",
+    "zh": "从叶子往上算。\n走法 a：MIN 节点分别得 min(8, 3) = 3 和 min(5, 9) = 5。机会节点的值 = 0.6 x 3 + 0.4 x 5 = 1.8 + 2.0 = 3.8。\n走法 b：MIN 节点分别得 min(2, 12) = 2 和 min(6, 4) = 4。机会节点的值 = 0.3 x 2 + 0.7 x 4 = 0.6 + 2.8 = 3.4。\n走法 c：MIN 节点分别得 min(7, 1) = 1 和 min(10, 6) = 6。机会节点的值 = 0.5 x 1 + 0.5 x 6 = 3.5。\n\nMAX 取最大值：max(3.8, 3.4, 3.5) = 3.8，选走法 a。\n\n常见的错误：在 MIN 节点取了较大的叶子；用两个叶子的平均数代替最小值；在机会节点上取最大值。机会节点的值是各子节点值按概率加权的平均。\n\n免计算器做法：算术只涉及一位小数，结果是精确的。"
+   },
+   "verify_code": "tree = {\n    'a': [(0.6, [8, 3]), (0.4, [5, 9])],\n    'b': [(0.3, [2, 12]), (0.7, [6, 4])],\n    'c': [(0.5, [7, 1]), (0.5, [10, 6])],\n}\nvalues = {m: sum(p * min(leaves) for p, leaves in outcomes) for m, outcomes in tree.items()}\nprint(round(max(values.values()), 4))\n",
+   "code": "Root (MAX), three moves:\n  a -> chance:  0.6 -> MIN [8, 3]    0.4 -> MIN [5, 9]\n  b -> chance:  0.3 -> MIN [2, 12]   0.7 -> MIN [6, 4]\n  c -> chance:  0.5 -> MIN [7, 1]    0.5 -> MIN [10, 6]"
+  },
+  {
+   "id": "bn-flu-enumeration",
+   "kind": "numeric",
+   "topic": "bayesian-networks",
+   "title": {
+    "en": "Inference by enumeration",
+    "zh": "用枚举法做贝叶斯网络推断"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "A small Bayesian network has four true/false variables. Flu (F) and Allergy (A) have no parents. Sneeze (S) has parents F and A. Fever (V) has the parent F only.\n\nCompute P(F = true | S = true, V = true) by enumeration: sum out the hidden variable A, then normalise. Give the answer to 3 decimal places.",
+    "zh": "一个小型贝叶斯网络有四个真/假变量。Flu（F）和 Allergy（A）没有父节点。Sneeze（S）的父节点是 F 和 A。Fever（V）只有一个父节点 F。\n\n请用枚举法计算 P(F = true | S = true, V = true)：对隐藏变量 A 求和，再归一化。答案保留 3 位小数。"
+   },
+   "answer": 0.73,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "The joint factorises as P(F) P(A) P(S | F, A) P(V | F). The evidence is S = true and V = true, and A is hidden.\n\nF = true:\nsum over A of P(A) P(S | F, A) = 0.3 x 0.9 + 0.7 x 0.7 = 0.27 + 0.49 = 0.76.\nScore = P(F) x P(V | F) x 0.76 = 0.1 x 0.8 x 0.76 = 0.0608.\n\nF = false:\nsum over A of P(A) P(S | not F, A) = 0.3 x 0.6 + 0.7 x 0.1 = 0.18 + 0.07 = 0.25.\nScore = 0.9 x 0.1 x 0.25 = 0.0225.\n\nNormalise: P(F | S, V) = 0.0608 / (0.0608 + 0.0225) = 0.0608 / 0.0833 = 0.730.\n\nNote that V depends only on F, so P(V | F) goes outside the sum over A. Pulling it out saves work, and every factor that does not mention A can be moved out of the sum. The prior P(F) = 0.1 was low, but two symptoms that fit Flu well raise it to 73%.\n\nCalculator-free: the products are exact in four decimals. 0.0608 / 0.0833 = 0.7299.",
+    "zh": "联合分布分解为 P(F) P(A) P(S | F, A) P(V | F)。证据是 S = true 和 V = true，A 是隐藏变量。\n\nF = true：\n对 A 求和 P(A) P(S | F, A) = 0.3 x 0.9 + 0.7 x 0.7 = 0.27 + 0.49 = 0.76。\n得分 = P(F) x P(V | F) x 0.76 = 0.1 x 0.8 x 0.76 = 0.0608。\n\nF = false：\n对 A 求和 P(A) P(S | 非 F, A) = 0.3 x 0.6 + 0.7 x 0.1 = 0.18 + 0.07 = 0.25。\n得分 = 0.9 x 0.1 x 0.25 = 0.0225。\n\n归一化：P(F | S, V) = 0.0608 / (0.0608 + 0.0225) = 0.0608 / 0.0833 = 0.730。\n\n注意 V 只依赖 F，所以 P(V | F) 可以提到对 A 的求和之外。任何不含 A 的因子都可以提出求和号，这样能省工作量。先验 P(F) = 0.1 很低，但两个与 Flu 很吻合的症状把它抬高到了 73%。\n\n免计算器做法：乘积保留 4 位小数就是精确的。0.0608 / 0.0833 = 0.7299。"
+   },
+   "verify_code": "pF, pA = 0.1, 0.3\npS = {(True, True): 0.9, (True, False): 0.7, (False, True): 0.6, (False, False): 0.1}\npV = {True: 0.8, False: 0.1}\n\n\ndef joint_score(f):\n    total = 0.0\n    for a in (True, False):\n        total += (pF if f else 1 - pF) * (pA if a else 1 - pA) * pS[(f, a)] * pV[f]\n    return total\n\n\nyes, no = joint_score(True), joint_score(False)\nprint(round(yes / (yes + no), 4))\n",
+   "code": "P(F = true) = 0.1            P(A = true) = 0.3\n\nP(V = true | F = true)  = 0.8\nP(V = true | F = false) = 0.1\n\nF      A      P(S = true | F, A)\ntrue   true        0.9\ntrue   false       0.7\nfalse  true        0.6\nfalse  false       0.1"
+  },
+  {
+   "id": "davies-bouldin-three",
+   "kind": "numeric",
+   "topic": "clustering-comparisons",
+   "title": {
+    "en": "Davies-Bouldin index",
+    "zh": "Davies-Bouldin 指数"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "A one-dimensional data set is split into three clusters: A = {1, 3}, B = {6, 8, 10} and C = {14, 18}.\n\nUse these definitions.\n- The representative of a cluster is its mean.\n- S_r is the average distance of the members of cluster r to its mean.\n- M_rs is the distance between the means of clusters r and s.\n- DB = (1/k) x the sum over r of the maximum over s != r of (S_r + S_s) / M_rs.\n\nWhat is the Davies-Bouldin index? Give the answer to 3 decimal places.",
+    "zh": "一个一维数据集被分成三个簇：A = {1, 3}，B = {6, 8, 10}，C = {14, 18}。\n\n使用以下定义。\n- 每个簇的代表点是它的均值。\n- S_r 是簇 r 的成员到其均值的平均距离。\n- M_rs 是簇 r 与簇 s 均值之间的距离。\n- DB = (1/k) x 对所有 r 求和，每项取 s != r 时 (S_r + S_s) / M_rs 的最大值。\n\nDavies-Bouldin 指数是多少？答案保留 3 位小数。"
+   },
+   "answer": 0.407,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Means and scatters.\nA: mean 2, S_A = (1 + 1) / 2 = 1.\nB: mean 8, S_B = (2 + 0 + 2) / 3 = 1.333.\nC: mean 16, S_C = (2 + 2) / 2 = 2.\n\nDistances between means: M_AB = 6, M_AC = 14, M_BC = 8.\n\nWorst partner for each cluster.\nA: with B (1 + 1.333) / 6 = 0.389; with C (1 + 2) / 14 = 0.214. Maximum 0.389.\nB: with A 0.389; with C (1.333 + 2) / 8 = 0.417. Maximum 0.417.\nC: with A 0.214; with B 0.417. Maximum 0.417.\n\nDB = (0.389 + 0.417 + 0.417) / 3 = 0.407. As exact fractions: (7/18 + 5/12 + 5/12) / 3 = 11/27.\n\nA smaller DB means tighter, better separated clusters. The pair B and C limits the score because B and C have the widest spread relative to their gap.\n\nCalculator-free: keep S_B as 4/3 and write the ratios as fractions: 7/18, 5/12. Then 11/27 = 0.407.",
+    "zh": "均值与散度。\nA：均值 2，S_A = (1 + 1) / 2 = 1。\nB：均值 8，S_B = (2 + 0 + 2) / 3 = 1.333。\nC：均值 16，S_C = (2 + 2) / 2 = 2。\n\n均值之间的距离：M_AB = 6，M_AC = 14，M_BC = 8。\n\n每个簇最糟糕的搭档。\nA：与 B 是 (1 + 1.333) / 6 = 0.389；与 C 是 (1 + 2) / 14 = 0.214。最大值 0.389。\nB：与 A 是 0.389；与 C 是 (1.333 + 2) / 8 = 0.417。最大值 0.417。\nC：与 A 是 0.214；与 B 是 0.417。最大值 0.417。\n\nDB = (0.389 + 0.417 + 0.417) / 3 = 0.407。用精确分数表示：(7/18 + 5/12 + 5/12) / 3 = 11/27。\n\nDB 越小，说明簇越紧凑、彼此分得越开。B 与 C 这一对决定了分数，因为相对于它们之间的间距，B 和 C 的散布最宽。\n\n免计算器做法：把 S_B 写成 4/3，比值写成分数 7/18、5/12，最后 11/27 = 0.407。"
+   },
+   "verify_code": "clusters = [[1, 3], [6, 8, 10], [14, 18]]\nmean = [sum(c) / len(c) for c in clusters]\nscatter = [sum(abs(x - m) for x in c) / len(c) for c, m in zip(clusters, mean)]\nk = len(clusters)\ndb = sum(max((scatter[r] + scatter[s]) / abs(mean[r] - mean[s]) for s in range(k) if s != r) for r in range(k)) / k\nprint(round(db, 4))\n"
+  },
+  {
+   "id": "oner-error-rate",
+   "kind": "numeric",
+   "topic": "one-rule",
+   "title": {
+    "en": "Training error of the best 1R rule",
+    "zh": "最佳 1R 规则的训练错误率"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Iris records whether she went running (Yes or No) on 12 days. She noted the sky (Clear, Cloud, Rain, or ? if not recorded), the temperature (Hot, Mild, Cool) and the wind (Calm, Windy).\n\nBuild a 1R classifier. For each attribute, predict the majority class for each of its values, and treat ? as a value of its own. Choose the attribute whose rule makes the fewest errors on these 12 days. (There are no ties.)\n\nWhat is the training error rate of that best rule, as a fraction of the 12 days? Give the answer to 3 decimal places.",
+    "zh": "Iris 记录了 12 天里自己是否去跑步（Yes 或 No）。她还记下了当天的天空（Clear、Cloud、Rain，没记录则为 ?）、温度（Hot、Mild、Cool）和风（Calm、Windy）。\n\n请构建一个 1R 分类器：对每个属性，为它的每个取值预测多数类，并把 ? 当作一个独立的取值。选出在这 12 天上错误最少的属性。（没有平局。）\n\n最佳规则的训练错误率是多少，用占 12 天的比例表示？答案保留 3 位小数。"
+   },
+   "answer": 0.167,
+   "tolerance": 0.001,
+   "solution": {
+    "en": "Count the errors of each attribute (errors = group size - majority count).\n\nSky: Clear has 1 Yes, 3 No: 1 error. Cloud has 3 Yes, 0 No: 0. Rain has 3 Yes, 1 No: 1. ? has 1 Yes: 0. Total 2 errors.\nTemp: Hot has 1 Yes, 2 No: 1 error. Mild has 4 Yes, 1 No: 1. Cool has 3 Yes, 1 No: 1. Total 3 errors.\nWind: Calm has 4 Yes, 2 No: 2 errors. Windy has 4 Yes, 2 No: 2. Total 4 errors.\n\nThe best attribute is Sky with 2 errors. Error rate = 2/12 = 0.167.\n\nThe rule is: Clear -> No, Cloud -> Yes, Rain -> Yes, ? -> Yes. Treating the missing value as its own value is one simple policy; the single record with ? is predicted correctly only because it forms its own group, so be careful: a group of one always scores 0 errors, which flatters attributes with many rare values.\n\nCalculator-free: 2/12 = 1/6 = 0.167.",
+    "zh": "数出每个属性的错误数（错误数 = 分组大小 - 多数类个数）。\n\nSky：Clear 有 1 个 Yes、3 个 No，错 1；Cloud 有 3 个 Yes、0 个 No，错 0；Rain 有 3 个 Yes、1 个 No，错 1；? 有 1 个 Yes，错 0。合计 2 个错误。\nTemp：Hot 有 1 个 Yes、2 个 No，错 1；Mild 有 4 个 Yes、1 个 No，错 1；Cool 有 3 个 Yes、1 个 No，错 1。合计 3 个错误。\nWind：Calm 有 4 个 Yes、2 个 No，错 2；Windy 有 4 个 Yes、2 个 No，错 2。合计 4 个错误。\n\n最佳属性是 Sky，错 2 个。错误率 = 2/12 = 0.167。\n\n规则是：Clear -> No，Cloud -> Yes，Rain -> Yes，? -> Yes。把缺失值当作独立取值只是一种简单的处理办法。那条带 ? 的记录之所以被预测对，只是因为它自己成了一组，要小心：只有一条记录的分组永远是 0 个错误，这会让取值很多且很稀有的属性占便宜。\n\n免计算器做法：2/12 = 1/6 = 0.167。"
+   },
+   "verify_code": "from collections import Counter, defaultdict\n\nrows = [\n    ('Clear', 'Hot', 'Calm', 'No'), ('Clear', 'Hot', 'Windy', 'No'), ('Cloud', 'Hot', 'Calm', 'Yes'),\n    ('Rain', 'Mild', 'Calm', 'Yes'), ('Rain', 'Cool', 'Calm', 'Yes'), ('Rain', 'Cool', 'Windy', 'No'),\n    ('Cloud', 'Cool', 'Windy', 'Yes'), ('Clear', 'Mild', 'Calm', 'No'), ('?', 'Cool', 'Calm', 'Yes'),\n    ('Rain', 'Mild', 'Windy', 'Yes'), ('Cloud', 'Mild', 'Windy', 'Yes'), ('Clear', 'Mild', 'Windy', 'Yes'),\n]\nerrors = []\nfor j in range(3):\n    groups = defaultdict(Counter)\n    for r in rows:\n        groups[r[j]][r[3]] += 1\n    for g in groups.values():\n        assert list(g.values()).count(max(g.values())) == 1 or len(g) == 1\n    errors.append(sum(sum(g.values()) - max(g.values()) for g in groups.values()))\nassert errors.count(min(errors)) == 1\nprint(round(min(errors) / len(rows), 4))\n",
+   "code": "Day  Sky    Temp  Wind   Run\n1    Clear  Hot   Calm   No\n2    Clear  Hot   Windy  No\n3    Cloud  Hot   Calm   Yes\n4    Rain   Mild  Calm   Yes\n5    Rain   Cool  Calm   Yes\n6    Rain   Cool  Windy  No\n7    Cloud  Cool  Windy  Yes\n8    Clear  Mild  Calm   No\n9    ?      Cool  Calm   Yes\n10   Rain   Mild  Windy  Yes\n11   Cloud  Mild  Windy  Yes\n12   Clear  Mild  Windy  Yes"
+  },
+  {
+   "id": "cnn-parameter-count",
+   "kind": "numeric",
+   "topic": "convolutional-networks",
+   "title": {
+    "en": "Count the parameters of a small CNN",
+    "zh": "数一个小型卷积网络的参数"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "A network reads 32 x 32 colour images (3 channels). Its layers are:\n1. Convolution: 8 filters of size 5 x 5, stride 1, no padding, each filter spans all input channels, plus one bias per filter.\n2. Max pooling 2 x 2, stride 2 (no parameters).\n3. Convolution: 16 filters of size 3 x 3, stride 1, padding 1, plus one bias per filter.\n4. Max pooling 2 x 2, stride 2.\n5. Flatten, then a fully connected layer to 10 outputs with one bias per output.\n\nHow many trainable parameters does the whole network have?",
+    "zh": "一个网络读取 32 x 32 的彩色图像（3 个通道）。各层依次为：\n1. 卷积层：8 个 5 x 5 的滤波器，步幅 1，无填充，每个滤波器覆盖所有输入通道，每个滤波器一个偏置。\n2. 2 x 2 最大池化，步幅 2（没有参数）。\n3. 卷积层：16 个 3 x 3 的滤波器，步幅 1，填充 1，每个滤波器一个偏置。\n4. 2 x 2 最大池化，步幅 2。\n5. 展平，然后接一个全连接层，输出 10 个值，每个输出一个偏置。\n\n整个网络共有多少个可训练参数？"
+   },
+   "answer": 9626,
+   "tolerance": 0,
+   "solution": {
+    "en": "Track the size with output = floor((W + 2P - K) / S) + 1.\n\nLayer 1: (32 + 0 - 5) / 1 + 1 = 28, so 28 x 28 x 8. Parameters = 5 x 5 x 3 x 8 + 8 = 600 + 8 = 608.\nPooling: 14 x 14 x 8.\nLayer 3: (14 + 2 - 3) / 1 + 1 = 14, so 14 x 14 x 16. Parameters = 3 x 3 x 8 x 16 + 16 = 1152 + 16 = 1168. The depth of each filter is 8, the number of channels coming in, not 3.\nPooling: 7 x 7 x 16 = 784 values.\nLayer 5: 784 x 10 + 10 = 7850.\n\nTotal = 608 + 1168 + 7850 = 9626.\n\nThe last layer holds 82% of all parameters even though it is a single layer, while the two convolutions share each filter across every position. A fully connected first layer on this 32 x 32 x 3 input with just 8 outputs would already need 3072 x 8 + 8 = 24,584 parameters.\n\nCalculator-free: every product is small enough to do by hand. An exact integer is required.",
+    "zh": "用 输出 = floor((W + 2P - K) / S) + 1 跟踪尺寸。\n\n第 1 层：(32 + 0 - 5) / 1 + 1 = 28，所以输出是 28 x 28 x 8。参数 = 5 x 5 x 3 x 8 + 8 = 600 + 8 = 608。\n池化后：14 x 14 x 8。\n第 3 层：(14 + 2 - 3) / 1 + 1 = 14，所以输出是 14 x 14 x 16。参数 = 3 x 3 x 8 x 16 + 16 = 1152 + 16 = 1168。每个滤波器的深度是 8（输入的通道数），不是 3。\n池化后：7 x 7 x 16 = 784 个值。\n第 5 层：784 x 10 + 10 = 7850。\n\n总计 = 608 + 1168 + 7850 = 9626。\n\n最后一个全连接层占了全部参数的 82%，而两个卷积层的每个滤波器在所有位置共享。对这个 32 x 32 x 3 的输入，如果第一层就用全连接层，哪怕只有 8 个输出，也需要 3072 x 8 + 8 = 24,584 个参数。\n\n免计算器做法：每个乘积都小到可以手算。答案必须是精确的整数。"
+   },
+   "verify_code": "def out(w, k, s, p):\n    return (w + 2 * p - k) // s + 1\n\n\nw = out(32, 5, 1, 0)\np1 = 5 * 5 * 3 * 8 + 8\nw //= 2\nw = out(w, 3, 1, 1)\np2 = 3 * 3 * 8 * 16 + 8 * 0 + 16\nw //= 2\np3 = w * w * 16 * 10 + 10\nprint(p1 + p2 + p3)\n"
+  }
+ ],
+ "papers": [],
+ "labs": []
+}

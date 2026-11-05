@@ -1,0 +1,22 @@
+[
+  {
+    "file": "step01_parse.py",
+    "output": "原始：name=' 小林 '，score='60'\n清洗后：name='小林'，score=60，类型=int\n'0' -> 保留 0\n'abc' -> 拒绝：分数不是整数\n'101' -> 拒绝：分数超出 0 到 100\n"
+  },
+  {
+    "file": "step02_collect.py",
+    "output": "有效学号： ['s1', 's2', 's3']\n有效分数： [60, 0, 90]\n记录 2：分数不是整数\n记录 4：重复 ID\n"
+  },
+  {
+    "file": "step03_summary.py",
+    "output": "有效 3 条，无效 2 条\n总分 150，平均分 50.0\n通过率 66.7%\n排名： ['s3', 's1', 's2']\n空列表：人数 0，平均分 None，通过率 None\n"
+  },
+  {
+    "file": "step04_file.py",
+    "output": "有效 5 条，无效 4 条\n总分 299\n平均分 59.8\n通过率 60.0%\n错误记录号： [6, 7, 8, 9]\n"
+  },
+  {
+    "file": "transfer_tool_rows.py",
+    "output": "保留 ID： ['t1', 't2', 't3']\n耗时： [0, 250, 30]\n总耗时： 280 毫秒\n记录 3：耗时不是整数\n记录 5：重复 ID\n"
+  }
+]

@@ -20,3 +20,9 @@ body{font-size:18px}pre code{font-size:16px}.muted{font-size:15px!important}.goa
 .try-here{margin:16px 0;padding:10px 14px;border:1px dashed var(--line);border-radius:9px}.try-here summary{cursor:pointer;font-weight:650;color:var(--accent)}.try-here textarea{display:block;width:100%;min-height:230px;margin-top:10px;padding:12px;border-radius:8px;background:var(--code);color:var(--code-text);font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:4;resize:vertical}
 .run-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}.run-actions .run{background:#1e6bff;border-color:#1e6bff;color:#fff;font-weight:600}.run-actions .run:hover{background:#1557d6;border-color:#1557d6;color:#fff}
 @media print{.run,.try-here,.run-output{display:none!important}}
+
+/* Project walkthroughs keep each stage separate without introducing new progress IDs. */
+.score-walkthrough{margin:28px 0;padding-top:22px;border-top:2px solid var(--accent)}.walkthrough-step{margin:30px 0;padding:20px 0;border-top:1px solid var(--line)}.walkthrough-step>h4{color:var(--accent)}.score-walkthrough h3{font-size:20px;margin-top:25px}.walkthrough-step .try{margin-top:22px}
+
+/* 表格中的代码按原样显示空白；长代码由表格容器横向滚动。 */
+.table-wrap code{white-space:pre}

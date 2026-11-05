@@ -1,0 +1,1482 @@
+{
+ "id": "python-first-steps",
+ "course": "python",
+ "kind": "first-steps",
+ "title": {
+  "en": "Python First Steps",
+  "zh": "Python 第一步：从零开始"
+ },
+ "summary": {
+  "en": "Eight short lessons for someone who has never written a program. Run your first line in the browser, then learn values, text, decisions, loops, lists, functions and how to read an error message. Every example runs on this page, with nothing to install.",
+  "zh": "给从没写过程序的人准备的八节短课。先在浏览器里运行第一行代码，再依次学习值、文字、判断、循环、列表、函数，以及怎样读懂报错信息。每个例子都能在本页直接运行，不需要安装任何东西。"
+ },
+ "needs": [
+  {
+   "en": "No programming experience. You do not need to know what a variable or a loop is. Each lesson explains its words when they first appear.",
+   "zh": "不需要任何编程经验。你不用先知道什么是变量或循环，每个词第一次出现时，课里都会解释。"
+  },
+  {
+   "en": "A computer, tablet or phone with a modern web browser. The first time you press Run, you need an internet connection, because the page downloads Python (about 10 MB, once only).",
+   "zh": "一台带现代浏览器的电脑、平板或手机。第一次点“运行”时需要联网，因为页面要下载 Python（约 10 MB，只下载一次）。"
+  },
+  {
+   "en": "School arithmetic: adding, subtracting, multiplying and dividing numbers, and comparing which one is bigger.",
+   "zh": "学校里学过的算术：数的加减乘除，以及比较哪个数更大。"
+  },
+  {
+   "en": "To run programs on your own computer, which is optional at first: a Windows, macOS or Linux computer where you are allowed to install software.",
+   "zh": "想在自己的电脑上运行程序时（一开始可以不做）：一台允许你安装软件的 Windows、macOS 或 Linux 电脑。"
+  },
+  {
+   "en": "Time: plan about half an hour per lesson if you type each example yourself and do the self-checks.",
+   "zh": "时间：如果每个例子都亲手输入，并做完自测题，每课大约需要半小时。"
+  }
+ ],
+ "setup": {
+  "intro": {
+   "en": "You do not need to install anything to start. Every Run button in the lessons runs a real copy of Python inside your browser. Come back to this section when you want to save a program in a file and run it on your own computer.\n\nThe plan is short. Install Python. Ask it for its version number, which proves that it works. Then save a one-line program in a file called hello.py and run it. A terminal is a window where you type a command and read the reply. Windows calls it PowerShell. macOS calls it Terminal.\n\nUse Python 3.10 or newer. The newest version on the python.org download page is a good choice. Python 2 was retired long ago and its programs are written differently. If a lesson shows something different from what you see, check your version first.\n\nOne small difference: on Windows you type python, and on macOS and Linux you type python3. Below, each system tells you which one to use.",
+   "zh": "开始学习不需要安装任何东西。每节课里的“运行”按钮，会在你的浏览器里运行一份真正的 Python。等你想把程序保存成文件、在自己的电脑上运行时，再回到这一节。\n\n步骤很短。先安装 Python，再让它报出版本号，证明它能用。然后把一行程序保存成名为 hello.py 的文件并运行。终端是一个窗口：你在里面输入命令，它在下面回复文字。Windows 里叫 PowerShell，macOS 里叫“终端”（Terminal）。\n\n请使用 Python 3.10 或更新的版本，python.org 下载页上最新的版本就很合适。Python 2 早已停止维护，程序的写法也不一样。如果课里的结果和你看到的不同，先检查版本。\n\n有一个小区别：在 Windows 上输入 python，在 macOS 和 Linux 上输入 python3。下面每个系统都会告诉你该输入哪一个。"
+  },
+  "systems": [
+   {
+    "name": {
+     "en": "Windows",
+     "zh": "Windows"
+    },
+    "steps": [
+     {
+      "en": "Open python.org/downloads in your browser. Click Download Python install manager. Open the file you downloaded (its name ends in .msix) and click Install. The Python documentation recommends this for Windows 10 and newer. You can also get the same program from the Microsoft Store: search for Python Install Manager.",
+      "zh": "在浏览器里打开 python.org/downloads，点击 Download Python install manager。打开下载好的文件（文件名以 .msix 结尾），点击 Install（安装）。Python 官方文档对 Windows 10 及更新的系统推荐这种方式。你也可以在 Microsoft Store 里安装同一个程序：搜索 Python Install Manager。"
+     },
+     {
+      "en": "Open a new terminal. Click Start, type PowerShell and press Enter. If a terminal was already open before the install, close it and open a new one. An old window does not notice programs installed after it started.",
+      "zh": "打开一个新的终端：点击“开始”，输入 PowerShell，按回车。如果安装之前就开着终端，请先关掉再重新打开。旧窗口不会发现在它启动之后才装好的程序。"
+     },
+     {
+      "en": "Type the line below and press Enter. The first time, the install manager may download Python itself and ask you to confirm. Accept the default answers and wait.\npython --version",
+      "zh": "输入下面这一行，按回车。第一次运行时，安装管理器可能会先下载 Python 本体，并请你确认。接受默认选项，耐心等待。\npython --version"
+     },
+     {
+      "en": "In File Explorer, make a new folder called python-practice, for example on your Desktop.",
+      "zh": "在文件资源管理器里新建一个文件夹，名字叫 python-practice，例如放在桌面上。"
+     },
+     {
+      "en": "Open Notepad (Start, type Notepad). Type this one line:\nprint(\"Hello, Python!\")\nClick File, then Save as. Open the Save as type menu and choose All files. Type hello.py as the file name, choose your python-practice folder and click Save.",
+      "zh": "打开“记事本”（开始，输入 Notepad）。输入下面这一行：\nprint(\"Hello, Python!\")\n点击“文件”，再点“另存为”。打开“保存类型”菜单，选择“所有文件”。文件名输入 hello.py，保存位置选 python-practice 文件夹，然后点击“保存”。"
+     },
+     {
+      "en": "In File Explorer, open the python-practice folder. Click the address bar at the top, type powershell and press Enter. A terminal opens inside that folder. Type:\npython hello.py\nYou should see Hello, Python! on the next line. If Windows says the file does not exist, it may be called hello.py.txt. In File Explorer click View, then Show, then File name extensions, and rename the file.",
+      "zh": "在文件资源管理器里打开 python-practice 文件夹。点击顶部的地址栏，输入 powershell，按回车。一个终端会在这个文件夹里打开。输入：\npython hello.py\n下一行应该显示 Hello, Python!。如果提示找不到文件，文件名可能变成了 hello.py.txt。在文件资源管理器里点击“查看”，再点“显示”，勾选“文件扩展名”，然后重命名文件。"
+     }
+    ],
+    "verify": "python --version",
+    "expect": {
+     "en": "A line such as Python 3.15.2. Any version from 3.10 up is fine, and your numbers may differ.",
+     "zh": "类似 Python 3.15.2 的一行。只要是 3.10 及以上的版本都可以，数字可能和这里不同。"
+    }
+   },
+   {
+    "name": {
+     "en": "macOS",
+     "zh": "macOS"
+    },
+    "steps": [
+     {
+      "en": "Open python.org/downloads in your browser and download the macOS installer (a .pkg file). Open it and follow the steps. It asks for your Mac password, because Python is installed for every user of the computer. Your Mac already has a small copy of Python made by Apple, but it is old and meant for Apple's own tools. Use the one from python.org.",
+      "zh": "在浏览器里打开 python.org/downloads，下载 macOS 安装包（.pkg 文件）。打开它，按提示一步步安装。安装时会要求输入 Mac 的登录密码，因为 Python 是装给这台电脑所有用户的。你的 Mac 里本来有苹果自带的一份 Python，但它版本较旧，是给苹果自己的工具用的。请使用 python.org 的这一份。"
+     },
+     {
+      "en": "Open Terminal: press Command and Space, type Terminal and press Enter. If a Terminal window was already open during the install, open a new one.",
+      "zh": "打开“终端”：同时按 Command 和空格键，输入 Terminal，按回车。如果安装时就开着终端窗口，请重新打开一个新窗口。"
+     },
+     {
+      "en": "Type the line below and press Enter. On macOS the command is python3, not python. If a pop-up offers to install developer tools, click Cancel and check that step 1 finished.\npython3 --version",
+      "zh": "输入下面这一行，按回车。在 macOS 上命令是 python3，不是 python。如果弹出窗口提示安装开发者工具，请点“取消”，并检查第 1 步是否已经安装完成。\npython3 --version"
+     },
+     {
+      "en": "Make a folder and a file from inside the Terminal. Type these lines one at a time, pressing Enter after each:\nmkdir python-practice\ncd python-practice\nnano hello.py\nThe last line opens nano, a small text editor that runs inside the Terminal.",
+      "zh": "直接在终端里新建文件夹和文件。下面的命令一行一行输入，每行输完按回车：\nmkdir python-practice\ncd python-practice\nnano hello.py\n最后一行会打开 nano，这是一个在终端里运行的小型文本编辑器。"
+     },
+     {
+      "en": "Type this one line into nano:\nprint(\"Hello, Python!\")\nThen press Control and O (the letter), press Enter to confirm the file name, and press Control and X to leave nano.",
+      "zh": "在 nano 里输入这一行：\nprint(\"Hello, Python!\")\n然后按 Control 和 O（字母 O），再按回车确认文件名，最后按 Control 和 X 退出 nano。"
+     },
+     {
+      "en": "Run the program:\npython3 hello.py\nYou should see Hello, Python! on the next line.",
+      "zh": "运行程序：\npython3 hello.py\n下一行应该显示 Hello, Python!。"
+     }
+    ],
+    "verify": "python3 --version",
+    "expect": {
+     "en": "A line such as Python 3.15.2. Any version from 3.10 up is fine, and your numbers may differ.",
+     "zh": "类似 Python 3.15.2 的一行。只要是 3.10 及以上的版本都可以，数字可能和这里不同。"
+    }
+   },
+   {
+    "name": {
+     "en": "Linux",
+     "zh": "Linux"
+    },
+    "steps": [
+     {
+      "en": "Most Linux systems already include Python 3, so do the check in step 3 first. If it fails, install Python with your package manager. On Debian and Ubuntu:\nsudo apt update\nsudo apt install python3\nOn Fedora:\nsudo dnf install python3\nOn Arch Linux:\nsudo pacman -S python\nThe sudo command asks for your password. Nothing appears on the screen while you type it. That is normal.",
+      "zh": "大多数 Linux 系统已经自带 Python 3，所以请先做第 3 步的检查。如果检查失败，再用系统的软件包管理器安装。Debian 和 Ubuntu：\nsudo apt update\nsudo apt install python3\nFedora：\nsudo dnf install python3\nArch Linux：\nsudo pacman -S python\nsudo 命令会要求输入密码。输入密码时屏幕上不会显示任何字符，这是正常的。"
+     },
+     {
+      "en": "Open a terminal. On many desktops, pressing Control, Alt and T opens one. Otherwise search your applications for Terminal.",
+      "zh": "打开一个终端。在很多桌面环境里，同时按 Control、Alt 和 T 就能打开。否则，在应用程序里搜索“终端”（Terminal）。"
+     },
+     {
+      "en": "Type the line below and press Enter.\npython3 --version",
+      "zh": "输入下面这一行，按回车。\npython3 --version"
+     },
+     {
+      "en": "Make a folder and a file. Type these lines one at a time, pressing Enter after each:\nmkdir python-practice\ncd python-practice\nnano hello.py\nThe last line opens nano, a small text editor that runs inside the terminal.",
+      "zh": "新建文件夹和文件。下面的命令一行一行输入，每行输完按回车：\nmkdir python-practice\ncd python-practice\nnano hello.py\n最后一行会打开 nano，这是一个在终端里运行的小型文本编辑器。"
+     },
+     {
+      "en": "Type this one line into nano:\nprint(\"Hello, Python!\")\nThen press Control and O (the letter), press Enter to confirm the file name, and press Control and X to leave nano.",
+      "zh": "在 nano 里输入这一行：\nprint(\"Hello, Python!\")\n然后按 Control 和 O（字母 O），再按回车确认文件名，最后按 Control 和 X 退出 nano。"
+     },
+     {
+      "en": "Run the program:\npython3 hello.py\nYou should see Hello, Python! on the next line.",
+      "zh": "运行程序：\npython3 hello.py\n下一行应该显示 Hello, Python!。"
+     }
+    ],
+    "verify": "python3 --version",
+    "expect": {
+     "en": "A line such as Python 3.12.3. Any version from 3.10 up is fine. An older version still runs the code, but prints less helpful error messages.",
+     "zh": "类似 Python 3.12.3 的一行。3.10 及以上的版本都可以。更老的版本也能运行这些代码，但报错信息没有这么清楚。"
+    }
+   }
+  ],
+  "errors": [
+   {
+    "symptom": "python : The term 'python' is not recognized as the name of a cmdlet, function, script file, or operable program.",
+    "fix": {
+     "en": "Windows cannot find Python. Either it is not installed, or this terminal window was open before you installed it. Close the terminal, open a new one and try again.\n\nIf it still fails, repeat Windows step 1. Then open Start, search for Manage app execution aliases, and check that the Python (default) switches are on. You can also try py --version, which sometimes works when python does not.",
+     "zh": "Windows 找不到 Python。要么还没有安装，要么这个终端窗口是在安装之前打开的。关掉终端，重新打开一个，再试一次。\n\n如果仍然不行，请重做 Windows 的第 1 步。然后点击“开始”，搜索“管理应用执行别名”（Manage app execution aliases），确认 Python (default) 的开关是打开的。你也可以试试 py --version，有时 python 不行而 py 可以。"
+    }
+   },
+   {
+    "symptom": "Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases.",
+    "fix": {
+     "en": "Before Python is installed, Windows puts a placeholder shortcut under the name python. Install Python as in Windows step 1, open a new terminal and try again. If the message stays, open Manage app execution aliases and make sure the Python (default) switches are on.",
+     "zh": "在装好 Python 之前，Windows 会在 python 这个名字下放一个占位的快捷方式。请按 Windows 的第 1 步安装 Python，再打开一个新终端重试。如果消息还在，打开“管理应用执行别名”，确认 Python (default) 的开关是打开的。"
+    }
+   },
+   {
+    "symptom": "zsh: command not found: python",
+    "fix": {
+     "en": "macOS has no command called python. Type python3 instead: python3 --version, and python3 hello.py.",
+     "zh": "macOS 里没有名叫 python 的命令。请改输 python3，例如 python3 --version 和 python3 hello.py。"
+    }
+   },
+   {
+    "symptom": "bash: python: command not found",
+    "fix": {
+     "en": "On Linux the command is python3. Some systems print Command 'python' not found, did you mean python3, which says the same thing. On Debian and Ubuntu you can also run sudo apt install python-is-python3, which makes python work as well.",
+     "zh": "在 Linux 上命令是 python3。有的系统会显示 Command 'python' not found, did you mean 之类的提示，意思相同。在 Debian 和 Ubuntu 上，你也可以运行 sudo apt install python-is-python3，这样 python 也能用。"
+    }
+   },
+   {
+    "symptom": "zsh: command not found: python3",
+    "fix": {
+     "en": "Python 3 is not installed, or the install did not finish. On macOS, repeat step 1 and open a new Terminal window. On Linux, install it with your package manager (Linux step 1); bash prints bash: python3: command not found. On Windows, type python, not python3.",
+     "zh": "没有安装 Python 3，或者安装没有完成。macOS：重做第 1 步，并打开新的终端窗口。Linux：用软件包管理器安装（Linux 的第 1 步），此时 bash 显示的是 bash: python3: command not found。Windows：输入 python，不要输入 python3。"
+    }
+   },
+   {
+    "symptom": "python3: can't open file '/home/mia/hello.py': [Errno 2] No such file or directory",
+    "fix": {
+     "en": "Python works, but it cannot find your file in the folder where the terminal is. First check the folder. List the files with ls on macOS and Linux, or dir on Windows, and look for hello.py. If you do not see it, move into the folder with cd python-practice, or open a terminal from inside the folder as in Windows step 6.\n\nThen check the spelling. The name must be exactly hello.py, not Hello.py and not hello.py.txt. On Windows, turn on File name extensions in File Explorer (View, Show) to see the real name.",
+     "zh": "Python 本身没问题，只是在终端当前所在的文件夹里找不到你的文件。先看看终端在哪个文件夹：macOS 和 Linux 用 ls 列出文件，Windows 用 dir，看有没有 hello.py。如果没有，用 cd python-practice 进入文件夹，或者像 Windows 第 6 步那样直接从文件夹里打开终端。\n\n再检查拼写。文件名必须正好是 hello.py，不能是 Hello.py，也不能是 hello.py.txt。在 Windows 上，请在文件资源管理器里打开“文件扩展名”（查看，显示），就能看到真实的文件名。"
+    }
+   },
+   {
+    "symptom": "IndentationError: unexpected indent",
+    "fix": {
+     "en": "A line starts with spaces that Python did not expect. Python uses the spaces at the start of a line to group lines together. Delete the extra spaces so that the line lines up with the line above. Only a line that follows a line ending in a colon should be moved right, by four spaces.\n\nThe opposite message, IndentationError: expected an indented block after 'if' statement on line 2, means a line ending in a colon has nothing indented under it. Add four spaces. Never mix Tab characters and spaces; if you do, Python reports TabError. Lesson 4 explains indentation.",
+     "zh": "某一行开头多了 Python 没预料到的空格。Python 用每行开头的空格来给代码分组。请删掉多余的空格，让这一行和上一行对齐。只有紧跟在以冒号结尾的那一行之后，才应该往右缩进四个空格。\n\n相反的提示 IndentationError: expected an indented block after 'if' statement on line 2，意思是以冒号结尾的那一行下面没有缩进的内容。请补上四个空格。不要把 Tab 字符和空格混着用，否则 Python 会报 TabError。第 4 课会讲缩进。"
+    }
+   },
+   {
+    "symptom": "SyntaxError: invalid syntax",
+    "fix": {
+     "en": "Python cannot understand how a line is written, so it ran nothing at all. Look at the line number and the ^ marks under the line. The mistake is at that spot or just before it. Common causes are a missing colon, a missing quote or bracket, curly quotes pasted from a document, and a Python 2 style print without brackets.\n\nOther messages that begin with SyntaxError, such as SyntaxError: unterminated string literal (detected at line 1), are more specific and say what is wrong. Lesson 8 shows how to read them step by step.",
+     "zh": "Python 看不懂某一行的写法，所以整个程序一行都没有运行。看一看报错里的行号，以及这一行下面的 ^ 标记。错误就在那个位置，或者在它的前面一点。常见原因有：漏了冒号，漏了引号或括号，从文档里复制来的弯引号，以及不带括号的 Python 2 式 print。\n\n其他以 SyntaxError 开头的消息，例如 SyntaxError: unterminated string literal (detected at line 1)，说得更具体，会告诉你哪里不对。第 8 课会一步步教你读懂它们。"
+    }
+   }
+  ]
+ },
+ "lessons": [
+  {
+   "id": "first-program",
+   "title": {
+    "en": "What a program is, and your first line",
+    "zh": "程序是什么，运行你的第一行代码"
+   },
+   "goal": {
+    "en": "run a Python program on this page and change what it says.",
+    "zh": "在本页运行一个 Python 程序，并改掉它显示的文字。"
+   },
+   "plain": {
+    "en": "A program is a list of instructions for a computer. A computer cannot guess what you mean, so every instruction must be written in a language it understands. Python is one such language.\n\nThe computer follows the instructions one at a time, from the top line to the bottom line. Running a program means asking the computer to follow them. What the program shows you is its output.\n\nYour first instruction is print. It makes Python show something on the screen. You put what to show inside round brackets. If it is text, you wrap the text in quote marks. The quote marks tell Python that these words are text and not an instruction.\n\nNow run one. Press the Run button under the code below. The first time, the page downloads Python, which takes a few seconds. The output appears under the code. Then press Edit code, change the words between the quote marks, and press Run again. Nothing you type here can harm your computer, and Reset puts the original code back.",
+    "zh": "程序是一串写给计算机的指令。计算机不会猜你的意思，所以每条指令都要用它能看懂的语言来写。Python 就是这样的一种语言。\n\n计算机一次执行一条指令，从最上面一行到最下面一行。运行程序，就是让计算机去执行这些指令。程序显示给你看的内容，叫作输出。\n\n你的第一条指令是 print。它让 Python 在屏幕上显示一点东西。要显示的内容写在圆括号里。如果内容是文字，就要用引号把文字包起来。引号告诉 Python：这几个词是文字，不是指令。\n\n现在来运行一次。点击下面代码下方的“运行”按钮。第一次点击时，页面要下载 Python，需要几秒钟。输出会出现在代码下面。然后点击“修改代码”，改掉引号之间的文字，再点击“运行”。你在这里输入的任何内容都不会损坏你的电脑，点“还原”就能回到原来的代码。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "program",
+      "zh": "程序"
+     },
+     "meaning": {
+      "en": "A list of instructions for a computer.",
+      "zh": "一串写给计算机的指令。"
+     }
+    },
+    {
+     "term": {
+      "en": "Python",
+      "zh": "Python"
+     },
+     "meaning": {
+      "en": "A programming language known for being easy to read.",
+      "zh": "一种以易读著称的编程语言。"
+     }
+    },
+    {
+     "term": {
+      "en": "run",
+      "zh": "运行"
+     },
+     "meaning": {
+      "en": "Ask the computer to follow the instructions of a program.",
+      "zh": "让计算机去执行程序里的指令。"
+     }
+    },
+    {
+     "term": {
+      "en": "output",
+      "zh": "输出"
+     },
+     "meaning": {
+      "en": "What a program shows or writes when it runs.",
+      "zh": "程序运行时显示或写出的内容。"
+     }
+    },
+    {
+     "term": {
+      "en": "print",
+      "zh": "print"
+     },
+     "meaning": {
+      "en": "A Python instruction that shows what you give it.",
+      "zh": "一条 Python 指令，把你交给它的内容显示出来。"
+     }
+    },
+    {
+     "term": {
+      "en": "quote marks",
+      "zh": "引号"
+     },
+     "meaning": {
+      "en": "The \" \" around text. They tell Python that the words are text.",
+      "zh": "文字两边的 \" \"。它们告诉 Python 这些词是文字。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "print(\"Hello, Leon!\")",
+    "output": "Hello, Leon!",
+    "walk": {
+     "en": [
+      "Python reads the line. The word print is something Python already knows how to do.",
+      "The round brackets ( ) hold what print should show. Whatever sits between them is handed to print.",
+      "The quote marks tell Python that Hello, Leon! is text. Without them, Python would look for an instruction called Hello and fail.",
+      "print shows the text without the quote marks and then moves to a new line. The output is Hello, Leon!",
+      "Try it: press Edit code, change Leon to your own name and press Run. Then add a second line, print(\"It works!\"), and run again. The lines appear in the order you wrote them."
+     ],
+     "zh": [
+      "Python 读取这一行。print 这个词，Python 本来就知道该怎么做。",
+      "圆括号 ( ) 里放的是 print 要显示的内容。括号之间的东西会交给 print。",
+      "引号告诉 Python：Hello, Leon! 是文字。没有引号的话，Python 会去找一条叫 Hello 的指令，找不到就出错。",
+      "print 显示文字时不带引号，显示完再换到新的一行。输出就是 Hello, Leon!",
+      "动手试试：点击“修改代码”，把 Leon 改成你自己的名字，再点“运行”。然后再加第二行 print(\"It works!\")，重新运行。各行按你写的先后顺序出现。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "Print(\"Hello\")",
+     "why": {
+      "en": "Python treats capital and small letters as different letters. It knows print and does not know Print. The error says: NameError: name 'Print' is not defined. Did you mean: 'print'? Python even suggests the fix.",
+      "zh": "Python 把大写字母和小写字母当作不同的字母。它认识 print，不认识 Print。报错是：NameError: name 'Print' is not defined. Did you mean: 'print'? Python 甚至把改法都提示给你了。"
+     },
+     "right": "print(\"Hello\")"
+    },
+    {
+     "wrong": "print(\"Hello)",
+     "why": {
+      "en": "The closing quote is missing, so Python cannot tell where the text ends. The error says: SyntaxError: unterminated string literal (detected at line 1). Every opening quote needs a closing quote of the same kind, and every opening bracket needs a closing bracket.",
+      "zh": "少了结尾的引号，Python 不知道文字到哪里结束。报错是：SyntaxError: unterminated string literal (detected at line 1)。每个开头的引号都要有同一种的结尾引号，每个左括号都要有右括号。"
+     },
+     "right": "print(\"Hello\")"
+    },
+    {
+     "wrong": "print(“Hello”)",
+     "why": {
+      "en": "These curly quotes often sneak in when code is copied from a word processor or a web page. Python accepts only straight quotes, \" or '. The error says: SyntaxError: invalid character '“' (U+201C).",
+      "zh": "把代码从文字处理软件或网页里复制出来时，常常会混进这种弯引号。Python 只接受直引号 \" 或 '。报错是：SyntaxError: invalid character '“' (U+201C)。"
+     },
+     "right": "print(\"Hello\")"
+    },
+    {
+     "wrong": "print \"Hello\"",
+     "why": {
+      "en": "Old tutorials written for Python 2 use print without brackets. In Python 3 the brackets are required. The error says: SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?",
+      "zh": "为 Python 2 写的旧教程里，print 不带括号。在 Python 3 里必须带括号。报错是：SyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?"
+     },
+     "right": "print(\"Hello\")"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Change the program so that it greets Mia instead of Leon. Write the whole line.",
+      "zh": "把程序改成向 Mia 问好，而不是向 Leon。写出完整的一行。"
+     },
+     "a": {
+      "en": "print(\"Hello, Mia!\") Only the words between the quote marks changed.",
+      "zh": "print(\"Hello, Mia!\")。只有引号之间的文字变了。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a two-line program that shows Start on the first line and Finish on the second. What does the output become if you swap the two lines?",
+      "zh": "写一个两行的程序，第一行显示 Start，第二行显示 Finish。如果把两行对调，输出会变成什么？"
+     },
+     "a": {
+      "en": "print(\"Start\")\nprint(\"Finish\")\nAfter swapping, Finish appears first and Start second, because Python follows the lines from top to bottom.",
+      "zh": "print(\"Start\")\nprint(\"Finish\")\n对调之后，先显示 Finish，再显示 Start，因为 Python 按从上到下的顺序执行各行。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "values-names",
+   "title": {
+    "en": "Values, names and print",
+    "zh": "值、变量名和 print"
+   },
+   "goal": {
+    "en": "store numbers under names, do arithmetic with them and show the results.",
+    "zh": "把数字存到变量名下，用它们做算术，并把结果显示出来。"
+   },
+   "plain": {
+    "en": "A value is one piece of information, such as the number 12 or the word Mia. Python has different kinds of value. A whole number such as 12 is an integer. A number with a decimal point such as 2.5 is a float. Text is a string, which you met in lesson 1.\n\nA variable is a name that you attach to a value, so that you can use the value later. You make one with the equals sign. The line price = 4 means: take the value 4 and give it the name price. In maths, = says that two sides are equal. In Python it is an instruction to store. Python works out the right side first and then stores the result under the name on the left. A name may contain letters, digits and underscores. It cannot start with a digit and it cannot contain spaces. Choose names that say what the value is.\n\nAfter that, you can use the name wherever you could use the value. The line total = price * 3 works out 4 times 3 and stores 12 under the name total. The arithmetic symbols are + to add, - to subtract, * to multiply and / to divide. Round brackets control the order, as in school maths. A division with / always gives a float, so 10 / 4 is 2.5 and 10 / 2 is 5.0.\n\nBe careful: a variable holds a value, not a rule. If total was worked out from count, and you change count later, total keeps its old value until you work it out again. The example shows this.\n\nprint can show several things at once. Put commas between them, and print writes a space between the pieces. A line that starts with # is a comment. Python ignores it. It is a note for the people who read the code.",
+    "zh": "值就是一条信息，例如数字 12 或者单词 Mia。Python 里有不同种类的值。像 12 这样的整数叫整型（integer）。像 2.5 这样带小数点的数叫浮点数（float）。文字叫字符串（string），你在第 1 课已经见过了。\n\n变量是你贴在一个值上的名字，这样以后就能用这个名字找到这个值。变量用等号来创建。price = 4 这一行的意思是：拿到值 4，给它起名叫 price。在数学里，= 表示两边相等。在 Python 里，它是一条“存起来”的指令。Python 先算出右边，再把结果存到左边的名字下。变量名可以包含字母、数字和下划线，不能以数字开头，不能含有空格。请起一个能说明这个值是什么的名字。\n\n之后，凡是能用这个值的地方，都可以改用它的名字。total = price * 3 这一行先算出 4 乘以 3，再把 12 存到名字 total 下。算术符号是：+ 加，- 减，* 乘，/ 除。圆括号控制运算顺序，和学校里的数学一样。用 / 做除法，结果总是浮点数，所以 10 / 4 是 2.5，10 / 2 是 5.0。\n\n要当心：变量保存的是一个值，不是一条规则。如果 total 是用 count 算出来的，之后你改了 count，total 仍然是旧值，直到你重新计算一次。例子里会演示这一点。\n\nprint 可以一次显示好几样东西。用逗号隔开，print 会在各部分之间写一个空格。以 # 开头的一行是注释，Python 会忽略它。注释是写给读代码的人看的备注。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "value",
+      "zh": "值"
+     },
+     "meaning": {
+      "en": "One piece of information, such as 12 or \"Mia\".",
+      "zh": "一条信息，例如 12 或 \"Mia\"。"
+     }
+    },
+    {
+     "term": {
+      "en": "integer",
+      "zh": "整型（整数）"
+     },
+     "meaning": {
+      "en": "A whole number such as 12 or -3.",
+      "zh": "像 12 或 -3 这样的整数。"
+     }
+    },
+    {
+     "term": {
+      "en": "float",
+      "zh": "浮点数"
+     },
+     "meaning": {
+      "en": "A number with a decimal point, such as 2.5.",
+      "zh": "带小数点的数，例如 2.5。"
+     }
+    },
+    {
+     "term": {
+      "en": "string",
+      "zh": "字符串"
+     },
+     "meaning": {
+      "en": "Text in a program, written between quote marks.",
+      "zh": "程序里的文字，写在引号之间。"
+     }
+    },
+    {
+     "term": {
+      "en": "variable",
+      "zh": "变量"
+     },
+     "meaning": {
+      "en": "A name attached to a value.",
+      "zh": "贴在一个值上的名字。"
+     }
+    },
+    {
+     "term": {
+      "en": "assignment",
+      "zh": "赋值"
+     },
+     "meaning": {
+      "en": "Storing a value under a name with =.",
+      "zh": "用 = 把一个值存到一个名字下。"
+     }
+    },
+    {
+     "term": {
+      "en": "comment",
+      "zh": "注释"
+     },
+     "meaning": {
+      "en": "A note that starts with # and is ignored by Python.",
+      "zh": "以 # 开头的备注，Python 会忽略它。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "# total cost of the notebooks\nprice = 4\ncount = 3\ntotal = price * count\nprint(\"Total:\", total)\n\ncount = 5\nprint(\"Still:\", total)\ntotal = price * count\nprint(\"Now:\", total)",
+    "output": "Total: 12\nStill: 12\nNow: 20",
+    "walk": {
+     "en": [
+      "The first line is a comment. It says what the code is for, and Python skips it.",
+      "price = 4 stores the integer 4 under the name price. count = 3 does the same for count.",
+      "In total = price * count, Python works out the right side first. price is 4 and count is 3, so the result is 12. Python stores 12 under the name total.",
+      "print(\"Total:\", total) shows the text Total:, then a space, then the value 12.",
+      "count = 5 gives count a new value. The old value 3 is gone. But total was worked out earlier, so it is still 12. The line print(\"Still:\", total) proves it.",
+      "total = price * count works out the right side again, 4 times 5, and stores 20. print shows Now: 20.",
+      "Try it: press Edit code, change price to 2.5 and run. The totals become floats: 7.5, 7.5 and 12.5."
+     ],
+     "zh": [
+      "第一行是注释，说明这段代码是做什么的，Python 会跳过它。意思是“笔记本的总价”。",
+      "price = 4 把整数 4 存到名字 price 下。count = 3 对 count 做同样的事。",
+      "在 total = price * count 里，Python 先算右边。price 是 4，count 是 3，结果是 12。Python 把 12 存到名字 total 下。",
+      "print(\"Total:\", total) 先显示文字 Total:，再显示一个空格，再显示值 12。",
+      "count = 5 给 count 一个新值，旧值 3 就没有了。但 total 是之前算好的，所以它仍然是 12。print(\"Still:\", total) 这一行证明了这一点。",
+      "total = price * count 把右边重新算了一遍，也就是 4 乘以 5，并存入 20。print 显示 Now: 20。",
+      "动手试试：点击“修改代码”，把 price 改成 2.5，再运行。总价会变成浮点数：7.5、7.5 和 12.5。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "12 = price",
+     "why": {
+      "en": "The name goes on the left and the value on the right. A number cannot be used as a name. The error says: SyntaxError: cannot assign to literal here. Maybe you meant '==' instead of '='?",
+      "zh": "名字写在左边，值写在右边。数字不能当名字用。报错是：SyntaxError: cannot assign to literal here. Maybe you meant '==' instead of '='?"
+     },
+     "right": "price = 12"
+    },
+    {
+     "wrong": "print(total)\ntotal = 5",
+     "why": {
+      "en": "Python runs lines from top to bottom. At the first line, total does not exist yet. The error says: NameError: name 'total' is not defined. Create a name before you use it.",
+      "zh": "Python 从上到下执行各行。到第一行的时候，total 还不存在。报错是：NameError: name 'total' is not defined。要先创建变量，再使用它。"
+     },
+     "right": "total = 5\nprint(total)"
+    },
+    {
+     "wrong": "my score = 5",
+     "why": {
+      "en": "A name cannot contain a space. Python sees two names next to each other and cannot make sense of them. The error says: SyntaxError: invalid syntax. Join the words with an underscore.",
+      "zh": "变量名里不能有空格。Python 看到两个名字挨在一起，不知道是什么意思。报错是：SyntaxError: invalid syntax。请用下划线把单词连起来。"
+     },
+     "right": "my_score = 5"
+    },
+    {
+     "wrong": "price = 4\ncount = 3\ntotal = price * count\ncount = 5\nprint(total)",
+     "why": {
+      "en": "This prints 12, not 20. No error appears, which makes the mistake harder to spot. total was worked out once and stays 12. Work it out again after you change count.",
+      "zh": "这段代码打印的是 12，不是 20。没有任何报错，所以更难发现。total 只算了一次，一直是 12。改了 count 之后，要把 total 重新算一遍。"
+     },
+     "right": "price = 4\ncount = 3\ntotal = price * count\ncount = 5\ntotal = price * count\nprint(total)"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict what this program prints:\na = 2\nb = a + 3\na = 10\nprint(b)",
+      "zh": "预测这个程序会打印什么：\na = 2\nb = a + 3\na = 10\nprint(b)"
+     },
+     "a": {
+      "en": "5. b was worked out when a was 2, so b is 5. Changing a to 10 afterwards does not change b.",
+      "zh": "5。b 是在 a 等于 2 的时候算出来的，所以 b 是 5。之后把 a 改成 10，并不会改变 b。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write three lines: store 9 under the name apples, store 4 under the name oranges, and print how many fruits there are in total.",
+      "zh": "写三行代码：把 9 存到名字 apples 下，把 4 存到名字 oranges 下，再打印水果的总数。"
+     },
+     "a": {
+      "en": "apples = 9\noranges = 4\nprint(\"Fruit:\", apples + oranges)\nIt prints Fruit: 13.",
+      "zh": "apples = 9\noranges = 4\nprint(\"Fruit:\", apples + oranges)\n输出 Fruit: 13。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output of print(7 / 2) and of print(8 / 2).",
+      "zh": "预测 print(7 / 2) 和 print(8 / 2) 的输出。"
+     },
+     "a": {
+      "en": "3.5 and 4.0. Division with / always gives a float, even when the answer is a whole number.",
+      "zh": "3.5 和 4.0。用 / 做除法，结果总是浮点数，即使答案是整数也一样。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "text",
+   "title": {
+    "en": "Text: joining, measuring and changing",
+    "zh": "文字：拼接、计数和变换"
+   },
+   "goal": {
+    "en": "join pieces of text, count its characters, change its case and put values inside text.",
+    "zh": "拼接几段文字，数出字符个数，改变大小写，并把值放进文字里。"
+   },
+   "plain": {
+    "en": "A string is text. You write it between quote marks, either \"double\" or 'single', as long as both ends match. A string can hold letters, digits, spaces and punctuation. The string \"5\" is text that looks like a number. It is not the number 5.\n\nJoin two strings with +. This is called concatenation. \"Hello, \" + \"Mia\" gives \"Hello, Mia\". The space is part of the first string, because Python adds no spaces for you. Strings and numbers do not mix with +. \"Age: \" + 5 is an error, because Python cannot tell whether you want to add or to join.\n\nYou have met two functions already: print and len. A function is a named action that takes something in and, often, gives something back. len gives the number of characters in a string, spaces included. A method is an action that belongs to a value. You write the value, a dot, the method name and round brackets. \"Mia\".upper() gives \"MIA\". The method name must be spelled exactly, in small letters. A method never changes the original string. It gives back a new one.\n\nA tidy way to put values inside text is an f-string. Write the letter f directly before the opening quote. Put names, or small calculations, inside curly brackets { }. Python replaces each pair of brackets with its value. f\"{name} has {len(name)} letters\" turns into a sentence with the real name and the real count.",
+    "zh": "字符串就是文字。写的时候用引号括起来，可以是双引号 \"double\"，也可以是单引号 'single'，只要两头一致。字符串里可以有字母、数字、空格和标点。字符串 \"5\" 是一段看起来像数字的文字，它不是数字 5。\n\n用 + 可以把两个字符串连起来，这叫拼接。\"Hello, \" + \"Mia\" 得到 \"Hello, Mia\"。空格是第一个字符串的一部分，因为 Python 不会替你加空格。字符串和数字不能用 + 混在一起。\"Age: \" + 5 会出错，因为 Python 分不清你是想相加，还是想拼接。\n\n你已经见过两个函数：print 和 len。函数是一个有名字的动作，它接收一些东西，通常还会交回一个结果。len 给出字符串里字符的个数，空格也算。方法是属于某个值的动作。写法是：值、一个点、方法名和圆括号。\"Mia\".upper() 得到 \"MIA\"。方法名必须拼写准确，而且是小写字母。方法不会改变原来的字符串，它交回的是一个新的字符串。\n\n把值放进文字里，有一个整洁的办法，叫 f-string。在开头的引号前面紧挨着写一个字母 f，把变量名或小的计算式放在花括号 { } 里。Python 会把每对花括号换成它的值。f\"{name} has {len(name)} letters\" 会变成一句带着真实名字和真实字数的话。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "concatenation",
+      "zh": "拼接"
+     },
+     "meaning": {
+      "en": "Joining strings end to end with +.",
+      "zh": "用 + 把字符串首尾连起来。"
+     }
+    },
+    {
+     "term": {
+      "en": "character",
+      "zh": "字符"
+     },
+     "meaning": {
+      "en": "One letter, digit, space or punctuation mark in a string.",
+      "zh": "字符串里的一个字母、数字、空格或标点。"
+     }
+    },
+    {
+     "term": {
+      "en": "function",
+      "zh": "函数"
+     },
+     "meaning": {
+      "en": "A named action that takes something in and often gives something back. print and len are functions.",
+      "zh": "一个有名字的动作，接收一些东西，常常交回一个结果。print 和 len 都是函数。"
+     }
+    },
+    {
+     "term": {
+      "en": "method",
+      "zh": "方法"
+     },
+     "meaning": {
+      "en": "An action that belongs to a value, written after a dot, such as \"Mia\".upper().",
+      "zh": "属于某个值的动作，写在点的后面，例如 \"Mia\".upper()。"
+     }
+    },
+    {
+     "term": {
+      "en": "f-string",
+      "zh": "f-string"
+     },
+     "meaning": {
+      "en": "A string with an f before the opening quote. Values in { } are filled in.",
+      "zh": "开头引号前带 f 的字符串。花括号 { } 里的值会被填进去。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "name = \"Mia\"\ngreeting = \"Hello, \" + name + \"!\"\nprint(greeting)\nprint(len(name))\nprint(name.upper())\nprint(f\"{name} has {len(name)} letters.\")",
+    "output": "Hello, Mia!\n3\nMIA\nMia has 3 letters.",
+    "walk": {
+     "en": [
+      "name = \"Mia\" stores the string Mia under the name name.",
+      "\"Hello, \" + name + \"!\" joins three strings: Hello, then the value of name, then an exclamation mark. The result, Hello, Mia!, is stored under greeting. Nothing is shown yet. print(greeting) shows it.",
+      "len(name) counts the characters M, i and a. The answer is the number 3, which print shows without quote marks.",
+      "name.upper() is the value, a dot and the method name. It gives a new string, MIA. The variable name still holds Mia.",
+      "In the f-string, {name} is replaced by Mia and {len(name)} is replaced by 3. The result is one sentence.",
+      "Try it: change \"Mia\" to \"Noah\" and run. All four lines change: Hello, Noah!, 4, NOAH and Noah has 4 letters."
+     ],
+     "zh": [
+      "name = \"Mia\" 把字符串 Mia 存到名字 name 下。",
+      "\"Hello, \" + name + \"!\" 把三个字符串连在一起：Hello, 、name 的值、一个感叹号。结果 Hello, Mia! 存到 greeting 下。此时还没有显示任何东西，print(greeting) 才会把它显示出来。",
+      "len(name) 数出字符 M、i、a，答案是数字 3。print 显示它时不带引号。",
+      "name.upper() 由值、一个点和方法名组成。它交回一个新的字符串 MIA。变量 name 仍然保存着 Mia。",
+      "在 f-string 里，{name} 被换成 Mia，{len(name)} 被换成 3，结果是一整句话。",
+      "动手试试：把 \"Mia\" 改成 \"Noah\" 再运行。四行输出都会变：Hello, Noah!、4、NOAH 和 Noah has 4 letters."
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "age = 5\nprint(\"Age: \" + age)",
+     "why": {
+      "en": "The + sign cannot join text and a number. The error says: TypeError: can only concatenate str (not \"int\") to str. Here str means string and int means integer. Put the number inside an f-string, or turn it into text with str(age) and write \"Age: \" + str(age).",
+      "zh": "+ 号不能把文字和数字连在一起。报错是：TypeError: can only concatenate str (not \"int\") to str。这里 str 是字符串，int 是整数。可以把数字放进 f-string 里，也可以用 str(age) 把它变成文字，写成 \"Age: \" + str(age)。"
+     },
+     "right": "age = 5\nprint(f\"Age: {age}\")"
+    },
+    {
+     "wrong": "print(Hello)",
+     "why": {
+      "en": "Without quote marks, Python looks for a variable called Hello. The error says: NameError: name 'Hello' is not defined. Text needs quote marks. Names do not.",
+      "zh": "没有引号，Python 会去找一个叫 Hello 的变量。报错是：NameError: name 'Hello' is not defined。文字要加引号，变量名不加。"
+     },
+     "right": "print(\"Hello\")"
+    },
+    {
+     "wrong": "print(\"5\" + \"5\")",
+     "why": {
+      "en": "Both sides are text, so + joins them. This prints 55, not 10, and no error warns you. If you want to add, use numbers: 5 + 5.",
+      "zh": "两边都是文字，所以 + 把它们连在一起。这段代码打印的是 55，不是 10，而且没有任何报错提醒你。想做加法，要用数字：5 + 5。"
+     },
+     "right": "print(5 + 5)"
+    },
+    {
+     "wrong": "name = \"Mia\"\nprint(name.Upper())",
+     "why": {
+      "en": "Method names must be spelled exactly, and a capital U is a different letter. The error says: AttributeError: 'str' object has no attribute 'Upper'. Did you mean: 'upper'?",
+      "zh": "方法名必须拼写准确，大写的 U 是另一个字母。报错是：AttributeError: 'str' object has no attribute 'Upper'. Did you mean: 'upper'?"
+     },
+     "right": "name = \"Mia\"\nprint(name.upper())"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output of print(len(\"Hello, Mia\")).",
+      "zh": "预测 print(len(\"Hello, Mia\")) 的输出。"
+     },
+     "a": {
+      "en": "10. The string has Hello (5 characters), a comma, a space and Mia (3 characters): 5 + 1 + 1 + 3 = 10.",
+      "zh": "10。这个字符串有 Hello（5 个字符）、一个逗号、一个空格和 Mia（3 个字符）：5 + 1 + 1 + 3 = 10。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a program that stores \"Noah\" under the name name and prints NOAH has 4 letters. Build the sentence with an f-string.",
+      "zh": "写一个程序：把 \"Noah\" 存到名字 name 下，并打印 NOAH has 4 letters。用 f-string 组成这句话。"
+     },
+     "a": {
+      "en": "name = \"Noah\"\nprint(f\"{name.upper()} has {len(name)} letters.\")\nAnything you could put inside print( ) also works inside the curly brackets.",
+      "zh": "name = \"Noah\"\nprint(f\"{name.upper()} has {len(name)} letters.\")\n凡是能写在 print( ) 里的表达式，也都能写在花括号里。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "decisions",
+   "title": {
+    "en": "Decisions with if",
+    "zh": "用 if 做判断"
+   },
+   "goal": {
+    "en": "make a program choose between actions.",
+    "zh": "让程序在几种做法之间做出选择。"
+   },
+   "plain": {
+    "en": "Programs often need to choose. A school app shows a pass or a fail message depending on a mark. A choice starts with a question that has a yes-or-no answer. Python writes the question as a comparison. score >= 80 asks: is score at least 80? The answer is a value called True or False. A value like that is a boolean.\n\nThe comparison symbols are: == equal to, != not equal to, < less than, > greater than, <= less than or equal to, and >= greater than or equal to. Take care with ==. One equals sign stores a value. Two equals signs ask a question.\n\nThe if statement uses a comparison. Write the word if, then the comparison, then a colon. Below it, write the lines to run, moved four spaces to the right. Moving lines to the right is called indentation. Python uses indentation to know which lines belong to the if. The indented lines run only when the comparison is True. A line that goes back to the left edge is no longer part of the if, and it always runs.\n\nAdd else: to say what to do when the answer is False. Add elif (short for else if) to ask a second question when the first answer was False. Python checks the questions from the top, runs the lines under the first True one, and skips the rest. So the order of the questions matters.",
+    "zh": "程序经常需要做选择。学校的应用会根据分数显示“通过”或“不通过”。选择从一个答案是“是”或“否”的问题开始。Python 把这个问题写成比较。score >= 80 问的是：score 至少是 80 吗？答案是一个叫 True 或 False 的值。这样的值叫布尔值。\n\n比较符号有：== 等于，!= 不等于，< 小于，> 大于，<= 小于或等于，>= 大于或等于。要特别当心 ==：一个等号是存储一个值，两个等号是提出一个问题。\n\nif 语句要用到比较。先写单词 if，再写比较，最后写一个冒号。下面几行是要执行的代码，向右缩进四个空格。把代码向右移动，叫作缩进。Python 靠缩进知道哪些行属于这个 if。缩进的行只在比较结果为 True 时才执行。回到最左边的那一行，就不再属于这个 if，它每次都会执行。\n\n加上 else: 可以说明答案为 False 时该怎么做。加上 elif（else if 的缩写）可以在第一个答案为 False 时再问第二个问题。Python 从上往下检查这些问题，执行第一个 True 对应的代码，其余的跳过。所以问题的先后顺序很重要。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "comparison",
+      "zh": "比较"
+     },
+     "meaning": {
+      "en": "A question such as score >= 80 whose answer is True or False.",
+      "zh": "像 score >= 80 这样的问题，答案是 True 或 False。"
+     }
+    },
+    {
+     "term": {
+      "en": "boolean",
+      "zh": "布尔值"
+     },
+     "meaning": {
+      "en": "A value that is either True or False.",
+      "zh": "只有两种取值的值：True 或 False。"
+     }
+    },
+    {
+     "term": {
+      "en": "condition",
+      "zh": "条件"
+     },
+     "meaning": {
+      "en": "The comparison written after if or elif.",
+      "zh": "写在 if 或 elif 后面的比较。"
+     }
+    },
+    {
+     "term": {
+      "en": "indentation",
+      "zh": "缩进"
+     },
+     "meaning": {
+      "en": "Spaces at the start of a line. Python uses them to group lines.",
+      "zh": "一行开头的空格。Python 用它给代码分组。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "score = 72\nif score >= 80:\n    print(\"Grade: A\")\nelif score >= 60:\n    print(\"Grade: B\")\nelse:\n    print(\"Grade: C\")\nprint(\"Done\")",
+    "output": "Grade: B\nDone",
+    "walk": {
+     "en": [
+      "score = 72 stores 72 under the name score.",
+      "if score >= 80: asks whether 72 is at least 80. The answer is False, so Python skips the indented line under it.",
+      "elif score >= 60: asks whether 72 is at least 60. The answer is True, so Python runs the indented line under it and prints Grade: B.",
+      "Python now skips the else part, because an earlier question was True. Only one of the three branches runs.",
+      "print(\"Done\") is not indented. It is not part of the if chain, so it runs every time.",
+      "Try it: change score to 95, then to 40, then to 80. You should see Grade: A, then Grade: C, then Grade: A, because >= includes the number 80 itself."
+     ],
+     "zh": [
+      "score = 72 把 72 存到名字 score 下。",
+      "if score >= 80: 问 72 是否至少为 80。答案是 False，所以 Python 跳过它下面缩进的那一行。",
+      "elif score >= 60: 问 72 是否至少为 60。答案是 True，所以 Python 执行它下面缩进的那一行，打印 Grade: B。",
+      "因为前面已经有一个问题的答案是 True，Python 现在跳过 else 部分。三个分支里只会执行一个。",
+      "print(\"Done\") 没有缩进。它不属于这条 if 链，所以每次都会执行。",
+      "动手试试：把 score 依次改成 95、40、80。你应该依次看到 Grade: A、Grade: C、Grade: A，因为 >= 包含 80 本身。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "score = 80\nif score = 80:\n    print(\"Exactly 80\")",
+     "why": {
+      "en": "One equals sign stores a value. To ask whether two things are equal, use two. The error says: SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
+      "zh": "一个等号是存储一个值。要问两个东西是否相等，要用两个等号。报错是：SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?"
+     },
+     "right": "score = 80\nif score == 80:\n    print(\"Exactly 80\")"
+    },
+    {
+     "wrong": "score = 80\nif score >= 80\n    print(\"A\")",
+     "why": {
+      "en": "The colon at the end of the if line is missing. The error says: SyntaxError: expected ':'. Lines that introduce an indented block, such as if, elif, else, for, while and def, all end with a colon.",
+      "zh": "if 那一行末尾漏了冒号。报错是：SyntaxError: expected ':'。引出缩进代码块的行，例如 if、elif、else、for、while 和 def，末尾都要有冒号。"
+     },
+     "right": "score = 80\nif score >= 80:\n    print(\"A\")"
+    },
+    {
+     "wrong": "score = 80\nif score >= 80:\nprint(\"A\")",
+     "why": {
+      "en": "The line under the if is not indented, so Python finds an if with nothing inside it. The error says: IndentationError: expected an indented block after 'if' statement on line 2. Indent the line by four spaces.",
+      "zh": "if 下面那一行没有缩进，Python 发现这个 if 里面是空的。报错是：IndentationError: expected an indented block after 'if' statement on line 2。请把这一行缩进四个空格。"
+     },
+     "right": "score = 80\nif score >= 80:\n    print(\"A\")"
+    },
+    {
+     "wrong": "score = 90\nif score >= 60:\n    print(\"Grade: B\")\nelif score >= 80:\n    print(\"Grade: A\")",
+     "why": {
+      "en": "There is no error, but 90 prints Grade: B. The first question, at least 60, is already True, so Python never reaches the second one. Put the strictest question first.",
+      "zh": "这里没有报错，但是 90 分会打印 Grade: B。第一个问题“至少 60”已经是 True，所以 Python 永远走不到第二个问题。要把最严格的问题放在最前面。"
+     },
+     "right": "score = 90\nif score >= 80:\n    print(\"Grade: A\")\nelif score >= 60:\n    print(\"Grade: B\")"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "What does the example print when score is 80?",
+      "zh": "当 score 等于 80 时，例子会打印什么？"
+     },
+     "a": {
+      "en": "Grade: A and then Done. The comparison score >= 80 is True when score is exactly 80.",
+      "zh": "先打印 Grade: A，再打印 Done。score 恰好等于 80 时，比较 score >= 80 的结果是 True。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output:\nx = 5\nif x > 3:\n    print(\"A\")\nif x > 4:\n    print(\"B\")\nelse:\n    print(\"C\")",
+      "zh": "预测输出：\nx = 5\nif x > 3:\n    print(\"A\")\nif x > 4:\n    print(\"B\")\nelse:\n    print(\"C\")"
+     },
+     "a": {
+      "en": "A, then B on the next line. These are two separate if statements. The first prints A. The second asks whether 5 is greater than 4, which is True, so it prints B and skips its else.",
+      "zh": "先输出 A，下一行输出 B。这是两个各自独立的 if 语句。第一个打印 A。第二个问 5 是否大于 4，答案是 True，所以打印 B，并跳过它的 else。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a program: age is 16. Print Adult if age is 18 or more, and Minor otherwise.",
+      "zh": "写一个程序：age 是 16。如果 age 大于或等于 18，打印 Adult，否则打印 Minor。"
+     },
+     "a": {
+      "en": "age = 16\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Minor\")\nIt prints Minor.",
+      "zh": "age = 16\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Minor\")\n输出 Minor。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "repeating",
+   "title": {
+    "en": "Repeating with for and while",
+    "zh": "用 for 和 while 重复"
+   },
+   "goal": {
+    "en": "repeat steps with a for loop and a while loop, and know which to pick.",
+    "zh": "用 for 循环和 while 循环重复执行步骤，并知道该选哪一种。"
+   },
+   "plain": {
+    "en": "A loop repeats lines of code. Without loops, a program that adds up 100 numbers would need 100 lines. Python has two kinds of loop.\n\nA for loop repeats once for each item in a collection. The simplest collection is range. range(1, 6) gives the whole numbers 1, 2, 3, 4 and 5. It starts at the first number and stops before the second one. range(3) is short for range(0, 3) and gives 0, 1 and 2. You write for number in range(1, 6): and then the lines to repeat, indented by four spaces. Each time round, number holds the next value. One pass through the indented lines is called an iteration.\n\nA while loop repeats as long as a comparison stays True. Python checks the comparison before every pass. Something inside the loop must change what the comparison sees. Otherwise it stays True forever, which is called an infinite loop, and the program never stops. In a terminal, press Control and C to stop it. On this page, do not run a loop that never ends. Reload the page if that happens.\n\nUse for when you know what to go through, or how many times. Use while when you repeat until something happens. A common pattern is a running total: start a variable at 0, and add to it inside the loop.",
+    "zh": "循环会重复执行一段代码。要是没有循环，把 100 个数加起来的程序就得写 100 行。Python 有两种循环。\n\nfor 循环对一组东西里的每一项各执行一次。最简单的一组东西是 range。range(1, 6) 给出整数 1、2、3、4、5。它从第一个数开始，在第二个数之前停下。range(3) 是 range(0, 3) 的简写，给出 0、1、2。写法是 for number in range(1, 6): ，然后是要重复的代码，缩进四个空格。每循环一次，number 就是下一个值。把缩进的代码执行一遍，叫作一次迭代。\n\nwhile 循环在比较结果一直为 True 时重复执行。Python 在每一轮之前都会检查比较。循环内部必须有东西改变比较所看到的内容，否则它会一直是 True，这叫死循环，程序永远不会停。在终端里，按 Control 和 C 可以让它停下。在本页上，请不要运行永远不会结束的循环；万一发生，刷新页面即可。\n\n知道要遍历什么、或者要重复多少次，就用 for。要一直重复到某件事发生为止，就用 while。一个常见的模式是累计：先让一个变量从 0 开始，在循环里不断往它上面加。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "loop",
+      "zh": "循环"
+     },
+     "meaning": {
+      "en": "Code that repeats.",
+      "zh": "会重复执行的代码。"
+     }
+    },
+    {
+     "term": {
+      "en": "iteration",
+      "zh": "迭代"
+     },
+     "meaning": {
+      "en": "One pass through the lines of a loop.",
+      "zh": "把循环里的代码执行一遍。"
+     }
+    },
+    {
+     "term": {
+      "en": "range",
+      "zh": "range"
+     },
+     "meaning": {
+      "en": "A way to get a run of whole numbers. It stops before the end number.",
+      "zh": "得到一串连续整数的方式，到结束数之前停止。"
+     }
+    },
+    {
+     "term": {
+      "en": "infinite loop",
+      "zh": "死循环"
+     },
+     "meaning": {
+      "en": "A loop whose comparison never becomes False, so it never stops.",
+      "zh": "比较结果永远不会变成 False 的循环，所以永远不会停。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "total = 0\nfor number in range(1, 6):\n    total = total + number\n    print(\"added\", number, \"total is\", total)\nprint(\"Sum:\", total)\n\ncount = 3\nwhile count > 0:\n    print(\"Countdown:\", count)\n    count = count - 1\nprint(\"Liftoff\")",
+    "output": "added 1 total is 1\nadded 2 total is 3\nadded 3 total is 6\nadded 4 total is 10\nadded 5 total is 15\nSum: 15\nCountdown: 3\nCountdown: 2\nCountdown: 1\nLiftoff",
+    "walk": {
+     "en": [
+      "total = 0 starts a running total at zero.",
+      "for number in range(1, 6): makes number take the values 1, 2, 3, 4 and 5, one after another. range(1, 6) stops before 6.",
+      "The two indented lines run five times. Each time, total = total + number adds the current number to the total, and print shows the progress.",
+      "print(\"Sum:\", total) is not indented. It runs once, after the loop has finished.",
+      "The while loop starts with count = 3. Python asks count > 0 before each pass. It is True for 3, 2 and 1.",
+      "count = count - 1 is the line that changes count. After the pass where count is 1, count becomes 0, the question is False, and the loop ends. Then Liftoff is printed.",
+      "Try it: change range(1, 6) to range(1, 11) and the last Sum becomes 55. Change count = 3 to count = 5 and the countdown gets longer."
+     ],
+     "zh": [
+      "total = 0 让累计值从零开始。",
+      "for number in range(1, 6): 让 number 依次取 1、2、3、4、5。range(1, 6) 在 6 之前停止。",
+      "缩进的两行会执行五次。每一次，total = total + number 把当前的数加到累计值上，print 显示进度。",
+      "print(\"Sum:\", total) 没有缩进。它在循环结束之后只执行一次。",
+      "while 循环从 count = 3 开始。Python 在每一轮之前都会问 count > 0。对 3、2、1，答案都是 True。",
+      "count = count - 1 这一行负责改变 count。count 是 1 的那一轮结束后，count 变成 0，问题的答案是 False，循环结束，然后打印 Liftoff。",
+      "动手试试：把 range(1, 6) 改成 range(1, 11)，最后的 Sum 会变成 55。把 count = 3 改成 count = 5，倒数会更长。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "for n in range(5):\n    print(n)",
+     "why": {
+      "en": "This prints 0, 1, 2, 3 and 4. That is five numbers, but they start at 0 and stop before 5. There is no error, so check the output. For 1 to 5, write range(1, 6).",
+      "zh": "这段代码打印 0、1、2、3、4。一共五个数，但是从 0 开始，到 5 之前停止。它没有报错，所以要自己检查输出。想要 1 到 5，要写成 range(1, 6)。"
+     },
+     "right": "for n in range(1, 6):\n    print(n)"
+    },
+    {
+     "wrong": "count = 3\nwhile count > 0:\n    print(count)",
+     "why": {
+      "en": "count never changes, so count > 0 stays True and the program prints 3 forever. Stop it with Control and C in a terminal. Change the variable inside the loop.",
+      "zh": "count 一直不变，所以 count > 0 一直是 True，程序会不停地打印 3。在终端里按 Control 和 C 可以让它停下。要在循环里改变这个变量。"
+     },
+     "right": "count = 3\nwhile count > 0:\n    print(count)\n    count = count - 1"
+    },
+    {
+     "wrong": "for i in 5:\n    print(i)",
+     "why": {
+      "en": "A for loop needs a collection to go through, and a single number is not one. The error says: TypeError: 'int' object is not iterable. Use range(5) to go through the numbers 0 to 4.",
+      "zh": "for 循环需要一组可以遍历的东西，而单独一个数字不是。报错是：TypeError: 'int' object is not iterable。要遍历 0 到 4，请用 range(5)。"
+     },
+     "right": "for i in range(5):\n    print(i)"
+    },
+    {
+     "wrong": "total = 0\nfor n in range(1, 4):\n    total = total + n\nprint(\"running total\", total)",
+     "why": {
+      "en": "Suppose you wanted to see the total after every step. The print is lined up with for, so it is not part of the loop. It runs once at the end and shows only 6. Indentation decides what repeats.",
+      "zh": "假如你想在每一步之后都看到累计值。这里的 print 和 for 对齐，所以它不属于循环，只在最后执行一次，只显示 6。缩进决定了哪些代码会被重复。"
+     },
+     "right": "total = 0\nfor n in range(1, 4):\n    total = total + n\n    print(\"running total\", total)"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output:\nfor i in range(3):\n    print(i * 2)",
+      "zh": "预测输出：\nfor i in range(3):\n    print(i * 2)"
+     },
+     "a": {
+      "en": "0, 2 and 4, each on its own line. i takes the values 0, 1 and 2.",
+      "zh": "0、2、4，各占一行。i 依次取 0、1、2。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a loop that prints 10, 20, 30, 40 and 50, each on its own line.",
+      "zh": "写一个循环，依次打印 10、20、30、40、50，各占一行。"
+     },
+     "a": {
+      "en": "for n in range(1, 6):\n    print(n * 10)\nAnother answer with the same output is range(10, 51, 10), but you have not met that form yet.",
+      "zh": "for n in range(1, 6):\n    print(n * 10)\n另一种输出相同的写法是 range(10, 51, 10)，不过你还没有学过这种形式。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output:\ncount = 1\nwhile count < 4:\n    print(count)\n    count = count + 1",
+      "zh": "预测输出：\ncount = 1\nwhile count < 4:\n    print(count)\n    count = count + 1"
+     },
+     "a": {
+      "en": "1, 2 and 3, each on its own line. When count reaches 4, the question count < 4 is False and the loop ends.",
+      "zh": "1、2、3，各占一行。count 变成 4 时，问题 count < 4 的答案是 False，循环结束。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "lists",
+   "title": {
+    "en": "Lists",
+    "zh": "列表"
+   },
+   "goal": {
+    "en": "keep several values together, read one by its position and go through all of them.",
+    "zh": "把多个值放在一起，按位置读取其中一个，并逐个处理所有的值。"
+   },
+   "plain": {
+    "en": "A list keeps many values in order under one name. Write the values between square brackets, separated by commas: scores = [70, 85, 90]. A list can hold numbers, strings or a mix. The function len tells you how many items a list holds.\n\nEach item has a position, called an index. Counting starts at 0, not 1. In scores, the item at index 0 is 70, at index 1 is 85 and at index 2 is 90. Write scores[0] to get the first item. A negative index counts from the end, so scores[-1] is the last item. If you ask for a position that does not exist, Python stops with an IndexError. Strings use the same idea: \"Mia\"[0] is \"M\".\n\nA list can change. The method append adds one item at the end. scores.append(60) changes scores itself. It gives nothing back.\n\nA for loop can go through a list item by item: for score in scores: is the same for loop as in lesson 5, with a list in place of range. With a list you can total and average a set of marks, which is what the example does.",
+    "zh": "列表把许多个值按顺序放在一个名字下。把值写在方括号里，用逗号隔开：scores = [70, 85, 90]。列表里可以放数字、字符串，也可以混着放。函数 len 告诉你列表里有多少项。\n\n每一项都有一个位置，叫作索引。计数从 0 开始，不是从 1 开始。在 scores 里，索引 0 的项是 70，索引 1 是 85，索引 2 是 90。写 scores[0] 就能得到第一项。负的索引从末尾往前数，所以 scores[-1] 是最后一项。如果你要的位置不存在，Python 会以 IndexError 停下来。字符串也用同样的办法：\"Mia\"[0] 是 \"M\"。\n\n列表是可以改变的。方法 append 在末尾添加一项。scores.append(60) 直接改变 scores 本身，它不交回任何东西。\n\nfor 循环可以逐项遍历列表：for score in scores: 就是第 5 课里的那种 for 循环，只是用列表代替了 range。有了列表，就能对一组分数求和、求平均，例子里做的就是这件事。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "list",
+      "zh": "列表"
+     },
+     "meaning": {
+      "en": "Many values kept in order under one name, written in square brackets.",
+      "zh": "按顺序放在一个名字下的多个值，写在方括号里。"
+     }
+    },
+    {
+     "term": {
+      "en": "item",
+      "zh": "项（元素）"
+     },
+     "meaning": {
+      "en": "One value inside a list.",
+      "zh": "列表里的一个值。"
+     }
+    },
+    {
+     "term": {
+      "en": "index",
+      "zh": "索引"
+     },
+     "meaning": {
+      "en": "The position of an item. The first item has index 0.",
+      "zh": "一项所在的位置。第一项的索引是 0。"
+     }
+    },
+    {
+     "term": {
+      "en": "append",
+      "zh": "append"
+     },
+     "meaning": {
+      "en": "A list method that adds one item at the end.",
+      "zh": "一个列表方法，在末尾添加一项。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "scores = [70, 85, 90]\nprint(scores[0])\nprint(scores[-1])\nscores.append(60)\nprint(len(scores))\ntotal = 0\nfor score in scores:\n    total = total + score\nprint(\"Average:\", total / len(scores))",
+    "output": "70\n90\n4\nAverage: 76.25",
+    "walk": {
+     "en": [
+      "scores = [70, 85, 90] makes a list of three integers.",
+      "scores[0] is the item at index 0, the first one: 70.",
+      "scores[-1] counts from the end, so it is the last item: 90.",
+      "scores.append(60) adds 60 at the end. The list is now [70, 85, 90, 60].",
+      "len(scores) is now 4.",
+      "The loop gives score the values 70, 85, 90 and 60 in turn. total grows to 70 + 85 + 90 + 60 = 305.",
+      "total / len(scores) is 305 / 4 = 76.25, the average.",
+      "Try it: add scores.append(100) after the first append and run. There are now five scores, the total is 405, and the last line shows Average: 81.0."
+     ],
+     "zh": [
+      "scores = [70, 85, 90] 创建一个包含三个整数的列表。",
+      "scores[0] 是索引 0 的项，也就是第一项：70。",
+      "scores[-1] 从末尾往前数，所以它是最后一项：90。",
+      "scores.append(60) 在末尾添加 60。列表现在是 [70, 85, 90, 60]。",
+      "len(scores) 现在是 4。",
+      "循环让 score 依次取 70、85、90、60。total 累计到 70 + 85 + 90 + 60 = 305。",
+      "total / len(scores) 是 305 / 4 = 76.25，也就是平均分。",
+      "动手试试：在第一个 append 后面再加一行 scores.append(100)，然后运行。现在有五个分数，总和是 405，最后一行显示 Average: 81.0。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "scores = [70, 85, 90]\nprint(scores[3])",
+     "why": {
+      "en": "The list has three items, with indexes 0, 1 and 2. There is no index 3. The error says: IndexError: list index out of range. The last valid index is len(scores) - 1, which you can also write as -1.",
+      "zh": "这个列表有三项，索引是 0、1、2，没有索引 3。报错是：IndexError: list index out of range。最后一个有效的索引是 len(scores) - 1，也可以写成 -1。"
+     },
+     "right": "scores = [70, 85, 90]\nprint(scores[2])"
+    },
+    {
+     "wrong": "scores = [70, 85, 90]\nprint(scores[1])",
+     "why": {
+      "en": "If you wanted the first score, this is wrong, and no error tells you. scores[1] is the second item, 85. The first item has index 0.",
+      "zh": "如果你想要的是第一个分数，这样写就错了，而且没有报错提醒你。scores[1] 是第二项，也就是 85。第一项的索引是 0。"
+     },
+     "right": "scores = [70, 85, 90]\nprint(scores[0])"
+    },
+    {
+     "wrong": "scores = [70, 85]\nscores = scores.append(60)\nprint(len(scores))",
+     "why": {
+      "en": "append changes the list and gives back nothing, which Python calls None. Storing that result under scores throws the list away. The error says: TypeError: object of type 'NoneType' has no len(). Call append on a line of its own.",
+      "zh": "append 会改变列表，并且什么也不交回，Python 把这叫作 None。把这个结果存到 scores 里，等于把列表丢掉了。报错是：TypeError: object of type 'NoneType' has no len()。要把 append 单独写成一行。"
+     },
+     "right": "scores = [70, 85]\nscores.append(60)\nprint(len(scores))"
+    },
+    {
+     "wrong": "scores = [70, 85, 90]\nprint(scores(0))",
+     "why": {
+      "en": "Round brackets call a function. Square brackets pick an item. The error says: TypeError: 'list' object is not callable.",
+      "zh": "圆括号表示调用函数，方括号才是取出一项。报错是：TypeError: 'list' object is not callable。"
+     },
+     "right": "scores = [70, 85, 90]\nprint(scores[0])"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Predict the output:\nnames = [\"Leon\", \"Mia\", \"Emma\"]\nprint(names[1])\nprint(names[-1])",
+      "zh": "预测输出：\nnames = [\"Leon\", \"Mia\", \"Emma\"]\nprint(names[1])\nprint(names[-1])"
+     },
+     "a": {
+      "en": "Mia and then Emma. Index 1 is the second item, and -1 is the last item.",
+      "zh": "先输出 Mia，再输出 Emma。索引 1 是第二项，-1 是最后一项。"
+     }
+    },
+    {
+     "q": {
+      "en": "Using the list names above, write a loop that prints Hello, Leon then Hello, Mia then Hello, Emma.",
+      "zh": "用上面的 names 列表，写一个循环，依次打印 Hello, Leon、Hello, Mia 和 Hello, Emma。"
+     },
+     "a": {
+      "en": "for name in names:\n    print(\"Hello, \" + name)",
+      "zh": "for name in names:\n    print(\"Hello, \" + name)"
+     }
+    },
+    {
+     "q": {
+      "en": "A list has 6 items. What is the largest valid index?",
+      "zh": "一个列表有 6 项。最大的有效索引是多少？"
+     },
+     "a": {
+      "en": "5, because counting starts at 0. You can also reach the last item with -1.",
+      "zh": "5，因为计数从 0 开始。你也可以用 -1 取到最后一项。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "functions",
+   "title": {
+    "en": "Functions",
+    "zh": "函数"
+   },
+   "goal": {
+    "en": "write a function that takes inputs and returns a result, and then call it.",
+    "zh": "写一个接收输入、返回结果的函数，并调用它。"
+   },
+   "plain": {
+    "en": "You have used functions already: print, len and range. A function is a named set of steps that you can use again and again. You can write your own.\n\nWrite def, then the name, then round brackets holding the parameters, then a colon. A parameter is a name for an input. The function uses it like a variable. The steps of the function are indented below. The word return sends a result back to the code that used the function. That result is the return value.\n\nDefining a function does not run it. The def line only teaches Python a new name. To run it, call the function: write its name and give it values in round brackets, such as average(class_a). The values you give are called arguments. Each argument is stored in the matching parameter, in order.\n\nNames created inside a function exist only while it runs. They are local. That protects you: a function cannot accidentally change variables elsewhere in the program.\n\nreturn and print are different. print shows something on the screen for a person. return hands a value back to the program, so that it can be stored, added or printed. If a function finishes without return, it gives back None, which means no value. A return also ends the function at once.",
+    "zh": "你已经用过函数了：print、len 和 range。函数是一组有名字的步骤，可以反复使用。你也可以自己写函数。\n\n先写 def，再写函数名，再写圆括号，括号里是参数，最后是一个冒号。参数是给输入起的名字，函数里把它当变量用。函数的步骤缩进写在下面。return 这个词把结果送回给使用这个函数的代码，这个结果叫作返回值。\n\n定义一个函数并不会运行它。def 这一行只是让 Python 学会一个新名字。要运行它，就要调用这个函数：写出函数名，再在圆括号里给它几个值，例如 average(class_a)。你交给函数的值叫作实参。每个实参按顺序存进对应的参数里。\n\n在函数里创建的名字，只在函数运行期间存在，它们是局部的。这是一种保护：函数不会不小心改掉程序里其他地方的变量。\n\nreturn 和 print 不一样。print 是给人看的，把内容显示在屏幕上。return 把一个值交回给程序，这样它就能被存起来、被相加，或者被打印。如果函数结束时没有 return，它交回的是 None，意思是“没有值”。return 还会立刻结束函数。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "function",
+      "zh": "函数"
+     },
+     "meaning": {
+      "en": "A named set of steps you can use again and again.",
+      "zh": "一组有名字的步骤，可以反复使用。"
+     }
+    },
+    {
+     "term": {
+      "en": "parameter",
+      "zh": "参数"
+     },
+     "meaning": {
+      "en": "A name for an input, written in the brackets of def.",
+      "zh": "给输入起的名字，写在 def 的括号里。"
+     }
+    },
+    {
+     "term": {
+      "en": "argument",
+      "zh": "实参"
+     },
+     "meaning": {
+      "en": "The actual value you give when you call a function.",
+      "zh": "调用函数时交给它的实际的值。"
+     }
+    },
+    {
+     "term": {
+      "en": "call",
+      "zh": "调用"
+     },
+     "meaning": {
+      "en": "Running a function by writing its name and brackets.",
+      "zh": "写出函数名和括号来运行一个函数。"
+     }
+    },
+    {
+     "term": {
+      "en": "return value",
+      "zh": "返回值"
+     },
+     "meaning": {
+      "en": "The result a function hands back with return.",
+      "zh": "函数用 return 交回的结果。"
+     }
+    },
+    {
+     "term": {
+      "en": "None",
+      "zh": "None"
+     },
+     "meaning": {
+      "en": "A special value that means no value.",
+      "zh": "一个特殊的值，意思是“没有值”。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def average(numbers):\n    total = 0\n    for number in numbers:\n        total = total + number\n    return total / len(numbers)\n\ndef percent(part, whole):\n    return part / whole * 100\n\nclass_a = [70, 85, 90, 60]\nclass_b = [50, 100]\nprint(\"Class A:\", average(class_a))\nprint(\"Class B:\", average(class_b))\nprint(\"Passed:\", percent(3, 4), \"percent\")",
+    "output": "Class A: 76.25\nClass B: 75.0\nPassed: 75.0 percent",
+    "walk": {
+     "en": [
+      "def average(numbers): defines a function called average with one parameter, numbers. Nothing runs yet.",
+      "The indented lines are the body of the function. It is the loop from lesson 6, with numbers in place of scores.",
+      "return total / len(numbers) sends the average back and ends the function.",
+      "def percent(part, whole): has two parameters. They receive their values in order.",
+      "class_a and class_b are two lists. They are ordinary variables.",
+      "average(class_a) calls the function. Python stores the list in numbers, runs the body and gets 76.25. The call is replaced by that return value, and print shows it.",
+      "average(class_b) uses the same steps on different data. Reusing steps is the point of a function. It gives 75.0.",
+      "percent(3, 4) stores 3 in part and 4 in whole. The result is 3 / 4 * 100 = 75.0.",
+      "Try it: add class_c = [100, 90, 80] and print(average(class_c)). You should see 90.0."
+     ],
+     "zh": [
+      "def average(numbers): 定义了一个叫 average 的函数，它有一个参数 numbers。此时什么都没有运行。",
+      "缩进的几行是函数体。它就是第 6 课里的那个循环，只是用 numbers 代替了 scores。",
+      "return total / len(numbers) 把平均数送回去，并结束函数。",
+      "def percent(part, whole): 有两个参数。它们按顺序接收值。",
+      "class_a 和 class_b 是两个列表，它们是普通的变量。",
+      "average(class_a) 调用函数。Python 把这个列表存进 numbers，运行函数体，得到 76.25。这次调用被换成这个返回值，print 把它显示出来。",
+      "average(class_b) 用同样的步骤处理另一组数据。重复使用步骤，正是函数的意义所在。结果是 75.0。",
+      "percent(3, 4) 把 3 存进 part，把 4 存进 whole。结果是 3 / 4 * 100 = 75.0。",
+      "动手试试：加上 class_c = [100, 90, 80] 和 print(average(class_c))。你应该看到 90.0。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "def greet(name):\n    print(\"Hello, \" + name)",
+     "why": {
+      "en": "Nothing prints and no error appears. def only defines the function, and nobody calls it. Add a line that calls it, such as greet(\"Mia\").",
+      "zh": "什么也没有打印，也没有报错。def 只是定义了函数，没有人去调用它。请加一行调用它的代码，例如 greet(\"Mia\")。"
+     },
+     "right": "def greet(name):\n    print(\"Hello, \" + name)\n\ngreet(\"Mia\")"
+    },
+    {
+     "wrong": "def square(x):\n    print(x * x)\n\ny = square(4) + 1",
+     "why": {
+      "en": "print only shows the result. It does not hand it back, so square(4) is None. The program prints 16 and then stops with: TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'. Use return.",
+      "zh": "print 只是把结果显示出来，并没有把它交回，所以 square(4) 是 None。程序先打印 16，然后以这个错误停下：TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'。要用 return。"
+     },
+     "right": "def square(x):\n    return x * x\n\ny = square(4) + 1"
+    },
+    {
+     "wrong": "def square(x):\n    return x * x\n\nprint(square(2, 3))",
+     "why": {
+      "en": "The function has one parameter, but the call gives two arguments. The error says: TypeError: square() takes 1 positional argument but 2 were given. The number of arguments must match the number of parameters.",
+      "zh": "函数有一个参数，调用时却给了两个实参。报错是：TypeError: square() takes 1 positional argument but 2 were given。实参的个数必须和参数的个数一致。"
+     },
+     "right": "def square(x):\n    return x * x\n\nprint(square(2))"
+    },
+    {
+     "wrong": "def total_of(numbers):\n    total = 0\n    for n in numbers:\n        total = total + n\n        return total",
+     "why": {
+      "en": "return ends the function at once. Here it sits inside the loop, so the loop stops after the first item, and total_of([1, 2, 3]) gives 1 instead of 6. There is no error. Line return up with for so that it runs after the loop.",
+      "zh": "return 会立刻结束函数。这里它写在循环里面，所以循环处理完第一项就停了，total_of([1, 2, 3]) 得到 1，而不是 6。没有任何报错。要让 return 和 for 对齐，这样它才在循环结束之后执行。"
+     },
+     "right": "def total_of(numbers):\n    total = 0\n    for n in numbers:\n        total = total + n\n    return total"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Write a function double that takes a number n and returns twice n. Then print double(21).",
+      "zh": "写一个函数 double，它接收一个数 n，并返回 n 的两倍。然后打印 double(21)。"
+     },
+     "a": {
+      "en": "def double(n):\n    return n * 2\n\nprint(double(21))\nIt prints 42.",
+      "zh": "def double(n):\n    return n * 2\n\nprint(double(21))\n输出 42。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output:\ndef f(a, b):\n    return a - b\nprint(f(10, 4))\nprint(f(4, 10))",
+      "zh": "预测输出：\ndef f(a, b):\n    return a - b\nprint(f(10, 4))\nprint(f(4, 10))"
+     },
+     "a": {
+      "en": "6 and then -6. Arguments go into the parameters in order, so the order of the arguments changes the answer.",
+      "zh": "先输出 6，再输出 -6。实参按顺序进入参数，所以实参的先后顺序会改变答案。"
+     }
+    },
+    {
+     "q": {
+      "en": "Predict the output:\ndef hello():\n    print(\"Hi\")\nx = hello()\nprint(x)",
+      "zh": "预测输出：\ndef hello():\n    print(\"Hi\")\nx = hello()\nprint(x)"
+     },
+     "a": {
+      "en": "Hi and then None. The call prints Hi. The function has no return, so x gets None.",
+      "zh": "先输出 Hi，再输出 None。调用时打印了 Hi。函数没有 return，所以 x 得到的是 None。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "read-errors",
+   "title": {
+    "en": "Reading an error message and fixing it",
+    "zh": "读懂报错信息并修好程序"
+   },
+   "goal": {
+    "en": "find the kind, the place and the cause of an error, and fix a broken program one message at a time.",
+    "zh": "找出错误的类型、位置和原因，并根据报错信息一条一条地修好程序。"
+   },
+   "plain": {
+    "en": "Every programmer sees error messages every day. They are not a sign that you failed. An error message is Python telling you where it stopped and why. The skill is to read it calmly, in the right order.\n\nA mistake found while the program runs gives a message of this shape:\nTraceback (most recent call last):\nFile \"hello.py\", line 4, in <module>\ntotal = totl + price\nNameError: name 'totl' is not defined. Did you mean: 'total'?\n\nRead it from the bottom. The last line is the most useful. It has the kind of error (here NameError), a colon, and a sentence about what went wrong. Just above it is the line of your program where Python stopped. Above that are the file name and the line number. On this page the file is called main.py. Traceback means the trail of steps Python took to get there; in a short program the trail has one step. Newer versions of Python also print ^ marks under the exact part of the line, and the wording of messages differs a little between versions.\n\nA mistake in the way a line is written is a syntax error. Python finds these before it runs anything. So the message has no Traceback, and the program prints nothing at all. Python shows the line and a ^ mark near the problem. The real mistake is at that spot or just before it.\n\nDo the same four things every time. First, read the last line aloud. Second, go to the line number it names. Third, change one thing. Fourth, run again. Python stops at the first error, so fixing one often shows you the next. That is progress.",
+    "zh": "每个程序员每天都会看到报错信息。它不代表你失败了。报错信息，是 Python 在告诉你它停在哪里、为什么停。要学的是冷静地、按正确的顺序去读它。\n\n程序运行时发现的错误，会给出这样形状的信息：\nTraceback (most recent call last):\nFile \"hello.py\", line 4, in <module>\ntotal = totl + price\nNameError: name 'totl' is not defined. Did you mean: 'total'?\n\n请从最底下往上读。最后一行最有用。它写着错误的类型（这里是 NameError）、一个冒号，以及一句说明哪里出了问题的话。紧挨在它上面的，是 Python 停下时所在的那一行代码。再往上是文件名和行号。在本页上，文件名叫 main.py。Traceback 的意思是“回溯”，指 Python 走到这里经过的一串步骤；程序很短时，这串步骤只有一步。较新版本的 Python 还会在这一行的具体位置下面打印 ^ 标记，而且不同版本的措辞会略有不同。\n\n一行代码的写法有错，叫作语法错误。Python 在运行任何东西之前就会发现它们，所以这种信息里没有 Traceback，程序也一个字都不会输出。Python 会显示那一行，并在出问题的地方附近打一个 ^ 标记。真正的错误就在那个位置，或者在它的前面一点。\n\n每次都做同样的四件事。第一，把最后一行念出来。第二，去它指出的行号那里看。第三，只改一处。第四，重新运行。Python 在遇到第一个错误时就会停下，所以改好一个，常常会让你看到下一个。这就是进步。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "SyntaxError",
+      "zh": "SyntaxError（语法错误）"
+     },
+     "meaning": {
+      "en": "A line is written in a way Python cannot understand. Nothing runs.",
+      "zh": "某一行的写法 Python 看不懂，整个程序一行都不运行。"
+     }
+    },
+    {
+     "term": {
+      "en": "IndentationError",
+      "zh": "IndentationError（缩进错误）"
+     },
+     "meaning": {
+      "en": "A kind of SyntaxError: the spaces at the start of a line are wrong.",
+      "zh": "SyntaxError 的一种：行首的空格不对。"
+     }
+    },
+    {
+     "term": {
+      "en": "NameError",
+      "zh": "NameError（名字错误）"
+     },
+     "meaning": {
+      "en": "A name does not exist. Often a typo, or a variable not created yet.",
+      "zh": "用到了不存在的名字，常见原因是拼写错误，或者变量还没有创建。"
+     }
+    },
+    {
+     "term": {
+      "en": "TypeError",
+      "zh": "TypeError（类型错误）"
+     },
+     "meaning": {
+      "en": "An action was used on the wrong kind of value, such as text plus a number.",
+      "zh": "对错误种类的值做了某个动作，例如文字加数字。"
+     }
+    },
+    {
+     "term": {
+      "en": "IndexError",
+      "zh": "IndexError（索引错误）"
+     },
+     "meaning": {
+      "en": "A list position that does not exist.",
+      "zh": "用了列表里不存在的位置。"
+     }
+    },
+    {
+     "term": {
+      "en": "ZeroDivisionError",
+      "zh": "ZeroDivisionError（除以零错误）"
+     },
+     "meaning": {
+      "en": "A division by zero.",
+      "zh": "除数为零的除法。"
+     }
+    },
+    {
+     "term": {
+      "en": "traceback",
+      "zh": "回溯（Traceback）"
+     },
+     "meaning": {
+      "en": "The trail of steps Python shows when a program stops with an error.",
+      "zh": "程序因错误停下时，Python 显示的那一串步骤。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "prices = [4, 6, 5]\ntotal = 0\nfor price in prices:\n    total = total + price\naverage = total / len(prices)\nprint(\"Total:\", total)\nprint(\"Average:\", average)",
+    "output": "Total: 15\nAverage: 5.0",
+    "walk": {
+     "en": [
+      "This is the repaired program. Mia's first version had three mistakes, and Python reported them one at a time. You can bring each one back and read the message yourself: press Edit code, make the change, press Run, and read the box under the code. Put the code back each time, or press Reset.",
+      "Mistake 1: delete the colon at the end of line 3, so it reads for price in prices. Run it. The message ends with SyntaxError: expected ':' and names line 3. It is a syntax error, so nothing ran and nothing was printed.",
+      "Mistake 2: on line 4, change total + price to totl + price. Run it. The message ends with NameError: name 'totl' is not defined. Did you mean: 'total'? and names line 4. Python has never seen the name totl, and it guesses that you meant total.",
+      "Mistake 3: on line 6, change print(\"Total:\", total) to print(\"Total: \" + total). Run it. The message ends with TypeError: can only concatenate str (not \"int\") to str and names line 6. The + sign cannot join text and a number. This error appears only after lines 1 to 5 have run.",
+      "With all three fixed, you get the output above: Total: 15 and Average: 5.0. Each message told you the line and the cause. Reading the last line first is what made the fixes quick."
+     ],
+     "zh": [
+      "这是修好之后的程序。Mia 的第一版有三处错误，Python 一次报告一个。你可以把每个错误重新放回去，自己读一读报错：点击“修改代码”，做出改动，点击“运行”，再看代码下面的框。每次都要把代码改回来，或者点“还原”。",
+      "错误 1：删掉第 3 行末尾的冒号，让它变成 for price in prices。运行。信息以 SyntaxError: expected ':' 结尾，并指出第 3 行。这是语法错误，所以什么都没有运行，也没有任何输出。",
+      "错误 2：把第 4 行的 total + price 改成 totl + price。运行。信息以 NameError: name 'totl' is not defined. Did you mean: 'total'? 结尾，并指出第 4 行。Python 从没见过名字 totl，它猜你想写的是 total。",
+      "错误 3：把第 6 行的 print(\"Total:\", total) 改成 print(\"Total: \" + total)。运行。信息以 TypeError: can only concatenate str (not \"int\") to str 结尾，并指出第 6 行。+ 号不能把文字和数字连在一起。这个错误要等第 1 到 5 行都运行完之后才会出现。",
+      "三处都改好后，就得到上面的输出：Total: 15 和 Average: 5.0。每条信息都告诉了你行号和原因。先读最后一行，是修得快的关键。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "count = 0\nprint(10 / count)",
+     "why": {
+      "en": "Dividing by zero has no answer. The error says: ZeroDivisionError: division by zero. The cause is often a value that you expected to be above 0, such as the length of an empty list. Check before you divide.",
+      "zh": "除以零没有答案。报错是：ZeroDivisionError: division by zero。原因常常是某个你以为大于 0 的值，例如空列表的长度。除之前先检查。"
+     },
+     "right": "count = 0\nif count > 0:\n    print(10 / count)\nelse:\n    print(\"Nothing to divide\")"
+    },
+    {
+     "wrong": "print(\"Total:\", (4 + 5)\nprint(\"Done\")",
+     "why": {
+      "en": "A bracket is never closed. The error says: SyntaxError: '(' was never closed, and the ^ mark points at the bracket that is still open. Older versions of Python complain about the next line instead, which is why the real mistake can be just before the place Python points to.",
+      "zh": "有一个括号一直没有关上。报错是：SyntaxError: '(' was never closed，^ 标记指向那个仍然开着的括号。更老的 Python 版本会改为抱怨下一行，所以真正的错误有时就在 Python 所指位置的前面。"
+     },
+     "right": "print(\"Total:\", (4 + 5))\nprint(\"Done\")"
+    },
+    {
+     "wrong": "print(\"a\")\n    print(\"b\")",
+     "why": {
+      "en": "The second line starts with four spaces that nothing asked for. The error says: IndentationError: unexpected indent. Only a line after a colon should be indented. Delete the spaces.",
+      "zh": "第二行开头有四个空格，而没有任何东西需要它们。报错是：IndentationError: unexpected indent。只有紧跟在冒号后面的行才应该缩进。把这些空格删掉。"
+     },
+     "right": "print(\"a\")\nprint(\"b\")"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "A program stops, and the last line of the message is: NameError: name 'nmae' is not defined. Did you mean: 'name'? The line above it is print(nmae). Write the corrected line.",
+      "zh": "一个程序停下了，报错的最后一行是：NameError: name 'nmae' is not defined. Did you mean: 'name'? 它上面的那一行是 print(nmae)。写出改正后的这一行。"
+     },
+     "a": {
+      "en": "print(name). The name was misspelled, and Python's guess is right.",
+      "zh": "print(name)。名字拼错了，而 Python 的猜测是对的。"
+     }
+    },
+    {
+     "q": {
+      "en": "The line print(\"Score: \" + 90) fails. Name the kind of error and write two different ways to fix it.",
+      "zh": "print(\"Score: \" + 90) 这一行出错了。说出错误的类型，并写出两种不同的改法。"
+     },
+     "a": {
+      "en": "It is a TypeError, because + cannot join text and a number. Fixes: print(\"Score:\", 90) or print(f\"Score: {90}\") or print(\"Score: \" + str(90)).",
+      "zh": "这是 TypeError，因为 + 不能把文字和数字连在一起。改法有：print(\"Score:\", 90)，或者 print(f\"Score: {90}\")，或者 print(\"Score: \" + str(90))。"
+     }
+    },
+    {
+     "q": {
+      "en": "A file has a missing colon on line 5 and a misspelled name on line 2. Line 1 is print(\"Start\"). Which error appears, and does Start get printed?",
+      "zh": "一个文件的第 5 行漏了冒号，第 2 行有一个拼错的名字。第 1 行是 print(\"Start\")。会出现哪个错误？Start 会被打印出来吗？"
+     },
+     "a": {
+      "en": "The SyntaxError about the colon appears, and Start is not printed. Python checks how the whole file is written before it runs any line. The misspelled name is a NameError, which can only appear while the program runs.",
+      "zh": "会出现关于冒号的 SyntaxError，而且不会打印 Start。Python 在运行任何一行之前，会先检查整个文件的写法。拼错的名字是 NameError，只有在程序运行时才可能出现。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Continue with Start Here: Python and AI Basics, which uses these ideas in small AI examples. If you read Chinese, the longer handbook Python: Zero to Practice (Chinese only) goes much further, with graded exercises and projects.",
+   "zh": "接下来读《从这里开始：Python 与 AI 基础》，它用小小的 AI 例子继续练习这些概念。想要更完整的训练，请读中文教材《Python 零基础实操教程》（Python: Zero to Practice），里面有分层练习和综合项目。"
+  },
+  "href": "ai/start.en.html",
+  "hrefZh": "ai/start.zh.html"
+ }
+}

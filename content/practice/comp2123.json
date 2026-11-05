@@ -1,0 +1,2221 @@
+{
+ "course": "comp2123",
+ "questions": [
+  {
+   "id": "w-first-at-least",
+   "kind": "write",
+   "topic": "recurrences-merge-sort",
+   "title": {
+    "en": "Binary search for a boundary",
+    "zh": "用二分查找找边界"
+   },
+   "marks": 6,
+   "minutes": 8,
+   "language": "python",
+   "prompt": {
+    "en": "Write `first_at_least(a, x)`.\n\n`a` is a list of integers sorted in non-decreasing order. It may contain repeated values. Return the smallest index `i` with `a[i] >= x`. If every item is smaller than `x`, return `len(a)`.\n\nUse binary search, so the loop reads O(log n) items. Do not scan the list from the left, and do not use the `bisect` module.",
+    "zh": "编写函数 `first_at_least(a, x)`。\n\n`a` 是按非递减顺序排好的整数列表，里面可能有重复的值。请返回满足 `a[i] >= x` 的最小下标 `i`。如果所有元素都比 `x` 小，就返回 `len(a)`。\n\n要求使用二分查找，让循环只读取 O(log n) 个元素。不要从左到右逐个扫描，也不要使用 `bisect` 模块。"
+   },
+   "model_code": "def first_at_least(a, x):\n    lo, hi = 0, len(a)          # the answer is always in lo..hi\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if a[mid] < x:\n            lo = mid + 1        # a[mid] is too small, so is everything before it\n        else:\n            hi = mid            # a[mid] could be the answer, keep it\n    return lo",
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Starts with `lo = 0` and `hi = len(a)`, so the answer `len(a)` is possible.",
+      "zh": "初始 `lo = 0`、`hi = len(a)`，这样答案 `len(a)` 也是可能的结果。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Loops while `lo < hi` and takes `mid = (lo + hi) // 2` (integer division).",
+      "zh": "循环条件是 `lo < hi`，并用整除求 `mid = (lo + hi) // 2`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "If `a[mid] < x`, moves to `lo = mid + 1`.",
+      "zh": "若 `a[mid] < x`，则令 `lo = mid + 1`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Otherwise sets `hi = mid`, keeping `mid` as a possible answer.",
+      "zh": "否则令 `hi = mid`，保留 `mid` 作为可能的答案。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Returns `lo`; the empty list and the \"all items smaller\" case both work.",
+      "zh": "最后返回 `lo`；空列表和“所有元素都更小”的情况都能得到正确结果。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Says the range halves each round, so there are O(log n) reads.",
+      "zh": "说明每轮范围减半，所以只读取 O(log n) 个元素。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Starting with `hi = len(a) - 1` means the answer `len(a)` can never be returned.",
+     "zh": "把 `hi` 设为 `len(a) - 1`，会导致永远返回不了答案 `len(a)`。"
+    },
+    {
+     "en": "Writing `lo = mid` instead of `lo = mid + 1` can loop forever when `hi = lo + 1`.",
+     "zh": "写成 `lo = mid` 而不是 `lo = mid + 1`，当 `hi = lo + 1` 时可能死循环。"
+    },
+    {
+     "en": "Using `/` instead of `//` gives a float, and a float cannot index a list.",
+     "zh": "用 `/` 而不是 `//` 会得到小数，而小数不能当列表下标。"
+    },
+    {
+     "en": "Testing `a[mid] <= x` finds a position after the repeated values instead of the first one.",
+     "zh": "判断写成 `a[mid] <= x`，找到的是重复值之后的位置，而不是第一个位置。"
+    },
+    {
+     "en": "Returning -1 for \"not found\" when the question asks for `len(a)`.",
+     "zh": "题目要求返回 `len(a)`，却返回了 -1 表示没找到。"
+    }
+   ],
+   "tests": "class Counted(list):\n    reads = 0\n    def __getitem__(self, i):\n        Counted.reads += 1\n        return list.__getitem__(self, i)\n\nprint(first_at_least([], 5))\nprint(first_at_least([1, 3, 3, 3, 8], 3))\nprint(first_at_least([1, 3, 3, 3, 8], 4))\nprint(first_at_least([1, 3, 3, 3, 8], 0))\nprint(first_at_least([1, 3, 3, 3, 8], 9))\nprint(first_at_least([7], 7), first_at_least([7], 8))\nbig = Counted(range(0, 2000, 2))\nprint(first_at_least(big, 777), Counted.reads <= 12)",
+   "expected": "0\n1\n4\n0\n5\n0 1\n389 True",
+   "wrong_code": "def first_at_least(a, x):\n    lo, hi = 0, len(a) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if a[mid] < x:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo"
+  },
+  {
+   "id": "w-bfs-distances",
+   "kind": "write",
+   "topic": "bfs-distance",
+   "title": {
+    "en": "BFS distances from a start vertex",
+    "zh": "从起点出发的 BFS 距离"
+   },
+   "marks": 6,
+   "minutes": 9,
+   "language": "python",
+   "prompt": {
+    "en": "Write `bfs_distances(graph, start)`.\n\n`graph` is a dict. Each key is a vertex, and its value is the list of neighbours. Every edge is undirected and appears in both lists. Return a dict that maps each reachable vertex to the number of edges on a shortest path from `start`.\n\nVertices that cannot be reached must not appear in the result. Use a queue with O(1) removal from the front (`collections.deque`). The running time must be O(n + m).",
+    "zh": "编写函数 `bfs_distances(graph, start)`。\n\n`graph` 是一个字典：键是顶点，值是邻居列表。每条边都是无向边，会在两端的列表中各出现一次。请返回一个字典，把每个可到达的顶点映射到从 `start` 出发的最短路径所含的边数。\n\n不可到达的顶点不能出现在结果里。请使用队首删除为 O(1) 的队列（`collections.deque`），总时间必须是 O(n + m)。"
+   },
+   "model_code": "from collections import deque\n\ndef bfs_distances(graph, start):\n    dist = {start: 0}\n    queue = deque([start])\n    while queue:\n        u = queue.popleft()\n        for v in graph[u]:\n            if v not in dist:          # first time we see v: this is its shortest distance\n                dist[v] = dist[u] + 1\n                queue.append(v)\n    return dist",
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Starts with `dist[start] = 0` and a queue holding `start`.",
+      "zh": "一开始令 `dist[start] = 0`，并让队列只含 `start`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Takes vertices from the front of a FIFO queue (`popleft`), not from the back and not with `pop(0)` on a list.",
+      "zh": "从先进先出队列的队首取出顶点（`popleft`），不是从队尾取，也不是对列表用 `pop(0)`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Looks at every neighbour `v` of the dequeued vertex `u`.",
+      "zh": "检查被取出顶点 `u` 的每一个邻居 `v`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Acts only when `v` has no distance yet, and records the distance at the moment `v` is discovered.",
+      "zh": "只有当 `v` 还没有距离时才处理，并且在发现 `v` 的那一刻就记录距离。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Sets `dist[v] = dist[u] + 1` and appends `v` to the queue.",
+      "zh": "令 `dist[v] = dist[u] + 1`，并把 `v` 加入队列。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Returns `dist`, and says each vertex enters the queue once and each edge is looked at twice, so O(n + m).",
+      "zh": "返回 `dist`，并说明每个顶点只入队一次、每条边只被检查两次，所以是 O(n + m)。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Using a stack (`pop()` from the back) gives a depth-first order, and distances can be too large.",
+     "zh": "用栈（从队尾 `pop()`）得到的是深度优先的顺序，距离可能偏大。"
+    },
+    {
+     "en": "Using `queue.pop(0)` on a list makes each removal O(n), so the whole search is no longer O(n + m).",
+     "zh": "对列表用 `queue.pop(0)`，每次删除是 O(n)，整个搜索就不再是 O(n + m)。"
+    },
+    {
+     "en": "Forgetting the check `v not in dist` overwrites distances or puts a vertex in the queue many times.",
+     "zh": "漏掉 `v not in dist` 的判断，会覆盖已有距离，或让同一顶点多次入队。"
+    },
+    {
+     "en": "Setting the distance when a vertex is dequeued instead of when it is discovered lets duplicates build up in the queue.",
+     "zh": "在顶点出队时才设置距离，而不是发现时，会让重复元素堆积在队列里。"
+    },
+    {
+     "en": "Adding the distance of the start vertex (0) to the wrong neighbour: `dist[v] = dist[v] + 1` instead of `dist[u] + 1`.",
+     "zh": "把 `dist[u] + 1` 误写成 `dist[v] + 1`，用错了顶点。"
+    }
+   ],
+   "tests": "g = {\n    'A': ['B', 'C'],\n    'B': ['A', 'X'],\n    'C': ['A', 'Y'],\n    'Y': ['C', 'X'],\n    'X': ['B', 'Y'],\n    'Z': [],\n}\nprint(sorted(bfs_distances(g, 'A').items()))\nprint(sorted(bfs_distances(g, 'X').items()))\nprint(bfs_distances(g, 'Z'))",
+   "expected": "[('A', 0), ('B', 1), ('C', 1), ('X', 2), ('Y', 2)]\n[('A', 2), ('B', 1), ('C', 2), ('X', 0), ('Y', 1)]\n{'Z': 0}",
+   "wrong_code": "def bfs_distances(graph, start):\n    dist = {start: 0}\n    stack = [start]\n    while stack:\n        u = stack.pop()\n        for v in graph[u]:\n            if v not in dist:\n                dist[v] = dist[u] + 1\n                stack.append(v)\n    return dist"
+  },
+  {
+   "id": "w-merge-sorted",
+   "kind": "write",
+   "topic": "recurrences-merge-sort",
+   "title": {
+    "en": "Merge two sorted lists",
+    "zh": "合并两个有序列表"
+   },
+   "marks": 5,
+   "minutes": 7,
+   "language": "python",
+   "prompt": {
+    "en": "Write `merge(a, b)`.\n\n`a` and `b` are lists sorted in non-decreasing order. Return a new list that holds every item of both lists, in non-decreasing order. When an item of `a` equals an item of `b`, the item of `a` must come first.\n\nDo not call `sorted` or `list.sort`. Do not change `a` or `b`. The time must be O(len(a) + len(b)).",
+    "zh": "编写函数 `merge(a, b)`。\n\n`a` 和 `b` 都是按非递减顺序排好的列表。请返回一个新列表，包含两个列表的全部元素，并且按非递减顺序排列。当 `a` 中的元素与 `b` 中的元素相等时，`a` 的元素必须排在前面。\n\n不要调用 `sorted` 或 `list.sort`，也不要修改 `a` 和 `b`，时间必须是 O(len(a) + len(b))。"
+   },
+   "model_code": "def merge(a, b):\n    out = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if b[j] < a[i]:             # strictly smaller: take from b; ties go to a\n            out.append(b[j])\n            j += 1\n        else:\n            out.append(a[i])\n            i += 1\n    out.extend(a[i:])               # at most one of these two is not empty\n    out.extend(b[j:])\n    return out",
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Keeps one index per list, both starting at 0, and loops while both lists still have unused items.",
+      "zh": "每个列表各用一个下标，都从 0 开始，并在两个列表都还有未用元素时循环。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Compares the two front items and takes the smaller; on a tie it takes the one from `a`.",
+      "zh": "比较两个队首元素，取较小者；相等时取 `a` 中的那个。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Advances only the index of the list it took from.",
+      "zh": "只让被取走元素所在列表的下标前进。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "After the loop, copies the unused tail of whichever list is left.",
+      "zh": "循环结束后，把剩下那个列表中未用的尾部复制过去。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Builds a new list without sorting or changing the inputs; each item is handled once, so O(len(a) + len(b)).",
+      "zh": "构造新列表，不排序也不改动输入；每个元素只处理一次，所以是 O(len(a) + len(b))。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Forgetting to copy the leftover tail loses the largest items.",
+     "zh": "忘记复制剩下的尾部，会丢掉最大的那些元素。"
+    },
+    {
+     "en": "Taking from `b` on a tie when the question says `a` comes first (it breaks stability).",
+     "zh": "相等时取了 `b` 的元素，而题目要求 `a` 在前（这样会破坏稳定性）。"
+    },
+    {
+     "en": "Using `a.pop(0)` in the loop makes each step O(n) and changes the input.",
+     "zh": "在循环里用 `a.pop(0)`，每步是 O(n)，还会改动输入。"
+    },
+    {
+     "en": "Looping with `while i < len(a) or j < len(b)` without a guard reads past the end of one list.",
+     "zh": "用 `while i < len(a) or j < len(b)` 却不加保护，会读到某个列表的末尾之外。"
+    }
+   ],
+   "tests": "class K:\n    def __init__(self, k, tag):\n        self.k, self.tag = k, tag\n    def __lt__(self, o): return self.k < o.k\n    def __le__(self, o): return self.k <= o.k\n    def __gt__(self, o): return self.k > o.k\n    def __ge__(self, o): return self.k >= o.k\n    def __repr__(self): return f\"{self.k}{self.tag}\"\n\nprint(merge([1, 4, 9], [2, 3, 10, 11]))\nprint(merge([], [5, 6]), merge([5, 6], []), merge([], []))\nprint(merge([1, 1, 2], [1, 2, 2]))\nx = [K(1, 'a'), K(2, 'a'), K(2, 'a2')]\ny = [K(1, 'b'), K(2, 'b')]\nprint(merge(x, y))\np, q = [3, 5], [4]\nmerge(p, q)\nprint(p, q)",
+   "expected": "[1, 2, 3, 4, 9, 10, 11]\n[5, 6] [5, 6] []\n[1, 1, 1, 2, 2, 2]\n[1a, 1b, 2a, 2a2, 2b]\n[3, 5] [4]",
+   "wrong_code": "def merge(a, b):\n    out = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] < b[j]:\n            out.append(a[i])\n            i += 1\n        else:\n            out.append(b[j])\n            j += 1\n    out.extend(a[i:])\n    out.extend(b[j:])\n    return out"
+  },
+  {
+   "id": "w-sift-down",
+   "kind": "write",
+   "topic": "priority-queues-heaps",
+   "title": {
+    "en": "Sift down in a min-heap",
+    "zh": "最小堆的下沉操作"
+   },
+   "marks": 6,
+   "minutes": 9,
+   "language": "python",
+   "prompt": {
+    "en": "A min-heap is stored in a Python list `a`. Index 0 is the root. The children of index `i` are `2*i + 1` and `2*i + 2`. Only the first `n` items of `a` are part of the heap.\n\nWrite `sift_down(a, i, n)`. Assume both subtrees below index `i` already obey the heap rule, but `a[i]` may be larger than a child. Repair the heap by moving `a[i]` down, in place. Return the number of swaps made.\n\nThe running time must be O(log n). Do not use the `heapq` module.",
+    "zh": "一个最小堆存放在 Python 列表 `a` 中。下标 0 是根，下标 `i` 的两个孩子是 `2*i + 1` 和 `2*i + 2`。`a` 中只有前 `n` 个元素属于这个堆。\n\n编写函数 `sift_down(a, i, n)`。假设下标 `i` 下面的两棵子树都已满足堆的规则，但 `a[i]` 可能比某个孩子大。请通过原地把 `a[i]` 向下移动来修复这个堆，并返回交换的次数。\n\n运行时间必须是 O(log n)，不要使用 `heapq` 模块。"
+   },
+   "model_code": "def sift_down(a, i, n):\n    swaps = 0\n    while True:\n        left = 2 * i + 1\n        right = left + 1\n        smallest = i\n        if left < n and a[left] < a[smallest]:\n            smallest = left\n        if right < n and a[right] < a[smallest]:\n            smallest = right\n        if smallest == i:               # no child is smaller: heap rule holds again\n            return swaps\n        a[i], a[smallest] = a[smallest], a[i]\n        i = smallest                    # continue from where the item moved to\n        swaps += 1",
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Computes the children as `2*i + 1` and `2*i + 2`.",
+      "zh": "用 `2*i + 1` 和 `2*i + 2` 计算两个孩子的下标。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Checks `child < n` (not `len(a)`) before reading a child.",
+      "zh": "读取孩子之前先检查 `child < n`（不是 `len(a)`）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Finds the smallest of the node and its existing children, so it uses the smaller child.",
+      "zh": "在当前结点和它存在的孩子中找出最小者，也就是选用较小的那个孩子。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "If a child is smaller, swaps with it and continues from the child's index.",
+      "zh": "若某个孩子更小，就与它交换，并从该孩子的下标继续。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Stops when the node is not larger than any child (or has no child) and returns the swap count.",
+      "zh": "当该结点不比任何孩子大（或没有孩子）时停止，并返回交换次数。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains that the item moves down one level per swap, so at most the height, which is O(log n).",
+      "zh": "说明每次交换让元素下降一层，最多下降到堆的高度，也就是 O(log n)。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Using `2*i` and `2*i + 1` (the formulas for a 1-based array) in a 0-based list.",
+     "zh": "在从 0 开始的列表里使用 `2*i` 和 `2*i + 1`（这是从 1 开始的数组的公式）。"
+    },
+    {
+     "en": "Comparing with the left child only; the right child may be the smaller one.",
+     "zh": "只和左孩子比较，而右孩子可能才是较小的那个。"
+    },
+    {
+     "en": "Checking bounds against `len(a)` makes the code touch items that are outside the heap.",
+     "zh": "用 `len(a)` 判断边界，会碰到不在堆内的元素。"
+    },
+    {
+     "en": "Swapping with the larger child breaks the heap rule at the parent.",
+     "zh": "与较大的孩子交换，会破坏父结点处的堆规则。"
+    },
+    {
+     "en": "Forgetting `i = smallest` after the swap loops forever or repairs the wrong place.",
+     "zh": "交换后忘记写 `i = smallest`，会死循环或修错位置。"
+    }
+   ],
+   "tests": "a = [9, 3, 4, 5, 8, 6, 7]\nprint(sift_down(a, 0, 7), a)\na = [9, 6, 2, 7, 8, 3, 4]\nprint(sift_down(a, 0, 7), a)\na = [9, 3, 4, 1, 1, 1, 1]\nprint(sift_down(a, 0, 3), a)\na = [5, 2]\nprint(sift_down(a, 0, 2), a)\na = [1, 2, 3]\nprint(sift_down(a, 0, 3), a)\na = [8, 4, 4, 9, 9, 9, 9]\nprint(sift_down(a, 0, 7), a)",
+   "expected": "2 [3, 5, 4, 9, 8, 6, 7]\n2 [2, 6, 3, 7, 8, 9, 4]\n1 [3, 9, 4, 1, 1, 1, 1]\n1 [2, 5]\n0 [1, 2, 3]\n1 [4, 8, 4, 9, 9, 9, 9]",
+   "wrong_code": "def sift_down(a, i, n):\n    swaps = 0\n    while True:\n        left = 2 * i + 1\n        right = left + 1\n        if left >= n:\n            return swaps\n        if a[left] < a[i]:\n            a[i], a[left] = a[left], a[i]\n            i = left\n            swaps += 1\n        elif right < n and a[right] < a[i]:\n            a[i], a[right] = a[right], a[i]\n            i = right\n            swaps += 1\n        else:\n            return swaps"
+  },
+  {
+   "id": "w-union-find",
+   "kind": "write",
+   "topic": "minimum-spanning-trees",
+   "title": {
+    "en": "Union-find with path compression",
+    "zh": "带路径压缩的并查集"
+   },
+   "marks": 8,
+   "minutes": 12,
+   "language": "python",
+   "prompt": {
+    "en": "Write a class `UnionFind` for the items `0, 1, ..., n-1`.\n\n- `UnionFind(n)` starts with every item alone in its own set. Keep a list `parent` (each item starts as its own parent), a list `size`, and a number `count` of sets.\n- `find(x)` returns the root of the set that holds `x`. After the call, every item that was on the path from `x` to the root must point straight at the root (path compression).\n- `union(x, y)` joins the sets of `x` and `y`, attaching the smaller tree under the root of the larger one (union by size). It returns `True` if two different sets were joined and `False` if they were already the same set. `count` goes down by one for each real join.\n\nDo not use recursion in `find`.",
+    "zh": "为元素 `0, 1, ..., n-1` 编写类 `UnionFind`。\n\n- `UnionFind(n)` 开始时每个元素各自单独成一个集合。请保存列表 `parent`（每个元素一开始以自己为父结点）、列表 `size`，以及集合个数 `count`。\n- `find(x)` 返回 `x` 所在集合的根。调用结束后，从 `x` 到根的路径上的每个元素都必须直接指向根（路径压缩）。\n- `union(x, y)` 合并 `x` 和 `y` 所在的集合，把较小的树挂到较大的树的根下面（按大小合并）。如果合并了两个不同的集合，返回 `True`；如果它们本来就在同一个集合里，返回 `False`。每发生一次真正的合并，`count` 减 1。\n\n`find` 里不要使用递归。"
+   },
+   "model_code": "class UnionFind:\n    def __init__(self, n):\n        self.parent = list(range(n))\n        self.size = [1] * n\n        self.count = n\n\n    def find(self, x):\n        root = x\n        while self.parent[root] != root:      # pass 1: walk up to the root\n            root = self.parent[root]\n        while self.parent[x] != root:         # pass 2: point the whole path at the root\n            nxt = self.parent[x]\n            self.parent[x] = root\n            x = nxt\n        return root\n\n    def union(self, x, y):\n        rx, ry = self.find(x), self.find(y)\n        if rx == ry:\n            return False\n        if self.size[rx] < self.size[ry]:\n            rx, ry = ry, rx                   # rx is now the root of the larger tree\n        self.parent[ry] = rx\n        self.size[rx] += self.size[ry]\n        self.count -= 1\n        return True",
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Initialises `parent[i] = i`, `size[i] = 1` and `count = n`.",
+      "zh": "初始化 `parent[i] = i`、`size[i] = 1` 和 `count = n`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "In `find`, walks up the parent links until it reaches a root (`parent[r] == r`).",
+      "zh": "`find` 中沿父指针向上走，直到到达根（`parent[r] == r`）。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "Path compression: a second pass sets `parent` of every item on the path to the root, and does not lose the next pointer before moving on.",
+      "zh": "路径压缩：用第二趟把路径上每个元素的 `parent` 都设为根，并且在前进之前不丢失下一个指针。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "`union` first replaces `x` and `y` by their roots and returns `False` if the roots are equal.",
+      "zh": "`union` 先把 `x` 和 `y` 换成各自的根，若两个根相同则返回 `False`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Attaches the root of the smaller tree under the root of the larger tree and adds the sizes.",
+      "zh": "把较小的树的根挂到较大的树的根下面，并把两个大小相加。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Reduces `count` by one and returns `True` only for a real join.",
+      "zh": "只有真正合并时才让 `count` 减 1 并返回 `True`。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "States that with both tricks a sequence of operations costs almost constant time per operation (the inverse Ackermann function).",
+      "zh": "指出同时使用这两种技巧后，每次操作的平均代价几乎是常数（反阿克曼函数）。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Linking `x` and `y` directly instead of their roots, which leaves two trees that look joined but are not.",
+     "zh": "把 `x` 和 `y` 本身连起来，而不是连它们的根，结果两棵树看起来连上了，其实没有。"
+    },
+    {
+     "en": "Writing `self.parent[x] = root` and then `x = self.parent[x]` loses the old parent, so the loop jumps to the root at once or never ends.",
+     "zh": "先写 `self.parent[x] = root` 再写 `x = self.parent[x]`，旧的父结点就丢了，循环会立刻跳到根或永远不结束。"
+    },
+    {
+     "en": "Calling `self.find(self.parent[x])` but not storing the result gives no compression.",
+     "zh": "调用了 `self.find(self.parent[x])` 却不保存结果，就没有压缩的效果。"
+    },
+    {
+     "en": "Adding the size to the root that was attached instead of the root that stays.",
+     "zh": "把大小加到了被挂靠的那个根上，而不是保留的那个根上。"
+    },
+    {
+     "en": "Decreasing `count` even when the two items were already in the same set.",
+     "zh": "即使两个元素本来就在同一集合，也让 `count` 减 1。"
+    }
+   ],
+   "tests": "uf = UnionFind(5)\nuf.parent = [0, 0, 1, 2, 3]          # a chain 4 -> 3 -> 2 -> 1 -> 0\nuf.size = [5, 1, 1, 1, 1]\nprint(uf.find(4), uf.parent)\n\nuf = UnionFind(6)\nprint(uf.union(0, 1), uf.union(1, 0), uf.count)\nprint(uf.union(0, 2), uf.union(3, 0), uf.count)\nprint(uf.find(3) == uf.find(2), uf.find(4) == uf.find(0))\nprint(uf.find(0), uf.size[uf.find(0)])\nprint(uf.union(4, 5), uf.union(5, 3), uf.count)",
+   "expected": "0 [0, 0, 0, 0, 0]\nTrue False 5\nTrue True 3\nTrue False\n0 4\nTrue True 1",
+   "wrong_code": "class UnionFind:\n    def __init__(self, n):\n        self.parent = list(range(n))\n        self.size = [1] * n\n        self.count = n\n\n    def find(self, x):\n        while self.parent[x] != x:\n            x = self.parent[x]\n        return x\n\n    def union(self, x, y):\n        rx, ry = self.find(x), self.find(y)\n        if rx == ry:\n            return False\n        if self.size[rx] < self.size[ry]:\n            rx, ry = ry, rx\n        self.parent[ry] = rx\n        self.size[rx] += self.size[ry]\n        self.count -= 1\n        return True"
+  },
+  {
+   "id": "w-topological-order",
+   "kind": "write",
+   "topic": "graph-models",
+   "title": {
+    "en": "Topological order of a DAG",
+    "zh": "有向无环图的拓扑排序"
+   },
+   "marks": 8,
+   "minutes": 12,
+   "language": "python",
+   "prompt": {
+    "en": "Write `topological_order(n, edges)`.\n\nThe vertices are `0, 1, ..., n-1`. `edges` is a list of pairs `(u, v)`, one for each directed edge from `u` to `v`. A topological order lists every vertex exactly once so that, for every edge `(u, v)`, `u` comes before `v`.\n\nReturn a topological order as a list. If the graph has a directed cycle, no such order exists, and you must return `None`. Any correct order is accepted. The running time must be O(n + m), where m is the number of edges.",
+    "zh": "编写函数 `topological_order(n, edges)`。\n\n顶点是 `0, 1, ..., n-1`。`edges` 是由数对 `(u, v)` 组成的列表，每个数对表示一条从 `u` 指向 `v` 的有向边。拓扑序要把每个顶点恰好列出一次，并且对每条边 `(u, v)`，`u` 都排在 `v` 之前。\n\n请以列表形式返回一个拓扑序。如果图中有有向环，就不存在这样的顺序，此时必须返回 `None`。任何正确的顺序都会被接受。时间必须是 O(n + m)，其中 m 是边数。"
+   },
+   "model_code": "from collections import deque\n\ndef topological_order(n, edges):\n    out = [[] for _ in range(n)]\n    indeg = [0] * n\n    for u, v in edges:\n        out[u].append(v)\n        indeg[v] += 1\n    ready = deque(v for v in range(n) if indeg[v] == 0)   # nothing must come before these\n    order = []\n    while ready:\n        u = ready.popleft()\n        order.append(u)\n        for v in out[u]:\n            indeg[v] -= 1\n            if indeg[v] == 0:                             # all of v's predecessors are placed\n                ready.append(v)\n    return order if len(order) == n else None             # a cycle leaves vertices stuck",
+   "rubric": [
+    {
+     "marks": 2,
+     "text": {
+      "en": "Builds adjacency lists and in-degrees from the edge list (increasing `indeg[v]` for edge `(u, v)`).",
+      "zh": "根据边列表建立邻接表和入度（对边 `(u, v)` 增加 `indeg[v]`）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Starts with every vertex of in-degree 0, including isolated vertices.",
+      "zh": "从所有入度为 0 的顶点开始，包括孤立顶点。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Repeatedly removes a ready vertex and appends it to the order.",
+      "zh": "反复取出一个就绪顶点，并把它追加到结果中。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "For each successor, decreases its in-degree and makes it ready when the in-degree reaches 0.",
+      "zh": "对每个后继顶点减少其入度，入度变为 0 时让它进入就绪队列。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Returns `None` when fewer than `n` vertices were output, because a cycle keeps some in-degrees above 0.",
+      "zh": "若输出的顶点少于 `n` 个就返回 `None`，因为环会让某些入度一直大于 0。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Explains O(n + m): each vertex is queued once and each edge is relaxed once.",
+      "zh": "解释为什么是 O(n + m)：每个顶点入队一次，每条边只处理一次。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Building the lists only from the edges and so forgetting vertices that have no edges at all.",
+     "zh": "只根据边来建表，结果漏掉了完全没有边的顶点。"
+    },
+    {
+     "en": "Reversing the edge direction, which produces the reverse of a valid order.",
+     "zh": "把边的方向弄反，得到的是合法顺序的逆序。"
+    },
+    {
+     "en": "Returning the partial `order` without checking its length, so a cycle goes unnoticed.",
+     "zh": "不检查长度就直接返回部分结果 `order`，于是有环的情况没被发现。"
+    },
+    {
+     "en": "Appending a vertex to the queue whenever its in-degree is decreased, instead of when it reaches 0.",
+     "zh": "只要入度减少就把顶点加入队列，而不是等到入度为 0 时才加入。"
+    },
+    {
+     "en": "Printing the DFS preorder instead of the reverse of the DFS finishing order.",
+     "zh": "输出 DFS 的前序，而不是 DFS 结束顺序的逆序。"
+    }
+   ],
+   "tests": "def ok(n, edges, order):\n    if order is None or sorted(order) != list(range(n)):\n        return False\n    pos = {v: i for i, v in enumerate(order)}\n    return all(pos[u] < pos[v] for u, v in edges)\n\ndag = [(5, 2), (5, 0), (4, 0), (4, 1), (2, 3), (3, 1)]\nprint(ok(6, dag, topological_order(6, dag)))\nprint(ok(4, [], topological_order(4, [])))\nprint(topological_order(0, []))\nprint(topological_order(3, [(0, 1), (1, 2), (2, 0)]))\nprint(topological_order(5, [(0, 1), (1, 2), (3, 4), (4, 3)]))\nchain = [(i, i + 1) for i in range(99)]\nprint(topological_order(100, chain) == list(range(100)))\ndiamond = [(0, 1), (0, 2), (1, 3), (2, 3)]\nprint(ok(4, diamond, topological_order(4, diamond)))",
+   "expected": "True\nTrue\n[]\nNone\nNone\nTrue\nTrue",
+   "wrong_code": "from collections import deque\n\ndef topological_order(n, edges):\n    out = [[] for _ in range(n)]\n    indeg = [0] * n\n    for u, v in edges:\n        out[u].append(v)\n        indeg[v] += 1\n    ready = deque(v for v in range(n) if indeg[v] == 0)\n    order = []\n    while ready:\n        u = ready.popleft()\n        order.append(u)\n        for v in out[u]:\n            indeg[v] -= 1\n            if indeg[v] == 0:\n                ready.append(v)\n    return order"
+  },
+  {
+   "id": "w-top-k-heap",
+   "kind": "write",
+   "topic": "priority-queues-heaps",
+   "title": {
+    "en": "Top k with a bounded heap",
+    "zh": "用定长堆求前 k 大"
+   },
+   "marks": 6,
+   "minutes": 9,
+   "language": "python",
+   "prompt": {
+    "en": "Write `top_k(nums, k)`.\n\n`nums` is any iterable of numbers. You may read it only once, so do not call `len` on it or index it. Return a list of the `k` largest values, largest first. If there are fewer than `k` values, return all of them in descending order. If `k` is 0, return an empty list. Repeated values count separately.\n\nUse the `heapq` module and a min-heap that never holds more than `k` items. The time must be O(n log k). Do not sort all of `nums`.",
+    "zh": "编写函数 `top_k(nums, k)`。\n\n`nums` 是任意一个可迭代的数字序列，只能读取一遍，所以不要对它调用 `len`，也不要按下标访问。请返回由最大的 `k` 个值组成的列表，从大到小排列。如果值不足 `k` 个，就按从大到小返回全部。如果 `k` 为 0，返回空列表。重复的值要分别计数。\n\n请使用 `heapq` 模块，并用一个任何时候都不超过 `k` 个元素的最小堆。时间必须是 O(n log k)。不要对整个 `nums` 排序。"
+   },
+   "model_code": "import heapq\n\ndef top_k(nums, k):\n    if k <= 0:\n        return []\n    heap = []                             # the k largest seen so far; heap[0] is the smallest of them\n    for x in nums:\n        if len(heap) < k:\n            heapq.heappush(heap, x)\n        elif x > heap[0]:\n            heapq.heapreplace(heap, x)    # drop the smallest kept value, keep x\n    return sorted(heap, reverse=True)",
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Returns an empty list for `k <= 0` before touching `heap[0]`.",
+      "zh": "在访问 `heap[0]` 之前，先对 `k <= 0` 返回空列表。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Keeps a min-heap (`heapq`) of at most `k` items, filled from the first `k` values.",
+      "zh": "用 `heapq` 维护一个最多含 `k` 个元素的最小堆，先用前 `k` 个值填满它。"
+     }
+    },
+    {
+     "marks": 2,
+     "text": {
+      "en": "For each later value, compares it with `heap[0]`, the smallest kept value, and replaces that value only if the new one is larger.",
+      "zh": "对之后的每个值，把它与堆顶 `heap[0]`（保留值中最小的）比较，只有新值更大时才替换。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Returns the kept values sorted in descending order.",
+      "zh": "返回按从大到小排序后的保留值。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Gives the cost: n steps of O(log k), and O(k) memory, so O(n log k).",
+      "zh": "给出代价：n 步、每步 O(log k)，内存 O(k)，总共 O(n log k)。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Comparing with `heap[-1]`, which is just the last array slot and not the smallest kept value.",
+     "zh": "拿 `heap[-1]` 比较，它只是数组最后一格，并不是保留值中最小的。"
+    },
+    {
+     "en": "Using a max-heap of all items and popping `k` times costs O(n) memory and O(n + k log n).",
+     "zh": "把全部元素放进最大堆再弹出 `k` 次，需要 O(n) 内存，时间是 O(n + k log n)。"
+    },
+    {
+     "en": "Calling `len(nums)` or `nums[i]` on a generator raises an error.",
+     "zh": "对生成器调用 `len(nums)` 或 `nums[i]` 会报错。"
+    },
+    {
+     "en": "Forgetting the case `k = 0` leads to an `IndexError` on `heap[0]`.",
+     "zh": "忘记 `k = 0` 的情况，会在 `heap[0]` 处出现 `IndexError`。"
+    },
+    {
+     "en": "Returning `heap` directly gives the heap order, not a descending list.",
+     "zh": "直接返回 `heap`，得到的是堆内部的顺序，不是从大到小的列表。"
+    }
+   ],
+   "tests": "print(top_k([5, 1, 9, 3, 7], 3))\nprint(top_k([4, 4, 4, 1], 2))\nprint(top_k([2, 8], 5))\nprint(top_k([1, 2, 3], 0))\nprint(top_k((x * 7 % 10 for x in range(10)), 4))\nprint(top_k([10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11], 3))\nprint(top_k([-5, -1, -9], 2))",
+   "expected": "[9, 7, 5]\n[4, 4]\n[8, 2]\n[]\n[9, 8, 7, 6]\n[11, 10, 9]\n[-1, -5]",
+   "wrong_code": "import heapq\n\ndef top_k(nums, k):\n    if k <= 0:\n        return []\n    heap = []\n    for x in nums:\n        if len(heap) < k:\n            heapq.heappush(heap, x)\n        elif x > heap[-1]:\n            heapq.heapreplace(heap, x)\n    return sorted(heap, reverse=True)"
+  },
+  {
+   "id": "t-bfs-queue",
+   "kind": "trace",
+   "topic": "bfs-distance",
+   "title": {
+    "en": "Trace a BFS queue",
+    "zh": "跟踪 BFS 的队列"
+   },
+   "marks": 6,
+   "minutes": 8,
+   "language": "python",
+   "prompt": {
+    "en": "Run this program by hand. It does a breadth-first search on an undirected graph. Each neighbour list is already in the order the loop reads it.\n\nFill in one row for each vertex that leaves the queue. \"New vertices\" are the vertices discovered while that vertex is processed, in the order they are found. \"Their distance\" is the distance given to those new vertices. \"Queue after\" shows the queue from front to back once the vertex has been processed.\n\nWrite lists as letters joined by commas with no spaces, for example `B,C`. Write `-` when nothing applies. Row 1 is filled in to show the format.",
+    "zh": "请手工运行下面的程序。它在一个无向图上做广度优先搜索，每个邻居列表已经按循环读取的顺序给出。\n\n每有一个顶点离开队列，就填一行。“新发现的顶点”是处理该顶点时发现的顶点，按发现的先后排列。“它们的距离”是这些新顶点得到的距离。“处理后的队列”按从队首到队尾的顺序给出该顶点处理完之后的队列。\n\n列表请用字母加逗号表示，中间不要加空格，例如 `B,C`。没有内容时写 `-`。第 1 行已经填好，作为格式示例。"
+   },
+   "columns": {
+    "en": [
+     "Step",
+     "Vertex removed",
+     "New vertices",
+     "Their distance",
+     "Queue after"
+    ],
+    "zh": [
+     "步骤",
+     "出队的顶点",
+     "新发现的顶点",
+     "它们的距离",
+     "处理后的队列"
+    ]
+   },
+   "rows": [
+    [
+     "step 1",
+     "A",
+     "B,C",
+     "1",
+     "B,C"
+    ],
+    [
+     "step 2",
+     "B",
+     "D,E",
+     "2",
+     "C,D,E"
+    ],
+    [
+     "step 3",
+     "C",
+     "F",
+     "2",
+     "D,E,F"
+    ],
+    [
+     "step 4",
+     "D",
+     "-",
+     "-",
+     "E,F"
+    ],
+    [
+     "step 5",
+     "E",
+     "G",
+     "3",
+     "F,G"
+    ],
+    [
+     "step 6",
+     "F",
+     "-",
+     "-",
+     "G"
+    ],
+    [
+     "step 7",
+     "G",
+     "-",
+     "-",
+     "-"
+    ]
+   ],
+   "verify_code": "graph = {\n    'A': ['B', 'C'],\n    'B': ['A', 'D', 'E'],\n    'C': ['A', 'E', 'F'],\n    'D': ['B'],\n    'E': ['B', 'C', 'G'],\n    'F': ['C', 'G'],\n    'G': ['E', 'F'],\n}\n\nfrom collections import deque\n\ndist = {'A': 0}\nqueue = deque(['A'])\nstep = 0\nwhile queue:\n    u = queue.popleft()\n    step += 1\n    new = []\n    for v in graph[u]:\n        if v not in dist:\n            dist[v] = dist[u] + 1\n            queue.append(v)\n            new.append(v)\n    print('\\t'.join([f'step {step}', u, ','.join(new) or '-', str(dist[u] + 1) if new else '-', ','.join(queue) or '-']))",
+   "verify_language": "python",
+   "solution": {
+    "en": "A is removed first, so B and C are found at distance 1 and the queue is B,C. B finds D and E (A is already known), both at distance 2. C finds only F, because A and E are already known. D has only the known neighbour B, so it adds nothing.\n\nE finds G at distance 3, because B and C are known. F and G find nothing new, so the queue empties.\n\nThe distances are A 0, B 1, C 1, D 2, E 2, F 2, G 3. They never decrease along the order of removal, which is why BFS distances are shortest in an unweighted graph.",
+    "zh": "先取出 A，于是 B、C 的距离为 1，队列是 B,C。B 发现了 D 和 E（A 已经知道了），它们的距离都是 2。C 只发现了 F，因为 A 和 E 已经知道了。D 的唯一邻居 B 已知，所以什么也没加。\n\nE 发现了 G，距离为 3，因为 B 和 C 已知。F 和 G 没有发现新顶点，队列就变空了。\n\n各距离是 A 为 0，B 为 1，C 为 1，D 为 2，E 为 2，F 为 2，G 为 3。按出队的先后看，距离从不减小，这正是 BFS 在无权图中得到最短距离的原因。"
+   },
+   "code": "graph = {\n    'A': ['B', 'C'],\n    'B': ['A', 'D', 'E'],\n    'C': ['A', 'E', 'F'],\n    'D': ['B'],\n    'E': ['B', 'C', 'G'],\n    'F': ['C', 'G'],\n    'G': ['E', 'F'],\n}\n\nfrom collections import deque\n\ndist = {'A': 0}\nqueue = deque(['A'])\nwhile queue:\n    u = queue.popleft()\n    for v in graph[u]:\n        if v not in dist:\n            dist[v] = dist[u] + 1\n            queue.append(v)",
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4"
+   ]
+  },
+  {
+   "id": "t-dfs-times",
+   "kind": "trace",
+   "topic": "dfs-bridges",
+   "title": {
+    "en": "DFS discovery and finish times",
+    "zh": "DFS 的发现时间和结束时间"
+   },
+   "marks": 7,
+   "minutes": 9,
+   "language": "python",
+   "prompt": {
+    "en": "This program runs depth-first search on a directed graph. The clock starts at 0 and goes up by 1 each time a vertex is discovered and each time a vertex is finished. The outer loop tries the vertices in the order A, B, C, ... and the neighbour lists are read left to right.\n\nFor each vertex, fill in its DFS parent (write `-` for the root of a tree), its discovery time and its finish time. The discovery time of A is given.",
+    "zh": "下面的程序在一个有向图上做深度优先搜索。时钟从 0 开始，每发现一个顶点加 1，每结束一个顶点也加 1。外层循环按 A、B、C……的顺序尝试各顶点，邻居列表从左到右读取。\n\n请为每个顶点填写它的 DFS 父结点（树的根写 `-`）、发现时间和结束时间。A 的发现时间已经给出。"
+   },
+   "columns": {
+    "en": [
+     "Vertex",
+     "Parent",
+     "Discovery",
+     "Finish"
+    ],
+    "zh": [
+     "顶点",
+     "父结点",
+     "发现时间",
+     "结束时间"
+    ]
+   },
+   "rows": [
+    [
+     "A",
+     "-",
+     "1",
+     "12"
+    ],
+    [
+     "B",
+     "A",
+     "2",
+     "9"
+    ],
+    [
+     "C",
+     "B",
+     "3",
+     "8"
+    ],
+    [
+     "D",
+     "A",
+     "10",
+     "11"
+    ],
+    [
+     "E",
+     "C",
+     "4",
+     "7"
+    ],
+    [
+     "F",
+     "E",
+     "5",
+     "6"
+    ],
+    [
+     "G",
+     "-",
+     "13",
+     "14"
+    ]
+   ],
+   "verify_code": "graph = {\n    'A': ['B', 'D'],\n    'B': ['C', 'E'],\n    'C': ['A', 'E'],\n    'D': ['B', 'E'],\n    'E': ['F'],\n    'F': [],\n    'G': ['F'],\n}\n\nclock = 0\ndisc, fin, parent = {}, {}, {}\n\ndef dfs(u, p):\n    global clock\n    clock += 1\n    disc[u] = clock\n    parent[u] = p\n    for v in graph[u]:\n        if v not in disc:\n            dfs(v, u)\n    clock += 1\n    fin[u] = clock\n\nfor u in graph:\n    if u not in disc:\n        dfs(u, '-')\nfor u in sorted(graph):\n    print(f'{u}\\t{parent[u]}\\t{disc[u]}\\t{fin[u]}')",
+   "verify_language": "python",
+   "solution": {
+    "en": "Start at A (time 1). A visits B (2), then C (3). C's first neighbour A is already discovered, and its second neighbour E is new, so E gets time 4. E goes to F (5), which finishes at 6. E finishes at 7, C at 8.\n\nBack at B, E is already finished, so B finishes at 9. Back at A, the next neighbour D is new (10). D's neighbours B and E are both finished, so D finishes at 11 and A at 12.\n\nThe outer loop reaches G, which is undiscovered, so it starts a second tree: G discovered at 13, F already finished, G finished at 14.\n\nThe intervals (discovery, finish) are nested or disjoint: A (1,12) contains B, C, E, F and D; G (13,14) is disjoint from A. This nesting is how you read ancestors off a DFS.",
+    "zh": "从 A 开始（时间 1）。A 访问 B（2），再访问 C（3）。C 的第一个邻居 A 已被发现，第二个邻居 E 是新的，所以 E 的时间是 4。E 去访问 F（5），F 在 6 结束。E 在 7 结束，C 在 8 结束。\n\n回到 B，E 已经结束，所以 B 在 9 结束。回到 A，下一个邻居 D 是新的（10）。D 的邻居 B 和 E 都已结束，所以 D 在 11 结束，A 在 12 结束。\n\n外层循环轮到 G，它还没被发现，于是开始第二棵树：G 在 13 被发现，F 已经结束，G 在 14 结束。\n\n各顶点的区间（发现，结束）要么嵌套，要么互不相交：A 的区间 (1,12) 包含 B、C、E、F 和 D；G 的区间 (13,14) 与 A 的不相交。从 DFS 读出祖先关系靠的就是这种嵌套。"
+   },
+   "code": "graph = {\n    'A': ['B', 'D'],\n    'B': ['C', 'E'],\n    'C': ['A', 'E'],\n    'D': ['B', 'E'],\n    'E': ['F'],\n    'F': [],\n    'G': ['F'],\n}\n\nclock = 0\ndisc, fin, parent = {}, {}, {}\n\ndef dfs(u, p):\n    global clock\n    clock += 1\n    disc[u] = clock\n    parent[u] = p\n    for v in graph[u]:\n        if v not in disc:\n            dfs(v, u)\n    clock += 1\n    fin[u] = clock\n\nfor u in graph:\n    if u not in disc:\n        dfs(u, '-')",
+   "given": [
+    "0,2"
+   ]
+  },
+  {
+   "id": "t-dijkstra-table",
+   "kind": "trace",
+   "topic": "dijkstra-relaxation",
+   "title": {
+    "en": "A Dijkstra table",
+    "zh": "Dijkstra 的距离表"
+   },
+   "marks": 8,
+   "minutes": 12,
+   "language": "python",
+   "prompt": {
+    "en": "This program runs Dijkstra's algorithm from A on a directed graph with non-negative weights. Each round it takes the unsettled vertex with the smallest tentative distance, settles it, and relaxes its outgoing edges.\n\nFor each round, write the vertex that is settled, then the tentative distances of B, C, D, E and F after the relaxation of that round. Write `inf` for a distance that is still infinite. A is settled in round 1 and its distance 0 is not shown. Row 1 is filled in. No two unsettled vertices tie for the smallest distance in any round.",
+    "zh": "下面的程序从 A 出发，在一个边权非负的有向图上运行 Dijkstra 算法。每一轮取出尚未确定的顶点中暂定距离最小的一个，把它确定下来，并松弛它的出边。\n\n每一轮请填写被确定的顶点，以及这一轮松弛之后 B、C、D、E、F 的暂定距离。距离仍是无穷大时写 `inf`。A 在第 1 轮被确定，它的距离 0 没有列出。第 1 行已经填好。每一轮中，未确定顶点里最小的暂定距离都没有并列的情况。"
+   },
+   "columns": {
+    "en": [
+     "Round",
+     "Settled",
+     "B",
+     "C",
+     "D",
+     "E",
+     "F"
+    ],
+    "zh": [
+     "轮次",
+     "确定的顶点",
+     "B",
+     "C",
+     "D",
+     "E",
+     "F"
+    ]
+   },
+   "rows": [
+    [
+     "round 1",
+     "A",
+     "5",
+     "2",
+     "inf",
+     "inf",
+     "inf"
+    ],
+    [
+     "round 2",
+     "C",
+     "3",
+     "2",
+     "8",
+     "inf",
+     "11"
+    ],
+    [
+     "round 3",
+     "B",
+     "3",
+     "2",
+     "6",
+     "10",
+     "11"
+    ],
+    [
+     "round 4",
+     "D",
+     "3",
+     "2",
+     "6",
+     "8",
+     "11"
+    ],
+    [
+     "round 5",
+     "E",
+     "3",
+     "2",
+     "6",
+     "8",
+     "9"
+    ],
+    [
+     "round 6",
+     "F",
+     "3",
+     "2",
+     "6",
+     "8",
+     "9"
+    ]
+   ],
+   "verify_code": "INF = float('inf')\ngraph = {\n    'A': {'B': 5, 'C': 2},\n    'B': {'D': 3, 'E': 7},\n    'C': {'B': 1, 'D': 6, 'F': 9},\n    'D': {'E': 2},\n    'E': {'F': 1},\n    'F': {},\n}\ndist = {v: INF for v in graph}\ndist['A'] = 0\ndone = set()\nrnd = 0\nwhile len(done) < len(graph):\n    u = min((v for v in graph if v not in done), key=lambda v: dist[v])\n    done.add(u)\n    for v, w in graph[u].items():\n        if dist[u] + w < dist[v]:\n            dist[v] = dist[u] + w\n    rnd += 1\n    show = lambda x: 'inf' if x == INF else str(x)\n    print('\\t'.join([f'round {rnd}', u] + [show(dist[v]) for v in 'BCDEF']))",
+   "verify_language": "python",
+   "solution": {
+    "en": "Round 1 settles A. It relaxes A to B (5) and A to C (2).\n\nRound 2: C has the smallest tentative distance (2), so C is settled. Going through C gives B = 2 + 1 = 3, which beats 5. It also gives D = 2 + 6 = 8 and F = 2 + 9 = 11.\n\nRound 3: B (3) is next. Through B, D becomes 3 + 3 = 6 (better than 8) and E becomes 3 + 7 = 10.\n\nRound 4: D (6) is settled. Through D, E becomes 6 + 2 = 8 (better than 10).\n\nRound 5: E (8) is settled. Through E, F becomes 8 + 1 = 9 (better than 11).\n\nRound 6: F (9) is settled and has no outgoing edges. The final distances are B 3, C 2, D 6, E 8, F 9. Notice that B's first value 5 was replaced after C was settled, which is why a distance is final only when its vertex is settled.",
+    "zh": "第 1 轮确定 A，并松弛 A 到 B（5）和 A 到 C（2）。\n\n第 2 轮：C 的暂定距离最小（2），所以确定 C。经过 C 得到 B = 2 + 1 = 3，比 5 更好；还得到 D = 2 + 6 = 8 和 F = 2 + 9 = 11。\n\n第 3 轮：接着是 B（3）。经过 B，D 变为 3 + 3 = 6（比 8 好），E 变为 3 + 7 = 10。\n\n第 4 轮：确定 D（6）。经过 D，E 变为 6 + 2 = 8（比 10 好）。\n\n第 5 轮：确定 E（8）。经过 E，F 变为 8 + 1 = 9（比 11 好）。\n\n第 6 轮：确定 F（9），它没有出边。最终距离是 B 为 3，C 为 2，D 为 6，E 为 8，F 为 9。注意 B 一开始的值 5 在 C 被确定之后被替换了，所以一个距离只有在对应顶点被确定时才是最终的。"
+   },
+   "code": "INF = float('inf')\ngraph = {\n    'A': {'B': 5, 'C': 2},\n    'B': {'D': 3, 'E': 7},\n    'C': {'B': 1, 'D': 6, 'F': 9},\n    'D': {'E': 2},\n    'E': {'F': 1},\n    'F': {},\n}\ndist = {v: INF for v in graph}\ndist['A'] = 0\ndone = set()\nwhile len(done) < len(graph):\n    u = min((v for v in graph if v not in done), key=lambda v: dist[v])\n    done.add(u)\n    for v, w in graph[u].items():\n        if dist[u] + w < dist[v]:\n            dist[v] = dist[u] + w",
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4",
+    "0,5",
+    "0,6"
+   ]
+  },
+  {
+   "id": "t-kruskal-uf",
+   "kind": "trace",
+   "topic": "minimum-spanning-trees",
+   "title": {
+    "en": "Kruskal with union-find",
+    "zh": "用并查集做 Kruskal"
+   },
+   "marks": 7,
+   "minutes": 10,
+   "language": "python",
+   "prompt": {
+    "en": "Kruskal's algorithm builds a minimum spanning tree of an undirected graph with six vertices. The program sorts the edges by weight, then looks at them one by one. It uses a union-find structure without any tricks: `find` just walks to the root.\n\nFor each edge in the order it is examined, fill in whether its two ends were already in the same component, whether the edge is taken or skipped, the total weight of the taken edges so far, and the number of components after this edge. The row label shows the edge and its weight. Use `yes` or `no`, and `take` or `skip`.",
+    "zh": "Kruskal 算法在一个有六个顶点的无向图上构造最小生成树。程序先把边按权值排序，再逐条检查。它用的是最朴素的并查集：`find` 只是一路走到根。\n\n按检查的先后顺序，为每条边填写：它的两个端点此前是否已在同一个连通分量里，这条边是被选用还是被跳过，到目前为止选用的边的总权值，以及处理完这条边之后的连通分量个数。行标签给出了这条边和它的权值。请用 `yes` 或 `no`，以及 `take` 或 `skip`。"
+   },
+   "columns": {
+    "en": [
+     "Edge and weight",
+     "Same component?",
+     "Action",
+     "Total so far",
+     "Components"
+    ],
+    "zh": [
+     "边及权值",
+     "是否已在同一分量",
+     "操作",
+     "当前总权值",
+     "分量个数"
+    ]
+   },
+   "rows": [
+    [
+     "B-C 1",
+     "no",
+     "take",
+     "1",
+     "5"
+    ],
+    [
+     "D-E 2",
+     "no",
+     "take",
+     "3",
+     "4"
+    ],
+    [
+     "A-C 3",
+     "no",
+     "take",
+     "6",
+     "3"
+    ],
+    [
+     "A-B 4",
+     "yes",
+     "skip",
+     "6",
+     "3"
+    ],
+    [
+     "C-D 5",
+     "no",
+     "take",
+     "11",
+     "2"
+    ],
+    [
+     "B-D 6",
+     "yes",
+     "skip",
+     "11",
+     "2"
+    ],
+    [
+     "E-F 7",
+     "no",
+     "take",
+     "18",
+     "1"
+    ],
+    [
+     "C-E 8",
+     "yes",
+     "skip",
+     "18",
+     "1"
+    ],
+    [
+     "D-F 9",
+     "yes",
+     "skip",
+     "18",
+     "1"
+    ]
+   ],
+   "verify_code": "edges = sorted([\n    (4, 'A', 'B'), (3, 'A', 'C'), (1, 'B', 'C'), (6, 'B', 'D'), (5, 'C', 'D'),\n    (8, 'C', 'E'), (2, 'D', 'E'), (9, 'D', 'F'), (7, 'E', 'F'),\n])\nparent = {v: v for v in 'ABCDEF'}\n\ndef find(x):\n    while parent[x] != x:\n        x = parent[x]\n    return x\n\ntotal = 0\ncomps = 6\n\nfor w, u, v in edges:\n    ru, rv = find(u), find(v)\n    same = ru == rv\n    if not same:\n        parent[ru] = rv\n        total += w\n        comps -= 1\n    print('\\t'.join([f'{u}-{v} {w}', 'yes' if same else 'no', 'skip' if same else 'take', str(total), str(comps)]))",
+   "verify_language": "python",
+   "solution": {
+    "en": "Sorted by weight the edges are B-C 1, D-E 2, A-C 3, A-B 4, C-D 5, B-D 6, E-F 7, C-E 8, D-F 9.\n\nB-C, D-E and A-C each join two different components, so they are taken (components 5, 4, 3; total 1, 3, 6). A-B comes next. A, B and C are already one component, so taking it would close a cycle: skip. C-D joins {A,B,C} with {D,E}: take (total 11, components 2). B-D is inside one component now: skip. E-F brings in the last vertex F: take (total 18, components 1).\n\nC-E and D-F are skipped because everything is already connected. The tree has 5 edges for 6 vertices, with weight 1 + 2 + 3 + 5 + 7 = 18. A skip always means the two ends have the same root.",
+    "zh": "按权值排序后，边依次是 B-C 1、D-E 2、A-C 3、A-B 4、C-D 5、B-D 6、E-F 7、C-E 8、D-F 9。\n\nB-C、D-E、A-C 每条都连接了两个不同的分量，所以都被选用（分量数依次为 5、4、3，总权值依次为 1、3、6）。接着是 A-B。A、B、C 已经在同一个分量里，选它会形成环，所以跳过。C-D 把 {A,B,C} 和 {D,E} 连起来，选用（总权值 11，分量数 2）。B-D 现在在同一个分量内部，跳过。E-F 带进了最后一个顶点 F，选用（总权值 18，分量数 1）。\n\nC-E 和 D-F 因为所有顶点已经连通而被跳过。这棵树用 5 条边连接 6 个顶点，权值为 1 + 2 + 3 + 5 + 7 = 18。凡是被跳过的边，它的两个端点必定有相同的根。"
+   },
+   "code": "edges = sorted([\n    (4, 'A', 'B'), (3, 'A', 'C'), (1, 'B', 'C'), (6, 'B', 'D'), (5, 'C', 'D'),\n    (8, 'C', 'E'), (2, 'D', 'E'), (9, 'D', 'F'), (7, 'E', 'F'),\n])\nparent = {v: v for v in 'ABCDEF'}\n\ndef find(x):\n    while parent[x] != x:\n        x = parent[x]\n    return x\n\ntotal = 0\ncomps = 6\n\nfor w, u, v in edges:\n    ru, rv = find(u), find(v)\n    if ru != rv:\n        parent[ru] = rv\n        total += w\n        comps -= 1",
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4"
+   ]
+  },
+  {
+   "id": "t-heap-array",
+   "kind": "trace",
+   "topic": "priority-queues-heaps",
+   "title": {
+    "en": "Heap array after each operation",
+    "zh": "每步操作后的堆数组"
+   },
+   "marks": 6,
+   "minutes": 9,
+   "language": "python",
+   "prompt": {
+    "en": "A min-heap is stored in a list. The children of index `i` are `2*i + 1` and `2*i + 2`. `insert` adds the key at the end and swaps it up. `extract_min` removes the root, moves the last key to the root, and swaps it down with the smaller child.\n\nThe program inserts the keys 12, 7, 15, 3, 9, 1, 8 in this order, then calls `extract_min` twice. After each operation, write the list as numbers joined by commas with no spaces, and the number of swaps that operation made. The first row is filled in.",
+    "zh": "最小堆存放在一个列表里，下标 `i` 的两个孩子是 `2*i + 1` 和 `2*i + 2`。`insert` 把键加到末尾再向上交换；`extract_min` 取走根，把最后一个键移到根的位置，再与较小的孩子逐层向下交换。\n\n程序先依次插入键 12、7、15、3、9、1、8，然后调用两次 `extract_min`。每次操作之后，请写出列表（数字之间用逗号，不加空格）以及该操作发生的交换次数。第一行已经填好。"
+   },
+   "columns": {
+    "en": [
+     "Operation",
+     "List after",
+     "Swaps"
+    ],
+    "zh": [
+     "操作",
+     "操作后的列表",
+     "交换次数"
+    ]
+   },
+   "rows": [
+    [
+     "insert 12",
+     "12",
+     "0"
+    ],
+    [
+     "insert 7",
+     "7,12",
+     "1"
+    ],
+    [
+     "insert 15",
+     "7,12,15",
+     "0"
+    ],
+    [
+     "insert 3",
+     "3,7,15,12",
+     "2"
+    ],
+    [
+     "insert 9",
+     "3,7,15,12,9",
+     "0"
+    ],
+    [
+     "insert 1",
+     "1,7,3,12,9,15",
+     "2"
+    ],
+    [
+     "insert 8",
+     "1,7,3,12,9,15,8",
+     "0"
+    ],
+    [
+     "extract_min",
+     "3,7,8,12,9,15",
+     "1"
+    ],
+    [
+     "extract_min",
+     "7,9,8,12,15",
+     "2"
+    ]
+   ],
+   "verify_code": "heap = []\n\ndef insert(x):\n    heap.append(x)\n    i = len(heap) - 1\n    swaps = 0\n    while i > 0 and heap[(i - 1) // 2] > heap[i]:\n        p = (i - 1) // 2\n        heap[i], heap[p] = heap[p], heap[i]\n        i = p\n        swaps += 1\n    return swaps\n\ndef extract_min():\n    last = heap.pop()\n    swaps = 0\n    if heap:\n        heap[0] = last\n        i = 0\n        while True:\n            l, r = 2 * i + 1, 2 * i + 2\n            s = i\n            if l < len(heap) and heap[l] < heap[s]:\n                s = l\n            if r < len(heap) and heap[r] < heap[s]:\n                s = r\n            if s == i:\n                break\n            heap[i], heap[s] = heap[s], heap[i]\n            i = s\n            swaps += 1\n    return swaps\n\nfor x in [12, 7, 15, 3, 9, 1, 8]:\n    s = insert(x)\n    print(f'insert {x}\\t' + ','.join(map(str, heap)) + f'\\t{s}')\nfor _ in range(2):\n    s = extract_min()\n    print('extract_min\\t' + ','.join(map(str, heap)) + f'\\t{s}')",
+   "verify_language": "python",
+   "solution": {
+    "en": "Insertions: 12 gives [12]. 7 is placed at index 1 and is smaller than its parent 12, so one swap gives [7,12]. 15 stays at index 2 (no swap).\n\n3 goes to index 3. Its parent at index 1 is 12, swap; then its new parent at index 0 is 7, swap again: [3,7,15,12], two swaps. 9 goes to index 4 under the 7, no swap. 1 goes to index 5 under 15, swap, then under 3, swap: [1,7,3,12,9,15], two swaps. 8 goes to index 6 under 3, no swap.\n\nFirst extract_min: the root 1 is removed and the last key 8 moves to the root: [8,7,3,12,9,15]. The smaller child is 3, so one swap gives [3,7,8,12,9,15].\n\nSecond extract_min: the root 3 is removed and the last key 15 goes to the root: [15,7,8,12,9]. It swaps with 7 (smaller than 8), then with 9 (smaller than 12): [7,9,8,12,15], two swaps. The array is a heap, but it is not sorted.",
+    "zh": "插入：12 得到 [12]。7 放在下标 1，比父结点 12 小，交换一次得到 [7,12]。15 放在下标 2，不需要交换。\n\n3 放在下标 3，它的父结点（下标 1）是 12，交换；它的新父结点（下标 0）是 7，再交换一次：[3,7,15,12]，共两次交换。9 放在下标 4，在 7 的下面，不交换。1 放在下标 5，在 15 的下面，交换；再与 3 比较，又交换：[1,7,3,12,9,15]，两次交换。8 放在下标 6，在 3 的下面，不交换。\n\n第一次 extract_min：取走根 1，把最后一个键 8 放到根上：[8,7,3,12,9,15]。较小的孩子是 3，交换一次得到 [3,7,8,12,9,15]。\n\n第二次 extract_min：取走根 3，把最后一个键 15 放到根上：[15,7,8,12,9]。它先与 7 交换（7 比 8 小），再与 9 交换（9 比 12 小）：[7,9,8,12,15]，共两次交换。这个数组是堆，但并没有排好序。"
+   },
+   "code": "heap = []\n\ndef insert(x):\n    heap.append(x)\n    i = len(heap) - 1\n    swaps = 0\n    while i > 0 and heap[(i - 1) // 2] > heap[i]:\n        p = (i - 1) // 2\n        heap[i], heap[p] = heap[p], heap[i]\n        i = p\n        swaps += 1\n    return swaps\n\ndef extract_min():\n    last = heap.pop()\n    swaps = 0\n    if heap:\n        heap[0] = last\n        i = 0\n        while True:\n            l, r = 2 * i + 1, 2 * i + 2\n            s = i\n            if l < len(heap) and heap[l] < heap[s]:\n                s = l\n            if r < len(heap) and heap[r] < heap[s]:\n                s = r\n            if s == i:\n                break\n            heap[i], heap[s] = heap[s], heap[i]\n            i = s\n            swaps += 1\n    return swaps\n\nfor x in [12, 7, 15, 3, 9, 1, 8]:\n    insert(x)\nextract_min()\nextract_min()",
+   "given": [
+    "0,1",
+    "0,2"
+   ]
+  },
+  {
+   "id": "t-avl-rotations",
+   "kind": "trace",
+   "topic": "avl-balance",
+   "title": {
+    "en": "Insert into an AVL tree",
+    "zh": "向 AVL 树中插入"
+   },
+   "marks": 7,
+   "minutes": 11,
+   "language": "python",
+   "prompt": {
+    "en": "Insert the keys 50, 30, 70, 20, 40, 35, 60, 80, 90, 10, 5 in this order into an empty AVL tree. After each BST insertion, walk back up and repair the first node whose child heights differ by 2. A leaf has height 0; a missing child has height -1.\n\nFor each insertion fill in: the repair used, the key at the root of the whole tree afterwards, and the preorder listing of the whole tree (root, then left subtree, then right subtree) as keys joined by commas with no spaces.\n\nFor the repair, write `none`; `R` for one right rotation; `L` for one left rotation; `LR` for a left rotation at the child followed by a right rotation at the node; `RL` for a right rotation at the child followed by a left rotation at the node. The first four rows are filled in.",
+    "zh": "把键 50、30、70、20、40、35、60、80、90、10、5 按这个顺序插入一棵空的 AVL 树。每次按二叉搜索树的规则插入后，沿路径向上走，修复第一个两个孩子高度差为 2 的结点。叶子的高度是 0，不存在的孩子高度是 -1。\n\n每次插入后请填写：使用的修复方式、整棵树此时的根结点的键，以及整棵树的前序序列（先根，再左子树，再右子树），键之间用逗号，不加空格。\n\n修复方式请这样写：没有修复写 `none`；一次右旋写 `R`；一次左旋写 `L`；先对孩子左旋、再对该结点右旋写 `LR`；先对孩子右旋、再对该结点左旋写 `RL`。前四行已经填好。"
+   },
+   "columns": {
+    "en": [
+     "Insert",
+     "Repair used",
+     "Root",
+     "Preorder"
+    ],
+    "zh": [
+     "插入的键",
+     "使用的修复",
+     "根",
+     "前序序列"
+    ]
+   },
+   "rows": [
+    [
+     "insert 50",
+     "none",
+     "50",
+     "50"
+    ],
+    [
+     "insert 30",
+     "none",
+     "50",
+     "50,30"
+    ],
+    [
+     "insert 70",
+     "none",
+     "50",
+     "50,30,70"
+    ],
+    [
+     "insert 20",
+     "none",
+     "50",
+     "50,30,20,70"
+    ],
+    [
+     "insert 40",
+     "none",
+     "50",
+     "50,30,20,40,70"
+    ],
+    [
+     "insert 35",
+     "LR",
+     "40",
+     "40,30,20,35,50,70"
+    ],
+    [
+     "insert 60",
+     "RL",
+     "40",
+     "40,30,20,35,60,50,70"
+    ],
+    [
+     "insert 80",
+     "none",
+     "40",
+     "40,30,20,35,60,50,70,80"
+    ],
+    [
+     "insert 90",
+     "L",
+     "40",
+     "40,30,20,35,60,50,80,70,90"
+    ],
+    [
+     "insert 10",
+     "none",
+     "40",
+     "40,30,20,10,35,60,50,80,70,90"
+    ],
+    [
+     "insert 5",
+     "R",
+     "40",
+     "40,30,10,5,20,35,60,50,80,70,90"
+    ]
+   ],
+   "verify_code": "class Node:\n    def __init__(self, key):\n        self.key, self.left, self.right, self.h = key, None, None, 0\n\ndef height(n):\n    return -1 if n is None else n.h\n\ndef fix(n):\n    n.h = 1 + max(height(n.left), height(n.right))\n\ndef rot_right(y):\n    x = y.left\n    y.left = x.right\n    x.right = y\n    fix(y); fix(x)\n    return x\n\ndef rot_left(x):\n    y = x.right\n    x.right = y.left\n    y.left = x\n    fix(x); fix(y)\n    return y\n\nused = []\n\ndef insert(n, key):\n    if n is None:\n        return Node(key)\n    if key < n.key:\n        n.left = insert(n.left, key)\n    else:\n        n.right = insert(n.right, key)\n    fix(n)\n    bal = height(n.left) - height(n.right)\n    if bal > 1:\n        if height(n.left.left) >= height(n.left.right):\n            used.append('R')\n            return rot_right(n)\n        n.left = rot_left(n.left)\n        used.append('LR')\n        return rot_right(n)\n    if bal < -1:\n        if height(n.right.right) >= height(n.right.left):\n            used.append('L')\n            return rot_left(n)\n        n.right = rot_right(n.right)\n        used.append('RL')\n        return rot_left(n)\n    return n\n\ndef preorder(n):\n    return [] if n is None else [n.key] + preorder(n.left) + preorder(n.right)\n\nroot = None\nfor k in [50, 30, 70, 20, 40, 35, 60, 80, 90, 10, 5]:\n    used.clear()\n    root = insert(root, k)\n    assert len(used) <= 1\n    print('\\t'.join([f'insert {k}', used[0] if used else 'none', str(root.key), ','.join(map(str, preorder(root)))]))",
+   "verify_language": "python",
+   "solution": {
+    "en": "After 50, 30, 70, 20, 40 there is no imbalance, and the tree is 50(30(20,40),70).\n\nInsert 35 goes left of 40. Node 50 now has child heights 2 and 0, a difference of 2. The extra weight is on 50's left child 30, but on 30's right side (an inner shape), so one rotation is not enough. Rotate left at 30, then right at 50 (LR). The root becomes 40: 40(30(20,35),50(,70)).\n\nInsert 60 goes left of 70. Node 50 has heights -1 and 1 (difference 2). The weight is on 50's right child 70, on 70's left side (inner again). Rotate right at 70, then left at 50 (RL). The subtree root becomes 60: 40(30(20,35),60(50,70)).\n\nInsert 80 is a plain insert. Insert 90 goes under 80 on the right, so node 70 has heights -1 and 1. This is an outer shape (right of the right child): one left rotation at 70 (L) puts 80 above 70 and 90.\n\nInsert 10 is plain. Insert 5 goes left of 10, so node 20 has heights 1 and -1. Outer shape on the left: one right rotation at 20 (R) puts 10 above 5 and 20.\n\nEvery repair keeps the inorder order of the keys and restores heights, so the root stays 40 from the first LR on.",
+    "zh": "插入 50、30、70、20、40 之后没有失衡，树是 50(30(20,40),70)。\n\n插入 35 时，它在 40 的左边。结点 50 的两个孩子高度变成 2 和 0，差为 2。多出来的高度在 50 的左孩子 30 上，而且是在 30 的右侧（内侧形状），所以一次旋转不够。先对 30 左旋，再对 50 右旋（LR）。根变成 40：40(30(20,35),50(,70))。\n\n插入 60 时，它在 70 的左边。结点 50 的孩子高度是 -1 和 1（差为 2）。多出来的高度在 50 的右孩子 70 上，而且在 70 的左侧（又是内侧）。先对 70 右旋，再对 50 左旋（RL）。这棵子树的根变成 60：40(30(20,35),60(50,70))。\n\n插入 80 只是普通插入。插入 90 时，它在 80 的右边，于是结点 70 的孩子高度是 -1 和 1。这是外侧形状（右孩子的右边）：对 70 做一次左旋（L），让 80 位于 70 和 90 之上。\n\n插入 10 只是普通插入。插入 5 时，它在 10 的左边，于是结点 20 的孩子高度是 1 和 -1。这是左边的外侧形状：对 20 做一次右旋（R），让 10 位于 5 和 20 之上。\n\n每次修复都保持键的中序顺序不变并恢复高度；从第一次 LR 之后，根一直是 40。"
+   },
+   "code": "keys = [50, 30, 70, 20, 40, 35, 60, 80, 90, 10, 5]\nroot = None\nfor k in keys:\n    root = avl_insert(root, k)   # BST insert, then repair on the way back up",
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "1,1",
+    "1,2",
+    "1,3",
+    "2,1",
+    "2,2",
+    "2,3",
+    "3,1",
+    "3,2",
+    "3,3"
+   ]
+  },
+  {
+   "id": "t-hash-linear-probing",
+   "kind": "trace",
+   "topic": "hashing-collisions",
+   "title": {
+    "en": "Linear probing with a tombstone",
+    "zh": "带墓碑的线性探测"
+   },
+   "marks": 7,
+   "minutes": 10,
+   "language": "python",
+   "prompt": {
+    "en": "A hash table has 7 slots, numbered 0 to 6, and uses `h(k) = k mod 7` with linear probing: after slot `s` the next slot to try is `(s + 1) mod 7`. A deleted key leaves a tombstone `x`. A search skips tombstones and stops at a never-used empty slot. An insert uses the first empty slot or tombstone on its probe path (the key is known to be absent).\n\nRun the ten operations in order. For each, write the slots visited, from the first to the last (for example `1,2,3`), and the table after the operation: seven entries for slots 0 to 6, separated by commas with no spaces, with `.` for an empty slot and `x` for a tombstone. A `find` does not change the table. The first row is filled in.",
+    "zh": "一个哈希表有 7 个槽，编号 0 到 6，使用 `h(k) = k mod 7` 和线性探测：试过槽 `s` 之后，下一个要试的是 `(s + 1) mod 7`。被删除的键会留下墓碑 `x`。查找时跳过墓碑，遇到从未用过的空槽才停止。插入时使用探测路径上第一个空槽或墓碑（已知该键不在表中）。\n\n请按顺序执行这十个操作。每个操作写出依次访问的槽（从第一个到最后一个，例如 `1,2,3`），以及操作之后的表：槽 0 到 6 共七项，用逗号隔开，不加空格，空槽写 `.`，墓碑写 `x`。`find` 不会改变表。第一行已经填好。"
+   },
+   "columns": {
+    "en": [
+     "Operation",
+     "Slots visited",
+     "Table after"
+    ],
+    "zh": [
+     "操作",
+     "访问的槽",
+     "操作后的表"
+    ]
+   },
+   "rows": [
+    [
+     "insert 15",
+     "1",
+     ".,15,.,.,.,.,."
+    ],
+    [
+     "insert 22",
+     "1,2",
+     ".,15,22,.,.,.,."
+    ],
+    [
+     "insert 8",
+     "1,2,3",
+     ".,15,22,8,.,.,."
+    ],
+    [
+     "insert 10",
+     "3,4",
+     ".,15,22,8,10,.,."
+    ],
+    [
+     "delete 22",
+     "1,2",
+     ".,15,x,8,10,.,."
+    ],
+    [
+     "find 8",
+     "1,2,3",
+     ".,15,x,8,10,.,."
+    ],
+    [
+     "insert 29",
+     "1,2",
+     ".,15,29,8,10,.,."
+    ],
+    [
+     "find 17",
+     "3,4,5",
+     ".,15,29,8,10,.,."
+    ],
+    [
+     "insert 6",
+     "6",
+     ".,15,29,8,10,.,6"
+    ],
+    [
+     "insert 13",
+     "6,0",
+     "13,15,29,8,10,.,6"
+    ]
+   ],
+   "verify_code": "M = 7\ntable = [None] * M            # None = empty slot, 'x' = tombstone\n\ndef path(key):\n    return [(key % M + i) % M for i in range(M)]\n\ndef find(key):\n    seen = []\n    for s in path(key):\n        seen.append(s)\n        if table[s] is None:\n            return seen, False\n        if table[s] == key:\n            return seen, True\n    return seen, False\n\ndef insert(key):              # the key is known to be absent\n    seen = []\n    for s in path(key):\n        seen.append(s)\n        if table[s] is None or table[s] == 'x':\n            table[s] = key\n            break\n    return seen\n\ndef delete(key):\n    seen, found = find(key)\n    if found:\n        table[seen[-1]] = 'x'\n    return seen\n\nops = [('insert', 15), ('insert', 22), ('insert', 8), ('insert', 10), ('delete', 22),\n       ('find', 8), ('insert', 29), ('find', 17), ('insert', 6), ('insert', 13)]\n\nfor op, key in ops:\n    if op == 'insert':\n        seen = insert(key)\n    elif op == 'delete':\n        seen = delete(key)\n    else:\n        seen, _ = find(key)\n    cells = ['.' if t is None else str(t) for t in table]\n    print(f'{op} {key}\\t' + ','.join(map(str, seen)) + '\\t' + ','.join(cells))",
+   "verify_language": "python",
+   "solution": {
+    "en": "15 mod 7 = 1, so 15 goes in slot 1. 22 also hashes to 1, which is taken, so it goes to 2. 8 hashes to 1: slots 1 and 2 are taken, so it lands in 3. 10 hashes to 3, which is taken, so it lands in 4.\n\ndelete 22: the search visits 1 (15), then 2 (22) and finds it. Slot 2 becomes a tombstone x, not an empty slot.\n\nfind 8: slot 1 holds 15, slot 2 is a tombstone so the search goes on, slot 3 holds 8. Found after 3 probes. If slot 2 had been marked empty, the search would have stopped at 2 and wrongly said 8 is missing.\n\ninsert 29 (hash 1): slot 1 is taken, slot 2 is a tombstone, so 29 reuses it. find 17 (hash 3): slots 3, 4 are taken, slot 5 is empty, so the search ends there: not found.\n\ninsert 6 goes to slot 6. insert 13 (hash 6): slot 6 is taken, the next slot wraps around to 0, which is empty. The last table is 13,15,29,8,10,.,6.",
+    "zh": "15 mod 7 = 1，所以 15 放进槽 1。22 的哈希值也是 1，该槽已被占用，于是放进槽 2。8 的哈希值是 1：槽 1 和槽 2 都被占用，所以落在槽 3。10 的哈希值是 3，该槽已被占用，所以落在槽 4。\n\ndelete 22：查找依次访问槽 1（15）和槽 2（22），找到了它。槽 2 变成墓碑 x，而不是空槽。\n\nfind 8：槽 1 是 15，槽 2 是墓碑，所以继续往下，槽 3 是 8。探测 3 次后找到。如果槽 2 被标成空槽，查找会在槽 2 停下，错误地说 8 不存在。\n\ninsert 29（哈希值 1）：槽 1 被占用，槽 2 是墓碑，所以 29 重用了它。find 17（哈希值 3）：槽 3、槽 4 被占用，槽 5 是空的，查找到此结束：没找到。\n\ninsert 6 放进槽 6。insert 13（哈希值 6）：槽 6 被占用，下一个槽绕回 0，而槽 0 是空的。最后的表是 13,15,29,8,10,.,6。"
+   },
+   "code": "M = 7\ntable = [None] * M            # None = empty slot, 'x' = tombstone\n\ndef path(key):\n    return [(key % M + i) % M for i in range(M)]\n\ndef find(key):\n    seen = []\n    for s in path(key):\n        seen.append(s)\n        if table[s] is None:\n            return seen, False\n        if table[s] == key:\n            return seen, True\n    return seen, False\n\ndef insert(key):              # the key is known to be absent\n    seen = []\n    for s in path(key):\n        seen.append(s)\n        if table[s] is None or table[s] == 'x':\n            table[s] = key\n            break\n    return seen\n\ndef delete(key):\n    seen, found = find(key)\n    if found:\n        table[seen[-1]] = 'x'\n    return seen\n\nops = [('insert', 15), ('insert', 22), ('insert', 8), ('insert', 10), ('delete', 22),\n       ('find', 8), ('insert', 29), ('find', 17), ('insert', 6), ('insert', 13)]\n\nfor op, key in ops:\n    if op == 'insert':\n        insert(key)\n    elif op == 'delete':\n        delete(key)\n    else:\n        find(key)",
+   "given": [
+    "0,1",
+    "0,2"
+   ]
+  },
+  {
+   "id": "t-partition-steps",
+   "kind": "trace",
+   "topic": "quicksort-lower-bound",
+   "title": {
+    "en": "Trace a partition step",
+    "zh": "跟踪一次划分"
+   },
+   "marks": 6,
+   "minutes": 8,
+   "language": "python",
+   "prompt": {
+    "en": "This is the partition step of quicksort with the last item as the pivot. The loop keeps `a[0..i]` for items that are at most the pivot.\n\nFor each value of `j`, write whether `a[j] <= pivot` is true (`yes` or `no`) *when `a[j]` is looked at*, the value of `i` after that iteration, and the whole list after that iteration (numbers joined by commas, no spaces). The last row is the final swap that puts the pivot in place: write `-` for the test, and give `i` and the list after the swap. The first row is filled in.",
+    "zh": "这是以最后一个元素为枢轴的快速排序划分步骤。循环用 `a[0..i]` 保存不超过枢轴的元素。\n\n对 `j` 的每一个取值，请写出检查 `a[j]` 时 `a[j] <= pivot` 是否成立（`yes` 或 `no`）、这一轮结束后 `i` 的值，以及这一轮结束后的整个列表（数字之间用逗号，不加空格）。最后一行是把枢轴放到位的那次交换：判断一栏写 `-`，并给出交换后的 `i` 和列表。第一行已经填好。"
+   },
+   "columns": {
+    "en": [
+     "Step",
+     "a[j] <= pivot",
+     "i",
+     "List after"
+    ],
+    "zh": [
+     "步骤",
+     "a[j] <= pivot",
+     "i",
+     "之后的列表"
+    ]
+   },
+   "rows": [
+    [
+     "j=0",
+     "no",
+     "-1",
+     "7,2,9,4,6,1,8,5"
+    ],
+    [
+     "j=1",
+     "yes",
+     "0",
+     "2,7,9,4,6,1,8,5"
+    ],
+    [
+     "j=2",
+     "no",
+     "0",
+     "2,7,9,4,6,1,8,5"
+    ],
+    [
+     "j=3",
+     "yes",
+     "1",
+     "2,4,9,7,6,1,8,5"
+    ],
+    [
+     "j=4",
+     "no",
+     "1",
+     "2,4,9,7,6,1,8,5"
+    ],
+    [
+     "j=5",
+     "yes",
+     "2",
+     "2,4,1,7,6,9,8,5"
+    ],
+    [
+     "j=6",
+     "no",
+     "2",
+     "2,4,1,7,6,9,8,5"
+    ],
+    [
+     "swap pivot",
+     "-",
+     "2",
+     "2,4,1,5,6,9,8,7"
+    ]
+   ],
+   "verify_code": "a = [7, 2, 9, 4, 6, 1, 8, 5]\npivot = a[-1]\ni = -1\n\nfor j in range(len(a) - 1):\n    ok = a[j] <= pivot\n    if ok:\n        i += 1\n        a[i], a[j] = a[j], a[i]\n    print(f'j={j}\\t' + ('yes' if ok else 'no') + f'\\t{i}\\t' + ','.join(map(str, a)))\na[i + 1], a[-1] = a[-1], a[i + 1]\nprint(f'swap pivot\\t-\\t{i}\\t' + ','.join(map(str, a)))",
+   "verify_language": "python",
+   "solution": {
+    "en": "The pivot is 5. j = 0: 7 is larger, so nothing changes. j = 1: 2 is small, so i becomes 0 and a[0], a[1] swap: 2,7,9,4,6,1,8,5. j = 2: 9 is large. j = 3: 4 is small, i becomes 1 and a[1], a[3] swap: 2,4,9,7,6,1,8,5. j = 4: 6 is large. j = 5: 1 is small, i becomes 2 and a[2], a[5] swap: 2,4,1,7,6,9,8,5. j = 6: 8 is large.\n\nNow a[0..2] hold the small items, and a[3..6] hold the large ones. The final swap exchanges a[i+1] = a[3] (value 7) with the pivot, giving 2,4,1,5,6,9,8,7. The pivot 5 is at index 3, its final sorted position: everything to its left is at most 5 and everything to its right is larger. The two sides are then sorted recursively.",
+    "zh": "枢轴是 5。j = 0：7 比枢轴大，什么也不变。j = 1：2 小，所以 i 变成 0，a[0] 与 a[1] 交换：2,7,9,4,6,1,8,5。j = 2：9 大。j = 3：4 小，i 变成 1，a[1] 与 a[3] 交换：2,4,9,7,6,1,8,5。j = 4：6 大。j = 5：1 小，i 变成 2，a[2] 与 a[5] 交换：2,4,1,7,6,9,8,5。j = 6：8 大。\n\n此时 a[0..2] 里是小元素，a[3..6] 里是大元素。最后一次交换把 a[i+1] = a[3]（值为 7）与枢轴交换，得到 2,4,1,5,6,9,8,7。枢轴 5 在下标 3，这正是它排好序之后的位置：左边都不超过 5，右边都比 5 大。之后再对两边递归排序。"
+   },
+   "code": "a = [7, 2, 9, 4, 6, 1, 8, 5]\npivot = a[-1]\ni = -1\n\nfor j in range(len(a) - 1):\n    if a[j] <= pivot:\n        i += 1\n        a[i], a[j] = a[j], a[i]\na[i + 1], a[-1] = a[-1], a[i + 1]",
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3"
+   ]
+  },
+  {
+   "id": "t-recursion-tree",
+   "kind": "trace",
+   "topic": "karatsuba-master",
+   "title": {
+    "en": "Recursion tree level by level",
+    "zh": "逐层看递归树"
+   },
+   "marks": 6,
+   "minutes": 9,
+   "language": "python",
+   "prompt": {
+    "en": "The function `work(n)` makes three recursive calls on half the size. A call with `n > 1` does `n` units of its own work (not counting its children). A call with `n <= 1` is a leaf and does 1 unit.\n\nStart with `work(16)`. For each level of the recursion tree (level 0 is the first call), write the number of calls at that level, the value of `n` in each of those calls, and the total units of own work done by all calls at that level. The last row is the total over all levels: write the total number of calls and the total work, and `-` for the size. The first row is filled in.",
+    "zh": "函数 `work(n)` 会对规模减半的问题做三次递归调用。`n > 1` 的调用自己做 `n` 个单位的工作（不含子调用）；`n <= 1` 的调用是叶子，做 1 个单位的工作。\n\n从 `work(16)` 开始。对递归树的每一层（第 0 层是最初的那次调用），请写出该层的调用次数、这些调用中 `n` 的值，以及该层所有调用自己做的工作总量。最后一行是所有层的合计：写出调用总次数和工作总量，规模一栏写 `-`。第一行已经填好。"
+   },
+   "columns": {
+    "en": [
+     "Level",
+     "Calls",
+     "n in each call",
+     "Own work at this level"
+    ],
+    "zh": [
+     "层",
+     "调用次数",
+     "每次调用的 n",
+     "这一层自己的工作量"
+    ]
+   },
+   "rows": [
+    [
+     "level 0",
+     "1",
+     "16",
+     "16"
+    ],
+    [
+     "level 1",
+     "3",
+     "8",
+     "24"
+    ],
+    [
+     "level 2",
+     "9",
+     "4",
+     "36"
+    ],
+    [
+     "level 3",
+     "27",
+     "2",
+     "54"
+    ],
+    [
+     "level 4",
+     "81",
+     "1",
+     "81"
+    ],
+    [
+     "all levels",
+     "121",
+     "-",
+     "211"
+    ]
+   ],
+   "verify_code": "calls, size, own = {}, {}, {}\ndef work(n, depth=0):\n    if n <= 1:\n        calls[depth] = calls.get(depth, 0) + 1; size[depth] = n; own[depth] = own.get(depth, 0) + 1\n        return 1\n    calls[depth] = calls.get(depth, 0) + 1; size[depth] = n; own[depth] = own.get(depth, 0) + n\n    total = n\n    for _ in range(3):\n        total += work(n // 2, depth + 1)\n    return total\n\nt = work(16)\nfor d in sorted(calls):\n    print(f'level {d}\\t{calls[d]}\\t{size[d]}\\t{own[d]}')\nassert t == sum(own.values())\nprint(f'all levels\\t{sum(calls.values())}\\t-\\t{t}')",
+   "verify_language": "python",
+   "solution": {
+    "en": "Level 0 is the single call work(16): it does 16 units. Each call splits into 3 calls of half the size, so the number of calls triples and n halves: level 1 has 3 calls with n = 8 (3 x 8 = 24 units), level 2 has 9 calls with n = 4 (36 units), level 3 has 27 calls with n = 2 (54 units).\n\nAt level 4, n = 1, so these 81 calls are leaves that do 1 unit each: 81 units.\n\nThe totals are 1 + 3 + 9 + 27 + 81 = 121 calls and 16 + 24 + 36 + 54 + 81 = 211 units. The work per level grows from level to level (16, 24, 36, 54, 81, each 1.5 times the one before), because the calls triple while the sizes only halve. So the bottom level dominates. This is the pattern of T(n) = 3T(n/2) + n, whose solution is of order n^(log2 3), the same shape as Karatsuba multiplication.",
+    "zh": "第 0 层是唯一的一次调用 work(16)：它做 16 个单位的工作。每次调用拆成 3 次规模减半的调用，所以调用次数翻三倍而 n 减半：第 1 层有 3 次调用，n = 8（3 × 8 = 24 个单位）；第 2 层有 9 次调用，n = 4（36 个单位）；第 3 层有 27 次调用，n = 2（54 个单位）。\n\n第 4 层 n = 1，这 81 次调用都是叶子，每次做 1 个单位：共 81 个单位。\n\n合计是 1 + 3 + 9 + 27 + 81 = 121 次调用，以及 16 + 24 + 36 + 54 + 81 = 211 个单位的工作。每层的工作量逐层增大（16、24、36、54、81，每层是前一层的 1.5 倍），因为调用次数翻三倍而规模只减半，所以最底层起决定作用。这就是 T(n) = 3T(n/2) + n 的模式，它的解的量级是 n^(log2 3)，与 Karatsuba 乘法的形状相同。"
+   },
+   "code": "def work(n):\n    if n <= 1:\n        return 1              # a leaf costs 1 unit\n    total = n                 # this call does n units of its own work\n    for _ in range(3):\n        total += work(n // 2)\n    return total\n\nprint(work(16))",
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3"
+   ]
+  },
+  {
+   "id": "m-growth-order",
+   "kind": "mcq",
+   "topic": "analysis-correctness",
+   "title": {
+    "en": "Order by growth rate",
+    "zh": "按增长速度排序"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "Four algorithms use these numbers of steps on an input of size n:\n\nf1 = n log2 n,  f2 = 5n²,  f3 = 4n,  f4 = 2^n / 1000.\n\nWhich list puts them in order from the slowest growth to the fastest growth, for large n?",
+    "zh": "四个算法在规模为 n 的输入上分别用下面这些步数：\n\nf1 = n log2 n，f2 = 5n²，f3 = 4n，f4 = 2^n / 1000。\n\n当 n 很大时，下面哪一个列表是按增长速度从慢到快排列的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "f1, f3, f2, f4",
+      "zh": "f1，f3，f2，f4"
+     },
+     "correct": false,
+     "why": {
+      "en": "This trusts small inputs: at n = 8, f1 = 24 is below f3 = 32. But f1 / f3 = (log2 n) / 4 keeps growing, so f1 is larger from n = 17 on.",
+      "zh": "这是被小规模输入误导了：n = 8 时 f1 = 24 小于 f3 = 32。但 f1 / f3 = (log2 n) / 4 会不断增大，所以从 n = 17 起 f1 就更大了。"
+     }
+    },
+    {
+     "text": {
+      "en": "f3, f1, f2, f4",
+      "zh": "f3，f1，f2，f4"
+     },
+     "correct": true,
+     "why": {
+      "en": "Linear is below n log n, which is below quadratic, which is below exponential. The constants 4 and 1/1000 only change where the curves cross; they do not change the final order.",
+      "zh": "线性低于 n log n，n log n 低于二次，二次又低于指数。4 和 1/1000 这样的常数只改变曲线交叉的位置，不会改变最终的顺序。"
+     }
+    },
+    {
+     "text": {
+      "en": "f3, f1, f4, f2",
+      "zh": "f3，f1，f4，f2"
+     },
+     "correct": false,
+     "why": {
+      "en": "The factor 1/1000 only keeps f4 below f2 up to n = 21. From n = 22 on, 2^n / 1000 is larger than 5n², and the gap grows without limit.",
+      "zh": "1/1000 这个系数只能让 f4 在 n 不超过 21 时小于 f2。从 n = 22 起，2^n / 1000 就大于 5n²，而且差距会无限扩大。"
+     }
+    },
+    {
+     "text": {
+      "en": "f3, f2, f1, f4",
+      "zh": "f3，f2，f1，f4"
+     },
+     "correct": false,
+     "why": {
+      "en": "This puts n² below n log n. But n² / (n log n) = n / log n keeps growing, so quadratic grows faster.",
+      "zh": "这样排把 n² 放在 n log n 之下。但 n² / (n log n) = n / log n 会不断增大，所以二次函数增长更快。"
+     }
+    }
+   ],
+   "verify_code": "import math\ndef ok(n):\n    f = {'f1': n * math.log2(n), 'f2': 5 * n * n, 'f3': 4 * n, 'f4': 2 ** n / 1000}\n    return sorted(f, key=f.get)\nprint(ok(200))",
+   "verify_output": "['f3', 'f1', 'f2', 'f4']",
+   "verify_language": "python"
+  },
+  {
+   "id": "m-queue-links",
+   "kind": "mcq",
+   "topic": "stacks-queues",
+   "title": {
+    "en": "Queue in a linked list",
+    "zh": "用链表实现队列"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "Mia stores a queue as a singly linked list: each node knows only its next node. She wants both `enqueue` and `dequeue` to take O(1) time in the worst case.\n\nWhich design works?",
+    "zh": "Mia 用单向链表实现队列：每个结点只知道它的下一个结点。她希望 `enqueue` 和 `dequeue` 在最坏情况下都只需 O(1) 时间。\n\n下面哪种设计可行？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Keep only a head pointer. `enqueue` adds at the head; `dequeue` removes the last node.",
+      "zh": "只保存头指针。`enqueue` 在头部添加；`dequeue` 删除最后一个结点。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Removing the last node needs a walk from the head to find the node before it, which takes O(n).",
+      "zh": "删除最后一个结点时，要从头开始走才能找到它前面的结点，需要 O(n)。"
+     }
+    },
+    {
+     "text": {
+      "en": "Keep only a head pointer. `enqueue` walks to the end and adds there; `dequeue` removes the head.",
+      "zh": "只保存头指针。`enqueue` 先走到末尾再添加；`dequeue` 删除头结点。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Walking to the end on every enqueue takes O(n).",
+      "zh": "每次 enqueue 都要走到末尾，需要 O(n)。"
+     }
+    },
+    {
+     "text": {
+      "en": "Keep head and tail pointers. `enqueue` adds after the tail; `dequeue` removes the head.",
+      "zh": "保存头指针和尾指针。`enqueue` 在尾结点后面添加；`dequeue` 删除头结点。"
+     },
+     "correct": true,
+     "why": {
+      "en": "The tail pointer gives direct access to the place to add, and the head is the node to remove. Each operation changes a constant number of links.",
+      "zh": "尾指针能直接找到添加的位置，头结点正是要删除的结点。每个操作只改动常数个链接。"
+     }
+    },
+    {
+     "text": {
+      "en": "Keep head and tail pointers. `enqueue` adds before the head; `dequeue` removes the tail.",
+      "zh": "保存头指针和尾指针。`enqueue` 在头结点前添加；`dequeue` 删除尾结点。"
+     },
+     "correct": false,
+     "why": {
+      "en": "The tail pointer finds the last node, but its predecessor is still unknown in a singly linked list, so removing it needs an O(n) walk.",
+      "zh": "尾指针能找到最后一个结点，但在单向链表中仍不知道它的前一个结点，所以删除它需要 O(n) 的遍历。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-full-tree-nodes",
+   "kind": "mcq",
+   "topic": "trees-traversal",
+   "title": {
+    "en": "Counting nodes of a full binary tree",
+    "zh": "数满二叉树的结点"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "In a full binary tree every node has either 0 or 2 children. Iris has such a tree with 31 leaves.\n\nHow many nodes does the tree have in total?",
+    "zh": "在满二叉树中，每个结点要么有 0 个孩子，要么有 2 个孩子。Iris 有一棵这样的树，它有 31 个叶子。\n\n这棵树一共有多少个结点？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "62",
+      "zh": "62"
+     },
+     "correct": false,
+     "why": {
+      "en": "This doubles the number of leaves. In a full tree the internal nodes are one fewer than the leaves, not equal to them.",
+      "zh": "这是把叶子数翻了一倍。满二叉树的内部结点比叶子少 1 个，并不是和叶子一样多。"
+     }
+    },
+    {
+     "text": {
+      "en": "60",
+      "zh": "60"
+     },
+     "correct": false,
+     "why": {
+      "en": "This counts 30 internal nodes plus only 30 leaves. There are 31 leaves, so the total is 30 + 31 = 61.",
+      "zh": "这是 30 个内部结点加上只有 30 个叶子。叶子有 31 个，所以总数是 30 + 31 = 61。"
+     }
+    },
+    {
+     "text": {
+      "en": "61",
+      "zh": "61"
+     },
+     "correct": true,
+     "why": {
+      "en": "Each internal node has 2 children, so the edges number 2I, and a tree with N nodes has N - 1 edges. With N = I + 31, we get 2I = I + 30, so I = 30 and N = 61.",
+      "zh": "每个内部结点有 2 个孩子，所以边数是 2I；而 N 个结点的树有 N - 1 条边。N = I + 31，于是 2I = I + 30，I = 30，N = 61。"
+     }
+    },
+    {
+     "text": {
+      "en": "63",
+      "zh": "63"
+     },
+     "correct": false,
+     "why": {
+      "en": "This is 2^6 - 1, the size of a perfect tree with 6 levels. A perfect tree with 6 levels has 32 leaves, not 31.",
+      "zh": "63 是 2^6 - 1，即 6 层的完美二叉树的结点数。6 层的完美二叉树有 32 个叶子，不是 31 个。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-rehash-reason",
+   "kind": "mcq",
+   "topic": "hashing-collisions",
+   "title": {
+    "en": "Why rehash after growing",
+    "zh": "为什么扩容后要重新哈希"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "Noah's hash table with chaining has m buckets and puts key k in bucket `h(k) mod m`. When the table gets too full, he allocates 2m buckets.\n\nWhy must he re-insert every stored key into the new table, instead of just copying the old bucket lists?",
+    "zh": "Noah 的链地址哈希表有 m 个桶，把键 k 放进桶 `h(k) mod m`。当表太满时，他分配了 2m 个桶。\n\n为什么他必须把每个已存的键重新插入新表，而不能只是把旧的桶链表原样复制过去？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The keys are moved to a new place in memory, so their hash values change.",
+      "zh": "键被搬到了内存中的新位置，所以它们的哈希值变了。"
+     },
+     "correct": false,
+     "why": {
+      "en": "The hash value `h(k)` depends on the key, not on where the key is stored.",
+      "zh": "哈希值 `h(k)` 只取决于键本身，与键存放在哪里无关。"
+     }
+    },
+    {
+     "text": {
+      "en": "The bucket number `h(k) mod m` changes when m changes, so a key may belong in a different bucket.",
+      "zh": "m 变了，桶号 `h(k) mod m` 就会变，所以键可能应该放进另一个桶。"
+     },
+     "correct": true,
+     "why": {
+      "en": "A lookup computes `h(k) mod 2m`. If a key is still in the bucket for `h(k) mod m`, the lookup may look in the wrong bucket and miss it.",
+      "zh": "查找时计算的是 `h(k) mod 2m`。如果键还留在 `h(k) mod m` 对应的桶里，查找就可能去错误的桶，从而找不到它。"
+     }
+    },
+    {
+     "text": {
+      "en": "Chaining stores duplicate keys, and rehashing removes them.",
+      "zh": "链地址法会存下重复的键，重新哈希可以去掉它们。"
+     },
+     "correct": false,
+     "why": {
+      "en": "A map never keeps two entries with the same key, and rehashing is not what enforces that.",
+      "zh": "映射不会保存两个键相同的条目，而且保证这一点的不是重新哈希。"
+     }
+    },
+    {
+     "text": {
+      "en": "Deleted entries leave tombstones that must be cleared.",
+      "zh": "被删除的条目留下了墓碑，必须清除。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Tombstones belong to open addressing (such as linear probing). Chaining removes a node from its list directly.",
+      "zh": "墓碑是开放定址法（比如线性探测）里的概念。链地址法直接从链表里删掉结点。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-greedy-coins",
+   "kind": "mcq",
+   "topic": "greedy-fractional",
+   "title": {
+    "en": "When largest-coin-first fails",
+    "zh": "什么时候“先取最大面值”会出错"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "A shop has coins of value 1, 3 and 4. To pay an amount exactly, a greedy cashier repeatedly takes the largest coin that does not exceed what is left.\n\nFor which amount does the greedy cashier use more coins than the smallest possible number?",
+    "zh": "一家商店有面值 1、3、4 的硬币。为了凑出恰好的金额，贪心的收银员每次都拿不超过剩余金额的最大面值的硬币。\n\n对下面哪个金额，贪心的收银员用的硬币数比最少的硬币数多？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "5",
+      "zh": "5"
+     },
+     "correct": false,
+     "why": {
+      "en": "Greedy takes 4 + 1, two coins. No pair or single coin gives 5 in fewer than two coins, so greedy is optimal here.",
+      "zh": "贪心取 4 + 1，两枚硬币。没有一枚硬币能凑成 5，所以两枚已是最少，贪心在这里是最优的。"
+     }
+    },
+    {
+     "text": {
+      "en": "6",
+      "zh": "6"
+     },
+     "correct": true,
+     "why": {
+      "en": "Greedy takes 4, then 1, then 1: three coins. But 3 + 3 uses only two coins. Taking the biggest coin first locks in the 4, which does not fit well into 6.",
+      "zh": "贪心先取 4，再取 1，再取 1：三枚硬币。可是 3 + 3 只用两枚。先取最大面值把 4 锁定了，而 4 并不适合凑 6。"
+     }
+    },
+    {
+     "text": {
+      "en": "7",
+      "zh": "7"
+     },
+     "correct": false,
+     "why": {
+      "en": "Greedy takes 4 + 3, two coins, and that is the minimum.",
+      "zh": "贪心取 4 + 3，两枚硬币，这已经是最少的。"
+     }
+    },
+    {
+     "text": {
+      "en": "8",
+      "zh": "8"
+     },
+     "correct": false,
+     "why": {
+      "en": "Greedy takes 4 + 4, two coins, and that is the minimum.",
+      "zh": "贪心取 4 + 4，两枚硬币，这已经是最少的。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "A greedy rule needs a proof. For these coins no exchange argument works: replacing the first 4 in an optimal solution by something else can be cheaper, as the amount 6 shows (3 + 3). A single counterexample is enough to reject the rule.",
+    "zh": "贪心规则需要证明。对这些面值，交换论证行不通：把最优解中的第一个 4 换成别的东西反而可能更省，金额 6（3 + 3）就是例子。只要有一个反例，就足以否定这条规则。"
+   },
+   "verify_code": "def greedy(x):\n    c = 0\n    for d in (4, 3, 1):\n        c += x // d\n        x %= d\n    return c\ndef best(x):\n    inf = 10**9\n    t = [0] + [inf] * x\n    for v in range(1, x + 1):\n        t[v] = 1 + min(t[v - d] for d in (1, 3, 4) if d <= v)\n    return t[x]\nprint([x for x in (5, 6, 7, 8) if greedy(x) > best(x)])",
+   "verify_output": "[6]",
+   "verify_language": "python"
+  },
+  {
+   "id": "m-master-equal",
+   "kind": "mcq",
+   "topic": "karatsuba-master",
+   "title": {
+    "en": "Master theorem, equal case",
+    "zh": "主定理：相等的情形"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "An algorithm splits a problem of size n into 4 subproblems of size n/2. Solving them recursively and then combining the answers takes Θ(n²) steps.\n\nSo the running time obeys T(n) = 4T(n/2) + Θ(n²). Which running time follows?",
+    "zh": "一个算法把规模为 n 的问题拆成 4 个规模为 n/2 的子问题。递归求解之后合并答案需要 Θ(n²) 步。\n\n所以运行时间满足 T(n) = 4T(n/2) + Θ(n²)。下面哪个运行时间是对的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Θ(n²)",
+      "zh": "Θ(n²)"
+     },
+     "correct": false,
+     "why": {
+      "en": "This would be the answer if the combining work were smaller than n². Here the combining work equals the n^(log2 4) = n² growth of the leaves, so every level contributes the same amount.",
+      "zh": "如果合并的工作量比 n² 小，这就是答案。可这里合并的工作量等于叶子增长的 n^(log2 4) = n²，所以每一层贡献的量相同。"
+     }
+    },
+    {
+     "text": {
+      "en": "Θ(n² log n)",
+      "zh": "Θ(n² log n)"
+     },
+     "correct": true,
+     "why": {
+      "en": "Here a = 4 and b = 2, so n^(log_b a) = n². The local work Θ(n²) matches it. Each of the about log2 n levels costs Θ(n²), so the total is Θ(n² log n).",
+      "zh": "这里 a = 4、b = 2，所以 n^(log_b a) = n²，局部工作量 Θ(n²) 与它同阶。大约 log2 n 层，每层花费 Θ(n²)，总共 Θ(n² log n)。"
+     }
+    },
+    {
+     "text": {
+      "en": "Θ(n³)",
+      "zh": "Θ(n³)"
+     },
+     "correct": false,
+     "why": {
+      "en": "This mixes up the exponent. log2 4 is 2, not 3.",
+      "zh": "这是把指数弄错了。log2 4 等于 2，不是 3。"
+     }
+    },
+    {
+     "text": {
+      "en": "Θ(n log n)",
+      "zh": "Θ(n log n)"
+     },
+     "correct": false,
+     "why": {
+      "en": "That is the answer for T(n) = 2T(n/2) + Θ(n), the merge sort recurrence, not this one.",
+      "zh": "这是 T(n) = 2T(n/2) + Θ(n)（归并排序的递推式）的答案，不是这一题的。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-bfs-shortest",
+   "kind": "mcq",
+   "topic": "bfs-distance",
+   "title": {
+    "en": "When BFS finds cheapest routes",
+    "zh": "什么时候 BFS 能找到代价最小的路线"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "Emma runs BFS from a start vertex s and reads off, for each vertex, the path to it in the BFS tree. She wants that path to be a cheapest path in terms of total edge weight.\n\nWhich situation guarantees this?",
+    "zh": "Emma 从起点 s 运行 BFS，并从 BFS 树中读出到每个顶点的路径。她希望这条路径在边权总和上是最便宜的路径。\n\n下面哪种情形能保证这一点？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "All edge weights are positive numbers.",
+      "zh": "所有边权都是正数。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Positive weights are not enough. BFS counts edges, not weight. A route of one edge with weight 10 loses to a route of three edges with weight 1 each, but BFS prefers the one-edge route.",
+      "zh": "正权值并不够。BFS 数的是边的条数，不是权值。一条权值 10 的边，比三条权值各为 1 的边更贵，但 BFS 偏爱只有一条边的路线。"
+     }
+    },
+    {
+     "text": {
+      "en": "Every edge has the same weight.",
+      "zh": "每条边的权值都相同。"
+     },
+     "correct": true,
+     "why": {
+      "en": "Then the total weight of a path is the common weight times the number of edges, so the fewest edges means the least weight. BFS minimises the number of edges.",
+      "zh": "这时一条路径的总权值就是共同的边权乘以边数，所以边数最少就是权值最小。BFS 正是让边数最少。"
+     }
+    },
+    {
+     "text": {
+      "en": "Every edge weight is either 1 or 2.",
+      "zh": "每条边的权值要么是 1，要么是 2。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Not enough. A path s, a, t with two edges of weight 2 costs 4. A path s, x, y, t with three edges of weight 1 costs 3. BFS prefers the two-edge path, which costs more.",
+      "zh": "不够。路径 s, a, t 有两条权值为 2 的边，总权值是 4；路径 s, x, y, t 有三条权值为 1 的边，总权值是 3。BFS 偏爱只有两条边的路径，而它更贵。"
+     }
+    },
+    {
+     "text": {
+      "en": "The graph is undirected and connected.",
+      "zh": "图是无向的并且连通。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Connectivity only guarantees that BFS reaches every vertex. It says nothing about how the edge weights compare along different routes.",
+      "zh": "连通只保证 BFS 能到达每个顶点，对不同路线上边权的比较没有任何说明。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-dijkstra-negative",
+   "kind": "mcq",
+   "topic": "dijkstra-relaxation",
+   "title": {
+    "en": "Dijkstra and a negative edge",
+    "zh": "Dijkstra 与负权边"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "Jack runs the standard Dijkstra algorithm from s on a directed graph with three edges: s to a with weight 2, s to b with weight 5, and b to a with weight -4. Once a vertex is settled, the algorithm never changes its distance again.\n\nWhich statement is true?",
+    "zh": "Jack 在一个有向图上从 s 出发运行标准的 Dijkstra 算法，图有三条边：s 到 a 权值 2，s 到 b 权值 5，b 到 a 权值 -4。顶点一旦被确定，算法就不再更改它的距离。\n\n下面哪个说法是对的？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "It reports dist(a) = 2, but the path s, b, a has weight 1.",
+      "zh": "它报告 dist(a) = 2，但路径 s, b, a 的权值是 1。"
+     },
+     "correct": true,
+     "why": {
+      "en": "Vertex a has the smallest tentative distance (2 against 5), so a is settled first. Later b is settled and the edge b to a would give 1, but a is already settled and is not updated. The proof that settled distances are final needs non-negative weights.",
+      "zh": "顶点 a 的暂定距离最小（2 对 5），所以先确定 a。之后确定 b，边 b 到 a 本来会给出 1，但 a 已经被确定，不会再更新。“确定的距离就是最终距离”这条证明需要边权非负。"
+     }
+    },
+    {
+     "text": {
+      "en": "It reports dist(a) = 1, because relaxing b to a always finds the better path.",
+      "zh": "它报告 dist(a) = 1，因为松弛 b 到 a 总能找到更好的路径。"
+     },
+     "correct": false,
+     "why": {
+      "en": "The relaxation of b to a happens, but only after a was settled, and settled vertices are skipped.",
+      "zh": "松弛 b 到 a 确实会发生，但那是在 a 已被确定之后，而已确定的顶点会被跳过。"
+     }
+    },
+    {
+     "text": {
+      "en": "It never stops, because a negative edge can be used again and again.",
+      "zh": "它永远不会停止，因为负权边可以被一次又一次地使用。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Dijkstra settles each vertex once, so it always stops after n rounds. The graph also has no cycle at all.",
+      "zh": "Dijkstra 对每个顶点只确定一次，所以 n 轮之后一定停止。这个图本身也没有环。"
+     }
+    },
+    {
+     "text": {
+      "en": "It is correct, because the graph has no negative-weight cycle.",
+      "zh": "它是正确的，因为图中没有负权环。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Having no negative cycle is the condition for shortest paths to exist (it is what Bellman-Ford needs). Dijkstra needs the stronger condition that no edge is negative.",
+      "zh": "没有负权环只是最短路径存在的条件（Bellman-Ford 需要的是它）。Dijkstra 需要的是更强的条件：没有任何一条边为负。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-cut-property",
+   "kind": "mcq",
+   "topic": "minimum-spanning-trees",
+   "title": {
+    "en": "The cut property",
+    "zh": "割性质"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "G is a connected, undirected graph with edge weights. S is a set of vertices that is neither empty nor all of V. Among the edges that cross between S and V \\ S, one edge e is strictly lighter than every other crossing edge.\n\nWhich statement is guaranteed?",
+    "zh": "G 是带边权的连通无向图。S 是一个顶点集合，既不是空集，也不是全部顶点 V。在连接 S 与 V \\ S 的边中，有一条边 e 严格比其他所有跨越边都轻。\n\n下面哪个说法一定成立？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "e is in every minimum spanning tree of G.",
+      "zh": "e 属于 G 的每一棵最小生成树。"
+     },
+     "correct": true,
+     "why": {
+      "en": "Take any spanning tree T without e. Adding e makes a cycle, and that cycle crosses the cut again at another edge f. Since e is strictly lighter than f, swapping f for e gives a lighter tree, so T was not minimum.",
+      "zh": "取任何一棵不含 e 的生成树 T。加入 e 会形成一个环，这个环必定还会通过另一条跨越边 f 再次穿过这个割。因为 e 严格比 f 轻，把 f 换成 e 就得到更轻的树，所以 T 不是最小的。"
+     }
+    },
+    {
+     "text": {
+      "en": "e is in some minimum spanning tree, but a different one may avoid it.",
+      "zh": "e 属于某一棵最小生成树，但别的最小生成树可能不含它。"
+     },
+     "correct": false,
+     "why": {
+      "en": "That would be true if another crossing edge were as light as e. Here e is strictly lightest, so no minimum tree can avoid it.",
+      "zh": "如果另有一条跨越边与 e 一样轻，这句话才可能成立。这里 e 严格最轻，所以没有哪棵最小生成树能避开它。"
+     }
+    },
+    {
+     "text": {
+      "en": "e is the lightest edge in the whole graph.",
+      "zh": "e 是整个图中最轻的边。"
+     },
+     "correct": false,
+     "why": {
+      "en": "It is only the lightest across this one cut. Edges inside S or inside V \\ S can be lighter.",
+      "zh": "它只是这一个割上最轻的边。S 内部或 V \\ S 内部的边可能更轻。"
+     }
+    },
+    {
+     "text": {
+      "en": "e is in no minimum spanning tree if it lies on a cycle.",
+      "zh": "如果 e 在某个环上，它就不属于任何最小生成树。"
+     },
+     "correct": false,
+     "why": {
+      "en": "Being on a cycle does not exclude an edge. Only the heaviest edge of a cycle can be excluded, and any cycle through e crosses the cut again at a heavier edge, so e is never the heaviest edge of a cycle.",
+      "zh": "在环上并不意味着被排除。能被排除的只有环上最重的边，而经过 e 的任何环都会在一条更重的边处再次穿过这个割，所以 e 永远不是环上最重的边。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "m-dfs-finish-dag",
+   "kind": "mcq",
+   "topic": "dfs-bridges",
+   "title": {
+    "en": "DFS finish times in a DAG",
+    "zh": "DAG 中 DFS 的结束时间"
+   },
+   "marks": 2,
+   "minutes": 2,
+   "prompt": {
+    "en": "A full DFS is run on a directed acyclic graph. Each vertex gets a discovery time d and a finish time f. The graph has an edge from u to v.\n\nWhich statement is always true?",
+    "zh": "在一个有向无环图上做完整的 DFS。每个顶点有发现时间 d 和结束时间 f。图中有一条从 u 到 v 的边。\n\n下面哪个说法总是成立？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "f(u) < f(v)",
+      "zh": "f(u) < f(v)"
+     },
+     "correct": false,
+     "why": {
+      "en": "This is the reverse. If v is discovered while u is open, v finishes first. If v was finished earlier, f(v) is smaller again.",
+      "zh": "这正好反了。如果 u 还没结束时发现了 v，v 会先结束。如果 v 更早已经结束，f(v) 同样更小。"
+     }
+    },
+    {
+     "text": {
+      "en": "f(u) > f(v)",
+      "zh": "f(u) > f(v)"
+     },
+     "correct": true,
+     "why": {
+      "en": "When u is explored, v is either already finished, or white and becomes a descendant of u and finishes before u does. v cannot be grey, because that would mean a path from v back to u, a cycle. This is why decreasing finish time is a topological order.",
+      "zh": "探索 u 时，v 要么已经结束，要么还是白色，随后成为 u 的后代，并在 u 之前结束。v 不可能是灰色，否则就有一条从 v 回到 u 的路径，也就是环。这就是为什么按结束时间从大到小排列是一个拓扑序。"
+     }
+    },
+    {
+     "text": {
+      "en": "d(u) < d(v)",
+      "zh": "d(u) < d(v)"
+     },
+     "correct": false,
+     "why": {
+      "en": "Not always: v may be discovered earlier from another start, for example when the outer loop reaches v before u. Then d(v) < d(u).",
+      "zh": "不一定：v 可能已经被更早地发现，例如外层循环先走到 v、后走到 u，这时 d(v) < d(u)。"
+     }
+    },
+    {
+     "text": {
+      "en": "v is a child of u in the DFS forest.",
+      "zh": "v 是 DFS 森林中 u 的孩子。"
+     },
+     "correct": false,
+     "why": {
+      "en": "The edge u to v can be a forward or cross edge, and then v is not a child of u.",
+      "zh": "边 u 到 v 也可以是前向边或横跨边，这时 v 就不是 u 的孩子。"
+     }
+    }
+   ],
+   "verify_code": "import itertools\nedges = [(0, 1), (2, 1), (2, 3), (3, 1)]\ndef dfs(order, n=4):\n    adj = {i: [] for i in range(n)}\n    for u, v in edges:\n        adj[u].append(v)\n    d, f, t = {}, {}, [0]\n    def go(u):\n        t[0] += 1; d[u] = t[0]\n        for v in adj[u]:\n            if v not in d:\n                go(v)\n        t[0] += 1; f[u] = t[0]\n    for u in order:\n        if u not in d:\n            go(u)\n    return d, f\nallf, anyd = True, False\nfor order in itertools.permutations(range(4)):\n    d, f = dfs(order)\n    for u, v in edges:\n        allf &= f[u] > f[v]\n        anyd |= d[u] > d[v]\nprint(allf, anyd)",
+   "verify_output": "True True",
+   "verify_language": "python"
+  },
+  {
+   "id": "n-recurrence-value",
+   "kind": "numeric",
+   "topic": "recurrences-merge-sort",
+   "title": {
+    "en": "Evaluate a recurrence",
+    "zh": "计算一个递推式的值"
+   },
+   "marks": 3,
+   "minutes": 5,
+   "prompt": {
+    "en": "Define T(1) = 1 and, for n a power of 2 greater than 1, T(n) = 2T(n/2) + n².\n\nWhat is T(32)?",
+    "zh": "设 T(1) = 1，并且当 n 是大于 1 的 2 的幂时，T(n) = 2T(n/2) + n²。\n\nT(32) 等于多少？"
+   },
+   "answer": 2016,
+   "verify_code": "def T(n):\n    return 1 if n == 1 else 2 * T(n // 2) + n * n\nprint(T(32))",
+   "verify_language": "python",
+   "solution": {
+    "en": "Build the values from the bottom. T(1) = 1. T(2) = 2 x 1 + 4 = 6. T(4) = 2 x 6 + 16 = 28. T(8) = 2 x 28 + 64 = 120. T(16) = 2 x 120 + 256 = 496. T(32) = 2 x 496 + 1024 = 2016.\n\nCheck with the closed form T(n) = 2n² - n: for n = 32 it is 2048 - 32 = 2016. The top level (n² = 1024) is about half of the total, because the work per level halves going down: n², n²/2, n²/4, ... This is the \"local work dominates\" case of the master theorem.",
+    "zh": "从最小的值往上算。T(1) = 1。T(2) = 2 × 1 + 4 = 6。T(4) = 2 × 6 + 16 = 28。T(8) = 2 × 28 + 64 = 120。T(16) = 2 × 120 + 256 = 496。T(32) = 2 × 496 + 1024 = 2016。\n\n用闭式 T(n) = 2n² - n 检查：n = 32 时是 2048 - 32 = 2016。最上面一层（n² = 1024）大约占总量的一半，因为越往下每层的工作量减半：n²、n²/2、n²/4……这就是主定理中“局部工作量起决定作用”的情形。"
+   }
+  },
+  {
+   "id": "n-insertion-comparisons",
+   "kind": "numeric",
+   "topic": "sorting-baselines",
+   "title": {
+    "en": "Count comparisons in insertion sort",
+    "zh": "数插入排序的比较次数"
+   },
+   "marks": 3,
+   "minutes": 5,
+   "prompt": {
+    "en": "The function below sorts a list with insertion sort and counts every evaluation of the test `a[j] > key`.\n\nHow many comparisons does it count when run on `[4, 3, 6, 1, 5, 2]`?",
+    "zh": "下面的函数用插入排序给列表排序，并统计每一次对 `a[j] > key` 的判断。\n\n对 `[4, 3, 6, 1, 5, 2]` 运行时，它统计到多少次比较？"
+   },
+   "answer": 12,
+   "verify_code": "def insertion_sort(a):\n    comps = 0\n    for i in range(1, len(a)):\n        key = a[i]\n        j = i - 1\n        while j >= 0:\n            comps += 1\n            if a[j] > key:\n                a[j + 1] = a[j]\n                j -= 1\n            else:\n                break\n        a[j + 1] = key\n    return comps\nprint(insertion_sort([4, 3, 6, 1, 5, 2]))",
+   "verify_language": "python",
+   "solution": {
+    "en": "Count the comparisons for each new key. Key 3: compare with 4 (shift), then the front is reached: 1 comparison. Key 6: compare with 4, no shift: 1. Key 1 (list is 3,4,6): compare with 6, 4 and 3, all shift: 3. Key 5 (list is 1,3,4,6): compare with 6 (shift), then 4 (stop): 2. Key 2 (list is 1,3,4,5,6): compare with 6, 5, 4, 3 (all shift), then 1 (stop): 5.\n\nTotal: 1 + 1 + 3 + 2 + 5 = 12. A key that reaches the front of the list stops without a final failing test, so it uses one fewer comparison than a key that stops in the middle.",
+    "zh": "逐个数每个新键的比较次数。键 3：与 4 比较（后移），然后到达列表前端：1 次。键 6：与 4 比较，不后移：1 次。键 1（此时列表是 3,4,6）：与 6、4、3 比较，全都后移：3 次。键 5（此时列表是 1,3,4,6）：与 6 比较（后移），再与 4 比较（停止）：2 次。键 2（此时列表是 1,3,4,5,6）：与 6、5、4、3 比较（全部后移），再与 1 比较（停止）：5 次。\n\n合计：1 + 1 + 3 + 2 + 5 = 12。一个键如果走到了列表最前端，就不会再有最后那次失败的判断，所以它比停在中间的键少一次比较。"
+   },
+   "code": "def insertion_sort(a):\n    comps = 0\n    for i in range(1, len(a)):\n        key = a[i]\n        j = i - 1\n        while j >= 0:\n            comps += 1\n            if a[j] > key:\n                a[j + 1] = a[j]\n                j -= 1\n            else:\n                break\n        a[j + 1] = key\n    return comps"
+  },
+  {
+   "id": "n-load-factor",
+   "kind": "numeric",
+   "topic": "hashing-collisions",
+   "title": {
+    "en": "Load factor after growing",
+    "zh": "扩容之后的装载因子"
+   },
+   "marks": 3,
+   "minutes": 6,
+   "prompt": {
+    "en": "A chaining hash table starts empty with 8 buckets. After each insertion, if the load factor n/m is greater than 0.75, the number of buckets m is doubled at once (n is the number of stored keys). All keys are distinct.\n\nWhat is the load factor after exactly 100 keys have been inserted? Give a decimal number.",
+    "zh": "一个链地址哈希表开始时为空，有 8 个桶。每次插入之后，如果装载因子 n/m 大于 0.75，桶数 m 就立刻翻倍（n 是已存键的个数）。所有键互不相同。\n\n恰好插入 100 个键之后，装载因子是多少？请给出小数。"
+   },
+   "answer": 0.390625,
+   "verify_code": "m, n = 8, 0\nfor _ in range(100):\n    n += 1\n    if n / m > 0.75:\n        m *= 2\nprint(n / m)",
+   "verify_language": "python",
+   "solution": {
+    "en": "Find when the table doubles. With m = 8 the load factor passes 0.75 when n = 7 (7/8 = 0.875; 6/8 = 0.75 is not greater). Then m = 16, and doubling happens at n = 13 (13/16 > 0.75; 12/16 = 0.75). Then m = 32 at n = 25, m = 64 at n = 49, m = 128 at n = 97.\n\nAt n = 97, m becomes 256. The next doubling would need n/256 > 0.75, which needs n = 193, far beyond 100. So at n = 100 we have m = 256 and the load factor is 100 / 256 = 0.390625.\n\nDoubling after the load factor passes 0.75 keeps it between about 0.375 and 0.75, so an average chain stays short.",
+    "zh": "先找出表什么时候翻倍。m = 8 时，装载因子在 n = 7 时越过 0.75（7/8 = 0.875；6/8 = 0.75 并不大于 0.75）。于是 m = 16，翻倍发生在 n = 13（13/16 > 0.75；12/16 = 0.75）。然后 n = 25 时 m 变成 32，n = 49 时变成 64，n = 97 时变成 128。\n\nn = 97 时，m 变成 256。下一次翻倍需要 n/256 > 0.75，也就是 n = 193，远远超过 100。所以 n = 100 时 m = 256，装载因子是 100 / 256 = 0.390625。\n\n在装载因子越过 0.75 时翻倍，可以把装载因子保持在大约 0.375 到 0.75 之间，所以平均链长始终很短。"
+   },
+   "tolerance": 0.0005
+  },
+  {
+   "id": "n-avl-max-height",
+   "kind": "numeric",
+   "topic": "avl-balance",
+   "title": {
+    "en": "Tallest possible AVL tree",
+    "zh": "最高的 AVL 树"
+   },
+   "marks": 3,
+   "minutes": 6,
+   "prompt": {
+    "en": "The height of a tree is the number of edges on its longest path from the root down. A tree with one node has height 0.\n\nLet N(h) be the smallest number of nodes an AVL tree of height h can have. What is the largest height an AVL tree with 100 nodes can have?",
+    "zh": "树的高度是从根向下最长路径上的边数，只有一个结点的树高度为 0。\n\n设 N(h) 是高度为 h 的 AVL 树至少拥有的结点数。含有 100 个结点的 AVL 树，高度最大可以是多少？"
+   },
+   "answer": 8,
+   "verify_code": "N = {-1: 0, 0: 1}\nh = 0\nwhile True:\n    nxt = N[h] + N[h - 1] + 1\n    if nxt > 100:\n        break\n    h += 1\n    N[h] = nxt\nprint(h)",
+   "verify_language": "python",
+   "solution": {
+    "en": "The sparsest AVL tree of height h has a root, one subtree of height h - 1 (as sparse as possible) and one of height h - 2. So N(h) = N(h-1) + N(h-2) + 1, with N(0) = 1 and N(1) = 2.\n\nN(2) = 4, N(3) = 7, N(4) = 12, N(5) = 20, N(6) = 33, N(7) = 54, N(8) = 88, N(9) = 143.\n\nA tree of height 8 needs at least 88 nodes, and 100 is enough. A tree of height 9 needs at least 143, and 100 is not enough. So the largest height is 8. The count grows like the Fibonacci numbers, which is why AVL height is O(log n).",
+    "zh": "高度为 h 的最稀疏的 AVL 树由一个根、一棵高度为 h - 1 的子树（尽可能稀疏）和一棵高度为 h - 2 的子树组成。所以 N(h) = N(h-1) + N(h-2) + 1，其中 N(0) = 1，N(1) = 2。\n\nN(2) = 4，N(3) = 7，N(4) = 12，N(5) = 20，N(6) = 33，N(7) = 54，N(8) = 88，N(9) = 143。\n\n高度为 8 的树至少需要 88 个结点，100 个够用。高度为 9 的树至少需要 143 个，100 个不够。所以最大高度是 8。这个数增长得像斐波那契数，这就是 AVL 树的高度为 O(log n) 的原因。"
+   }
+  },
+  {
+   "id": "n-expected-probes",
+   "kind": "numeric",
+   "topic": "hashing-collisions",
+   "title": {
+    "en": "Expected probes for the third key",
+    "zh": "第三个键的期望探测次数"
+   },
+   "marks": 4,
+   "minutes": 9,
+   "prompt": {
+    "en": "A hash table has 5 slots, numbered 0 to 4, and uses linear probing with wrap-around (after slot 4 comes slot 0). Three keys are inserted one after another. The hash value of each key is chosen independently and uniformly from 0, 1, 2, 3, 4. There are no deletions.\n\nThe cost of an insertion is the number of slots it looks at, including the empty slot where the key is finally stored. The first key costs 1 and the second costs 1 or 2.\n\nWhat is the expected cost of inserting the third key? Give a decimal number.",
+    "zh": "一个哈希表有 5 个槽，编号 0 到 4，使用带回绕的线性探测（槽 4 之后是槽 0）。依次插入三个键，每个键的哈希值各自独立、均匀地取自 0、1、2、3、4。不做删除。\n\n一次插入的代价是它查看过的槽的个数，包括最后存放键的那个空槽。第一个键的代价是 1，第二个键的代价是 1 或 2。\n\n插入第三个键的期望代价是多少？请给出小数。"
+   },
+   "answer": 1.52,
+   "verify_code": "import itertools\ntotal = 0\nfor h1, h2, h3 in itertools.product(range(5), repeat=3):\n    t = [None] * 5\n    for h in (h1, h2):\n        s = h\n        while t[s] is not None:\n            s = (s + 1) % 5\n        t[s] = 1\n    s, probes = h3, 1\n    while t[s] is not None:\n        s = (s + 1) % 5\n        probes += 1\n    total += probes\nprint(total / 125)",
+   "verify_language": "python",
+   "solution": {
+    "en": "Look at where the first two keys end up. There are three cases.\n\nBoth keys hash to the same slot (probability 1/5): the second moves to the next slot, giving a block of 2 neighbouring slots. The keys hash to neighbouring slots (probability 2/5): again a block of 2. Otherwise the two slots are not neighbours (probability 2/5): two separate occupied slots, each followed by an empty slot. So a block of 2 occurs with probability 3/5 and two separate keys with probability 2/5.\n\nThird key, block of 2: it costs 3 if it hashes to the first slot of the block (the block is followed by an empty slot), 2 if it hashes to the second, and 1 for the other three slots. Expected cost = (3 + 2 + 1 + 1 + 1) / 5 = 8/5 = 1.6.\n\nThird key, two separate slots: it costs 2 if it hashes to either occupied slot (the next slot is free) and 1 otherwise: (2 + 2 + 1 + 1 + 1) / 5 = 7/5 = 1.4.\n\nTotal: (3/5) x 1.6 + (2/5) x 1.4 = 0.96 + 0.56 = 1.52. The expected cost is above 1 because the clusters make a hash value more likely to land on an occupied slot and then walk past it.",
+    "zh": "先看前两个键最后落在哪里，分三种情形。\n\n两个键哈希到同一个槽（概率 1/5）：第二个移到下一个槽，形成相邻的 2 个槽的块。两个键哈希到相邻的槽（概率 2/5）：同样是一个 2 个槽的块。其余情形（概率 2/5）：两个被占的槽不相邻，各自后面都是一个空槽。所以出现 2 个槽的块的概率是 3/5，两个分开的键的概率是 2/5。\n\n第三个键，遇到 2 个槽的块：哈希到块的第一个槽，代价是 3（块后面是空槽）；哈希到块的第二个槽，代价是 2；其余三个槽代价都是 1。期望代价 = (3 + 2 + 1 + 1 + 1) / 5 = 8/5 = 1.6。\n\n第三个键，遇到两个分开的槽：哈希到任何一个被占的槽，代价是 2（下一个槽是空的），否则代价是 1：(2 + 2 + 1 + 1 + 1) / 5 = 7/5 = 1.4。\n\n合计：(3/5) × 1.6 + (2/5) × 1.4 = 0.96 + 0.56 = 1.52。期望代价大于 1，是因为聚集使得哈希值更容易落在被占的槽上，然后要往后走过去。"
+   },
+   "tolerance": 0.0005
+  },
+  {
+   "id": "n-sorting-lower-bound",
+   "kind": "numeric",
+   "topic": "quicksort-lower-bound",
+   "title": {
+    "en": "Counting argument for sorting",
+    "zh": "排序下界的计数论证"
+   },
+   "marks": 2,
+   "minutes": 5,
+   "prompt": {
+    "en": "A comparison-based algorithm sorts 6 distinct numbers, and each comparison has two possible outcomes. The algorithm can be drawn as a binary decision tree whose leaves must cover all possible orders of the input.\n\nBy this counting argument, what is the smallest number of comparisons that the algorithm needs in the worst case? (Take the smallest whole number h with 2^h at least the number of orders.)",
+    "zh": "一个基于比较的算法要给 6 个互不相同的数排序，每次比较有两种可能的结果。这个算法可以画成一棵二叉决策树，它的叶子必须覆盖输入的所有可能顺序。\n\n按这个计数论证，该算法在最坏情况下至少需要多少次比较？（取最小的整数 h，使 2^h 不小于所有可能顺序的个数。）"
+   },
+   "answer": 10,
+   "verify_code": "import math\nprint(math.ceil(math.log2(math.factorial(6))))",
+   "verify_language": "python",
+   "solution": {
+    "en": "Six distinct numbers can come in 6! = 720 orders, and a correct algorithm must reach a different leaf for each. A binary tree of height h has at most 2^h leaves. 2^9 = 512 is below 720, and 2^10 = 1024 is enough. So h must be at least 10.\n\nThis is a lower bound from counting, so no comparison-based algorithm can do better in the worst case. The same argument with n numbers gives log2(n!) comparisons, which grows like n log n.",
+    "zh": "6 个互不相同的数有 6! = 720 种顺序，正确的算法必须为每一种顺序到达不同的叶子。高度为 h 的二叉树最多有 2^h 个叶子。2^9 = 512 小于 720，而 2^10 = 1024 就够了。所以 h 至少是 10。\n\n这是由计数得到的下界，所以任何基于比较的算法在最坏情况下都不可能做得更好。对 n 个数用同样的论证，得到 log2(n!) 次比较，它的增长量级是 n log n。"
+   }
+  }
+ ],
+ "papers": [],
+ "labs": []
+}

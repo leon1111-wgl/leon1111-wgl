@@ -1,0 +1,965 @@
+{
+ "id": "algorithms-first-steps",
+ "course": "comp2123",
+ "kind": "first-steps",
+ "title": {
+  "en": "Algorithms: first steps",
+  "zh": "算法入门：第一步"
+ },
+ "summary": {
+  "en": "Six short lessons for someone who has never studied algorithms: trace a procedure by hand, count its steps, read big-O, write a recursive function, argue that a loop is correct, and prove a claim by induction. Every example is Python and runs on the page.",
+  "zh": "给从没学过算法的人准备的六节短课：手动追踪一个过程，数它的步骤，读懂大 O，写一个递归函数，论证一个循环是正确的，再用归纳法证明一个命题。所有例子都是 Python，在页面上就能运行。"
+ },
+ "needs": [
+  {
+   "en": "Nothing to install. Every example is Python and runs on this page: press Run under the code. You can also change the code and run it again.",
+   "zh": "不需要安装任何东西。所有例子都是 Python，直接在本页运行：点代码下方的“运行”。你也可以改动代码再运行一次。"
+  },
+  {
+   "en": "School arithmetic: add, subtract, multiply and divide, compare two whole numbers, and know that 2 × 2 × 2 is 8.",
+   "zh": "学校里学过的算术：加、减、乘、除，会比较两个整数的大小，知道 2 × 2 × 2 等于 8。"
+  },
+  {
+   "en": "No programming. Every Python word is explained the first time it appears, and lesson 1 starts with a very small program.",
+   "zh": "不需要会编程。每个 Python 词第一次出现时都会解释，第 1 课从一个很小的程序开始。"
+  },
+  {
+   "en": "Pencil and paper. Tracing by hand is the main skill here, and writing it down is how it is learned.",
+   "zh": "一支笔和一张纸。手动追踪是这里要练的主要本领，写下来才学得会。"
+  }
+ ],
+ "lessons": [
+  {
+   "id": "algorithm-trace",
+   "title": {
+    "en": "What an algorithm is, and tracing one by hand",
+    "zh": "什么是算法，以及手动追踪一个算法"
+   },
+   "goal": {
+    "en": "After this you can say what an algorithm is, and follow one on paper, writing down every variable after every step.",
+    "zh": "学完后你能说出什么是算法，并能在纸上照着它一步步做，每一步之后写下每个变量的值。"
+   },
+   "plain": {
+    "en": "An algorithm is a list of exact steps that turns an input into an output. A cooking recipe is close, but a recipe says things like \"add salt to taste\". An algorithm leaves no room for taste. Each step must be so clear that a machine, or a person who does not know the goal, can follow it.\n\nTo talk about an algorithm you state three things. The input is what goes in. The output is what must come out. The steps are what happens in between. The input and the output together are called the specification. It says what the algorithm must do, not how. Here the specification is: the input is a list of whole numbers with at least one number in it, and the output is the largest number in the list.\n\nHere is an algorithm for that. Look at the first number and call it the largest so far. Then go through the other numbers one at a time. If a number is bigger than the largest so far, it becomes the new largest so far. When the numbers run out, the largest so far is the answer.\n\nTracing means playing the computer by hand. You follow the steps exactly, and after every step you write down the current value of every variable. A variable is a name attached to a value. Here the name largest is attached to a number, and that number can change. A trace is usually a table with one row per step. Every later lesson uses tracing. If you can trace an algorithm, you can find out what it does without trusting anyone.\n\nThe example below is the same algorithm in Python, the programming language this guide uses. Press Run to watch it work, then read the code from top to bottom. The step-by-step notes explain every line.",
+    "zh": "算法是一串精确的步骤，把输入变成输出。菜谱和它有点像，但菜谱会写“盐适量”，算法不留这样的余地。每一步都必须清楚到一台机器，或者一个不知道目标的人，也能照着做。\n\n谈论一个算法，要说清三件事。输入是放进去的东西，输出是必须得到的结果，步骤是中间发生的事。输入和输出合在一起叫规格说明。它规定算法必须做什么，不规定怎么做。这里的规格说明是：输入是一个至少含有一个数的整数列表，输出是列表中最大的数。\n\n下面是一个解法。先看第一个数，把它叫作“目前最大的数”。然后逐个查看其余的数：如果某个数比“目前最大的数”大，它就成为新的“目前最大的数”。数用完以后，“目前最大的数”就是答案。\n\n追踪的意思是用手扮演计算机。你严格照着步骤做，每做完一步，就写下每个变量此刻的值。变量是贴在一个值上的名字。这里名字 largest 贴在一个数上，而这个数可以改变。追踪通常写成表格，每一步一行。后面的每一课都要用到追踪。只要会追踪，你不必相信任何人，就能弄清算法做了什么。\n\n下面的例子用 Python 写出了同一个算法。Python 是这份指南使用的编程语言。点“运行”看它工作，再从上到下读代码。逐步讲解会解释每一行。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "algorithm",
+      "zh": "算法"
+     },
+     "meaning": {
+      "en": "A list of exact steps that turns an input into an output.",
+      "zh": "把输入变成输出的一串精确步骤。"
+     }
+    },
+    {
+     "term": {
+      "en": "specification",
+      "zh": "规格说明"
+     },
+     "meaning": {
+      "en": "The allowed inputs and the required output. It says what to do, not how.",
+      "zh": "允许的输入和要求的输出。它说明做什么，不说明怎么做。"
+     }
+    },
+    {
+     "term": {
+      "en": "variable",
+      "zh": "变量"
+     },
+     "meaning": {
+      "en": "A name attached to a value. The value can change while the name stays.",
+      "zh": "贴在一个值上的名字。名字不变，值可以改变。"
+     }
+    },
+    {
+     "term": {
+      "en": "trace",
+      "zh": "追踪"
+     },
+     "meaning": {
+      "en": "Following an algorithm by hand and writing down every variable after every step.",
+      "zh": "用手一步步执行算法，并在每一步之后写下每个变量的值。"
+     }
+    },
+    {
+     "term": {
+      "en": "list",
+      "zh": "列表"
+     },
+     "meaning": {
+      "en": "A row of values in square brackets, such as [3, 8, 2]. The first item is at position 0.",
+      "zh": "方括号里排成一行的值，例如 [3, 8, 2]。第一项的位置是 0。"
+     }
+    },
+    {
+     "term": {
+      "en": "loop",
+      "zh": "循环"
+     },
+     "meaning": {
+      "en": "Steps that repeat. Here they repeat once for each item in a list.",
+      "zh": "重复执行的步骤。这里对列表中的每一项各执行一次。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "numbers = [3, 8, 2, 9, 4]\nlargest = numbers[0]\nfor n in numbers:\n    if n > largest:\n        largest = n\n    print(\"looked at\", n, \"- largest so far is\", largest)\nprint(\"answer:\", largest)\n",
+    "output": "looked at 3 - largest so far is 3\nlooked at 8 - largest so far is 8\nlooked at 2 - largest so far is 8\nlooked at 9 - largest so far is 9\nlooked at 4 - largest so far is 9\nanswer: 9\n",
+    "walk": {
+     "en": [
+      "numbers = [3, 8, 2, 9, 4] makes a list of five numbers and gives it the name numbers. The single = does not mean \"equal\" as in school maths. It means \"put the value on the right under the name on the left\".",
+      "numbers[0] is the item at position 0, the first one. Python counts positions from 0, so the last of five items is at position 4. The line largest = numbers[0] sets largest to 3.",
+      "for n in numbers: repeats the indented lines below it once for each item, and n holds the current item. The lines pushed in by four spaces are the body of the loop. Indentation is how Python knows which lines belong to the loop.",
+      "if n > largest: asks a question. If n is bigger than largest, the next indented line runs and largest = n gives largest a new value. If not, that line is skipped.",
+      "print(...) shows values on the screen. It is indented to the same level as the if, so it runs once per item. The last print is not indented, so it runs once, after the loop has finished.",
+      "The trace: largest starts at 3. Item 3 is not bigger, so largest stays 3. Item 8 is bigger, so largest becomes 8. Item 2: stays 8. Item 9: becomes 9. Item 4: stays 9. The answer is 9."
+     ],
+     "zh": [
+      "numbers = [3, 8, 2, 9, 4] 建立一个含五个数的列表，并给它取名 numbers。单个等号 = 不是数学课上的“相等”，它的意思是“把右边的值放到左边的名字下”。",
+      "numbers[0] 是位置 0 上的项，也就是第一项。Python 从 0 开始数位置，所以五项中的最后一项在位置 4。largest = numbers[0] 让 largest 等于 3。",
+      "for n in numbers: 把它下面缩进的几行对每一项各执行一次，n 就是当前这一项。向右缩进四个空格的行是循环的主体。Python 靠缩进知道哪些行属于循环。",
+      "if n > largest: 提出一个问题。如果 n 比 largest 大，就执行下一行缩进的 largest = n，给 largest 一个新值。如果不大，这一行就跳过。",
+      "print(...) 把值显示在屏幕上。它和 if 缩进在同一层，所以每一项都执行一次。最后一个 print 没有缩进，所以只在循环结束之后执行一次。",
+      "追踪：largest 起初是 3。3 不比自己大，largest 仍是 3。8 更大，largest 变成 8。2：仍是 8。9：变成 9。4：仍是 9。答案是 9。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "if n = largest:",
+     "why": {
+      "en": "A single = puts a value under a name. It cannot ask a question, so Python stops with a SyntaxError. To ask \"are these equal?\" write two equals signs. To ask \"is n bigger?\" write >.",
+      "zh": "单个 = 是把值放到名字下，不能用来提问，所以 Python 会以 SyntaxError 停止。要问“两者相等吗？”要写两个等号；要问“n 更大吗？”就写 >。"
+     },
+     "right": "if n == largest:"
+    },
+    {
+     "wrong": "largest = 0\nfor n in numbers:\n    if n > largest:\n        largest = n",
+     "why": {
+      "en": "This breaks when every number is negative. With numbers = [-5, -2, -9] no number is bigger than 0, so the answer stays 0, which is not even in the list. Start from a real item of the list instead.",
+      "zh": "当所有的数都是负数时，这样写就错了。numbers = [-5, -2, -9] 时，没有哪个数比 0 大，答案一直是 0，而 0 根本不在列表里。应当从列表中真实存在的一项开始。"
+     },
+     "right": "largest = numbers[0]"
+    },
+    {
+     "wrong": "largest = numbers[5]",
+     "why": {
+      "en": "The list has five items, at positions 0 to 4. Position 5 does not exist, so Python stops with IndexError: list index out of range. The most common cause is counting from 1 instead of 0.",
+      "zh": "这个列表有五项，位置是 0 到 4。位置 5 不存在，所以 Python 以 IndexError: list index out of range 停止。最常见的原因是从 1 数起，而不是从 0 数起。"
+     },
+     "right": "largest = numbers[4]"
+    },
+    {
+     "wrong": "for n in numbers:\n    largest = n\n    if n > largest:\n        print(\"new largest\")",
+     "why": {
+      "en": "Assigning before testing means n is already equal to largest when the test runs, so the test is never true. At the end largest is just the last item, 4, not 9. Tracing this by hand shows it at once. The order of the steps matters.",
+      "zh": "先赋值再检验，意味着检验时 n 已经等于 largest，检验永远不会为真。最后 largest 只是最后一项 4，而不是 9。手动追踪一下马上就能看出来。步骤的顺序很重要。"
+     },
+     "right": "for n in numbers:\n    if n > largest:\n        largest = n"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Trace the algorithm by hand on [5, 1, 7]. What is largest after each of the three items?",
+      "zh": "在 [5, 1, 7] 上手动追踪这个算法。三项处理完之后，largest 各是多少？"
+     },
+     "a": {
+      "en": "After 5: 5. After 1: still 5, because 1 is not bigger. After 7: 7. The answer is 7.",
+      "zh": "处理 5 之后：5。处理 1 之后：仍是 5，因为 1 不更大。处理 7 之后：7。答案是 7。"
+     }
+    },
+    {
+     "q": {
+      "en": "Change the algorithm so it finds the smallest number. What is the smallest change?",
+      "zh": "改动算法，让它找出最小的数。最小的改动是什么？"
+     },
+     "a": {
+      "en": "Change > to <, so a number replaces the current one when it is smaller. Renaming largest to smallest keeps the code honest. On [3, 8, 2, 9, 4] the answer is 2.",
+      "zh": "把 > 改成 <，这样某个数更小时才替换当前的数。再把 largest 改名为 smallest，代码读起来才不会误导人。在 [3, 8, 2, 9, 4] 上答案是 2。"
+     }
+    },
+    {
+     "q": {
+      "en": "What goes wrong if numbers is the empty list []? What does that say about the specification?",
+      "zh": "如果 numbers 是空列表 []，会出什么问题？这对规格说明意味着什么？"
+     },
+     "a": {
+      "en": "numbers[0] fails with IndexError: list index out of range, because there is no first item. The specification must say the list has at least one number. A condition on the input is part of the specification.",
+      "zh": "numbers[0] 会以 IndexError: list index out of range 失败，因为没有第一项。规格说明必须写明列表至少有一个数。对输入的限制也是规格说明的一部分。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "counting-steps",
+   "title": {
+    "en": "Counting steps",
+    "zh": "数步骤"
+   },
+   "goal": {
+    "en": "After this you can count the steps an algorithm takes on a given input, and say why we count steps instead of seconds.",
+    "zh": "学完后你能数出算法在某个输入上执行的步骤数，并能说明为什么数步骤而不是数秒。"
+   },
+   "plain": {
+    "en": "How fast is an algorithm? Seconds are a poor answer. The same program takes different seconds on a phone, on a laptop and on a server, and different seconds again when other programs are running. So we count steps. A step is one small action, such as comparing two numbers or adding two numbers. The count does not depend on the machine.\n\nYou choose what to count, and you say what you chose. For finding the largest number you might count comparisons. For adding up a list you might count additions. Pick the action that does the real work and count it the same way every time.\n\nThe count depends on the input size, the amount of data. For a list we call the input size n, the number of items. A list of 5 items and a list of 5000 items give different counts. So the count is a rule that takes n and gives a number of steps.\n\nThe count can also depend on which input of size n you are given. Take a search for a value in a list. If the value is the first item, the search stops after 1 step. If it is the last item, or not in the list at all, the search looks at every item. The best case is the fewest steps over all inputs of size n. The worst case is the most steps. We usually quote the worst case, because it is a promise: the algorithm never takes more than that.\n\nThe example uses two Python tools. A function is a named group of steps. You make one with def. Its parameters are the inputs it receives. The word return hands back an answer and ends the function at once, even in the middle of a loop. A counter is a variable that starts at 0 and gets 1 added each time the thing you are counting happens.",
+    "zh": "一个算法有多快？用秒来回答并不好。同一个程序在手机、笔记本和服务器上花的秒数不同，别的程序在运行时花的秒数又不同。所以我们数步骤。一个步骤是一个小动作，例如比较两个数或把两个数相加。步骤数不依赖机器。\n\n数什么由你来选，而且要说明你选了什么。找最大的数时，可以数比较的次数；把列表加起来时，可以数加法的次数。选真正干活的那个动作，并且每次都用同样的方式去数。\n\n步骤数取决于输入规模，也就是数据的多少。对列表来说，输入规模记作 n，即项数。5 项的列表和 5000 项的列表步骤数不同。所以步骤数是一条规则：给它 n，它给出步骤的个数。\n\n步骤数还可能取决于你拿到的是哪一个规模为 n 的输入。以在列表中查找某个值为例。如果这个值是第一项，查找 1 步就停。如果它是最后一项，或者根本不在列表里，查找就要看遍每一项。最好情况是所有规模为 n 的输入中步骤最少的那个。最坏情况是步骤最多的那个。我们通常说最坏情况，因为它是一个保证：算法绝不会比这更慢。\n\n例子用到两个 Python 工具。函数是一组有名字的步骤，用 def 来创建。它的参数是它接收的输入。return 这个词交回一个答案，并立刻结束函数，即使正处在循环中间。计数器是一个变量，从 0 开始，每当你要数的事情发生一次，就给它加 1。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "step",
+      "zh": "步骤"
+     },
+     "meaning": {
+      "en": "One small action that you choose to count, such as one comparison.",
+      "zh": "你选来计数的一个小动作，例如一次比较。"
+     }
+    },
+    {
+     "term": {
+      "en": "input size (n)",
+      "zh": "输入规模（n）"
+     },
+     "meaning": {
+      "en": "How much data there is. For a list, n is the number of items.",
+      "zh": "数据有多少。对列表来说，n 是项数。"
+     }
+    },
+    {
+     "term": {
+      "en": "best case",
+      "zh": "最好情况"
+     },
+     "meaning": {
+      "en": "The fewest steps over all inputs of size n.",
+      "zh": "所有规模为 n 的输入中，步骤最少的情况。"
+     }
+    },
+    {
+     "term": {
+      "en": "worst case",
+      "zh": "最坏情况"
+     },
+     "meaning": {
+      "en": "The most steps over all inputs of size n. It is the promise that it never takes more.",
+      "zh": "所有规模为 n 的输入中，步骤最多的情况。它是“绝不会更多”的保证。"
+     }
+    },
+    {
+     "term": {
+      "en": "counter",
+      "zh": "计数器"
+     },
+     "meaning": {
+      "en": "A variable that starts at 0 and goes up by 1 each time the counted event happens.",
+      "zh": "从 0 开始的变量，每当被数的事件发生一次就加 1。"
+     }
+    },
+    {
+     "term": {
+      "en": "function",
+      "zh": "函数"
+     },
+     "meaning": {
+      "en": "A named group of steps. Parameters are its inputs; return hands back its answer.",
+      "zh": "一组有名字的步骤。参数是它的输入，return 交回它的答案。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def search_steps(items, target):\n    steps = 0\n    for item in items:\n        steps += 1\n        if item == target:\n            return steps\n    return steps\n\nprint(\"size first last missing\")\nfor size in [5, 10, 20]:\n    items = list(range(1, size + 1))\n    print(size, search_steps(items, 1), search_steps(items, size), search_steps(items, 0))\n",
+    "output": "size first last missing\n5 1 5 5\n10 1 10 10\n20 1 20 20\n",
+    "walk": {
+     "en": [
+      "def search_steps(items, target): starts a function with two parameters: the list to search and the value to look for. The indented lines below it are its body.",
+      "steps = 0 sets up the counter. steps += 1 means steps = steps + 1, so it adds one to the counter. It runs once for every item that gets looked at.",
+      "If the item equals the target, return steps hands back the count and ends the function at once. If the loop finishes without finding the target, the last line return steps hands back the count, which is now the length of the list.",
+      "range(1, size + 1) gives the whole numbers from 1 up to size. list(...) turns that into a list. For size 5 the list is [1, 2, 3, 4, 5].",
+      "Each row calls the function three times. Target 1 is the first item. Target size is the last item. Target 0 is not in the list at all.",
+      "Read the table. The first column of counts is always 1, whatever the size. The other two always equal the size. So the best case is 1 step and the worst case is n steps."
+     ],
+     "zh": [
+      "def search_steps(items, target): 开始定义一个函数，它有两个参数：要搜索的列表，和要找的值。下面缩进的行是它的主体。",
+      "steps = 0 建立计数器。steps += 1 的意思是 steps = steps + 1，也就是给计数器加一。每看一项就执行一次。",
+      "如果这一项等于目标，return steps 交回计数并立刻结束函数。如果循环走完都没有找到目标，最后一行 return steps 交回计数，此时它等于列表的长度。",
+      "range(1, size + 1) 给出从 1 到 size 的整数。list(...) 把它变成列表。size 为 5 时，列表是 [1, 2, 3, 4, 5]。",
+      "每一行调用函数三次。目标 1 是第一项。目标 size 是最后一项。目标 0 根本不在列表里。",
+      "读一读表格。第一列步骤数永远是 1，与规模无关。另外两列永远等于规模。所以最好情况是 1 步，最坏情况是 n 步。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "for item in items:\n    steps = 0\n    steps += 1",
+     "why": {
+      "en": "The counter is reset to 0 on every pass, so it always ends at 1. Set the counter once, before the loop starts, and only add to it inside the loop.",
+      "zh": "计数器每一轮都被重置为 0，所以最后总是 1。计数器要在循环开始之前设置一次，在循环里面只做加法。"
+     },
+     "right": "steps = 0\nfor item in items:\n    steps += 1"
+    },
+    {
+     "wrong": "if item == target:\n    steps += 1",
+     "why": {
+      "en": "This counts how many items match, not how many items were looked at. The question was how many steps the search takes, so every item that is examined must be counted, matching or not.",
+      "zh": "这样数的是有多少项匹配，而不是看了多少项。问题问的是查找要多少步，所以每一个被检查的项都要计数，不管匹配不匹配。"
+     },
+     "right": "steps += 1\nif item == target:\n    return steps"
+    },
+    {
+     "wrong": "search_steps([7, 2, 9], 7)   # gives 1, so \"a search always takes 1 step\"",
+     "why": {
+      "en": "One input shows only one case, here the best case. A claim about the worst case needs the worst input: the target last, or missing. Always try the best, the worst, and something in between.",
+      "zh": "一个输入只显示一种情况，这里是最好情况。要说最坏情况，就得用最坏的输入：目标在最后，或者根本不在。最好、最坏和中间的情况都要试一试。"
+     },
+     "right": "search_steps([7, 2, 9], 9)   # gives 3: try the last item and a missing value too"
+    },
+    {
+     "wrong": "for item in items:\n    steps += 1\n    if item == target:\n        return steps\n    return steps",
+     "why": {
+      "en": "The second return is indented as far as the if, so it sits inside the loop. The function ends after the first item whatever happens, and every search reports 1 step. The final return belongs after the loop, at the same indentation as the for line.",
+      "zh": "第二个 return 和 if 缩进一样深，所以在循环里面。无论发生什么，函数在第一项之后就结束，每次查找都报告 1 步。最后的 return 应该放在循环之后，和 for 那一行缩进相同。"
+     },
+     "right": "for item in items:\n    steps += 1\n    if item == target:\n        return steps\nreturn steps"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "How many steps does search_steps([4, 4, 4, 4], 4) take, and why?",
+      "zh": "search_steps([4, 4, 4, 4], 4) 要几步？为什么？"
+     },
+     "a": {
+      "en": "1 step. The first item already equals the target, so return runs at once. The other three items are never looked at.",
+      "zh": "1 步。第一项已经等于目标，所以 return 立刻执行。其余三项根本没有看。"
+     }
+    },
+    {
+     "q": {
+      "en": "A list has 1000 items. How many steps does the search take in the worst case? And a list of 2000 items?",
+      "zh": "一个列表有 1000 项。最坏情况下查找要几步？2000 项的列表呢？"
+     },
+     "a": {
+      "en": "1000 and 2000. The worst case is n steps, so doubling the list doubles the worst-case count.",
+      "zh": "1000 步和 2000 步。最坏情况是 n 步，所以列表加倍，最坏情况的步骤数也加倍。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a counter that counts how many numbers in [3, 8, 2, 9, 4] are greater than 5. What count do you expect?",
+      "zh": "写一个计数器，数出 [3, 8, 2, 9, 4] 中有多少个数大于 5。你预期结果是多少？"
+     },
+     "a": {
+      "en": "count = 0, then for n in numbers: if n > 5: count += 1. The expected count is 2, for 8 and 9. Here the addition belongs inside the if, because this time we do want to count only the matches.",
+      "zh": "count = 0，然后 for n in numbers: if n > 5: count += 1。预期结果是 2，对应 8 和 9。这一次加法放在 if 里面，因为这回我们要数的正是满足条件的项。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "growth-big-o",
+   "title": {
+    "en": "Growth and big-O",
+    "zh": "增长与大 O"
+   },
+   "goal": {
+    "en": "After this you can compare two step counts by how fast they grow, and read O(n) and O(n²) as statements about growth.",
+    "zh": "学完后你能按增长的快慢比较两个步骤数，并能把 O(n) 和 O(n²) 读成关于增长的陈述。"
+   },
+   "plain": {
+    "en": "Lesson 2 gave step counts such as n and 2n + 5. The question that matters is not the count for one n. It is what happens to the count when the input gets bigger. Growth means how fast the step count rises as n rises.\n\nTake two algorithms. Algorithm A takes 100 steps for each item, so 100n steps in all. Algorithm B takes n steps for each of n items, so n times n steps, written n². With 10 items, A needs 1000 steps and B needs only 100, so B looks better. With 100 items they tie at 10,000. With 1000 items A needs 100,000 and B needs 1,000,000. B is now ten times worse, and the gap keeps widening. Whatever fixed number you put in front of n, an n² algorithm eventually loses to an n algorithm.\n\nThat is why we ignore fixed multipliers and small extra terms, and keep only the part that grows fastest. The count 3n + 10 grows like n. The count n² + 5n + 7 grows like n². Big-O is the notation for this. Writing O(n) says: the step count is at most a fixed multiple of n, once n is big enough. For example, 3n + 10 is at most 4n whenever n is 10 or more. At n = 10 both are 40, and after that 4n is the bigger one. Here the fixed multiple is 4 and \"big enough\" means 10 or more.\n\nDoubling is the quickest way to read growth. If an algorithm is O(n), doubling n roughly doubles the steps. If it is O(n²), doubling n roughly quadruples them, because 2 times 2 is 4. If it is O(1), the steps do not change at all, like reading the first item of a list.\n\nA few more names. O(log n) grows very slowly. Think of the number of times you can halve n before you reach 1. For n = 1,000,000 that is only about 20, because 2 multiplied by itself 20 times is about a million. O(n log n) is a little more than n. O(2ⁿ) doubles with every extra item. The number 2 multiplied by itself 1000 times already has 302 digits. From slowest growth to fastest: O(1), O(log n), O(n), O(n log n), O(n²), O(2ⁿ).\n\nBig-O describes growth, not seconds, and not small inputs. For small n an algorithm with worse growth may be faster. Big-O tells you who wins when n is large.",
+    "zh": "第 2 课给出了 n、2n + 5 这样的步骤数。重要的问题不是某一个 n 的步骤数，而是输入变大时步骤数会怎样。增长指的是 n 上升时，步骤数上升得有多快。\n\n取两个算法。算法 A 每项用 100 步，所以一共 100n 步。算法 B 对 n 项中的每一项用 n 步，所以一共 n 乘 n 步，写作 n²。10 项时，A 要 1000 步，B 只要 100 步，B 看起来更好。100 项时两者打平，都是 10,000。1000 项时，A 要 100,000，B 要 1,000,000。这时 B 已经差了十倍，而且差距还在继续拉大。不管你在 n 前面放多大的固定数，n² 的算法最终都会输给 n 的算法。\n\n所以我们忽略固定的倍数和较小的附加项，只保留增长最快的那一部分。步骤数 3n + 10 的增长像 n，步骤数 n² + 5n + 7 的增长像 n²。大 O 就是用来记这个的记号。写 O(n) 的意思是：只要 n 足够大，步骤数至多是 n 的某个固定倍数。例如，只要 n 不小于 10，3n + 10 就不超过 4n。n = 10 时两者都是 40，之后 4n 更大。这里固定倍数是 4，“足够大”指不小于 10。\n\n要读懂增长，加倍是最快的办法。如果算法是 O(n)，n 加倍，步骤数大约加倍。如果是 O(n²)，n 加倍，步骤数大约变成四倍，因为 2 乘 2 是 4。如果是 O(1)，步骤数完全不变，比如读取列表的第一项。\n\n再认识几个名字。O(log n) 增长得非常慢。可以把它想成：n 可以对半分多少次才降到 1。n = 1,000,000 时只有大约 20 次，因为 20 个 2 相乘大约是一百万。O(n log n) 比 n 稍大一点。O(2ⁿ) 每多一项就翻一倍。1000 个 2 相乘已经有 302 位数字。增长从慢到快：O(1)、O(log n)、O(n)、O(n log n)、O(n²)、O(2ⁿ)。\n\n大 O 描述的是增长，不是秒数，也不是小的输入。n 很小时，增长更差的算法也可能更快。大 O 告诉你的是 n 很大时谁会赢。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "growth",
+      "zh": "增长"
+     },
+     "meaning": {
+      "en": "How fast the step count rises as n rises.",
+      "zh": "n 上升时，步骤数上升得有多快。"
+     }
+    },
+    {
+     "term": {
+      "en": "big-O, O(...)",
+      "zh": "大 O，O(...)"
+     },
+     "meaning": {
+      "en": "O(n) says the step count is at most a fixed multiple of n once n is big enough.",
+      "zh": "O(n) 表示只要 n 足够大，步骤数至多是 n 的某个固定倍数。"
+     }
+    },
+    {
+     "term": {
+      "en": "n squared (n²)",
+      "zh": "n 的平方（n²）"
+     },
+     "meaning": {
+      "en": "n times n. Doubling n makes it four times bigger.",
+      "zh": "n 乘 n。n 加倍，它变成四倍。"
+     }
+    },
+    {
+     "term": {
+      "en": "O(1)",
+      "zh": "O(1)"
+     },
+     "meaning": {
+      "en": "A fixed number of steps that does not depend on n.",
+      "zh": "步骤数固定，与 n 无关。"
+     }
+    },
+    {
+     "term": {
+      "en": "halving",
+      "zh": "对半分"
+     },
+     "meaning": {
+      "en": "Dividing by 2 again and again. The number of halvings before reaching 1 is about log n.",
+      "zh": "一次次除以 2。降到 1 之前对半分的次数约为 log n。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "print(\"n A=100*n B=n*n fewer-steps\")\nfor n in [10, 50, 100, 200, 1000]:\n    a = 100 * n\n    b = n * n\n    if a < b:\n        winner = \"A\"\n    elif a > b:\n        winner = \"B\"\n    else:\n        winner = \"tie\"\n    print(n, a, b, winner)\n\nprint(\"doubling n from 1000 to 2000:\")\nprint(\"A grows by a factor of\", (100 * 2000) // (100 * 1000))\nprint(\"B grows by a factor of\", (2000 * 2000) // (1000 * 1000))\n",
+    "output": "n A=100*n B=n*n fewer-steps\n10 1000 100 B\n50 5000 2500 B\n100 10000 10000 tie\n200 20000 40000 A\n1000 100000 1000000 A\ndoubling n from 1000 to 2000:\nA grows by a factor of 2\nB grows by a factor of 4\n",
+    "walk": {
+     "en": [
+      "a = 100 * n and b = n * n compute the step counts of algorithm A and algorithm B for the current n. The star * means multiply.",
+      "if, elif and else make a chain of questions. Python asks them in order and runs only the first one that is true. elif means \"else if\". Here the chain picks which count is smaller.",
+      "The table: at n = 10 and n = 50, B has fewer steps. At n = 100 they tie. From n = 200 on, A has fewer steps, and the gap grows. B wins only on small inputs.",
+      "The // sign divides and drops any fraction, so the result is a whole number. Dividing the new count by the old count shows the growth factor.",
+      "When n doubles from 1000 to 2000, A takes 2 times as many steps and B takes 4 times as many. That is the difference between O(n) and O(n²)."
+     ],
+     "zh": [
+      "a = 100 * n 和 b = n * n 算出当前 n 下算法 A 和算法 B 的步骤数。星号 * 表示乘。",
+      "if、elif 和 else 组成一串问题。Python 按顺序问，只执行第一个为真的分支。elif 的意思是“否则如果”。这里这串问题用来选出步骤数更少的一个。",
+      "看表：n = 10 和 n = 50 时，B 的步骤更少。n = 100 时打平。从 n = 200 起，A 的步骤更少，而且差距越来越大。B 只在输入很小时才占优。",
+      "符号 // 做除法并舍去小数部分，结果是整数。用新的步骤数除以旧的步骤数，就得到增长的倍数。",
+      "n 从 1000 加倍到 2000 时，A 的步骤数变成 2 倍，B 的步骤数变成 4 倍。这就是 O(n) 与 O(n²) 的区别。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "# steps = 3n + 10, so the algorithm is O(3n + 10)",
+     "why": {
+      "en": "Inside O( ) we keep only the part that grows fastest and drop its fixed multiplier. The count 3n + 10 is written O(n). A fixed multiplier such as 3 and a small extra term such as 10 do not change how the count grows.",
+      "zh": "在 O( ) 里，我们只保留增长最快的部分，并去掉它的固定倍数。步骤数 3n + 10 写成 O(n)。像 3 这样的固定倍数和像 10 这样较小的附加项，都不改变步骤数的增长方式。"
+     },
+     "right": "# steps = 3n + 10, so the algorithm is O(n)"
+    },
+    {
+     "wrong": "print(10 ^ 2)   # prints 8",
+     "why": {
+      "en": "In Python the ^ sign is not \"to the power of\". It combines the binary digits of two numbers, and for 10 and 2 the result is 8. Powers are written with two stars. This matters whenever you write n squared in code.",
+      "zh": "在 Python 里，^ 不是“乘方”。它按二进制位组合两个数，10 和 2 的结果是 8。乘方要用两个星号。每当你在代码里写 n 的平方时，这一点都很重要。"
+     },
+     "right": "print(10 ** 2)  # prints 100"
+    },
+    {
+     "wrong": "print(10 * 9 / 2)   # prints 45.0",
+     "why": {
+      "en": "A single / always gives a decimal number, even when the answer is whole. Step counts are whole numbers, so the output 45.0 looks wrong and can break later code that expects a whole number. Use // for whole-number division.",
+      "zh": "单个 / 总是给出小数，即使答案是整数。步骤数是整数，所以输出 45.0 看上去不对，还可能让后面需要整数的代码出错。整数除法用 //。"
+     },
+     "right": "print(10 * 9 // 2)  # prints 45"
+    },
+    {
+     "wrong": "# at n = 10: n*n is 100 and 100*n is 1000, so \"n*n is the faster one\"",
+     "why": {
+      "en": "One small n tells you nothing about growth. Compare at large n, or double n and watch the factor. At n = 1000, n*n is 1,000,000 and 100*n is only 100,000. Big-O is a statement about large n.",
+      "zh": "一个很小的 n 说明不了增长。要在很大的 n 上比较，或者把 n 加倍看倍数。n = 1000 时，n*n 是 1,000,000，而 100*n 只有 100,000。大 O 说的是 n 很大时的情况。"
+     },
+     "right": "# at n = 1000: n*n is 1000000 and 100*n is 100000, so 100*n wins for large n"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Write each step count in its simplest big-O form: (a) 5n + 20, (b) n² + 50n, (c) 7.",
+      "zh": "把下面每个步骤数写成最简的大 O 形式：(a) 5n + 20，(b) n² + 50n，(c) 7。"
+     },
+     "a": {
+      "en": "(a) O(n). (b) O(n²), because n² beats 50n once n is large. (c) O(1): a fixed count that does not depend on n.",
+      "zh": "(a) O(n)。(b) O(n²)，因为 n 很大时 n² 超过 50n。(c) O(1)：固定的步骤数，与 n 无关。"
+     }
+    },
+    {
+     "q": {
+      "en": "An algorithm takes n² steps. It takes 90,000 steps on a list of 300 items. About how many steps on 600 items?",
+      "zh": "一个算法用 n² 步。在 300 项的列表上用了 90,000 步。在 600 项上大约要多少步？"
+     },
+     "a": {
+      "en": "Doubling n makes n² four times bigger, so 4 times 90,000 is 360,000. Check: 600 times 600 is 360,000.",
+      "zh": "n 加倍，n² 变成四倍，所以是 4 乘 90,000，即 360,000。验证：600 乘 600 等于 360,000。"
+     }
+    },
+    {
+     "q": {
+      "en": "Use Python to compute 100*n and n*n at n = 99 and at n = 101. Which has fewer steps each time?",
+      "zh": "用 Python 在 n = 99 和 n = 101 时分别算出 100*n 和 n*n。每次谁的步骤更少？"
+     },
+     "a": {
+      "en": "At n = 99: 100*n is 9900 and n*n is 9801, so B has fewer. At n = 101: 100*n is 10100 and n*n is 10201, so A has fewer. The winner switches just after n = 100.",
+      "zh": "n = 99 时：100*n 是 9900，n*n 是 9801，B 更少。n = 101 时：100*n 是 10100，n*n 是 10201，A 更少。胜者恰好在 n = 100 之后换了人。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "recursion",
+   "title": {
+    "en": "Recursion from zero",
+    "zh": "从零开始学递归"
+   },
+   "goal": {
+    "en": "After this you can read and write a short recursive function, and say why it stops.",
+    "zh": "学完后你能读懂并写出简短的递归函数，并能说明它为什么会停下来。"
+   },
+   "plain": {
+    "en": "Recursion means a function solves a problem by calling itself on a smaller version of the same problem. A function that calls itself is called recursive.\n\nThink of counting the people standing behind you in a queue. You do not count them all yourself. You ask the person behind you, \"how many people are behind you?\" That person asks the next one, and so on. The last person in the queue says \"none\", which is 0. Then each person answers the one in front with \"my answer plus 1\". The answers travel back up the queue until you get yours.\n\nEvery recursive function needs two parts. The base case is a smallest problem that you can answer directly, with no further call. The recursive case solves a bigger problem by calling the function on a smaller one and then using that answer. If there is no base case, or if the call does not get smaller, the calls never stop.\n\nOur problem is to add up the numbers from 1 to n. Call the answer sum_to(n). The base case: sum_to(0) is 0, because there is nothing to add. The recursive case: sum_to(n) is n plus sum_to(n - 1). For example, sum_to(3) is 3 + sum_to(2), which is 3 + (2 + sum_to(1)), which is 3 + (2 + (1 + sum_to(0))). That is 3 + (2 + (1 + 0)), which is 6.\n\nHow do you trust that this works? Trust the smaller call. When you write the recursive case, assume sum_to(n - 1) already gives the right answer, and check that your line turns it into the right answer for n. Then check the base case. Lesson 6 turns this habit into a proof.\n\nPython keeps every call that is still waiting for an answer. In the example each call prints when it starts and when it finishes, so you can watch the waiting calls pile up and then finish in reverse order. Python allows about a thousand calls to wait at once. Beyond that it stops with a RecursionError. The number of calls for sum_to(n) is n + 1, so recursion has a step count too: this one is O(n).",
+    "zh": "递归的意思是：函数通过对同一个问题的更小版本调用自己来解决问题。会调用自己的函数叫递归函数。\n\n想想数一数队伍里排在你后面的人。你不会自己一个个数。你问身后的人：“你后面有几个人？”那个人再问他身后的人，如此下去。队伍最后的那个人说“没有”，也就是 0。然后每个人对前面的人回答“我的答案加 1”。答案一路传回队伍前面，直到你得到自己的答案。\n\n每个递归函数都需要两部分。基本情形是你能直接回答的最小问题，不需要再调用。递归情形是用函数去解决一个更小的问题，再用那个答案解决较大的问题。如果没有基本情形，或者调用的问题没有变小，调用就永远不会停。\n\n我们的问题是把 1 到 n 的数加起来。把答案叫作 sum_to(n)。基本情形：sum_to(0) 是 0，因为没有东西可加。递归情形：sum_to(n) 等于 n 加 sum_to(n - 1)。例如 sum_to(3) 是 3 + sum_to(2)，也就是 3 + (2 + sum_to(1))，也就是 3 + (2 + (1 + sum_to(0)))。这就是 3 + (2 + (1 + 0))，等于 6。\n\n怎么相信它是对的呢？相信更小的那次调用。写递归情形时，假设 sum_to(n - 1) 已经给出正确答案，再检查你的这一行能不能把它变成 n 的正确答案。然后检查基本情形。第 6 课会把这个习惯变成一个证明。\n\nPython 会记住每一个还在等待答案的调用。例子里每次调用在开始和结束时都会打印，所以你能看到等待中的调用一层层堆起来，再按相反的顺序结束。Python 允许大约一千个调用同时等待，超过就会以 RecursionError 停止。sum_to(n) 的调用次数是 n + 1，所以递归也有步骤数：这个函数是 O(n)。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "recursion",
+      "zh": "递归"
+     },
+     "meaning": {
+      "en": "A function solving a problem by calling itself on a smaller version of the problem.",
+      "zh": "函数通过对更小版本的同一问题调用自己来解决问题。"
+     }
+    },
+    {
+     "term": {
+      "en": "base case",
+      "zh": "基本情形"
+     },
+     "meaning": {
+      "en": "The smallest problem, answered directly with no further call.",
+      "zh": "最小的问题，直接回答，不再调用。"
+     }
+    },
+    {
+     "term": {
+      "en": "recursive case",
+      "zh": "递归情形"
+     },
+     "meaning": {
+      "en": "The part that calls the function on a smaller problem and uses the answer.",
+      "zh": "对更小的问题调用函数并使用其答案的那一部分。"
+     }
+    },
+    {
+     "term": {
+      "en": "call",
+      "zh": "调用"
+     },
+     "meaning": {
+      "en": "One use of a function. Each call has its own copy of the parameters.",
+      "zh": "函数的一次使用。每次调用都有自己那一份参数。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def sum_to(n):\n    print(\"start\", n)\n    if n == 0:\n        print(\"base case, return 0\")\n        return 0\n    answer = n + sum_to(n - 1)\n    print(\"finish\", n, \"answer\", answer)\n    return answer\n\nprint(sum_to(3))\n",
+    "output": "start 3\nstart 2\nstart 1\nstart 0\nbase case, return 0\nfinish 1 answer 1\nfinish 2 answer 3\nfinish 3 answer 6\n6\n",
+    "walk": {
+     "en": [
+      "def sum_to(n): defines the function. The first line of the body prints \"start\" and the value of n, so each call announces itself.",
+      "if n == 0: is the base case. It prints a message and returns 0 at once. No further call is made, so the chain of calls ends here.",
+      "answer = n + sum_to(n - 1) is the recursive case. The function calls itself with a smaller number, and the current call waits on this line until that smaller call returns.",
+      "The call then prints \"finish\", and return answer hands the result to whoever called it. Each call has its own n, so the calls do not mix up their values.",
+      "Read the output top to bottom. The four \"start\" lines go 3, 2, 1, 0: the calls pile up. Then the base case returns 0. The call for 1 finishes with 1 + 0 = 1, the call for 2 finishes with 2 + 1 = 3, the call for 3 finishes with 3 + 3 = 6.",
+      "The last line, 6, comes from the print outside the function: print(sum_to(3)) shows what the outermost call returned."
+     ],
+     "zh": [
+      "def sum_to(n): 定义函数。主体的第一行打印“start”和 n 的值，让每次调用都报上自己的名号。",
+      "if n == 0: 是基本情形。它打印一条消息，立刻返回 0。不再有后续调用，所以调用链到此为止。",
+      "answer = n + sum_to(n - 1) 是递归情形。函数用更小的数调用自己，当前这次调用停在这一行等待，直到那次更小的调用返回。",
+      "然后这次调用打印“finish”，return answer 把结果交给调用它的地方。每次调用都有自己的 n，所以各次调用不会混淆各自的值。",
+      "从上到下读输出。四行“start”依次是 3、2、1、0：调用一层层堆起来。然后基本情形返回 0。1 的调用以 1 + 0 = 1 结束，2 的调用以 2 + 1 = 3 结束，3 的调用以 3 + 3 = 6 结束。",
+      "最后一行 6 来自函数外面的 print：print(sum_to(3)) 显示的是最外层调用返回的结果。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "def sum_to(n):\n    return n + sum_to(n - 1)",
+     "why": {
+      "en": "There is no base case, so nothing ever stops the calls. Python waits for the thousandth call, then stops with RecursionError: maximum recursion depth exceeded. Every recursive function needs a case that returns without calling itself.",
+      "zh": "没有基本情形，所以没有任何东西能让调用停下。Python 等到第一千次调用，然后以 RecursionError: maximum recursion depth exceeded 停止。每个递归函数都需要一种不再调用自己就能返回的情形。"
+     },
+     "right": "def sum_to(n):\n    if n == 0:\n        return 0\n    return n + sum_to(n - 1)"
+    },
+    {
+     "wrong": "return n + sum_to(n)",
+     "why": {
+      "en": "The call uses the same n, so the problem never gets smaller. The base case is never reached and the result is the same RecursionError. The recursive call must move toward the base case.",
+      "zh": "这次调用用的是同一个 n，问题从未变小。基本情形永远到不了，结果还是同样的 RecursionError。递归调用必须朝基本情形靠近。"
+     },
+     "right": "return n + sum_to(n - 1)"
+    },
+    {
+     "wrong": "def sum_to(n):\n    if n == 0:\n        return 0\n    n + sum_to(n - 1)",
+     "why": {
+      "en": "The last line works out a number and throws it away, because there is no return. A function with no return gives back None. So sum_to(1) gives None instead of 1, and sum_to(2) stops with TypeError, because 2 + None is not allowed.",
+      "zh": "最后一行算出了一个数却把它丢掉了，因为没有 return。没有 return 的函数交回 None。所以 sum_to(1) 得到 None 而不是 1，sum_to(2) 则以 TypeError 停止，因为 2 + None 是不允许的。"
+     },
+     "right": "def sum_to(n):\n    if n == 0:\n        return 0\n    return n + sum_to(n - 1)"
+    },
+    {
+     "wrong": "if n == 0:\n    return 1",
+     "why": {
+      "en": "The base case must give the right answer for the smallest problem. The sum of no numbers is 0, not 1. With this line every answer is off by one: sum_to(3) comes out as 7 instead of 6. A wrong base case spoils every bigger answer built on it.",
+      "zh": "基本情形必须对最小的问题给出正确答案。没有数可加时和是 0，不是 1。有了这一行，每个答案都多了 1：sum_to(3) 得到 7，而不是 6。基本情形一错，建立在它之上的所有答案都会出错。"
+     },
+     "right": "if n == 0:\n    return 0"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Trace sum_to(2) by hand. Which calls happen, and what does each one return?",
+      "zh": "手动追踪 sum_to(2)。发生了哪些调用，每个调用返回什么？"
+     },
+     "a": {
+      "en": "sum_to(2) calls sum_to(1), which calls sum_to(0). sum_to(0) returns 0. sum_to(1) returns 1 + 0 = 1. sum_to(2) returns 2 + 1 = 3.",
+      "zh": "sum_to(2) 调用 sum_to(1)，sum_to(1) 调用 sum_to(0)。sum_to(0) 返回 0。sum_to(1) 返回 1 + 0 = 1。sum_to(2) 返回 2 + 1 = 3。"
+     }
+    },
+    {
+     "q": {
+      "en": "Write a recursive function factorial(n) that multiplies 1 * 2 * ... * n, with factorial(0) equal to 1. What is factorial(5)?",
+      "zh": "写一个递归函数 factorial(n)，计算 1 * 2 * ... * n，并且 factorial(0) 等于 1。factorial(5) 是多少？"
+     },
+     "a": {
+      "en": "def factorial(n): if n == 0: return 1, then return n * factorial(n - 1). The answer for factorial(5) is 120. The base case returns 1, not 0, because multiplying by 0 would turn every answer into 0.",
+      "zh": "def factorial(n): 先写 if n == 0: return 1，然后 return n * factorial(n - 1)。factorial(5) 的答案是 120。基本情形返回 1 而不是 0，因为乘以 0 会让所有答案都变成 0。"
+     }
+    },
+    {
+     "q": {
+      "en": "What happens if you call sum_to(-1)? Why?",
+      "zh": "调用 sum_to(-1) 会怎样？为什么？"
+     },
+     "a": {
+      "en": "The calls go to -2, -3, and so on, and n never equals 0. They never stop, so Python ends with a RecursionError. The function is only meant for n of 0 or more, and the specification should say so.",
+      "zh": "调用会变成 -2、-3，如此下去，n 永远不等于 0。调用不会停，所以 Python 以 RecursionError 结束。这个函数只适用于 n 不小于 0 的情况，规格说明应当写明这一点。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "loop-invariant",
+   "title": {
+    "en": "Proving a loop works with an invariant",
+    "zh": "用不变量说明循环是对的"
+   },
+   "goal": {
+    "en": "After this you can state a loop invariant in words and use three questions to argue that a loop gives the right answer.",
+    "zh": "学完后你能用文字写出循环不变量，并用三个问题论证一个循环给出正确答案。"
+   },
+   "plain": {
+    "en": "Running an algorithm on a few inputs and seeing the right answers is testing. Testing can show that a bug exists. It can never show that there is none, because there are too many possible inputs. To be sure an algorithm is correct for every input you need an argument. For loops, the standard argument uses a loop invariant.\n\nA loop invariant is a sentence about the variables that is true at the start of every pass through the loop. \"Invariant\" means \"does not change\": the variables change, but the sentence stays true. For finding the largest number, the invariant is: largest is the biggest of the first i numbers that have been looked at.\n\nThree questions turn an invariant into an argument. Start: is the sentence true before the first pass? Keep: if it is true before a pass, is it still true after that pass? End: when the loop stops, does the sentence give the answer we want? If all three answers are yes, the loop is correct. It works like a staircase. The first step is solid (start), each step leads to the next (keep), and at the top you read off the answer (end).\n\nThere is a fourth question that is easy to forget: does the loop stop at all? A loop that never stops gives no answer, however good its invariant. A loop over a list stops because every pass moves on by one item and the list is finite.\n\nThe example writes the invariant as an assert. An assert line checks a claim. If the claim is true nothing happens. If it is false, Python stops with an AssertionError. Checking an assert on one input is still testing, not a proof. The proof is the three questions answered in words. The assert helps because it catches a wrong invariant early. Two notes about the code: numbers[:i] means the first i items of the list, and max(...) means the biggest item. The check uses max only to test our own steps.",
+    "zh": "在几个输入上运行算法并看到答案正确，这是测试。测试能证明错误存在，却永远证明不了没有错误，因为可能的输入太多了。要确信一个算法对每个输入都正确，你需要一个论证。对循环来说，标准的论证用的是循环不变量。\n\n循环不变量是关于变量的一句话，在循环每一轮开始时都为真。“不变量”的意思是“不会变的东西”：变量在变，这句话始终为真。对找最大数来说，不变量是：largest 是已经看过的前 i 个数中最大的。\n\n三个问题把不变量变成论证。开始：在第一轮之前，这句话为真吗？保持：如果某一轮之前它为真，这一轮之后它还为真吗？结束：循环停下时，这句话给出了我们想要的答案吗？如果三个回答都是“是”，循环就是正确的。这像一段楼梯：第一级是实的（开始），每一级通向下一级（保持），到了顶上就读出答案（结束）。\n\n还有第四个很容易忘记的问题：循环到底会不会停？永不停止的循环没有答案，不管它的不变量多漂亮。对列表的循环会停，因为每一轮都前进一项，而列表是有限的。\n\n例子把不变量写成了 assert。assert 这一行检查一个断言。断言为真时什么也不发生；为假时，Python 以 AssertionError 停止。在一个输入上检查 assert 仍然是测试，不是证明。证明是用文字回答的那三个问题。assert 的好处是能及早发现错误的不变量。关于代码的两点说明：numbers[:i] 表示列表的前 i 项，max(...) 表示其中最大的一项。这里用 max 只是为了检验我们自己写的步骤。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "loop invariant",
+      "zh": "循环不变量"
+     },
+     "meaning": {
+      "en": "A sentence about the variables that is true at the start of every pass of the loop.",
+      "zh": "关于变量的一句话，在循环每一轮开始时都为真。"
+     }
+    },
+    {
+     "term": {
+      "en": "assert",
+      "zh": "assert（断言）"
+     },
+     "meaning": {
+      "en": "A line that checks a claim and stops with AssertionError if the claim is false.",
+      "zh": "检查一个断言的语句；断言为假时以 AssertionError 停止。"
+     }
+    },
+    {
+     "term": {
+      "en": "while loop",
+      "zh": "while 循环"
+     },
+     "meaning": {
+      "en": "A loop that repeats as long as its condition is true.",
+      "zh": "只要条件为真就重复的循环。"
+     }
+    },
+    {
+     "term": {
+      "en": "correct",
+      "zh": "正确"
+     },
+     "meaning": {
+      "en": "Gives an answer that meets the specification for every allowed input, not just the inputs tried.",
+      "zh": "对每一个允许的输入都给出符合规格说明的答案，而不只是对试过的输入。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "numbers = [3, 8, 2, 9, 4]\nlargest = numbers[0]\ni = 1\nwhile i < len(numbers):\n    assert largest == max(numbers[:i])\n    if numbers[i] > largest:\n        largest = numbers[i]\n    i = i + 1\n    print(\"after pass: i =\", i, \"largest =\", largest)\nassert largest == max(numbers[:i])\nprint(\"answer:\", largest)\n",
+    "output": "after pass: i = 2 largest = 8\nafter pass: i = 3 largest = 8\nafter pass: i = 4 largest = 9\nafter pass: i = 5 largest = 9\nanswer: 9\n",
+    "walk": {
+     "en": [
+      "i = 1 says that one number, numbers[0], has been looked at. while i < len(numbers): repeats the body as long as the condition is true. len(numbers) is the number of items, 5.",
+      "The invariant, written as an assert: largest is the biggest of numbers[:i], the first i items. The assert sits at the top of the body, so it checks the invariant at the start of every pass.",
+      "Start: before the first pass i is 1 and largest is numbers[0], which is the biggest of a list of one number. The sentence is true.",
+      "Keep: the if line compares the next number, numbers[i], with largest, so largest becomes the biggest of the first i + 1 numbers. Then i = i + 1 moves i up by one, and the sentence is true again for the new i.",
+      "End: i grows by 1 each pass, so it reaches 5 and the loop stops. With i = 5 the sentence says largest is the biggest of all five numbers, which is the answer. The assert after the loop checks it.",
+      "The output shows the sentence staying true as the variables change: for example after the first pass, i is 2 and largest is 8, the biggest of 3 and 8."
+     ],
+     "zh": [
+      "i = 1 表示已经看过一个数，即 numbers[0]。while i < len(numbers): 只要条件为真就重复主体。len(numbers) 是项数，这里是 5。",
+      "不变量写成了 assert：largest 是 numbers[:i]，即前 i 项中最大的。这个 assert 位于主体的开头，所以每一轮开始时都会检查不变量。",
+      "开始：第一轮之前 i 是 1，largest 是 numbers[0]，它是只有一个数的列表里最大的。这句话为真。",
+      "保持：if 这一行把下一个数 numbers[i] 与 largest 比较，于是 largest 成为前 i + 1 个数中最大的。然后 i = i + 1 让 i 加一，对新的 i 这句话又为真。",
+      "结束：i 每轮加 1，所以会到 5，循环就停了。i = 5 时这句话说 largest 是全部五个数中最大的，这正是答案。循环之后的 assert 检查了这一点。",
+      "输出显示变量在变化的同时，这句话始终为真：例如第一轮之后 i 是 2，largest 是 8，即 3 和 8 中较大的。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "# invariant: largest is one of the numbers in the list",
+     "why": {
+      "en": "This sentence is true all the time, but it is too weak. When the loop ends it only says largest is some number from the list, which does not say it is the biggest. A useful invariant must give the answer at the end.",
+      "zh": "这句话始终为真，但太弱了。循环结束时，它只说明 largest 是列表里的某个数，并没有说它是最大的。有用的不变量必须在结束时给出答案。"
+     },
+     "right": "# invariant: largest is the biggest of the first i numbers"
+    },
+    {
+     "wrong": "while i < len(numbers):\n    if numbers[i] > largest:\n        largest = numbers[i]",
+     "why": {
+      "en": "Nothing changes i, so the condition stays true and the loop never stops. On this page the run is stopped after 8 seconds. An invariant proves nothing about a loop that does not end, so always check that something moves the loop toward its end.",
+      "zh": "没有任何语句改变 i，所以条件一直为真，循环永远不会停。在这个页面上，运行 8 秒后会被强行停止。对一个不结束的循环，不变量什么也证明不了，所以一定要检查有东西把循环推向结束。"
+     },
+     "right": "while i < len(numbers):\n    if numbers[i] > largest:\n        largest = numbers[i]\n    i = i + 1"
+    },
+    {
+     "wrong": "    if numbers[i] > largest:\n        largest = numbers[i]\n    assert largest == max(numbers[:i])\n    i = i + 1",
+     "why": {
+      "en": "The invariant is only promised at the start of a pass and after the last pass. In the middle of a pass it can be false. Here largest has already looked at numbers[i], but i has not moved yet, so with [3, 8, ...] the assert sees 8 against max([3]) and stops with AssertionError.",
+      "zh": "不变量只保证在一轮开始时和最后一轮之后成立。在一轮的中间，它可能为假。这里 largest 已经看过 numbers[i]，但 i 还没有前进，所以对 [3, 8, ...]，assert 拿 8 去比 max([3])，于是以 AssertionError 停止。"
+     },
+     "right": "    assert largest == max(numbers[:i])\n    if numbers[i] > largest:\n        largest = numbers[i]\n    i = i + 1"
+    },
+    {
+     "wrong": "largest = 0\ni = 1",
+     "why": {
+      "en": "This fails the start question. For numbers = [-5, -2, -9] the sentence says largest is the biggest of the first 1 number, which is -5, but largest is 0. The first assert stops with AssertionError. Begin from numbers[0], so the sentence is true before the first pass.",
+      "zh": "这通不过“开始”这个问题。对 numbers = [-5, -2, -9]，这句话说 largest 是前 1 个数中最大的，也就是 -5，但 largest 是 0。第一个 assert 就以 AssertionError 停止。应当从 numbers[0] 开始，这样第一轮之前这句话就为真。"
+     },
+     "right": "largest = numbers[0]\ni = 1"
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Write the invariant in words for: total = 0, then for x in numbers: total = total + x. Use \"after k passes\".",
+      "zh": "用文字写出下面这段代码的不变量：total = 0，然后 for x in numbers: total = total + x。请用“k 轮之后”开头。"
+     },
+     "a": {
+      "en": "After k passes, total is the sum of the first k numbers. Start: after 0 passes total is 0, the sum of no numbers. Keep: adding the next number gives the sum of the first k + 1. End: after all passes, total is the sum of all the numbers.",
+      "zh": "k 轮之后，total 等于前 k 个数的和。开始：0 轮之后 total 是 0，即没有数的和。保持：加上下一个数，就得到前 k + 1 个数的和。结束：所有轮结束后，total 是全部数的和。"
+     }
+    },
+    {
+     "q": {
+      "en": "A loop starts with i = 0 and total = 0 and repeats while i < 4: total = total + i, then i = i + 1. State an invariant, and say what total is when the loop stops.",
+      "zh": "一个循环从 i = 0、total = 0 开始，当 i < 4 时重复：total = total + i，然后 i = i + 1。写出一个不变量，并说出循环停止时 total 是多少。"
+     },
+     "a": {
+      "en": "Invariant: total is 0 + 1 + ... + (i - 1), the sum of the whole numbers below i. The loop stops when i is 4, and then total is 0 + 1 + 2 + 3 = 6.",
+      "zh": "不变量：total 等于 0 + 1 + ... + (i - 1)，即小于 i 的所有整数之和。i 等于 4 时循环停止，此时 total 是 0 + 1 + 2 + 3 = 6。"
+     }
+    },
+    {
+     "q": {
+      "en": "A friend says: \"I ran it on 100 lists and every answer was right, so it is correct.\" Why is that not enough?",
+      "zh": "朋友说：“我在 100 个列表上运行过，答案全对，所以它是正确的。”为什么这还不够？"
+     },
+     "a": {
+      "en": "Testing checks only the inputs you tried. The argument covers every input. The bug may sit in a list nobody tried, such as one with only negative numbers, which is exactly what starting with largest = 0 gets wrong.",
+      "zh": "测试只检查你试过的输入，而论证覆盖每一个输入。错误可能藏在没人试过的列表里，比如只有负数的列表，而这正是从 largest = 0 开始会出错的地方。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "induction",
+   "title": {
+    "en": "Proof by induction from zero",
+    "zh": "从零开始学数学归纳法"
+   },
+   "goal": {
+    "en": "After this you can prove a claim about every whole number n by checking a base case and a step.",
+    "zh": "学完后你能通过验证基本情形和归纳步骤，证明关于每一个整数 n 的命题。"
+   },
+   "plain": {
+    "en": "Some claims are about every whole number: 0, 1, 2, 3, and so on for ever. Testing can check only some of them. Induction proves all of them with two checks. The picture is a long row of dominoes. If you can show that the first domino falls, and that every domino that falls knocks over the next one, then every domino falls.\n\nWrite P(n) for the claim about the number n. For example, P(n) might say \"1 + 2 + ... + n equals n(n + 1)/2\". An induction has two parts. The base case: show that P(0) is true, or P for the smallest n you care about. The inductive step: take any whole number k, assume P(k) is true, and show that P(k + 1) is true. The assumption \"P(k) is true\" is called the inductive hypothesis.\n\nDo not worry that you are assuming something that looks like the thing to prove. You assume the claim for one number k only, and use it to reach the next number, k + 1. That is the domino again: a domino can only fall if the one before it has fallen.\n\nHere is the example. Claim: 1 + 2 + ... + n = n(n + 1)/2. Base case, n = 0: the left side is 0, because it adds nothing, and the right side is 0 times 1 divided by 2, which is 0. They match. Step: assume 1 + ... + k = k(k + 1)/2. Then 1 + ... + k + (k + 1) = k(k + 1)/2 + (k + 1). Taking out the common factor k + 1 gives (k + 1)(k/2 + 1), which is (k + 1)(k + 2)/2. That is exactly the formula for k + 1. So the claim holds for every n.\n\nRecursion and induction have the same shape. The function sum_to from lesson 4 has a base case and a step that uses the smaller answer. Induction is the proof that such a function gives the right answer. The base case of the proof matches the base case of the function, and the inductive hypothesis is the habit of trusting the smaller call.\n\nThe Python example checks the base case and 100 steps by brute force, which means trying every case in a small range. That is a sanity check, not the proof. The proof is the algebra above, which covers every k at once.",
+    "zh": "有些命题是关于每一个整数的：0、1、2、3，永远数下去。测试只能检查其中一部分。归纳法用两次检查就能证明全部。可以想象一长排多米诺骨牌。如果你能说明第一块会倒，并且每一块倒下时都会推倒下一块，那么每一块都会倒。\n\n用 P(n) 表示关于数 n 的命题。例如 P(n) 可以是“1 + 2 + ... + n 等于 n(n + 1)/2”。归纳法有两部分。基本情形：说明 P(0) 成立，或者说明你关心的最小 n 对应的 P 成立。归纳步骤：任取一个整数 k，假设 P(k) 成立，再说明 P(k + 1) 成立。“P(k) 成立”这个假设叫作归纳假设。\n\n不必担心你假设的东西看起来像要证明的东西。你只对一个数 k 假设命题成立，再用它推到下一个数 k + 1。这又是多米诺：一块骨牌只有在前一块倒下之后才会倒。\n\n下面是例子。命题：1 + 2 + ... + n = n(n + 1)/2。基本情形，n = 0：左边是 0，因为什么也没加；右边是 0 乘 1 再除以 2，也是 0。两边一致。归纳步骤：假设 1 + ... + k = k(k + 1)/2。那么 1 + ... + k + (k + 1) = k(k + 1)/2 + (k + 1)。提出公因数 k + 1，得到 (k + 1)(k/2 + 1)，也就是 (k + 1)(k + 2)/2。这正是 k + 1 对应的公式。所以命题对每一个 n 都成立。\n\n递归和归纳的结构相同。第 4 课的函数 sum_to 有一个基本情形，和一个用到更小答案的步骤。归纳法就是证明这样的函数给出正确答案的方法。证明里的基本情形对应函数的基本情形，归纳假设就是“相信更小的那次调用”这个习惯。\n\nPython 例子用暴力检查的办法验证了基本情形和 100 个归纳步骤，暴力检查就是把一个小范围里的情形全试一遍。这是合理性检查，不是证明。证明是上面的代数，它一次覆盖了所有的 k。"
+   },
+   "terms": [
+    {
+     "term": {
+      "en": "induction",
+      "zh": "数学归纳法"
+     },
+     "meaning": {
+      "en": "A proof that a claim holds for every whole number, using a base case and a step.",
+      "zh": "用基本情形和归纳步骤，证明命题对每一个整数都成立的方法。"
+     }
+    },
+    {
+     "term": {
+      "en": "base case",
+      "zh": "基本情形"
+     },
+     "meaning": {
+      "en": "Showing the claim for the smallest number, usually 0 or 1.",
+      "zh": "证明命题对最小的数成立，通常是 0 或 1。"
+     }
+    },
+    {
+     "term": {
+      "en": "inductive step",
+      "zh": "归纳步骤"
+     },
+     "meaning": {
+      "en": "Showing that if the claim holds for k, it holds for k + 1.",
+      "zh": "证明如果命题对 k 成立，则对 k + 1 也成立。"
+     }
+    },
+    {
+     "term": {
+      "en": "inductive hypothesis",
+      "zh": "归纳假设"
+     },
+     "meaning": {
+      "en": "The assumption, inside the step, that the claim holds for k.",
+      "zh": "在归纳步骤中假设命题对 k 成立。"
+     }
+    },
+    {
+     "term": {
+      "en": "brute force",
+      "zh": "暴力检查"
+     },
+     "meaning": {
+      "en": "Trying every case in a small range. It can find a counterexample but cannot prove a claim for all n.",
+      "zh": "把一个小范围里的情形全部试一遍。它能找到反例，却不能证明对所有 n 成立。"
+     }
+    }
+   ],
+   "example": {
+    "language": "python",
+    "code": "def sum_to(n):\n    if n == 0:\n        return 0\n    return n + sum_to(n - 1)\n\nfor n in range(5):\n    print(n, sum_to(n), n * (n + 1) // 2)\n\n# Base case: n = 0\nassert sum_to(0) == 0 * (0 + 1) // 2\n\n# Step: if the formula holds for k, it holds for k + 1.\nfor k in range(100):\n    formula_k = k * (k + 1) // 2\n    assert formula_k + (k + 1) == (k + 1) * (k + 2) // 2\nprint(\"base case and 100 steps checked\")\n",
+    "output": "0 0 0\n1 1 1\n2 3 3\n3 6 6\n4 10 10\nbase case and 100 steps checked\n",
+    "walk": {
+     "en": [
+      "sum_to is the recursive function from lesson 4. The first loop prints n, the value sum_to(n) computes, and the value of the formula n(n + 1)/2. range(5) gives 0, 1, 2, 3, 4. The last two columns agree on every row.",
+      "Lines that start with # are comments. Python ignores them, and they are there for people. The assert under \"# Base case\" checks that the claim holds at n = 0. Both sides are 0.",
+      "The second loop does the inductive step with numbers. For each k from 0 to 99 it takes the formula value for k, adds the next number k + 1, and checks that the result equals the formula value for k + 1.",
+      "If any assert failed, Python would stop with AssertionError. Since none does, the program prints the last line.",
+      "Notice what this does not do. It checks 100 values of k. The algebra in the explanation covers all of them at once, and that difference is the point of a proof."
+     ],
+     "zh": [
+      "sum_to 就是第 4 课的递归函数。第一个循环打印 n、sum_to(n) 算出的值，以及公式 n(n + 1)/2 的值。range(5) 给出 0、1、2、3、4。后两列在每一行都一致。",
+      "以 # 开头的行是注释。Python 会忽略它们，它们是写给人看的。“# Base case”下面的 assert 检查命题在 n = 0 时成立，两边都是 0。",
+      "第二个循环用具体的数做归纳步骤。对 0 到 99 的每个 k，它取 k 对应的公式值，加上下一个数 k + 1，再检查结果是否等于 k + 1 对应的公式值。",
+      "如果有任何一个 assert 失败，Python 会以 AssertionError 停止。因为没有失败，程序打印了最后一行。",
+      "注意它没有做什么：它只检查了 100 个 k 的值。而讲解里的代数一次覆盖了所有的 k，这个差别正是证明的意义所在。"
+     ]
+    }
+   },
+   "mistakes": [
+    {
+     "wrong": "# Claim: n*n + n is odd for every n.\n# Step: if k*k + k is odd, then adding 2*(k+1) keeps it odd.   (true)\n# So the claim holds for every n.",
+     "why": {
+      "en": "The step is correct, but the base case was never checked. At n = 0 the value is 0, which is even, so the claim is false. In fact n*n + n is even for every n. A step with no base case is a row of dominoes where nobody pushed the first one.",
+      "zh": "步骤本身是对的，但基本情形从来没有检查。n = 0 时值是 0，是偶数，所以命题是假的。实际上 n*n + n 对每个 n 都是偶数。只有步骤没有基本情形，就像一排多米诺骨牌，却没有人推第一块。"
+     },
+     "right": "print(0 * 0 + 0)   # 0 is even, so the claim fails at n = 0"
+    },
+    {
+     "wrong": "# n*n + n + 41 is prime for n = 0, 1, 2, ..., 39\n# so it is prime for every n",
+     "why": {
+      "en": "Many successful checks are not a proof. This formula really does give a prime for each n from 0 to 39, and then fails: at n = 40 it gives 1681, which is 41 times 41. Only the step argument covers every n. A test can disprove a claim, but it cannot prove one.",
+      "zh": "许多次检查成功并不是证明。这个公式对 0 到 39 的每个 n 确实都给出质数，然后就失败了：n = 40 时得到 1681，等于 41 乘 41。只有归纳步骤的论证才覆盖每一个 n。测试能推翻一个命题，却不能证明一个命题。"
+     },
+     "right": "print(40 * 40 + 40 + 41, 41 * 41)   # 1681 1681"
+    },
+    {
+     "wrong": "Assume P(k + 1). Then P(k + 1) is true.",
+     "why": {
+      "en": "This assumes the very thing the step must show, so it proves nothing. The inductive hypothesis is about k, the number before. The step must start from P(k) and arrive at P(k + 1) using real reasoning, such as the algebra above.",
+      "zh": "这里假设了归纳步骤本该证明的东西，所以什么也没证明。归纳假设说的是前一个数 k。归纳步骤必须从 P(k) 出发，通过真正的推理（比如上面的代数）到达 P(k + 1)。"
+     },
+     "right": "Assume P(k). Show P(k + 1), using the assumption."
+    }
+   ],
+   "check": [
+    {
+     "q": {
+      "en": "Prove by induction that 1 + 3 + 5 + ... + (2n - 1) = n² for n = 1, 2, 3, ...",
+      "zh": "用归纳法证明：对 n = 1, 2, 3, ...，1 + 3 + 5 + ... + (2n - 1) = n²。"
+     },
+     "a": {
+      "en": "Base case n = 1: the left side is 1 and the right side is 1². Step: assume the sum of the first k odd numbers is k². The next odd number is 2(k + 1) - 1 = 2k + 1. Then k² + 2k + 1 = (k + 1)², which is the claim for k + 1. So it holds for every n.",
+      "zh": "基本情形 n = 1：左边是 1，右边是 1²。归纳步骤：假设前 k 个奇数之和是 k²。下一个奇数是 2(k + 1) - 1 = 2k + 1。于是 k² + 2k + 1 = (k + 1)²，这就是 k + 1 对应的命题。所以对每个 n 都成立。"
+     }
+    },
+    {
+     "q": {
+      "en": "In the domino picture, what do the base case and the inductive step stand for?",
+      "zh": "在多米诺骨牌的比喻里，基本情形和归纳步骤分别对应什么？"
+     },
+     "a": {
+      "en": "The base case is the first domino falling. The inductive step is \"if one domino falls, it knocks over the next one\". You need both: without the first push nothing falls, and without the step the fall stops.",
+      "zh": "基本情形是第一块骨牌倒下。归纳步骤是“一块骨牌倒下，就会推倒下一块”。两者缺一不可：没有第一下推动，什么也不会倒；没有步骤，倒下的过程会中断。"
+     }
+    },
+    {
+     "q": {
+      "en": "A friend ran a Python loop for n = 1 to 1,000,000, the claim held every time, and says \"that is proof by induction\". What is wrong?",
+      "zh": "朋友用 Python 循环检查了 n = 1 到 1,000,000，命题每次都成立，他说“这就是归纳法证明”。错在哪里？"
+     },
+     "a": {
+      "en": "That is brute force, which is testing. Induction needs a base case and an argument for the step that works for any k. The prime-looking formula in the mistakes above passes 40 checks and then fails, so a long run of successes proves nothing about the next case.",
+      "zh": "那是暴力检查，也就是测试。归纳法需要基本情形，以及一个对任意 k 都有效的归纳步骤论证。上面“常见错误”里那个看起来总是质数的公式通过了 40 次检查后就失败了，所以一长串成功并不能说明下一个情形也成立。"
+     }
+    }
+   ]
+  }
+ ],
+ "next": {
+  "text": {
+   "en": "Read the Algorithm Design and Analysis (COMP2123) course notes. They start with exactly these ideas, then move on to lists, trees, sorting, hashing and graphs.",
+   "zh": "接着阅读《算法设计与分析》（COMP2123）课程笔记。它从这里讲的几个想法开始，再讲到列表、树、排序、散列和图。"
+  },
+  "href": "courses/comp2123.html",
+  "hrefZh": "courses/comp2123.zh.html"
+ }
+}
