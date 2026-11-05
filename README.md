@@ -1,4 +1,4 @@
-<!-- Edited by hand. The README template in scripts/build_profile.py is older: do not regenerate this file from it. -->
+<!-- Edited by hand, except the Projects table: scripts/build_readme.py writes it from the homepage project list. The template in scripts/build_profile.py is older: do not regenerate this file from it. -->
 <a href="https://leon1111-wgl.github.io/leon1111-wgl/"><img src="site/assets/profile-banner-motion.svg" width="100%" alt="Leon Wang — spatial intelligence, long-video understanding and grounding, embodied AI, enterprise AI agents. Click to enter my website." /></a>
 
 <p align="center">
@@ -6,6 +6,7 @@
   <a href="#background">Background</a> &nbsp;·&nbsp;
   <a href="#教程--tutorials">Tutorials</a> &nbsp;·&nbsp;
   <a href="#projects">Projects</a> &nbsp;·&nbsp;
+  <a href="https://doi.org/10.1609/aaai.v40i13.38031">Paper</a> &nbsp;·&nbsp;
   <a href="mailto:zetongw6@gmail.com">Contact</a>
 </p>
 
@@ -27,6 +28,9 @@
 
 <sub>关键词 · Keywords：Python 零基础教程 · Java 面向对象 · C 语言与系统编程 · 算法与数据结构 · 计算理论 · 机器学习 · 深度学习 · 计算机视觉 · 多模态 · 中英双语 · free bilingual programming and AI tutorials with runnable code</sub>
 
+<details>
+<summary><b>全部课程 · All courses</b>：每门课的直达链接、英文版和速查表</summary>
+
 | | | |
 | :--- | :--- | :--- |
 | `INFO1110` | **[Python 零基础实操](https://leon1111-wgl.github.io/leon1111-wgl/python-zero-to-practice/index.html)**<br>19 个单元、105 个可运行示例、114 道练习、4 个小项目 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/python) |
@@ -37,19 +41,66 @@
 | `COMP3308` | **[人工智能：搜索、推理与学习](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp3308.zh.html)**<br>24 章：搜索、博弈、神经网络、概率推理与聚类 | [课程详情 · 学习中心](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/course/comp3308)&nbsp;·&nbsp;[English edition](https://leon1111-wgl.github.io/leon1111-wgl/courses/comp3308.html)&nbsp;·&nbsp;[COMP3308 速查表 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/COMP3308-cheatsheet.pdf) |
 | `AI` | **[AI 学习路线](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/route)**<br>入门 8 讲；机器学习、深度学习、计算机视觉、多模态各 16 讲 | [AI 入门 8 讲](https://leon1111-wgl.github.io/leon1111-wgl/ai/start.zh.html) · [机器学习](https://leon1111-wgl.github.io/leon1111-wgl/ai/ml.zh.html) · [深度学习](https://leon1111-wgl.github.io/leon1111-wgl/ai/dl.zh.html) · [计算机视觉](https://leon1111-wgl.github.io/leon1111-wgl/ai/vision.zh.html) · [多模态](https://leon1111-wgl.github.io/leon1111-wgl/ai/multimodal.zh.html) |
 
+</details>
+
 <sub>[进入学习中心 ↗](https://leon1111-wgl.github.io/leon1111-wgl/learn/)&nbsp;·&nbsp;[学习路线](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/route)&nbsp;·&nbsp;[速查表合集 PDF](https://leon1111-wgl.github.io/leon1111-wgl/downloads/guoliang-cheatsheet-collection.pdf)</sub>
 
 ## Projects
 
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | | | |
-| :---: | :--- | :--- | :--- |
-| <img src="site/assets/icons/loopdesk.svg" width="20" height="20" align="absmiddle" alt="" /> | **LoopDesk** | 企业客服助手：能查订单、办退款，关键操作先等人工确认，每句回答都有依据 | [Demo](https://leon1111-wgl.github.io/loopdesk/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/loopdesk) |
-| <img src="site/assets/icons/proofbi.svg" width="20" height="20" align="absmiddle" alt="" /> | **ProofBI** | 用大白话问数据，自动查数出表，每个数字都能追到来源 | [Demo](https://leon1111-wgl.github.io/proofbi/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/proofbi) |
-| <img src="site/assets/icons/adproof.svg" width="20" height="20" align="absmiddle" alt="" /> | **AdProof** | 检查广告文案是否违规，标出问题句和对应法规，并给出改写建议 | [Demo](https://leon1111-wgl.github.io/adproof/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/adproof) |
-| <img src="site/assets/icons/creditlens.svg" width="20" height="20" align="absmiddle" alt="" /> | **CreditLens** | 读财报和图表，核对关键数字，点一下就跳回原文出处 | [Demo](https://leon1111-wgl.github.io/creditlens/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/creditlens) |
-| <img src="site/assets/icons/estateguard.svg" width="20" height="20" align="absmiddle" alt="" /> | **EstateGuard** | 在浏览器里看小区巡检画面，找出违停、堆物等问题，再交给人工确认 | [Demo](https://leon1111-wgl.github.io/estateguard/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/estateguard) |
-| <img src="site/assets/icons/finscope.svg" width="20" height="20" align="absmiddle" alt="" /> | **FinScope** | 读美股公司的财报（SEC 文件），看利润有没有水分 | [Demo](https://leon1111-wgl.github.io/finscope/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/finscope) |
-| <img src="site/assets/icons/career-atlas.svg" width="20" height="20" align="absmiddle" alt="" /> | **Career Atlas** | 向野：把行业、专业和岗位画在一张地图上，官方统计自动更新，每个数字都能追到来源 | [Demo](https://leon1111-wgl.github.io/career-atlas/)&nbsp;·&nbsp;[Code](https://github.com/leon1111-wgl/career-atlas) |
+<!-- projects:start -->
+<table>
+<tr>
+<td colspan="2" valign="top">
+<img src="site/assets/icons/loopdesk.svg" width="22" height="22" align="absmiddle" alt="" /> <b>LoopDesk</b> <sub>Agent</sub><br />
+企业客服助手：能查订单、办退款，关键操作先等人工确认，每句回答都有依据<br />
+<sub>Evidence-first customer-service agent. Try: Open the example refund run and watch it stop for human approval.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/loopdesk/"><img src="site/assets/badges/loopdesk-demo.svg" height="24" alt="LoopDesk live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/loopdesk"><img src="site/assets/badges/code.svg" height="24" alt="LoopDesk source code" /></a>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="site/assets/icons/proofbi.svg" width="22" height="22" align="absmiddle" alt="" /> <b>ProofBI</b> <sub>ChatBI</sub><br />
+用大白话问数据，自动查数出表，每个数字都能追到来源<br />
+<sub>Ask data in plain words; every number traces back. Try: Hover a number to light up its question, metric, SQL and result cells.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/proofbi/"><img src="site/assets/badges/proofbi-demo.svg" height="24" alt="ProofBI live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/proofbi"><img src="site/assets/badges/code.svg" height="24" alt="ProofBI source code" /></a>
+</td>
+<td width="50%" valign="top">
+<img src="site/assets/icons/adproof.svg" width="22" height="22" align="absmiddle" alt="" /> <b>AdProof</b> <sub>Multi-agent</sub><br />
+检查广告文案是否违规，标出问题句和对应法规，并给出改写建议<br />
+<sub>Ad-copy compliance review with cited law text. Try: Read the flagged sentences, the law cited in the margin, then the redline.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/adproof/"><img src="site/assets/badges/adproof-demo.svg" height="24" alt="AdProof live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/adproof"><img src="site/assets/badges/code.svg" height="24" alt="AdProof source code" /></a>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="site/assets/icons/creditlens.svg" width="22" height="22" align="absmiddle" alt="" /> <b>CreditLens</b> <sub>Multimodal</sub><br />
+读财报表格取数，核对单位与口径，保留原文页码和定位证据<br />
+<sub>Financial figures checked back to the source page. Try: Slide the loupe over a filing table to read value, page and position.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/creditlens/"><img src="site/assets/badges/creditlens-demo.svg" height="24" alt="CreditLens live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/creditlens"><img src="site/assets/badges/code.svg" height="24" alt="CreditLens source code" /></a>
+</td>
+<td width="50%" valign="top">
+<img src="site/assets/icons/estateguard.svg" width="22" height="22" align="absmiddle" alt="" /> <b>EstateGuard</b> <sub>Vision</sub><br />
+在浏览器里看小区巡检画面，找出违停、堆物等问题，再交给人工确认<br />
+<sub>Community inspection with in-browser vision. Try: Pick a camera on the site plan, then check what the browser model found.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/estateguard/"><img src="site/assets/badges/estateguard-demo.svg" height="24" alt="EstateGuard live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/estateguard"><img src="site/assets/badges/code.svg" height="24" alt="EstateGuard source code" /></a>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="site/assets/icons/finscope.svg" width="22" height="22" align="absmiddle" alt="" /> <b>FinScope</b> <sub>Finance</sub><br />
+读美股公司的财报（SEC 文件），看利润有没有水分<br />
+<sub>Earnings quality from SEC filings. Try: Pick a year and trace profit and cash back to their 10-K lines.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/finscope/"><img src="site/assets/badges/finscope-demo.svg" height="24" alt="FinScope live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/finscope"><img src="site/assets/badges/code.svg" height="24" alt="FinScope source code" /></a>
+</td>
+<td width="50%" valign="top">
+<img src="site/assets/icons/career-atlas.svg" width="22" height="22" align="absmiddle" alt="" /> <b>Career Atlas</b> <sub>Career data</sub><br />
+向野：把行业、专业和岗位画在一张地图上，官方统计自动更新，每个数字都能追到来源<br />
+<sub>Industries, majors and roles on one map, built on official statistics. Try: Start from your major and follow the routes to roles and official figures.</sub><br /><br />
+<a href="https://leon1111-wgl.github.io/career-atlas/"><img src="site/assets/badges/career-atlas-demo.svg" height="24" alt="Career Atlas live demo" /></a>&nbsp;<a href="https://github.com/leon1111-wgl/career-atlas"><img src="site/assets/badges/code.svg" height="24" alt="Career Atlas source code" /></a>
+</td>
+</tr>
+</table>
+<!-- projects:end -->
 
 `Python` `Java` `C` `LLM Agents` `RAG` `Multimodal Evaluation` `Distillation` `Quantization` · Mandarin, English (IELTS 7.5)
 

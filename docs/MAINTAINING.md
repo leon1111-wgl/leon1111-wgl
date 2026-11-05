@@ -25,7 +25,9 @@ The personal homepage is English. All five foundational courses, four AI field g
 - `notes/`: readable Markdown versions for GitHub.
 - `profile/bio.txt`: concise GitHub account biography.
 - `scripts/build.py`: generate HTML, Markdown and the profile README.
-- `scripts/build_profile.py`: generate the GitHub-compatible profile artwork and README; rebuild after editing.
+- `scripts/build_readme.py`: write the README's Projects table and its badges from `PROJECTS` in `scripts/build.py`. The rest of the README is edited by hand.
+- `site/assets/home.js`: the homepage's project filter, last-updated dates and search. `scripts/build.py` writes the index it searches, `site/assets/search-index.json`.
+- `scripts/build_profile.py`: older generator of the profile artwork; it would overwrite the hand-edited README, so do not run it.
 - `scripts/build_pdfs.py`: generate watermarked one-page PDFs and the five-page collection.
 - `scripts/validate.py`: validate local navigation, course scope and PDF structure.
 

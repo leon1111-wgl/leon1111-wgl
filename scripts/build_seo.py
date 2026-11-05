@@ -25,6 +25,7 @@ import seo
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / 'site'
+VENUE = json.loads((ROOT / 'content' / 'profile.json').read_text())['research']['venue']
 OG = SITE / 'assets' / 'og'
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
@@ -114,7 +115,7 @@ p.sub{position:relative;margin-top:26px;font-size:24px;line-height:1.5;color:#c6
     body = (f'<div class="glow"></div>{orbit}<div class="eyebrow"><b>LW</b>LEON WANG · AI APPLICATIONS &amp; RESEARCH</div>'
             '<h1>Exploring intelligence.<br><span>Sharing understanding.</span></h1>'
             '<p class="sub">MSc student at The University of Hong Kong. Applied AI projects with live demos, '
-            'AAAI 2025 research on long-video grounding, and a bilingual learning hub.</p>'
+            f"{VENUE} research on long-video grounding, and a bilingual learning hub.</p>"
             f'<div class="chips">{chips}</div><div class="url mono">leon1111-wgl.github.io/leon1111-wgl</div>')
     return page(w, h, css, body)
 
