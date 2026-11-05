@@ -48,6 +48,8 @@ jobs:
         run: python tools/check_knowledge_map.py
       - name: Verify four reference projects
         run: python tools/check_projects.py
+      - name: Verify the staged score project
+        run: python tools/check_score_walkthrough.py
       - name: Verify portable archive and local links
         run: python tools/package.py
       - name: Verify original site integration and downloadable archive

@@ -105,7 +105,7 @@ def python_handbook():
         'read': {'zh': 'python-zero-to-practice/index.html'},
         'chapters': chapters,
         'stages': [{'title': t, 'chapters': [ids[i] for i in r]} for t, r in PYTHON_STAGES],
-        'stats': {'chapters': 19, 'programs': 105, 'exercises': 114, 'projects': 4},
+        'stats': {'chapters': 19, 'programs': 111, 'exercises': 119, 'projects': 4},
         'sheet': {'zh': 'python-zero-to-practice/index.html#c18'},
         'notes': {'zh': 'downloads/Python-Zero-to-Practice.zip'},
         'notesKind': 'zip',

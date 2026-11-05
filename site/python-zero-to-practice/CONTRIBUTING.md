@@ -14,10 +14,24 @@ python3 source/build.py
 python3 tools/verify_examples.py
 python3 tools/check_practice.py --all --solutions
 python3 tools/check_projects.py
+python3 tools/check_score_walkthrough.py
+python3 tools/check_knowledge_map.py
 python3 tools/package.py
 ```
 
+成绩项目的分步讲义与五个参考文件由 `source/score_walkthrough.py` 生成；新增阶段时同步精确输出清单与边界检查，并与原项目约定对齐。不得因增加讲义而覆盖已有任务书或骨架。图谱引用具体阶段时须保留旧锚点，并检查往返导航。
+
 Windows 使用 `py`。代码仅依赖标准库；基础课不引入安装复杂的框架。
+
+切片与消息边界的增补在 `source/refinement_v16.py`。第 03 章保留不用函数即可完成的练习；第 09 章明确 keep 的非负整数前提，检查 0、空列表、超过长度、顺序及外层对象独立性。增加非法类型测试前，先把相应验证要求教清楚，不用隐藏的额外规则为难初学者。知识图谱的连接理由与例题入口应随内容一起更新。
+
+配对与身份对齐的增补在 `source/refinement_v17.py`。不能用“长度相同”代替“同一对象”：保留 ID，先检查重复和覆盖范围，再按约定顺序生成新记录。题目的字典字段前提、合法空串与身份检查要分开写清；测试应包含同长度但不同 ID 的反例，以及输入顺序变化，不只核对漂亮的单次输出。
+
+文本清理增补在 `source/refinement_v18.py`。明确匹配单位、位置、次数和操作顺序；将重复标记、内部标记、大小写不匹配与空输入列入手算案例。第 03 章不引入函数或额外校验门槛，清理规则与工具是否有效分开教学。
+
+列表遍历与筛选增补在 `source/refinement_v19.py`。反例同时展示实际访问项和最终列表，不能只用碰巧通过的间隔坏值测试；修正要保持输入不变。候选请求分类需保留重复次数、每组相对顺序和两个结果列表的独立性，明确分类通过不代表工具执行成功。
+
+打卡项目的命令行与持久化实操在 `source/study_log_walkthrough.py`，只追加说明与验收，不改变原 app.py 行为。核对参数所属层级、当前工作目录、每次进程启动后的文件状态；不能把重复 add 当作只读查询。CLI 验收复制实际 app.py 到临时目录，检查退出状态、完整输出和文件字节，禁止用学习者的默认记录做测试。已有 TASKS.md 不跟着重建覆盖，新讲解同步到 README 与网页。
 
 ## 保留已有学习成果
 

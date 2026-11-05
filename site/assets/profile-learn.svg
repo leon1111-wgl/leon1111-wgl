@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="840" height="236" viewBox="0 0 840 236" role="img" aria-labelledby="t">
-<title id="t">Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、356 份可运行代码</title>
+<title id="t">Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、362 份可运行代码</title>
 <style>
   .k { font: 700 11px Arial, Helvetica, sans-serif; letter-spacing: 2px; fill: #4c9bff; }
   .h { font: 700 34px -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; fill: #eceef2; }
@@ -33,7 +33,7 @@
   <text x="36" y="122" class="s">Python · Java · C · 算法 · 计算理论 · 人工智能</text>
   <text x="36" y="168" class="n">11</text><text x="64" y="168" class="u">门课程</text>
   <text x="128" y="168" class="n">212</text><text x="172" y="168" class="u">章</text>
-  <text x="206" y="168" class="n">356</text><text x="250" y="168" class="u">份可运行代码</text>
+  <text x="206" y="168" class="n">362</text><text x="250" y="168" class="u">份可运行代码</text>
   <rect x="36" y="186" width="150" height="34" rx="17" fill="url(#btn)"/>
   <text x="111" y="208" text-anchor="middle" class="b">进入学习中心 ↗</text>
 </g>

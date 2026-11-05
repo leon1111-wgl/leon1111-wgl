@@ -1,4 +1,4 @@
-Leon · Python 零基础实操教程 v1.4
+Leon · Python 零基础实操教程 v1.10
 
 部分内容为info1110课程
 
@@ -10,7 +10,7 @@ Leon · Python 零基础实操教程 v1.4
 6. 换电脑：复制整个文件夹，另行导出并导入网页进度；.venv 应重建。
 7. 不要在 ZIP 预览中编辑或运行文件，先解压。不要用 Word 编辑 .py。
 
-教材规模：19 个单元，105 个示例，114 道习题，4 个项目。
+教材规模：19 个单元，111 个示例，119 道习题，4 个项目。
 从学习包根目录运行（Windows 用 py，Mac 用 python3 替换 python）：
   python examples/ch01/ex01_01.py
   python tools/check_practice.py 01_01

@@ -125,7 +125,8 @@ def build():
     (OUT / 'keywords.json').write_text(json.dumps(keywords(), ensure_ascii=False, separators=(',', ':')))
     summary = {}
     practice = CONTENT / 'practice'
-    for cid, source in [(c.lower(), lambda c=c: from_course(c)) for c in COURSES] + [(g, lambda g=g: from_guide(g)) for g in GUIDES]:
+    # the Python handbook keeps its own exercises; its practice here is authored only
+    for cid, source in [(c.lower(), lambda c=c: from_course(c)) for c in COURSES] + [(g, lambda g=g: from_guide(g)) for g in GUIDES] + [('python', lambda: ([], [], []))]:
         cards, predict, worked = source()
         pack = json.loads((practice / f'{cid}.json').read_text()) if (practice / f'{cid}.json').exists() else {}
         data = {'course': cid, 'cards': cards, 'questions': predict + worked + pack.get('questions', []), 'papers': pack.get('papers', []), 'labs': pack.get('labs', [])}

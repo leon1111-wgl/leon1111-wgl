@@ -7,8 +7,8 @@ window.LeonStudyInit = (hub) => {
   const para = (s) => String(s ?? '').split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
   const now = () => Date.now();
   const F = () => globalThis.LeonFSRS;
-  const COURSE_IDS = ['info1113', 'comp2017', 'comp2123', 'comp2022', 'comp3308', 'start', 'ml', 'dl', 'vision', 'multimodal'];
-  const PAPER_LANGS = [['comp2017', 'C'], ['info1113', 'Java'], ['comp2123', 'Python']];
+  const COURSE_IDS = ['python', 'info1113', 'comp2017', 'comp2123', 'comp2022', 'comp3308', 'start', 'ml', 'dl', 'vision', 'multimodal'];
+  const PAPER_LANGS = [['comp2017', 'C'], ['info1113', 'Java'], ['python', 'Python'], ['comp2123', 'Python']];
 
   /* ------------------------------------------------------------ text */
   const TEXT = {
@@ -213,7 +213,7 @@ window.LeonStudyInit = (hub) => {
     const saved = goalState();
     const pickCourse = goal !== 'zero' && !course;
     if (pickCourse) {
-      const options = goal === 'paper' ? PAPER_LANGS.map(([id, name]) => [id, name]) : goal === 'engineer' ? [['comp2017', 'C'], ['info1113', 'Java'], ['comp2123', 'Python'], ['ml', 'AI / ML']] : COURSE_IDS.filter((id) => BY_ID[id]).map((id) => [id, BY_ID[id].code]);
+      const options = goal === 'paper' ? PAPER_LANGS.map(([id, name]) => [id, name]) : goal === 'engineer' ? [['comp2017', 'C'], ['info1113', 'Java'], ['comp2123', 'Python'], ['ml', 'AI']] : COURSE_IDS.filter((id) => BY_ID[id]).map((id) => [id, BY_ID[id].code]);
       const buttons = options.map(([id, name]) => {
         const c = BY_ID[id];
         return `<a class="panel route-card" href="#/goal/${goal}/${id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span><span class="code">${esc(name)}</span><b>${esc(L(c.title))}</b></span></a>`;
@@ -252,9 +252,8 @@ window.LeonStudyInit = (hub) => {
       const tried = Object.keys(attempts()).filter((k) => k.startsWith(`${id}/`)).length;
       return `<a class="panel route-card" href="#/practice/${id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span><span class="code">${esc(c.code)}</span><b>${esc(L(c.title))}</b><small>${tried ? esc(t('qCount')(tried)) : ''}</small></span></a>`;
     }).join('');
-    const py = BY_ID.python;
     return frame('practice', `<div class="page-head"><div><h1>${t('practiceTitle')}</h1><p>${t('practiceSub')}</p></div><a class="btn ghost sm" href="#/review">${t('navReview')}</a></div>
-      <div class="route-cards reveal">${py ? `<a class="panel route-card" href="${SITE}python-zero-to-practice/index.html#c01" style="--accent:${py.color}"><span class="icon-tile" style="--accent:${py.color}">${icon(py.icon)}</span><span><span class="code">${esc(py.code)}</span><b>${esc(L(py.title))}</b><small>${esc(t('qCount')(py.stats.exercises))}</small></span></a>` : ''}${tiles}</div>${unofficial()}`);
+      <div class="route-cards reveal">${tiles}</div>${unofficial()}`);
     void s;
   }
   const query = () => Object.fromEntries(new URLSearchParams(location.hash.split('?')[1] || ''));

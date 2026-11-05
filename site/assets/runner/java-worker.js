@@ -24,19 +24,34 @@ function ready() {
   return compiler;
 }
 
+// the browser library's Formatter has no %n; a newline means the same here
+const portable = (text) => text.replace(/(^|[^%])%n/g, '$1\\n');
+
+async function compile(data) {
+  const c = await ready();
+  diagnostics = [];
+  c.clearSourceFiles();
+  c.clearOutputFiles();
+  c.addSourceFile('Main.java', portable(data.code));
+  if (data.tests) c.addSourceFile('Tests.java', portable(data.tests));
+  const ok = c.compile() && c.generateWebAssembly({ outputName: 'app', mainClass: data.tests ? 'Tests' : 'Main', strictMode: true });
+  return { c, ok };
+}
+
 self.onmessage = async ({ data }) => {
   try {
-    const c = await ready();
-    if (data.kind === 'load') return;
+    if (data.kind === 'load') { await ready(); return; }
     self.postMessage({ kind: 'status', stage: 'compiling' });
-    diagnostics = [];
-    c.clearSourceFiles();
-    c.clearOutputFiles();
-    // the browser library's Formatter has no %n; a newline means the same here
-    const portable = (text) => text.replace(/(^|[^%])%n/g, '$1\\n');
-    c.addSourceFile('Main.java', portable(data.code));
-    if (data.tests) c.addSourceFile('Tests.java', portable(data.tests));
-    if (!c.compile() || !c.generateWebAssembly({ outputName: 'app', mainClass: data.tests ? 'Tests' : 'Main', strictMode: true })) {
+    let compiled;
+    try {
+      compiled = await compile(data);
+    } catch (_) {
+      // Some engines trap every few compilations when one instance is reused. A fresh instance recovers.
+      compiler = null;
+      compiled = await compile(data);
+    }
+    const { c, ok } = compiled;
+    if (!ok) {
       self.postMessage({ kind: 'result', status: 'compile', stdout: '', stderr: `${diagnostics.join('\n')}\n` });
       return;
     }
