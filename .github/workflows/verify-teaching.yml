@@ -27,7 +27,7 @@ jobs:
       - name: Install tools
         run: |
           pip install -q -r requirements.txt fsrs==6.3.2 pytest ruff numpy scipy pandas scikit-learn
-          sudo apt-get update -qq && sudo apt-get install -y -qq clang gcc make gdb valgrind
+          sudo apt-get update -qq && sudo apt-get install -y -qq clang llvm gcc make gdb valgrind
           sudo sysctl -q vm.mmap_rnd_bits=28
           scripts/fetch_lab_tools.sh "$LAB_TOOLS"
           npm install --no-save --silent playwright-core@1.62.1
