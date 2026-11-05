@@ -41,9 +41,9 @@ def start_here():
  r=profile['research']
  first=PROJECTS[:3]
  demos=''.join(f'<li><a href="{E(p["demo"])}" style="--proj:{p["color"]}" translate="no">{E(p["name"])} ↗</a><span>{E(p["try_en"])}</span></li>' for p in first)
- goals=[('python-zero-to-practice/index.html','I have never programmed','从没写过代码'),('learn/#/sheets','I have an exam coming','要考试'),('learn/#/course/comp2017','I write code on paper or in C','手写代码 · C'),('projects/comp2017-log-analyzer.en.html','I already work as an engineer','在职工程师')]
+ goals=[('learn/#/goal/zero','I have never programmed','从没写过代码'),('learn/#/goal/exam','I have an exam coming','要考试'),('learn/#/goal/paper','I must write code by hand','要手写代码'),('learn/#/goal/engineer','I write code at work','在工作中写代码')]
  learn=''.join(f'<li><a href="{u}">{E(en)} ↗</a><span lang="zh-CN">{E(zh)}</span></li>' for u,en,zh in goals)
- return f'''<section class="start-here" aria-labelledby="start-title"><h2 id="start-title" class="number">START HERE · <span lang="zh-CN">从这里开始</span></h2><div class="start-grid"><div class="start-card"><h3>Reviewing my work</h3><p>Three demos, about five minutes. They open in your browser with no sign-in.</p><ol>{demos}</ol></div><div class="start-card"><h3>Learning to code</h3><p>Free, in Chinese and English. Start from what you need.</p><ul>{learn}</ul></div><div class="start-card"><h3>Reading the research</h3><p>{E(r['title'])}</p><ul><li><a href="{E(r['url'])}">{E(r['venue'])} publication ↗</a><span>Benchmark construction, evidence annotation, evaluation.</span></li><li><a href="https://doi.org/{E(r['doi'])}">DOI {E(r['doi'])} ↗</a><span>Publisher's permanent link.</span></li></ul></div></div></section>'''
+ return f'''<section class="start-here" aria-labelledby="start-title"><h2 id="start-title" class="number">START HERE · <span lang="zh-CN">从这里开始</span></h2><div class="start-grid"><div class="start-card"><h3>Reviewing my work</h3><p>Three demos, about five minutes. They open in your browser with no sign-in.</p><ol>{demos}</ol></div><div class="start-card"><h3>Learning to code</h3><p>Free, in Chinese and English. Pick a goal and get a route.</p><ul>{learn}</ul></div><div class="start-card"><h3>Reading the research</h3><p>{E(r['title'])}</p><ul><li><a href="{E(r['url'])}">{E(r['venue'])} publication ↗</a><span>Benchmark construction, evidence annotation, evaluation.</span></li><li><a href="https://doi.org/{E(r['doi'])}">DOI {E(r['doi'])} ↗</a><span>Publisher's permanent link.</span></li></ul></div></div></section>'''
 def search_index():
  """What the homepage's search box looks through: projects, courses and every chapter, in both languages."""
  from build_learn import catalogue
@@ -55,11 +55,13 @@ def search_index():
  r=profile['research']
  items.append(dict(k='research',en=r['title'],zh='长视频证据定位论文',sub=r['venue'],url=r['url'],kw='EV2-Bench DynamicSelect long video grounding'))
  d=catalogue()
+ keyword_file=SITE/'learn'/'data'/'keywords.json'
+ words=json.loads(keyword_file.read_text()) if keyword_file.exists() else {}
  for c in d['courses']:
   en=c['read'].get('en');zh=c['read'].get('zh')
   items.append(dict(k='course',en=c['title']['en'],zh=c['title']['zh'],sub=c['code'],url=en or zh,urlZh=zh or en,kw=c['code']+' '+c['subtitle']['en'],color=c['color']))
   for n,ch in enumerate(c['chapters'],1):
-   items.append(dict(k='chapter',en=ch['title']['en'],zh=ch['title']['zh'],sub=f"{c['code']} · {n}",url=(en or zh)+'#'+ch['id'],urlZh=(zh or en)+'#'+ch['id'],color=c['color']))
+   items.append(dict(k='chapter',en=ch['title']['en'],zh=ch['title']['zh'],sub=f"{c['code']} · {n}",url=(en or zh)+'#'+ch['id'],urlZh=(zh or en)+'#'+ch['id'],kw=words.get(c['id'],{}).get(ch['id'],''),color=c['color']))
  (SITE/'assets'/'search-index.json').write_text(json.dumps(items,ensure_ascii=False,separators=(',',':')))
 def hub_panel():
  from build_learn import catalogue

@@ -95,6 +95,7 @@
     const track = () => {
       let current = null;
       for (const chapter of chapters) {
+        if (chapter.offsetParent === null) continue; // hidden in phone chapter mode
         if (chapter.getBoundingClientRect().top <= 140) current = chapter; else break;
       }
       tocLinks.forEach((link, id) => link.classList.toggle('is-current', id === current?.id));
@@ -162,6 +163,128 @@
       });
     }
   }
+  /* ---------- try first: answers stay folded unless the reader asks for them all ---------- */
+  const folds = [...document.querySelectorAll('details.try-first')];
+  if (folds.length) {
+    const key = 'leon-learn-show-answers';
+    const label = (on) => (chinese ? (on ? '重新折叠答案' : '展开全部答案') : (on ? 'Fold answers again' : 'Show all answers'));
+    let open = false;
+    try { open = localStorage.getItem(key) === '1'; } catch (_) {}
+    const apply = () => { folds.forEach((d) => { d.open = open; }); document.querySelectorAll('[data-answers-toggle]').forEach((b) => { b.textContent = label(open); b.setAttribute('aria-pressed', String(open)); }); };
+    const tools = document.querySelector('.reading-tools');
+    const toggle = Object.assign(document.createElement('button'), { type: 'button', className: 'answers-toggle' });
+    toggle.setAttribute('data-answers-toggle', '');
+    toggle.addEventListener('click', () => { open = !open; try { localStorage.setItem(key, open ? '1' : '0'); } catch (_) {} apply(); });
+    (tools || document.querySelector('.course-hero .actions'))?.append(toggle);
+    apply();
+    window.addEventListener('beforeprint', () => folds.forEach((d) => { d.dataset.wasOpen = d.open ? '1' : ''; d.open = true; }));
+    window.addEventListener('afterprint', () => folds.forEach((d) => { d.open = d.dataset.wasOpen === '1'; }));
+    // a link into a folded block must not land on hidden text
+    const openFor = () => { const t = location.hash.length > 1 && document.getElementById(decodeURIComponent(location.hash.slice(1))); t?.closest?.('details.try-first')?.setAttribute('open', ''); };
+    openFor();
+    window.addEventListener('hashchange', openFor);
+  }
+
+  /* ---------- end of a chapter: practise it, and send its questions to the review queue ---------- */
+  if (courseId && chapters.length) {
+    const words = chinese ? { practise: '练这一章', add: '把这一章加入复习', added: '已加入复习', fail: '暂时加不上，稍后再试' } : { practise: 'Practise this chapter', add: 'Add this chapter to review', added: 'In your review queue', fail: 'Could not add it now; try later' };
+    chapters.forEach((chapter) => {
+      const nav = chapter.querySelector('.topic-nav');
+      if (!nav) return;
+      const bar = document.createElement('div');
+      bar.className = 'chapter-study';
+      const practise = Object.assign(document.createElement('a'), { href: `../learn/#/practice/${courseId}?topic=${chapter.id}`, textContent: `${words.practise} ↗` });
+      const add = Object.assign(document.createElement('button'), { type: 'button', textContent: words.add });
+      add.addEventListener('click', async () => {
+        try {
+          const data = await fetch(`../learn/data/${courseId}.json`).then((r) => r.json());
+          const saved = JSON.parse(localStorage.getItem('leon-learn-srs') || '{}');
+          data.cards.filter((c) => c.topic === chapter.id).forEach((c) => { const k = `${courseId}/${c.id}`; if (!(k in saved)) saved[k] = { fresh: true, added: Date.now() }; });
+          localStorage.setItem('leon-learn-srs', JSON.stringify(saved));
+          add.textContent = words.added;
+          add.disabled = true;
+        } catch (_) { add.textContent = words.fail; }
+      });
+      bar.append(practise, add);
+      nav.before(bar);
+    });
+  }
+
+  /* ---------- pick up where you stopped ---------- */
+  if (courseId && chapters.length && !location.hash) {
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}').courses?.[courseId]; } catch (_) {}
+    const at = saved && chapters.findIndex((c) => c.id === saved.topic);
+    if (at > 0) {
+      const bar = document.createElement('div');
+      bar.className = 'resume-bar';
+      bar.innerHTML = `<span></span><a></a><button type="button"></button>`;
+      bar.querySelector('span').textContent = chinese ? `上次读到第 ${at + 1} 章` : `You stopped at chapter ${at + 1}`;
+      const link = bar.querySelector('a');
+      link.href = `#${saved.topic}`;
+      link.textContent = chinese ? '接着读' : 'Keep reading';
+      const close = bar.querySelector('button');
+      close.textContent = '×';
+      close.setAttribute('aria-label', chinese ? '关闭' : 'Dismiss');
+      close.addEventListener('click', () => bar.remove());
+      link.addEventListener('click', () => bar.remove());
+      document.querySelector('.course-hero')?.prepend(bar);
+    }
+  }
+
+  /* ---------- phones: one chapter at a time, with a bar to move between them ---------- */
+  if (courseId && chapters.length > 1 && window.matchMedia('(max-width: 760px)').matches) {
+    const key = 'leon-learn-whole-page';
+    let whole = false;
+    try { whole = localStorage.getItem(key) === '1'; } catch (_) {}
+    const words = chinese ? { of: (i, n) => `第 ${i} / ${n} 章`, start: '开始', contents: '目录', whole: '显示整门课', single: '一次一章', prev: '上一章', next: '下一章' } : { of: (i, n) => `Chapter ${i} of ${n}`, start: 'Start', contents: 'Contents', whole: 'Show whole course', single: 'One chapter at a time', prev: 'Previous chapter', next: 'Next chapter' };
+    const bar = document.createElement('nav');
+    bar.className = 'phone-bar';
+    bar.setAttribute('aria-label', words.contents);
+    bar.innerHTML = '<a class="pb-prev">‹</a><button type="button" class="pb-mid" aria-expanded="false"></button><a class="pb-next">›</a>';
+    bar.querySelector('.pb-prev').setAttribute('aria-label', words.prev);
+    bar.querySelector('.pb-next').setAttribute('aria-label', words.next);
+    const sheet = document.createElement('div');
+    sheet.className = 'phone-sheet';
+    sheet.hidden = true;
+    sheet.innerHTML = `<button type="button" class="pb-whole"></button><a href="#framework" class="pb-map"></a><ol></ol>`;
+    sheet.querySelector('.pb-map').textContent = chinese ? '课程地图' : 'Course map';
+    const ol = sheet.querySelector('ol');
+    chapters.forEach((c) => { const li = document.createElement('li'); const a = document.createElement('a'); a.href = `#${c.id}`; a.textContent = c.querySelector('h2')?.textContent || c.id; li.append(a); ol.append(li); });
+    document.body.append(sheet, bar);
+    const mid = bar.querySelector('.pb-mid');
+    const setSheet = (open) => { sheet.hidden = !open; mid.setAttribute('aria-expanded', String(open)); };
+    mid.addEventListener('click', () => setSheet(sheet.hidden));
+    sheet.addEventListener('click', (event) => { if (event.target.closest('a')) setSheet(false); });
+    const show = (scroll) => {
+      document.body.classList.toggle('chapter-mode', !whole);
+      sheet.querySelector('.pb-whole').textContent = whole ? words.single : words.whole;
+      const target = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+      let current = target?.closest?.('article.topic') || null;
+      if (!current) {
+        let saved;
+        try { saved = JSON.parse(localStorage.getItem('leon-learn-progress') || '{}').courses?.[courseId]; } catch (_) {}
+        current = !target && saved ? chapters.find((c) => c.id === saved.topic) || null : null;
+      }
+      const overview = !current;
+      document.body.classList.toggle('chapter-overview', overview && !whole);
+      chapters.forEach((c) => c.classList.toggle('is-open', c === current));
+      const i = current ? chapters.indexOf(current) : -1;
+      mid.textContent = current ? words.of(i + 1, chapters.length) : words.contents;
+      const prev = bar.querySelector('.pb-prev');
+      const next = bar.querySelector('.pb-next');
+      prev.href = i > 0 ? `#${chapters[i - 1].id}` : '#framework';
+      next.href = i < chapters.length - 1 ? `#${chapters[i + 1].id}` : '#references';
+      ol.querySelectorAll('a').forEach((a, k) => a.classList.toggle('is-current', k === i));
+      if (scroll && !whole) (target || current || document.body).scrollIntoView();
+      requestAnimationFrame(fit);
+      window.dispatchEvent(new Event('resize'));
+    };
+    sheet.querySelector('.pb-whole').addEventListener('click', () => { whole = !whole; try { localStorage.setItem(key, whole ? '1' : '0'); } catch (_) {} setSheet(false); show(false); });
+    window.addEventListener('hashchange', () => show(true));
+    show(!!location.hash);
+  }
+
   let language;
   try { language = localStorage.getItem('guoliang-language'); } catch (_) {}
   if (language === 'zh') {

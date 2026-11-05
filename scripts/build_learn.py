@@ -265,7 +265,7 @@ def build():
 <meta name="theme-color" content="#0b0d12"><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="learn.css?v={version('learn.css')}">
 <script id="learn-data" type="application/json">{payload}</script>
-<script defer src="learn.js?v={version('learn.js')}"></script>
+<script defer src="fsrs.js?v={version('fsrs.js')}"></script><script defer src="study.js?v={version('study.js')}"></script><script defer src="learn.js?v={version('learn.js')}"></script>
 </head><body><div id="app"><noscript><main class="noscript"><h1>Leon 学习中心</h1><p>请启用 JavaScript 使用课程目录。也可以直接打开：</p><ul>{links}</ul></main></noscript></div></body></html>
 '''
     (SITE / 'learn' / 'index.html').write_text(page)

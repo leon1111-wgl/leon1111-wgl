@@ -26,6 +26,10 @@
 
 <a href="https://leon1111-wgl.github.io/leon1111-wgl/learn/"><img src="site/assets/profile-learn.svg" width="100%" alt="Leon 学习中心：中英双语编程与 AI 教程，11 门课程、212 章、356 份可运行代码。点击进入。" /></a>
 
+**从目标开始 · Start from your goal：** [我从没写过代码 Never programmed](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/zero) · [我要考试 Exam coming](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/exam) · [我要手写代码 Writing by hand](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/paper) · [我在工作中写代码 At work](https://leon1111-wgl.github.io/leon1111-wgl/learn/#/goal/engineer)
+
+选好目标后给你一条路线：练习、每日复习、Python · Java · C 都能在浏览器里运行。Pick a goal and get a route, with practice, a daily review queue, and Python, Java and C running in the browser.
+
 <sub>关键词 · Keywords：Python 零基础教程 · Java 面向对象 · C 语言与系统编程 · 算法与数据结构 · 计算理论 · 机器学习 · 深度学习 · 计算机视觉 · 多模态 · 中英双语 · free bilingual programming and AI tutorials with runnable code</sub>
 
 <details>
