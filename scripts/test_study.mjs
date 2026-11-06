@@ -282,6 +282,92 @@ for (const [label, viewport] of [['desktop', { width: 1280, height: 900 }], ['ph
   await context.close();
 }
 
+/* what a reader saw at 375 px: squeezed icons, score rows that broke up, and two pages counting review cards differently */
+{
+  const context = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${origin}/learn/#/start`);
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('guoliang-language', 'en'); });
+  const open = async (hash, selector) => { await page.goto(`${origin}/learn/${hash}`); await page.reload(); await page.waitForSelector(selector); };
+  /* every row reads the same way: name and score, then the bar, then the links, with all of it inside the row */
+  const rowsHoldTogether = async (where) => {
+    const rows = await page.locator('.weak-list li').evaluateAll((items) => items.map((li) => {
+      const box = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };
+      return {
+        row: box(li), name: box(li.querySelector('.weak-name')), bar: box(li.querySelector('.weak-bar')), parts: [...li.children].map(box),
+        links: [...li.querySelectorAll('.btn')].map((a) => ({ box: box(a), text: a.textContent, spill: a.scrollWidth - a.clientWidth })),
+      };
+    }));
+    assert.ok(rows.length, `${where} has no rows`);
+    for (const r of rows) {
+      for (const link of r.links) assert.ok(link.spill <= 0, `${where}: "${link.text}" runs ${link.spill}px outside its button`);
+      assert.ok(r.parts.every((p) => p.left >= r.row.left - 0.5 && p.right <= r.row.right + 0.5), `${where}: part of a row sticks out of it`);
+      assert.ok(r.name.bottom <= r.bar.top + 0.5, `${where}: the name is not above the bar`);
+      assert.ok(r.bar.bottom <= r.links[0].box.top + 0.5, `${where}: the bar is not above the links`);
+    }
+    for (const value of [(r) => r.bar.left, (r) => r.bar.width, (r) => r.links[0].box.left, (r) => r.links[0].box.height, (r) => r.links[0].box.top - r.bar.bottom]) {
+      assert.equal(new Set(rows.map((r) => Math.round(value(r)))).size, 1, `${where}: rows are not laid out alike`);
+    }
+  };
+  await check('phone: icon tiles stay square wherever they sit in a row', async () => {
+    for (const [hash, selector, size] of [['#/start', '.goal-card .icon-tile', 52], ['#/practice', '.route-card .icon-tile', 36], ['#/goal/exam', '.route-card .icon-tile', 36], ['#/review', '.deck-list .icon-tile', 36]]) {
+      await open(hash, selector);
+      for (const box of await page.locator(selector).evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return [r.width, r.height]; }))) {
+        assert.deepEqual(box.map(Math.round), [size, size], `${hash} has an icon of ${box.join(' x ')}`);
+      }
+    }
+  });
+  await check('phone: mock paper results stay inside their rows, in both languages', async () => {
+    await open('#/exam/python/py-mock', '[data-exam-begin]');
+    await page.click('[data-exam-begin]');
+    await page.waitForSelector('[data-exam-clock]');
+    page.once('dialog', (d) => d.accept());
+    await page.locator('[data-exam-submit]').first().click();
+    await page.waitForSelector('.weak-list li');
+    await rowsHoldTogether('English results');
+    await page.evaluate(() => localStorage.setItem('guoliang-language', 'zh'));
+    await page.reload();
+    await page.waitForSelector('.weak-list li');
+    await rowsHoldTogether('Chinese results');
+    await page.evaluate(() => localStorage.setItem('guoliang-language', 'en'));
+  });
+  await check('phone: what-to-revise rows with two links stay inside their rows', async () => {
+    const data = await page.evaluate(() => fetch('data/python.json').then((r) => r.json()));
+    const oneEach = [...new Map(data.questions.map((q) => [q.topic, q.id])).values()].slice(0, 4);
+    await page.evaluate((ids) => localStorage.setItem('leon-learn-attempts', JSON.stringify(Object.fromEntries(ids.map((id, i) => [`python/${id}`, { score: i % 2, marks: 2 }])))), oneEach);
+    await open('#/practice/python', '.weak-list li');
+    await rowsHoldTogether('what to revise');
+  });
+  await check('phone: practice and review pages count the same review cards for every course', async () => {
+    await open('#/review', '.deck-list li');
+    const deck = await page.locator('.deck-list li').evaluateAll((rows) => rows.map((li) => [li.querySelector('[data-deck-all]').dataset.deckAll, li.querySelector('.deck-count').textContent]));
+    assert.ok(deck.length >= 10, `only ${deck.length} courses listed`);
+    for (const [id, text] of deck) {
+      const inReview = Number(/of (\d+) cards/.exec(text)?.[1]);
+      await open(`#/practice/${id}`, '.page-head p');
+      const head = await page.textContent('.page-head p');
+      assert.ok(inReview > 0, `${id} has no cards in review`);
+      assert.equal(Number(/(\d+) review cards/.exec(head)?.[1]), inReview, `${id}: practice says "${head}", review says "${text}"`);
+    }
+  });
+  await check('phone: adding the handbook gives the number of cards both pages promise', async () => {
+    await page.evaluate(() => localStorage.removeItem('leon-learn-srs'));
+    await open('#/practice/python', '.page-head p');
+    const promised = Number(/(\d+) review cards/.exec(await page.textContent('.page-head p'))?.[1]);
+    assert.ok(promised > 0, 'practice page promises no cards');
+    await open('#/review', '[data-deck-all="python"]');
+    await page.click('[data-deck-all="python"]');
+    await page.waitForFunction((n) => document.querySelector('[data-deck-all="python"]')?.closest('li').querySelector('.deck-count').textContent.startsWith(`${n} of ${n}`), promised);
+    assert.equal(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('leon-learn-srs'))).filter((k) => k.startsWith('q:python/')).length), promised);
+    await page.click('[data-review-start]');
+    await page.waitForSelector('[data-flip], .q-panel');
+  });
+  await check('phone: no script errors in these layouts', async () => assert.equal(errors.join(' | '), ''));
+  await context.close();
+}
+
 /* the homepage's own links, including the seven project cards and the learning hub */
 {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });

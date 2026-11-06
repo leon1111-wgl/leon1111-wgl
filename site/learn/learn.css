@@ -73,7 +73,7 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 .segmented button[aria-pressed="true"] { background: var(--invert-bg); color: var(--invert-text); }
 .lang { display: inline-flex; align-items: center; gap: 6px; }
 .lang > svg.i { color: var(--muted); width: 15px; height: 15px; }
-.icon-tile { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel-2)); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
+.icon-tile { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 10px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel-2)); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
 .icon-tile svg.i { width: 19px; height: 19px; }
 .icon-tile.lg { width: 52px; height: 52px; border-radius: 14px; }
 .icon-tile.lg svg.i { width: 26px; height: 26px; }
@@ -689,9 +689,12 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
   .goal-card { padding: 16px; }
   .q-panel { padding: 16px; }
   .q-panel h1 { font-size: 18.5px; }
-  .weak-list li { grid-template-columns: 56px 40px minmax(0, 1fr); }
-  .weak-list .btn { grid-column: span 1; }
-  .weak-name { grid-column: 3; }
+  .weak-list { gap: 16px; }
+  .weak-list li { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+  .weak-name { order: 1; flex: 1 1 0; min-width: 0; }
+  .weak-list b { order: 2; }
+  .weak-bar { order: 3; flex: 0 0 100%; }
+  .weak-list .btn { order: 4; }
   .exam-bar { top: calc(var(--topbar) + 4px); }
   .exam-q { padding: 14px; }
   .study-code { font-size: 13px; }

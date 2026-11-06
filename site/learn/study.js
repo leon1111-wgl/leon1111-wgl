@@ -300,6 +300,8 @@ window.LeonStudyInit = (hub) => {
     if (!rows.length) return `<div class="empty">${t('weakEmpty')}</div>`;
     return `<ul class="weak-list">${rows.map((r) => `<li><div class="weak-bar"><span style="width:${Math.round(r.rate * 100)}%"></span></div><b>${Math.round(r.rate * 100)}%</b><span class="weak-name">${esc(chapterTitle(cid, r.topic))}</span><a class="btn ghost sm" href="${chapterUrl(cid, r.topic)}">${t('chapterRead')}</a><a class="btn ghost sm" href="#/practice/${cid}?topic=${r.topic}">${t('weakPractice')}</a></li>`).join('')}</ul>`;
   }
+  // the handbook has no chapter cards; its practice questions serve as the deck
+  const deckSize = (c) => c.study.cards || Object.values(c.study.kinds).reduce((a, b) => a + b, 0);
   function practiceCourse(cid) {
     if (!BY_ID[cid]) return hub.notFound();
     return withCourse(cid, 'practice', (data) => {
@@ -314,7 +316,7 @@ window.LeonStudyInit = (hub) => {
       const rows = list.slice(0, 200).map((x) => `<li><a href="#/practice/${cid}/${x.id}${q.kind || q.topic ? `?${new URLSearchParams({ ...(q.kind && { kind: q.kind }), ...(q.topic && { topic: q.topic }) })}` : ''}"><span class="q-title"><b>${esc(L(x.title))}</b><small>${esc(t('kinds')[x.kind] || x.kind)} · ${esc(chapterTitle(cid, x.topic))}</small></span>${attemptTag(all[`${cid}/${x.id}`])}</a></li>`).join('');
       const papers = data.papers.map((p) => { const st = store.get(paperKey(cid, p.id), null); return `<a class="panel route-card" href="#/exam/${cid}/${p.id}" style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon('quiz')}</span><span><b>${esc(L(p.title))}</b><small>${esc(t('examMins')(p.minutes))} · ${esc(t('qCount')(p.questions.length))}${st?.submitted ? ` · ${esc(t('examLast')(st.total, st.max))}` : ''}</small></span></a>`; }).join('');
       const labs = data.labs.length ? `<a class="btn ghost sm" href="#/labs/${cid}">${t('labsTitle')}</a>` : '';
-      return frame('practice', `${crumbs([t('practiceTitle'), '#/practice'], [c.code])}<div class="page-head" style="--accent:${c.color}"><div><h1>${esc(L(c.title))}</h1><p>${esc(t('qCount')(data.questions.length))} · ${esc(t('cardsCount')(data.cards.length))}${data.papers.length ? ` · ${esc(t('papersCount')(data.papers.length))}` : ''}</p></div>${labs}</div>
+      return frame('practice', `${crumbs([t('practiceTitle'), '#/practice'], [c.code])}<div class="page-head" style="--accent:${c.color}"><div><h1>${esc(L(c.title))}</h1><p>${esc(t('qCount')(data.questions.length))} · ${esc(t('cardsCount')(deckSize(c)))}${data.papers.length ? ` · ${esc(t('papersCount')(data.papers.length))}` : ''}</p></div>${labs}</div>
         ${papers ? `<section class="study-section"><h2>${t('examsTitle')}</h2><p class="muted">${t('examIntro')}</p><div class="route-cards">${papers}</div></section>` : ''}
         <section class="panel study-section-panel"><div class="panel-head"><h2>${t('weakTitle')}</h2><span class="muted">${t('weakSub')}</span></div>${weakList(cid, data)}</section>
         <section class="panel study-section-panel"><div class="toolbar"><div class="filters" role="group"><a class="fil${q.kind ? '' : ' on'}" href="${link('', q.topic)}">${t('kindsAll')}</a>${kinds.map((k) => `<a class="fil${q.kind === k ? ' on' : ''}" href="${link(k, q.topic)}">${esc(t('kinds')[k] || k)}</a>`).join('')}</div>
@@ -706,10 +708,9 @@ window.LeonStudyInit = (hub) => {
     const missed = (id) => Object.keys(s).filter((k) => k.startsWith(`q:${id}/`)).length;
     const rows = COURSE_IDS.filter((id) => BY_ID[id]).map((id) => {
       const c = BY_ID[id];
-      // the handbook has no chapter cards; its practice questions serve as the deck
       const usesQuestions = !c.study.cards;
       const inDeck = Object.keys(s).filter((k) => k.startsWith(usesQuestions ? `q:${id}/` : `${id}/`)).length;
-      const totalCards = usesQuestions ? Object.values(c.study.kinds).reduce((a, b) => a + b, 0) : c.study.cards;
+      const totalCards = deckSize(c);
       if (!totalCards) return '';
       return `<li style="--accent:${c.color}"><span class="icon-tile" style="--accent:${c.color}">${icon(c.icon)}</span><span class="deck-name"><b>${esc(c.code)}</b><small>${esc(L(c.title))}</small></span><span class="muted deck-count">${esc(t('inDeck')(inDeck, totalCards))}${!usesQuestions && missed(id) ? ` · ${esc(t('missedInDeck')(missed(id)))}` : ''}</span>${usesQuestions ? '' : `<button type="button" class="btn ghost sm" data-deck-read="${id}">${t('addRead')}</button>`}<button type="button" class="btn ghost sm" data-deck-all="${id}">${t('addAll')}</button></li>`;
     }).join('');

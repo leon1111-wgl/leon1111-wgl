@@ -2,6 +2,17 @@
 
 One entry per release. Main is the release: a push to it deploys the public site.
 
+## 2026-11 · Phone fixes
+
+**What changed**
+- Icons on the goal picker and course lists stay square on phones.
+- Score rows on mock paper results and "What to revise" now read the same way on phones: chapter and score, then the bar, then the links, with each link's text inside its button.
+- The Python practice page now says 42 review cards, matching the review page. Its 42 practice questions are its deck, and adding them gives 42 cards, so the "0" was the mistake.
+
+**What was checked:** new checks at 375 px in `scripts/test_study.mjs` for all three, each seen failing before the fix; the full CI gate on the branch; the live site after deploy.
+
+**What was left out:** nothing from this list.
+
 ## 2026-11 · Teaching for four readers
 
 
