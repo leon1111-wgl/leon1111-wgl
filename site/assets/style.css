@@ -182,6 +182,7 @@
 .proj-filter{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
 .proj-filter button{font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--muted)}
 .proj-filter button small{font:12px var(--mono);margin-left:4px;opacity:.75}
+:root[data-theme=light] .proj-filter button small{opacity:1}
 .proj-filter button:hover{color:var(--text);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .proj-filter button[aria-pressed=true]{color:var(--bg);background:var(--accent);border-color:var(--accent);font-weight:600}
 .proj-card .proj-try{margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--text)}

@@ -65,6 +65,7 @@ body.reader:before { display: none; }
 .reader .code, .reader pre.code { border-radius: 12px; background: #0e1117; border-color: var(--line); }
 :root[data-theme=light] .reader .code, :root[data-theme=light] .reader pre.code { background: #f7f8fa; }
 .reader .pitfall { border-left-width: 3px; border-radius: 0 10px 10px 0; }
+:root[data-theme=light] .reader .pitfall strong { color: #8a5a12; }
 .reader .check { border-radius: 12px; background: var(--panel); }
 .reader .check summary { font-weight: 600; }
 .reader .map-stage h3 { font: 600 12.5px/1.6 var(--sans); }

@@ -14,7 +14,7 @@
   --muted: #8d95a3;
   --faint: #7d8594;
   --bar: rgb(11 13 18 / 90%);
-  --bar-solid: rgb(11 13 18 / 98%);
+  --bar-solid: rgb(11 13 18);
   --float: rgb(14 14 14 / 82%);
   --grid-line: rgb(255 255 255 / 4%);
   --invert-bg: #fff;
@@ -523,7 +523,7 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
   --brand: #1a5fe6;
   --brand-soft: rgb(30 107 255 / 9%);
   --bar: rgb(255 255 255 / 92%);
-  --bar-solid: rgb(255 255 255 / 98%);
+  --bar-solid: rgb(255 255 255);
   --float: rgb(255 255 255 / 88%);
   --grid-line: rgb(17 20 27 / 5%);
   --invert-bg: #11141b;
@@ -683,8 +683,9 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
 .study-code.output { background: var(--bg); }
 :root[data-theme=light] .q-score.full, :root[data-theme=light] .study-trace td.ok, :root[data-theme=light] .study-trace td.bad b { color: #137a4c; }
 :root[data-theme=light] .q-score.part { color: #8a6412; }
-:root[data-theme=light] .q-score.zero, :root[data-theme=light] .study-trace td.bad s { color: #b4322a; }
+:root[data-theme=light] .q-score.zero, :root[data-theme=light] .study-trace td.bad s, :root[data-theme=light] .study-trace tr.bad td:first-child { color: #b4322a; }
 @media (max-width: 760px) {
+  .panel-head { flex-wrap: wrap; }
   .goal-grid { grid-template-columns: minmax(0, 1fr); }
   .goal-card { padding: 16px; }
   .q-panel { padding: 16px; }

@@ -2,6 +2,26 @@
 
 One entry per release. Main is the release: a push to it deploys the public site.
 
+## 2026-11 · Both themes at both widths
+
+**What changed**
+- The reader flows now run in dark and light at desktop and 375 px. Each flow fails on a page error, a console error, sideways scroll or the wrong theme.
+- A new check measures text contrast on the main pages in those four combinations.
+- Fixed what these and a look at the pages found. On phones, the "What to revise" heading was squeezed onto three lines, and page text showed faintly through the top bar, tab bar and paper timer. In light, the ✕ on marked answers, the "Watch out." label and the counts on the homepage filters were below the WCAG AA contrast levels.
+- Route checks now run in English and Chinese. They had been running in Chinese by accident.
+- Corrected the "By hand" line in the teaching entry below, which claimed more than was done.
+
+**What was checked**
+- Automated in dark and light at desktop and 375 px: every reader flow in `scripts/test_study.mjs`, in Chromium. That covers routes, labs, guides, defined words, backup, practice of each kind, a whole mock paper, review, search, reading pages with C and Java runs, the homepage search and failed loads.
+- Contrast, in the same four combinations: goal picker, route, practice, an answered question, a mock paper and its result, review and a review card, a lab, a reading page with a Run result, a guide and the homepage, with chapters revealed and answers open.
+- Automated in one combination only: the phone chapter view and phone layouts at 375 px in both themes; blocked storage at 375 px in dark; homepage links at desktop in dark.
+- By hand, from screenshots of the route, practice, an answered question, a mock paper and its result, review, a review card and a reading page with a Run result: dark at desktop and 375 px, and light at 375 px.
+
+**What was left out**
+- Text over a gradient or image is not measured, so it was only looked at where those pages show it.
+- Light at desktop was checked by the automated flows and contrast only, not by eye.
+- Real iOS Safari and other real phones are still not tested.
+
 ## 2026-11 · Phone fixes
 
 **What changed**
@@ -30,7 +50,8 @@ One entry per release. Main is the release: a push to it deploys the public site
 
 **What was checked**
 - In CI before release: all 285 course programs compile, run and match their pages; 258 authored questions run (model answers pass their tests, wrong answers fail them, trace tables match instrumented programs, calculations match); 48 guide examples; 14 labs with their real tools (ASan, TSan, gdb, valgrind, make, JUnit, JaCoCo, pytest, ruff, scikit-learn); FSRS against py-fsrs on every review; every Run button in Chromium; 47 end-to-end checks at desktop and 375 px, including a whole mock paper across a refresh, blocked storage, failed loads, every route's links, and homepage links.
-- By hand: reader flows at desktop and 375 px in both themes. An independent reader sampled questions, guides, chapters and labs in both languages.
+- Themes at this release: the end-to-end checks ran in dark at desktop and 375 px, and only the hub intro also ran in light. The next entry up extends them to both themes.
+- By hand at this release: the goal route and a paper question at desktop in dark; a memory question, a lab and a guide at 375 px in light; the live goal picker at desktop. An independent reader sampled questions, guides, chapters and labs in both languages.
 
 **What was left out, and why**
 - Older chapters of COMP2022, COMP2123 and COMP3308 are still thin in Chinese. New chapters and practice are full length. This needs its own pass.
