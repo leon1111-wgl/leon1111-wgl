@@ -12,9 +12,9 @@ One entry per release. Main is the release: a push to it deploys the public site
 - Corrected the "By hand" line in the teaching entry below, which claimed more than was done.
 
 **What was checked**
-- Automated in dark and light at desktop and 375 px: every reader flow in `scripts/test_study.mjs`, in Chromium. That covers routes, labs, guides, defined words, backup, practice of each kind, a whole mock paper, review, search, reading pages with C and Java runs, the homepage search and failed loads.
+- Automated in dark and light at desktop and 375 px: every reader flow in `scripts/test_study.mjs`, in Chromium. That covers routes, labs, guides, defined words, backup, predict-the-output, multiple choice, trace tables, paper coding, a whole mock paper, review, search, reading pages with C and Java runs, the homepage search and failed loads.
 - Contrast, in the same four combinations: goal picker, route, practice, an answered question, a mock paper and its result, review and a review card, a lab, a reading page with a Run result, a guide and the homepage, with chapters revealed and answers open.
-- Automated in one combination only: the phone chapter view and phone layouts at 375 px in both themes; blocked storage at 375 px in dark; homepage links at desktop in dark.
+- Automated in fewer combinations: the phone chapter view and phone layouts at 375 px in both themes; blocked storage at 375 px in dark; homepage links at desktop in dark.
 - By hand, from screenshots of the route, practice, an answered question, a mock paper and its result, review, a review card and a reading page with a Run result: dark at desktop and 375 px, and light at 375 px.
 
 **What was left out**
@@ -50,7 +50,7 @@ One entry per release. Main is the release: a push to it deploys the public site
 
 **What was checked**
 - In CI before release: all 285 course programs compile, run and match their pages; 258 authored questions run (model answers pass their tests, wrong answers fail them, trace tables match instrumented programs, calculations match); 48 guide examples; 14 labs with their real tools (ASan, TSan, gdb, valgrind, make, JUnit, JaCoCo, pytest, ruff, scikit-learn); FSRS against py-fsrs on every review; every Run button in Chromium; 47 end-to-end checks at desktop and 375 px, including a whole mock paper across a refresh, blocked storage, failed loads, every route's links, and homepage links.
-- Themes at this release: the end-to-end checks ran in dark at desktop and 375 px, and only the hub intro also ran in light. The next entry up extends them to both themes.
+- Themes at this release: the end-to-end checks ran in dark at desktop and 375 px, and only the hub intro also ran in light. The "Both themes at both widths" entry above extends them.
 - By hand at this release: the goal route and a paper question at desktop in dark; a memory question, a lab and a guide at 375 px in light; the live goal picker at desktop. An independent reader sampled questions, guides, chapters and labs in both languages.
 
 **What was left out, and why**
