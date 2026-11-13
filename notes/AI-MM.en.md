@@ -95,7 +95,9 @@ Learn the difference between an ID, a feature vector and an entire encoded input
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+Hugging Face's tokenizer guide describes byte-pair encoding (BPE). It starts from single characters and repeatedly merges the most frequent neighbouring pair, until the vocabulary reaches a chosen size: the base characters plus the number of merges. A character missing from the base vocabulary becomes an unknown token such as <unk>. Byte-level BPE avoids this by starting from all 256 byte values; GPT-2 has 256 + 50,000 merges + 1 end-of-text token = 50,257 entries.
+
+Worked example: count the words kite ×6, kit ×4 and bite ×3. The base vocabulary is b, e, i, k, t (5 symbols). The pair i+t appears 6 + 4 + 3 = 13 times, more than k+i (10), t+e (9) or b+i (3), so merge 'it'. Next, k+it appears 10 times, it+e 9 and b+it 3, so merge 'kit'. The vocabulary now has 5 + 2 = 7 entries, and 'kite' becomes [kit, e]. 'kites' would still need s, which is missing, so this small tokenizer would output <unk>. Real tokenizers learn tens of thousands of merges from far more text.
 
 ### 05 / The formula, unpacked
 
@@ -301,7 +303,7 @@ Try [0,0]. The function raises an explanatory error because a zero vector has no
 
 A photo and “a brass compass” may rank closely even if the photo shows a clock. Check the visible dial before accepting identity.
 
-**Where the analogy stops:** The archive analogy treats meanings as tidy categories, whereas learned coordinates can encode tangled correlations. A close match may reflect background scenery rather than the intended object. Alignment does not recover missing observations, establish object identity, or guarantee that every word in a description is supported by the image.
+**Where the analogy stops:** The museum club's matching treats meanings as tidy categories, whereas learned coordinates can encode tangled correlations. A close match may reflect background scenery rather than the intended object. Alignment does not recover missing observations, establish object identity, or guarantee that every word in a description is supported by the image.
 
 **Keep this idea:** A shared representation makes observations comparable only when training establishes useful correspondence; similarity remains a task-dependent score that requires evidence checks.
 
@@ -335,7 +337,9 @@ Use simple fusion as a baseline for combining independent cues. Test missing mod
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+Ngiam and colleagues (ICML 2011) classified spoken letters and digits from audio and mouth video. Audio used 10 spectrogram frames, each compressed to 100 numbers; video used 4 frames of a 60×80-pixel mouth region, each compressed to 32 numbers, covering about the same time. They report that a shallow model trained on simply concatenated features learned hidden units tied mostly to one modality, with few linking both. On CUAVE digits they also tested audio with white noise at 0 dB SNR, meaning the noise was as strong as the speech.
+
+Worked example from their Table 2: audio features alone score 95.8% clean and 75.8% noisy, a drop of 20.0 points. Concatenated audio and video features score 87.0% clean, 8.8 points below audio alone, and 76.6% noisy. Audio plus their learned bimodal features score 94.4% and 82.2%, beating audio alone by 6.4 points under noise. These are one study's results for feature-level (early) fusion; the paper does not test score averaging.
 
 ### 05 / The formula, unpacked
 
@@ -536,7 +540,7 @@ Change duration to 2. Counts halve to 96000 and 32000, while correct duration re
 
 For “what was said?”, choose transcription. For “which clip contains rain?”, choose sound retrieval and inspect the returned audio.
 
-**Where the analogy stops:** Emil can listen again and separate the requested events, while a global embedding can merge simultaneous sources or discard their order. A semantic match does not imply a faithful transcript, speaker identity, or precise timing. The simple sample-count equation also omits stereo channels, compression, windowing, and the spectral processing used by particular encoders.
+**Where the analogy stops:** Luis can listen again and separate the requested events, while a global embedding can merge simultaneous sources or discard their order. A semantic match does not imply a faithful transcript, speaker identity, or precise timing. The simple sample-count equation also omits stereo channels, compression, windowing, and the spectral processing used by particular encoders.
 
 **Keep this idea:** Match the audio objective to the question: retrieving a described sound, transcribing speech, and locating an event require different evidence and evaluation.
 
@@ -820,7 +824,9 @@ Use text-to-image retrieval for photo libraries and visual archives. Preserve or
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+OpenAI's CLIP repository shows the retrieval step. encode_image and encode_text return feature vectors. Its zero-shot example divides each vector by its length, then multiplies the dot products by 100, giving cosine similarity times 100. Candidate texts follow the template 'a photo of a {label}', which the CLIP paper reports raised ImageNet accuracy by 1.3% over the bare label. Hugging Face's CLIP documentation describes both encoders projecting into a space of the same size (512 dimensions by default), where the dot product gives the similarity.
+
+Worked example: query q = [2,1,2], image A = [6,0,0], image B = [1,2,2]. Raw dot products are 12 and 8, so A looks better. The lengths are 3, 6 and 3, so the cosines are 12 ÷ 18 ≈ 0.667 and 8 ÷ 9 ≈ 0.889: B ranks first. Times 100 they become 66.7 and 88.9, and a softmax over the two gives B a probability of about 0.9999999998. Real CLIP vectors have hundreds of learned dimensions, so their ranking depends on training, not hand-picked numbers.
 
 ### 05 / The formula, unpacked
 
@@ -1111,7 +1117,7 @@ Change the final correct probability to 0.5. The response probability drops to 0
 
 For “red or blue?”, design a two-label classifier instead of a free-text response. Explain what flexibility is lost and what output becomes easier to check.
 
-**Where the analogy stops:** Jules can deliberately distinguish visible evidence from hidden surfaces; a decoder may still complete a familiar linguistic pattern. The story therefore illustrates a desired workflow rather than an automatic guarantee of uncertainty awareness. Caption agreement, token likelihood, and answer fluency each measure something different from whether a particular visual claim is true.
+**Where the analogy stops:** Ren can deliberately distinguish visible evidence from hidden surfaces; a decoder may still complete a familiar linguistic pattern. The story therefore illustrates a desired workflow rather than an automatic guarantee of uncertainty awareness. Caption agreement, token likelihood, and answer fluency each measure something different from whether a particular visual claim is true.
 
 **Keep this idea:** Conditional generation explains how an answer is produced; checking the conditioning evidence explains whether that answer deserves to be believed.
 
@@ -1145,7 +1151,9 @@ Use text plus layout for scanned schedules, forms and document QA. Return the su
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+The LayoutLM paper treats a page as a coordinate system with its origin at the top left. Each word has a box (x0, y0, x1, y1), the upper-left and lower-right corners. To handle different page sizes, coordinates are scaled to a 'virtual' range from 0 to 1,000. x0 and x1 are looked up in one embedding table (a list of learned vectors), X, and y0 and y1 in another, Y. The authors ran Tesseract OCR on scanned documents to get words and positions for pre-training. Tesseract's quality page notes known trouble with tables without separate layout analysis.
+
+Worked example: a scan is 1,700 × 2,200 pixels and a word's box is (340, 660, 510, 704). Scaling x by 1,000 ÷ 1,700 and y by 1,000 ÷ 2,200 gives (200, 300, 300, 320). The value 300 appears twice, but x1 = 300 is looked up in table X and y0 = 300 in table Y, so the model can tell horizontal from vertical position. A full system still needs accurate OCR, reading order and table structure, which four numbers per word cannot supply.
 
 ### 05 / The formula, unpacked
 
@@ -1263,7 +1271,9 @@ Use ASR for captions and searchable recordings, then evaluate words and timestam
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+Hugging Face's ASR guide fine-tunes Wav2Vec2 on the MInDS-14 dataset. The recordings use 8,000 samples per second (8,000 Hz), so the guide resamples them to 16,000 Hz to match the pretrained model, converts transcripts to uppercase to match its tokenizer, and evaluates with word error rate. The Whisper paper trains on 680,000 hours of audio cut into 30-second segments. All audio is resampled to 16,000 Hz and turned into an 80-channel log-Mel spectrogram (a picture of sound energy over time and pitch bands), using 25-millisecond windows every 10 milliseconds. A small convolution stem, whose second layer has stride two (it moves two steps at a time), feeds the encoder.
+
+Worked example: a 30-second segment holds 30 × 16,000 = 480,000 samples. One spectrogram frame every 0.010 seconds gives about 30 ÷ 0.010 = 3,000 frames of 80 numbers each. Stride two halves this to about 1,500 encoder positions. Real systems also handle recordings longer than 30 seconds and normalize text before scoring, which this count leaves out.
 
 ### 05 / The formula, unpacked
 
@@ -1379,7 +1389,9 @@ Check synchronisation before combining lips, actions and sound in video editing 
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+The SyncNet project page offers a network for removing time lags between audio and video and for finding which visible face is speaking. Its paper feeds the network 0.2-second clips: 20 steps of MFCC audio features (compact sound-frequency features) at 100 per second, and 5 greyscale mouth frames at 25 frames per second. To find the offset, it compares one video feature with all audio features within ±1 second, picks the shift with the smallest distance, and averages many samples because silent moments say little. It cites viewer detection limits of about 125 ms when audio lags and 45 ms when it leads.
+
+Worked example: at 25 frames per second one frame lasts 1 ÷ 25 = 0.04 s = 40 ms, so ±1 second covers ±25 frames, or 51 whole-frame shifts. If the best shift has the audio 4 frames late, the lag is 4 × 40 = 160 ms, beyond the 125 ms limit, so it needs correcting; a 1-frame lag of 40 ms is within it. The real network learns its features from large speech datasets; this arithmetic only converts frames to time.
 
 ### 05 / The formula, unpacked
 
@@ -1658,7 +1670,7 @@ Try half-second timestamps from 0 to 11.5. The 5.5-second sample now falls insid
 
 Compare “pick up then put down” with “put down then pick up”. The same collection of frames can hide this difference if order is discarded.
 
-**Where the analogy stops:** Rina can revisit the original recording, while a model given only cached sparse frames cannot recover discarded visual evidence. Temporal overlap also treats seconds geometrically: two intervals can overlap well yet refer to different events. The example ignores audio cues and motion inside clips, both of which can materially change what observations are available.
+**Where the analogy stops:** Zoe can revisit the original recording, while a model given only cached sparse frames cannot recover discarded visual evidence. Temporal overlap also treats seconds geometrically: two intervals can overlap well yet refer to different events. The example ignores audio cues and motion inside clips, both of which can materially change what observations are available.
 
 **Keep this idea:** Video understanding depends on retained evidence and temporal order; locating an interval requires different outputs and checks from labeling an entire clip.
 
@@ -1813,7 +1825,9 @@ Use multimodal retrieval for diagram-rich manuals, classroom notes and document 
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+The RAG paper pairs a dense retriever with a BART text generator. Its knowledge source is a December 2018 Wikipedia dump split into 21 million 100-word chunks. The retriever scores each chunk by the inner product (dot product) of query and document vectors and keeps the top K (5 or 10 in training). RAG-Sequence then sums, over those documents, the retrieval probability times the generator's probability of the answer given that document. MuRAG extends retrieval to a memory of image–text pairs and uses the top 4 items when fine-tuning.
+
+Worked example: two retrieved pages score 2.0 and 1.0. Their retrieval probabilities are e² ÷ (e² + e¹) ≈ 0.731 and 0.269. If the generator gives the answer 'arrow side up' probability 0.8 using page A and 0.1 using page B, the total is 0.731 × 0.8 + 0.269 × 0.1 ≈ 0.585 + 0.027 = 0.612. The weaker page pulls the total down. Real systems sum over more documents and many answer tokens, and a high probability still does not prove the answer is supported.
 
 ### 05 / The formula, unpacked
 
@@ -2025,7 +2039,7 @@ Compare the original coverage 34/50 with the short revision 19/50. Reduced inven
 
 “The cup is under the book” can name two real objects and still be wrong. Add a relation check beyond object-presence counts.
 
-**Where the analogy stops:** Bea's audit assumes reviewers can determine object presence reliably, which becomes difficult with occlusion, small regions, and incomplete annotations. A low object-hallucination rate does not verify relations, identity, or reasoning. Coverage depends on the chosen target inventory, and the simplified counting rules here must not be mistaken for a complete implementation of the published evaluation protocols.
+**Where the analogy stops:** Hana's audit assumes reviewers can determine object presence reliably, which becomes difficult with occlusion, small regions, and incomplete annotations. A low object-hallucination rate does not verify relations, identity, or reasoning. Coverage depends on the chosen target inventory, and the simplified counting rules here must not be mistaken for a complete implementation of the published evaluation protocols.
 
 **Keep this idea:** Evaluate both unsupported claims and retained useful evidence; reliable multimodal output must be grounded, informative, and honest about what the observations cannot establish.
 
@@ -2059,7 +2073,9 @@ Build efficient multimodal search and QA by reusing compatible features, measuri
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+The listed sources make several efficiency choices explicit. CLIP's repository encodes images and text separately, so image features can be computed once and stored. MuRAG retrieves the top 4 memory items and reports that a larger Top-K did not help; it notes that each image costs 196 tokens in its reader, and attention cost grows with the square of input length. ONNX Runtime's 8-bit quantization can lower accuracy, and its speed gain depends on hardware. POPE then checks a model for invented objects with balanced yes/no questions.
+
+Worked example: with Top-K = 4 the reader sees 4 × 196 = 784 image tokens; with Top-K = 8 it sees 1,568. Attention compares every pair of tokens, so pairs grow from 784² = 614,656 to 1,568² = 2,458,624: four times the work for twice the evidence. Storing 10,000 cached vectors of 512 numbers takes 20,480,000 bytes at 4 bytes per number, or 5,120,000 bytes at 1 byte. Real costs also include text tokens, memory traffic and hardware, so these counts are only a first estimate.
 
 ### 05 / The formula, unpacked
 
