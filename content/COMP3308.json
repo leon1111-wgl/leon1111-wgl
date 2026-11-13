@@ -639,7 +639,7 @@
       "principle": "A depth cutoff substitutes a heuristic evaluation for terminal utility, sacrificing exact-game optimality. Iterative deepening retains the last completed search when time expires. Quiescence search extends tactically unstable positions using selected forcing moves, but still needs termination controls.\n\nA linear evaluation combines features and may miss interactions. Expectiminimax adds chance nodes whose values are probability-weighted expectations, while MAX and MIN backups remain unchanged. Expected-utility decisions require cardinal utility: a positive affine transformation preserves preferences, but an arbitrary increasing transformation need not.\n\nOrdinary alpha–beta reasoning cannot simply ignore chance outcomes; valid pruning needs bounds on unseen values and probability mass. For more than two players, a Max-n backup carries a utility vector and each player selects its own component, without the two-player zero-sum guarantee.",
       "formula": "E(s) = Σᵢ wᵢ φᵢ(s)\nV(chance) = Σⱼ pⱼ V(sⱼ), Σⱼ pⱼ = 1\nUtility-preserving affine change: U′ = aU + b, a > 0",
       "symbols": "E(s) estimates the value of an unfinished state using features φᵢ and weights wᵢ. At a chance node, pⱼ is the probability of successor sⱼ and the probabilities cover all outcomes.\n\nThe constants a and b rescale and shift utility; using the same transformation everywhere preserves expected-utility comparisons. A probability is not an opponent’s adversarial choice. A utility vector needs one component per player and a stated tie-breaking convention.",
-      "example": "A player chooses a safe action worth 3 or a gamble worth 10 with probability 0.4 and 0 otherwise. The gamble’s expected utility is 0.4×10+0.6×0=4, so a player maximizing these utilities chooses it. Adding 2 and multiplying all utilities by 3 gives safe utility 11 and expected gamble utility 14, preserving the choice.\n\nSquaring the original nonnegative utilities instead gives 9 versus 40; that still agrees here, but need not for other lotteries. At a three-player node, vectors (5,1,0) and (2,4,3) make player two choose the latter because 4>1.",
+      "example": "A player chooses a safe action worth 3 or a gamble worth 10 with probability 0.4 and 0 otherwise. The gamble’s expected utility is 0.4×10+0.6×0=4, so a player maximizing these utilities chooses it. Multiplying all utilities by 3 and then adding 2 gives safe utility 11 and expected gamble utility 14, preserving the choice.\n\nSquaring the original nonnegative utilities instead gives 9 versus 40; that still agrees here, but need not for other lotteries. At a three-player node, vectors (5,1,0) and (2,4,3) make player two choose the latter because 4>1.",
       "pitfall": "A large estimated reward just beyond a cutoff is not a proven win, and a high raw neural output is not automatically a calibrated probability.",
       "check": {
         "question": "A lottery pays 0 or 4 equally; a sure option pays 1.5. Does taking square roots preserve the preferred option?",
@@ -1302,7 +1302,7 @@
           "answer": "Swapping class roles changes precision and recall."
         },
         {
-          "question": "Can 90% accuracy prove that every class is recognised?",
+          "question": "In the leaf, flower and seed example, can 90% accuracy prove that every class is recognised?",
           "answer": "No. The flower recall is zero here. Inspect class counts and choose aggregate metrics that reflect the task priorities."
         }
       ],

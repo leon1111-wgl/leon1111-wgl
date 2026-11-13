@@ -1,0 +1,1001 @@
+{
+ "course": "vision",
+ "questions": [
+  {
+   "id": "cv-standardize-byte",
+   "kind": "numeric",
+   "topic": "pixels-contracts",
+   "title": {
+    "en": "Scale a byte, then standardise it",
+    "zh": "先缩放字节值，再标准化"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Mia's model was trained on inputs computed as z = (v / 255 − μ) / σ with μ = 0.5 and σ = 0.2. One green value in a new 8-bit image is v = 204. What value z should reach the model?",
+    "zh": "Mia 的模型训练时使用的输入是 z = (v / 255 − μ) / σ，其中 μ = 0.5，σ = 0.2。一张新的 8 位图像中有一个绿色通道值 v = 204。应该送进模型的 z 是多少？"
+   },
+   "answer": 1.5,
+   "tolerance": 0.001,
+   "solution": {
+    "en": "Step 1: scale to the unit interval: 204 / 255 = 0.8.\n\nStep 2: centre: 0.8 − 0.5 = 0.3.\n\nStep 3: divide by the spread: 0.3 / 0.2 = 1.5.\n\nSo z = 1.5: this value is 1.5 standard deviations above the chosen centre. If the image had already been scaled to 0.8 and was divided by 255 a second time, the result would be (0.003137 − 0.5) / 0.2 ≈ −2.484, a very different input that still \"looks valid\" because it is just a number.",
+    "zh": "第 1 步：缩放到单位区间：204 / 255 = 0.8。\n\n第 2 步：减去中心：0.8 − 0.5 = 0.3。\n\n第 3 步：除以离散程度：0.3 / 0.2 = 1.5。\n\n所以 z = 1.5：这个值比选定的中心高 1.5 个标准差。如果图像已经被缩放成 0.8，又再除以一次 255，结果会是 (0.003137 − 0.5) / 0.2 ≈ −2.484。这是一个完全不同的输入，却因为只是一个数字而「看起来合法」。"
+   },
+   "verify_code": "v, mu, sigma = 204, 0.5, 0.2\nscaled = v / 255\nprint(round(scaled, 6), round((scaled / 255 - mu) / sigma, 4))\nprint(round((scaled - mu) / sigma, 6))\n"
+  },
+  {
+   "id": "cv-mcq-bgr-read-as-rgb",
+   "kind": "mcq",
+   "topic": "colour-channels",
+   "title": {
+    "en": "A blue-first pixel read as red-first",
+    "zh": "蓝色在前的像素被当作红色在前读取"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Leon's loader stores pixels in BGR order. One marker pixel is stored as [40, 90, 220]. The next step reads it as RGB and applies the rule red_margin = R − max(G, B), selecting the pixel when the margin is above 50. Which statement is correct?",
+    "zh": "Leon 的加载程序按 BGR 顺序存储像素。一个标记物上的像素存储为 [40, 90, 220]。下一步把它当作 RGB 读取，并使用规则 red_margin = R − max(G, B)，当差值大于 50 时选中该像素。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The pixel is really red (R = 220, margin 220 − 90 = 130, selected), but read as RGB it looks blue (margin 40 − 220 = −180) and the rule rejects it.",
+      "zh": "这个像素实际上是红色的（R = 220，差值 220 − 90 = 130，会被选中），但按 RGB 读取时它看起来是蓝色（差值 40 − 220 = −180），规则会拒绝它。"
+     },
+     "why": {
+      "en": "Right. In BGR order the last number is red. Reading the same three numbers as RGB swaps the meanings of the first and last channels.",
+      "zh": "正确。在 BGR 顺序中最后一个数是红色。把同样三个数当作 RGB 读取，就交换了第一个和最后一个通道的含义。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Moving the channel axis from HWC to CHW would fix the colours.",
+      "zh": "把通道轴从 HWC 移到 CHW 就能修好颜色。"
+     },
+     "why": {
+      "en": "Wrong. Moving an axis changes the arrangement, not which colour each channel means. The channels must be reversed.",
+      "zh": "错误。移动轴只改变排列方式，不改变每个通道代表哪种颜色。必须把通道顺序反过来。"
+     }
+    },
+    {
+     "text": {
+      "en": "Both readings select the pixel, because 220 is the largest value either way.",
+      "zh": "两种读法都会选中这个像素，因为无论怎么读 220 都是最大的值。"
+     },
+     "why": {
+      "en": "Wrong. The rule needs the largest value to be in the red channel. Read as RGB, 220 sits in the blue channel.",
+      "zh": "错误。规则要求最大值位于红色通道。按 RGB 读取时，220 位于蓝色通道。"
+     }
+    },
+    {
+     "text": {
+      "en": "Neither reading selects it, because the margin rule only works on greyscale images.",
+      "zh": "两种读法都不会选中它，因为差值规则只适用于灰度图像。"
+     },
+     "why": {
+      "en": "Wrong. The rule compares colour channels, which a greyscale image does not have.",
+      "zh": "错误。这个规则比较的是颜色通道，而灰度图像根本没有颜色通道。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "bgr = [40, 90, 220]\nfor name, (r, g, b) in [('correct', bgr[::-1]), ('misread', bgr)]:\n    margin = r - max(g, b)\n    print(name, margin, margin > 50)\n",
+   "verify_output": "correct 130 True\nmisread -180 False\n"
+  },
+  {
+   "id": "cv-filter-response",
+   "kind": "numeric",
+   "topic": "filters-neighborhoods",
+   "title": {
+    "en": "Response of a 3 × 3 edge kernel",
+    "zh": "3 × 3 边缘核的响应"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Emma slides a 3 × 3 kernel over an image without reversing it (cross-correlation). At one position the patch and kernel are:\n\npatch = [[3, 3, 3], [3, 3, 9], [3, 9, 9]]\nkernel = [[−1, 0, 1], [−2, 0, 2], [−1, 0, 1]]\n\nWhat is the filter's response at this position?",
+    "zh": "Emma 在图像上滑动一个 3 × 3 的核，核不翻转（互相关）。在某个位置上，图像块和核分别是：\n\n图像块 = [[3, 3, 3], [3, 3, 9], [3, 9, 9]]\n核 = [[−1, 0, 1], [−2, 0, 2], [−1, 0, 1]]\n\n这个位置上的滤波响应是多少？"
+   },
+   "answer": 18,
+   "solution": {
+    "en": "Multiply matching entries and add.\nTop row: −1 × 3 + 0 × 3 + 1 × 3 = 0.\nMiddle row: −2 × 3 + 0 × 3 + 2 × 9 = −6 + 18 = 12.\nBottom row: −1 × 3 + 0 × 9 + 1 × 9 = −3 + 9 = 6.\nResponse = 0 + 12 + 6 = 18.\n\nMeaning: the right side of the patch is brighter than the left, so this horizontal-change detector gives a large positive value. Strict convolution would first rotate the kernel by 180°, giving −18: for this asymmetric kernel, the two conventions differ in sign. Keep the sign; taking the absolute value too early hides which side is brighter.",
+    "zh": "对应元素相乘再相加。\n上一行：−1 × 3 + 0 × 3 + 1 × 3 = 0。\n中间一行：−2 × 3 + 0 × 3 + 2 × 9 = −6 + 18 = 12。\n下一行：−1 × 3 + 0 × 9 + 1 × 9 = −3 + 9 = 6。\n响应 = 0 + 12 + 6 = 18。\n\n含义：图像块的右侧比左侧亮，所以这个水平变化检测器给出较大的正值。严格的卷积会先把核旋转 180°，得到 −18：对于这种不对称的核，两种约定的符号相反。要保留符号；过早取绝对值会掩盖哪一侧更亮。"
+   },
+   "verify_code": "import numpy as np\npatch = np.array([[3, 3, 3], [3, 3, 9], [3, 9, 9]])\nkernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])\nprint((patch * kernel).sum(axis=1).tolist(), int((patch * kernel[::-1, ::-1]).sum()))\nprint(int((patch * kernel).sum()))\n"
+  },
+  {
+   "id": "cv-predict-closing-border",
+   "kind": "predict",
+   "topic": "edges-morphology",
+   "title": {
+    "en": "Closing a mask with zero padding",
+    "zh": "用零填充对掩码做闭运算"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Closing is dilation followed by erosion. Positions outside the row are padded with 0. Write the exact output.",
+    "zh": "闭运算是先膨胀再腐蚀。行外的位置用 0 填充。请写出程序的准确输出。"
+   },
+   "language": "python",
+   "code": "mask = [1, 1, 0, 1, 1, 0, 0, 0, 1]\n\ndef local_rule(values, operation):\n    padded = [0] + values + [0]\n    return [operation(padded[i:i + 3]) for i in range(len(values))]\n\ndilated = local_rule(mask, max)\nclosed = local_rule(dilated, min)\nprint(dilated)\nprint(closed)\nprint(sum(mask), sum(closed))\n",
+   "output": "[1, 1, 1, 1, 1, 1, 0, 1, 1]\n[0, 1, 1, 1, 1, 0, 0, 0, 0]\n5 4\n",
+   "walk": {
+    "en": [
+     "Dilation takes the max of each position and its two neighbours. Every position next to a 1 becomes 1. Only position 6, whose neighbours 5, 6 and 7 are all 0, stays 0: [1, 1, 1, 1, 1, 1, 0, 1, 1].",
+     "Erosion takes the min of each window of the dilated row, with a 0 added at both ends. Position 0 sees the padding 0, so it becomes 0. Positions 1–4 see only 1s and stay 1. Positions 5, 7 and 8 each touch the 0 at position 6 or the padding at the end, so they become 0: [0, 1, 1, 1, 1, 0, 0, 0, 0].",
+     "The original mask has 5 ones and the closed one has 4, so the line is 5 4.",
+     "Closing filled the one-pixel gap at position 2, as intended. But with zero padding it also removed the selected pixels at both borders, including the lone pixel at position 8. Border assumptions change the result."
+    ],
+    "zh": [
+     "膨胀取每个位置及其左右邻居中的最大值。凡是紧挨着 1 的位置都变成 1。只有位置 6 的邻居 5、6、7 全是 0，所以保持 0：[1, 1, 1, 1, 1, 1, 0, 1, 1]。",
+     "腐蚀对膨胀后的行（两端各补一个 0）取每个窗口的最小值。位置 0 看到填充的 0，所以变成 0。位置 1–4 只看到 1，保持 1。位置 5、7、8 都碰到位置 6 的 0 或末端的填充 0，所以变成 0：[0, 1, 1, 1, 1, 0, 0, 0, 0]。",
+     "原掩码有 5 个 1，闭运算后有 4 个，所以这一行是 5 4。",
+     "闭运算如预期那样填上了位置 2 的单像素缺口。但由于用零填充，它也去掉了两端边界上被选中的像素，包括位置 8 上孤立的那个像素。边界假设会改变结果。"
+    ]
+   }
+  },
+  {
+   "id": "cv-mcq-hwc-chw",
+   "kind": "mcq",
+   "topic": "pixels-contracts",
+   "title": {
+    "en": "Moving the channel axis",
+    "zh": "移动通道轴"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Iris has a BGR image of shape (480, 640, 3). She transposes it to shape (3, 480, 640) for a model that expects channels first and RGB order. Which statement is correct?",
+    "zh": "Iris 有一张形状为 (480, 640, 3) 的 BGR 图像。模型要求通道在前、顺序为 RGB，于是她把它转置成形状 (3, 480, 640)。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "It still holds 921,600 numbers and channel 0 still means blue. She must also reverse the channel order to get RGB.",
+      "zh": "它仍然有 921,600 个数，通道 0 仍然代表蓝色。她还必须反转通道顺序才能得到 RGB。"
+     },
+     "why": {
+      "en": "Right. 480 × 640 × 3 = 921,600 in either arrangement. A transpose only moves axes; it does not relabel colours.",
+      "zh": "正确。无论怎样排列都是 480 × 640 × 3 = 921,600 个数。转置只移动轴，不会重新标注颜色。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "The transpose also converts BGR to RGB, because the channel axis now comes first.",
+      "zh": "转置同时把 BGR 转成了 RGB，因为通道轴现在排在最前面。"
+     },
+     "why": {
+      "en": "Wrong. HWC versus CHW is about axis order. BGR versus RGB is about what each channel means. They are separate checks.",
+      "zh": "错误。HWC 与 CHW 讲的是轴的顺序，BGR 与 RGB 讲的是每个通道的含义。这是两项独立的检查。"
+     }
+    },
+    {
+     "text": {
+      "en": "The new shape means the image now has 3 rows of 480 × 640 pixels each, so it is three times taller.",
+      "zh": "新形状表示图像现在有 3 行、每行 480 × 640 个像素，所以高度变成了原来的三倍。"
+     },
+     "why": {
+      "en": "Wrong. The first axis is now the channel axis. The image is still 480 pixels high and 640 wide.",
+      "zh": "错误。第一个轴现在是通道轴。图像仍然是 480 像素高、640 像素宽。"
+     }
+    },
+    {
+     "text": {
+      "en": "The transpose loses one channel, because only two spatial axes can follow the channel axis.",
+      "zh": "转置会丢掉一个通道，因为通道轴后面只能跟两个空间轴。"
+     },
+     "why": {
+      "en": "Wrong. All three channels remain; the number of entries never changes in a transpose.",
+      "zh": "错误。三个通道都还在；转置从不改变元素的数量。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "import numpy as np\nimg = np.zeros((480, 640, 3)); img[..., 0] = 1  # channel 0 marks blue\nchw = img.transpose(2, 0, 1)\nprint(chw.shape, chw.size, float(chw[0].mean()))\n",
+   "verify_output": "(3, 480, 640) 921600 1.0\n"
+  },
+  {
+   "id": "cv-flip-scale-box",
+   "kind": "numeric",
+   "topic": "geometry-augmentation",
+   "title": {
+    "en": "Flip and scale a bounding box",
+    "zh": "翻转并缩放边界框"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Jack augments a 200 × 100 image (width 200, height 100). A tool's box has corners (x₁, y₁, x₂, y₂) = (30, 10, 70, 40). He first flips the image horizontally (x′ = 200 − x), then scales both axes by 0.5.\n\nWrite the new box with x₁ < x₂. What is the new x₁?",
+    "zh": "Jack 对一张 200 × 100 的图像（宽 200，高 100）做数据增强。一件工具的边界框角点为 (x₁, y₁, x₂, y₂) = (30, 10, 70, 40)。他先水平翻转图像（x′ = 200 − x），再把两个轴都缩放 0.5 倍。\n\n把新边界框写成 x₁ < x₂ 的形式。新的 x₁ 是多少？"
+   },
+   "answer": 65,
+   "solution": {
+    "en": "Step 1: flip. x′ = 200 − x maps 30 to 170 and 70 to 130. The left and right edges swap, so the flipped box is (130, 10, 170, 40). y does not change in a horizontal flip.\n\nStep 2: scale by 0.5: (65, 5, 85, 20).\n\nThe new x₁ is 65. Check the size: the original box is 40 × 30 = 1200 square units; the new box is 20 × 15 = 300, a quarter, as a 0.5 scale on both axes should give.\n\nA common slip is to scale 200 − 30 = 170 into 85 and call it x₁, which gives x₁ > x₂. Moving the picture without moving the box would leave the label pointing at empty table.",
+    "zh": "第 1 步：翻转。x′ = 200 − x 把 30 映射为 170，把 70 映射为 130。左右边交换，所以翻转后的框是 (130, 10, 170, 40)。水平翻转不改变 y。\n\n第 2 步：缩放 0.5 倍：(65, 5, 85, 20)。\n\n新的 x₁ 是 65。检查一下大小：原框是 40 × 30 = 1200 平方单位；新框是 20 × 15 = 300，为原来的四分之一，正是两个轴各缩放 0.5 倍应有的结果。\n\n一个常见错误是把 200 − 30 = 170 缩放成 85 并当作 x₁，结果出现 x₁ > x₂。只移动图片而不移动框，标签就会指向空荡荡的桌面。"
+   },
+   "verify_code": "W = 200\nx1, y1, x2, y2 = 30, 10, 70, 40\nfx1, fx2 = W - x2, W - x1\nbox = [0.5 * v for v in (fx1, y1, fx2, y2)]\nprint((fx1, y1, fx2, y2), box, (box[2] - box[0]) * (box[3] - box[1]))\nprint(box[0])\n"
+  },
+  {
+   "id": "cv-ratio-test",
+   "kind": "numeric",
+   "topic": "classical-features",
+   "title": {
+    "en": "Nearest-to-second-nearest ratio",
+    "zh": "最近与次近距离之比"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Noah matches a query descriptor q = (2, 5) against three candidates in the other photo:\n\nA = (3, 7), B = (6, 2), C = (2, 8)\n\nUsing Euclidean distance, compute ratio = nearest distance / second-nearest distance. Give 3 decimal places. (His toy rule accepts the match when the ratio is below 0.8.)",
+    "zh": "Noah 把查询描述子 q = (2, 5) 与另一张照片中的三个候选进行匹配：\n\nA = (3, 7)，B = (6, 2)，C = (2, 8)\n\n使用欧氏距离，计算 比值 = 最近距离 / 次近距离。保留 3 位小数。（他的玩具规则在比值低于 0.8 时接受匹配。）"
+   },
+   "answer": 0.745,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Distances from q = (2, 5):\nA: √((3 − 2)² + (7 − 5)²) = √(1 + 4) = √5 ≈ 2.236.\nB: √((6 − 2)² + (2 − 5)²) = √(16 + 9) = 5.\nC: √((2 − 2)² + (8 − 5)²) = √9 = 3.\n\nNearest is A (2.236); second nearest is C (3), not B.\nratio = 2.236 / 3 ≈ 0.745.\n\n0.745 < 0.8, so the toy rule accepts A, but only just: C is a fairly close competitor. Using B as the second candidate would give 2.236 / 5 = 0.447 and overstate how clear the match is. Geometry should still check whether several matches agree.",
+    "zh": "到 q = (2, 5) 的距离：\nA：√((3 − 2)² + (7 − 5)²) = √(1 + 4) = √5 ≈ 2.236。\nB：√((6 − 2)² + (2 − 5)²) = √(16 + 9) = 5。\nC：√((2 − 2)² + (8 − 5)²) = √9 = 3。\n\n最近的是 A（2.236）；次近的是 C（3），而不是 B。\n比值 = 2.236 / 3 ≈ 0.745。\n\n0.745 < 0.8，所以玩具规则接受 A，但只是勉强接受：C 是一个相当接近的竞争者。如果误用 B 作为第二候选，会得到 2.236 / 5 = 0.447，夸大了匹配的清晰程度。之后仍应用几何关系检查多个匹配是否一致。"
+   },
+   "verify_code": "import math\nq = (2, 5)\ncands = {'A': (3, 7), 'B': (6, 2), 'C': (2, 8)}\nranked = sorted((math.dist(q, v), k) for k, v in cands.items())\nprint([(round(d, 4), k) for d, k in ranked])\nprint(round(ranked[0][0] / ranked[1][0], 4))\n"
+  },
+  {
+   "id": "cv-head-softmax-loss",
+   "kind": "numeric",
+   "topic": "recognition-transfer",
+   "title": {
+    "en": "Loss of a new prediction head",
+    "zh": "新预测头的损失"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Emma keeps a pretrained backbone frozen and trains a new head for three classes: cup, book and ball. For one photo the backbone gives features h = [2, 1]. The head's weights and biases are:\n\ncup: w = [1, 1], b = 0\nbook: w = [2, −1], b = 0\nball: w = [0, 1], b = 0.5\n\nThe correct class is cup. What is the cross-entropy loss −ln(p_cup)? Give 3 decimal places.",
+    "zh": "Emma 冻结一个预训练骨干网络，并为三个类别（cup、book、ball）训练一个新的预测头。对某张照片，骨干网络给出的特征是 h = [2, 1]。预测头的权重和偏置为：\n\ncup：w = [1, 1]，b = 0\nbook：w = [2, −1]，b = 0\nball：w = [0, 1]，b = 0.5\n\n正确类别是 cup。交叉熵损失 −ln(p_cup) 是多少？保留 3 位小数。"
+   },
+   "answer": 0.799,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Step 1: scores. cup: 1×2 + 1×1 + 0 = 3. book: 2×2 + (−1)×1 + 0 = 3. ball: 0×2 + 1×1 + 0.5 = 1.5.\n\nStep 2: softmax. Subtract the maximum, 3: [0, 0, −1.5]. exp gives [1, 1, 0.2231]. Sum = 2.2231.\np_cup = 1 / 2.2231 ≈ 0.4498 (p_book is the same, p_ball ≈ 0.1004).\n\nStep 3: loss = −ln 0.4498 ≈ 0.799.\n\nMeaning: cup and book tie, so even though cup is correct the model gives it under half the probability, and the loss is clearly above zero. Training the head would push the cup score up relative to book. A high softmax value would still not prove that the photo shows one of these three objects at all.",
+    "zh": "第 1 步：分数。cup：1×2 + 1×1 + 0 = 3。book：2×2 + (−1)×1 + 0 = 3。ball：0×2 + 1×1 + 0.5 = 1.5。\n\n第 2 步：softmax。减去最大值 3：[0, 0, −1.5]。取指数得 [1, 1, 0.2231]，总和 = 2.2231。\np_cup = 1 / 2.2231 ≈ 0.4498（p_book 相同，p_ball ≈ 0.1004）。\n\n第 3 步：损失 = −ln 0.4498 ≈ 0.799。\n\n含义：cup 与 book 打平，所以尽管 cup 是正确的，模型给它的概率还不到一半，损失明显大于零。训练预测头会把 cup 的分数相对 book 往上推。不过即使 softmax 值很高，也不能证明照片里拍的一定是这三种物体之一。"
+   },
+   "verify_code": "import math\nh = [2, 1]\nheads = {'cup': ([1, 1], 0), 'book': ([2, -1], 0), 'ball': ([0, 1], 0.5)}\nscores = {k: sum(a * b for a, b in zip(w, h)) + b for k, (w, b) in heads.items()}\ntop = max(scores.values())\ne = {k: math.exp(s - top) for k, s in scores.items()}\np = {k: v / sum(e.values()) for k, v in e.items()}\nprint(scores, {k: round(v, 4) for k, v in p.items()})\nprint(round(-math.log(p['cup']), 4))\n"
+  },
+  {
+   "id": "cv-iou-two-boxes",
+   "kind": "numeric",
+   "topic": "detection-overlap",
+   "title": {
+    "en": "IoU of two overlapping boxes",
+    "zh": "两个重叠框的交并比"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Iris compares two boxes, written (x₁, y₁, x₂, y₂) with continuous edge coordinates:\n\nA = (2, 2, 8, 6)\nB = (5, 3, 11, 9)\n\nWhat is their intersection over union (IoU)? Give 3 decimal places.",
+    "zh": "Iris 比较两个边界框，写成 (x₁, y₁, x₂, y₂)，使用连续的边坐标：\n\nA = (2, 2, 8, 6)\nB = (5, 3, 11, 9)\n\n它们的交并比（IoU）是多少？保留 3 位小数。"
+   },
+   "answer": 0.176,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Areas: A is (8 − 2) × (6 − 2) = 6 × 4 = 24. B is (11 − 5) × (9 − 3) = 6 × 6 = 36.\n\nShared width = max(0, min(8, 11) − max(2, 5)) = 8 − 5 = 3.\nShared height = max(0, min(6, 9) − max(2, 3)) = 6 − 3 = 3.\nIntersection = 3 × 3 = 9.\n\nUnion = 24 + 36 − 9 = 51 (the shared part counted once).\nIoU = 9 / 51 ≈ 0.176.\n\nThe boxes overlap, but weakly: with an NMS threshold of 0.5, neither would suppress the other. Dividing by the smaller area (9 / 24 = 0.375) or forgetting to subtract the intersection (9 / 60 = 0.15) are the usual slips.",
+    "zh": "面积：A 为 (8 − 2) × (6 − 2) = 6 × 4 = 24。B 为 (11 − 5) × (9 − 3) = 6 × 6 = 36。\n\n重叠宽度 = max(0, min(8, 11) − max(2, 5)) = 8 − 5 = 3。\n重叠高度 = max(0, min(6, 9) − max(2, 3)) = 6 − 3 = 3。\n交集 = 3 × 3 = 9。\n\n并集 = 24 + 36 − 9 = 51（重叠部分只算一次）。\nIoU = 9 / 51 ≈ 0.176。\n\n两个框有重叠，但很弱：若 NMS 阈值为 0.5，谁都不会抑制谁。常见错误是除以较小的面积（9 / 24 = 0.375），或者忘记减去交集（9 / 60 = 0.15）。"
+   },
+   "verify_code": "a, b = (2, 2, 8, 6), (5, 3, 11, 9)\nw = max(0, min(a[2], b[2]) - max(a[0], b[0]))\nh = max(0, min(a[3], b[3]) - max(a[1], b[1]))\narea = lambda r: (r[2] - r[0]) * (r[3] - r[1])\ninter = w * h\nprint(area(a), area(b), inter, area(a) + area(b) - inter)\nprint(round(inter / (area(a) + area(b) - inter), 4))\n"
+  },
+  {
+   "id": "cv-trace-nms",
+   "kind": "trace",
+   "topic": "detection-overlap",
+   "title": {
+    "en": "Greedy non-maximum suppression, step by step",
+    "zh": "逐步执行贪心非极大值抑制"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "Leon's detector returns five boxes of the same class. He runs greedy NMS with threshold 0.5: keep the remaining box with the highest score, compare it with each lower-scoring remaining box, and suppress a box whose IoU with the kept box is greater than 0.5. Repeat with the boxes that are left.\n\nEach row is one comparison. The compared box is given. Fill in the kept box it is compared with, the IoU (2 decimal places, for example 0.25 or 0.00) and the decision, written keep or suppress. The first row is done for you.",
+    "zh": "Leon 的检测器返回同一类别的五个框。他用阈值 0.5 运行贪心 NMS：保留剩余框中得分最高的那个，把它与每个得分更低的剩余框比较，若某框与被保留框的 IoU 大于 0.5，就抑制它。然后对剩下的框重复这一过程。\n\n每一行是一次比较，被比较的框已经给出。请填写与之比较的被保留框、IoU（保留 2 位小数，例如 0.25 或 0.00），以及决定（填 keep 或 suppress）。第一行已经填好。"
+   },
+   "code": "Box  (x1, y1, x2, y2)   score\nA    (0, 0, 10, 10)      0.95\nB    (1, 1, 11, 11)      0.90\nC    (20, 0, 30, 10)     0.85\nD    (6, 0, 16, 10)      0.80\nE    (21, 1, 31, 11)     0.70",
+   "columns": {
+    "en": [
+     "Comparison",
+     "Kept box",
+     "Compared box",
+     "IoU",
+     "Decision"
+    ],
+    "zh": [
+     "比较序号",
+     "被保留框",
+     "被比较框",
+     "IoU",
+     "决定"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "A",
+     "B",
+     "0.68",
+     "suppress"
+    ],
+    [
+     "2",
+     "A",
+     "C",
+     "0.00",
+     "keep"
+    ],
+    [
+     "3",
+     "A",
+     "D",
+     "0.25",
+     "keep"
+    ],
+    [
+     "4",
+     "A",
+     "E",
+     "0.00",
+     "keep"
+    ],
+    [
+     "5",
+     "C",
+     "D",
+     "0.00",
+     "keep"
+    ],
+    [
+     "6",
+     "C",
+     "E",
+     "0.68",
+     "suppress"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4",
+    "1,2",
+    "2,2",
+    "3,2",
+    "4,2",
+    "5,2"
+   ],
+   "solution": {
+    "en": "Round 1: A has the highest score (0.95), so A is kept and compared with B, C, D and E.\n- A and B: intersection 9 × 9 = 81, union 100 + 100 − 81 = 119, IoU = 0.68 > 0.5, so B is suppressed.\n- A and C: no horizontal overlap (C starts at x = 20), IoU 0.00, keep.\n- A and D: intersection 4 × 10 = 40, union 100 + 100 − 40 = 160, IoU = 0.25, keep.\n- A and E: no overlap, keep.\n\nRound 2: the remaining boxes are C (0.85), D (0.80) and E (0.70). C is kept and compared with D and E.\n- C and D: no overlap (D ends at x = 16), keep.\n- C and E: intersection 9 × 9 = 81, IoU = 81 / 119 = 0.68, so E is suppressed.\n\nRound 3: only D is left; it is kept with nothing to compare. The final boxes are A, C and D.\n\nNote that B overlaps D (IoU 0.29) but B was already suppressed, so it never gets a turn. D survives next to A because 0.25 is below the threshold, even if it might be part of the same object: whether D is a second object or a poor duplicate needs annotations to decide.",
+    "zh": "第 1 轮：A 得分最高（0.95），所以保留 A，并把它与 B、C、D、E 比较。\n- A 与 B：交集 9 × 9 = 81，并集 100 + 100 − 81 = 119，IoU = 0.68 > 0.5，所以抑制 B。\n- A 与 C：水平方向没有重叠（C 从 x = 20 开始），IoU 为 0.00，保留。\n- A 与 D：交集 4 × 10 = 40，并集 100 + 100 − 40 = 160，IoU = 0.25，保留。\n- A 与 E：没有重叠，保留。\n\n第 2 轮：剩下的框是 C（0.85）、D（0.80）和 E（0.70）。保留 C，并把它与 D、E 比较。\n- C 与 D：没有重叠（D 在 x = 16 处结束），保留。\n- C 与 E：交集 9 × 9 = 81，IoU = 81 / 119 = 0.68，所以抑制 E。\n\n第 3 轮：只剩 D，直接保留，无需比较。最终保留的框是 A、C、D。\n\n注意：B 与 D 也有重叠（IoU 0.29），但 B 已经被抑制，再也轮不到它。D 能在 A 旁边保留下来，是因为 0.25 低于阈值，即使它可能属于同一个物体：D 到底是第二个物体还是一个质量差的重复框，需要标注才能判断。"
+   },
+   "verify_language": "python",
+   "verify_code": "boxes = {'A': ((0, 0, 10, 10), 0.95), 'B': ((1, 1, 11, 11), 0.90), 'C': ((20, 0, 30, 10), 0.85),\n         'D': ((6, 0, 16, 10), 0.80), 'E': ((21, 1, 31, 11), 0.70)}\ndef iou(a, b):\n    w = max(0, min(a[2], b[2]) - max(a[0], b[0])); h = max(0, min(a[3], b[3]) - max(a[1], b[1]))\n    area = lambda r: (r[2] - r[0]) * (r[3] - r[1])\n    return w * h / (area(a) + area(b) - w * h)\nleft = sorted(boxes, key=lambda k: -boxes[k][1])\nstep = 0\nwhile left:\n    kept = left.pop(0)\n    survivors = []\n    for other in left:\n        step += 1\n        value = iou(boxes[kept][0], boxes[other][0])\n        decision = 'suppress' if value > 0.5 else 'keep'\n        print('\\t'.join([str(step), kept, other, f'{value:.2f}', decision]))\n        if decision == 'keep':\n            survivors.append(other)\n    left = survivors\n"
+  },
+  {
+   "id": "cv-trace-toy-ap",
+   "kind": "trace",
+   "topic": "detection-average-precision",
+   "title": {
+    "en": "Walk a ranked list for toy AP",
+    "zh": "沿排序列表计算玩具 AP"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "The bird club has 3 reference birds in one photo. A detector returns five boxes, sorted by score. For each box the table gives the reference bird it overlaps most and that IoU. Matching rule: a box is a true positive (TP) if its IoU is at least 0.5 and that bird has not already been matched; otherwise it is a false positive (FP).\n\nFill in the outcome (TP or FP), the number of matched birds so far, and precision and recall after reading that many boxes, with 2 decimal places (for example 0.33). The first row is done for you. Then compute the toy AP = Σ Pₖ × (Rₖ − Rₖ₋₁) from your table; this uses the guide's non-interpolated teaching definition, not the COCO procedure.",
+    "zh": "观鸟社的一张照片中有 3 只参考鸟。检测器返回五个框，已按分数排序。表格给出每个框重叠最多的参考鸟以及对应的 IoU。匹配规则：若 IoU 至少为 0.5，且这只鸟尚未被匹配，则该框是真正例（TP）；否则是假正例（FP）。\n\n请填写结果（TP 或 FP）、目前已匹配的鸟数，以及读到这一行时的精确率和召回率（保留 2 位小数，例如 0.33）。第一行已经填好。然后根据你的表格计算玩具 AP = Σ Pₖ × (Rₖ − Rₖ₋₁)；这里采用本指南的非插值教学定义，而不是 COCO 的计算流程。"
+   },
+   "code": "rank  score  best bird  IoU\n1     0.95   bird 1     0.80\n2     0.90   bird 1     0.70\n3     0.80   bird 2     0.45\n4     0.70   bird 3     0.65\n5     0.60   bird 2     0.60",
+   "columns": {
+    "en": [
+     "Rank",
+     "Outcome",
+     "Birds matched so far",
+     "Precision",
+     "Recall"
+    ],
+    "zh": [
+     "名次",
+     "结果",
+     "目前已匹配的鸟数",
+     "精确率",
+     "召回率"
+    ]
+   },
+   "rows": [
+    [
+     "1",
+     "TP",
+     "1",
+     "1.00",
+     "0.33"
+    ],
+    [
+     "2",
+     "FP",
+     "1",
+     "0.50",
+     "0.33"
+    ],
+    [
+     "3",
+     "FP",
+     "1",
+     "0.33",
+     "0.33"
+    ],
+    [
+     "4",
+     "TP",
+     "2",
+     "0.50",
+     "0.67"
+    ],
+    [
+     "5",
+     "TP",
+     "3",
+     "0.60",
+     "1.00"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4"
+   ],
+   "solution": {
+    "en": "Rank 2: bird 1 is already matched, so this duplicate box is a false positive even though its IoU is 0.70. Precision 1/2 = 0.50, recall stays 1/3.\nRank 3: IoU 0.45 is below 0.5, so it is FP. Precision 1/3 = 0.33.\nRank 4: bird 3 at 0.65 is a new match. 2 matched, precision 2/4 = 0.50, recall 2/3 = 0.67.\nRank 5: bird 2 at 0.60 is still unmatched (rank 3 did not match it), so TP. Precision 3/5 = 0.60, recall 3/3 = 1.00.\n\nToy AP: recall rises by 1/3 at ranks 1, 4 and 5 only.\nAP = 1.00 × 1/3 + 0.50 × 1/3 + 0.60 × 1/3 = (1 + 0.5 + 0.6) / 3 = 2.1 / 3 = 0.70.\n\nThe detector eventually finds all three birds, but two early false alerts pull AP down to 0.70. COCO-style AP would interpolate precision and average over several IoU thresholds, so its number would differ.",
+    "zh": "第 2 名：鸟 1 已经被匹配过，所以这个重复框是假正例，尽管它的 IoU 是 0.70。精确率 1/2 = 0.50，召回率仍为 1/3。\n第 3 名：IoU 0.45 低于 0.5，所以是 FP。精确率 1/3 = 0.33。\n第 4 名：鸟 3 的 IoU 为 0.65，是新的匹配。已匹配 2 只，精确率 2/4 = 0.50，召回率 2/3 = 0.67。\n第 5 名：鸟 2 的 IoU 为 0.60，它还没有被匹配过（第 3 名没有匹配上它），所以是 TP。精确率 3/5 = 0.60，召回率 3/3 = 1.00。\n\n玩具 AP：召回率只在第 1、4、5 名各上升 1/3。\nAP = 1.00 × 1/3 + 0.50 × 1/3 + 0.60 × 1/3 = (1 + 0.5 + 0.6) / 3 = 2.1 / 3 = 0.70。\n\n检测器最终找到了全部三只鸟，但两次过早的错误报警把 AP 拉低到 0.70。COCO 式的 AP 会对精确率做插值，并在多个 IoU 阈值上取平均，所以它的数值会不同。"
+   },
+   "verify_language": "python",
+   "verify_code": "preds = [(1, 0.80), (1, 0.70), (2, 0.45), (3, 0.65), (2, 0.60)]\nmatched, found, ap, prev = set(), 0, 0.0, 0.0\nfor rank, (bird, iou) in enumerate(preds, start=1):\n    ok = iou >= 0.5 and bird not in matched\n    if ok:\n        matched.add(bird); found += 1\n    precision, recall = found / rank, found / 3\n    ap += precision * (recall - prev); prev = recall\n    print('\\t'.join([str(rank), 'TP' if ok else 'FP', str(found), f'{precision:.2f}', f'{recall:.2f}']))\nassert abs(ap - 0.7) < 1e-9\n"
+  },
+  {
+   "id": "cv-mcq-pixel-accuracy-trap",
+   "kind": "mcq",
+   "topic": "segmentation-regions",
+   "title": {
+    "en": "High pixel accuracy, no crack found",
+    "zh": "像素准确率很高，却一条裂纹也没找到"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Jack's crack segmenter is tested on an image of 400 pixels. The checked reference marks 10 pixels as crack. The model predicts background for every pixel. Treat crack as the foreground. Which statement is correct?",
+    "zh": "Jack 的裂纹分割模型在一张 400 像素的图像上测试。核对过的参考掩码把 10 个像素标为裂纹。模型把每个像素都预测为背景。把裂纹当作前景。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Pixel accuracy is 0.975, but the foreground IoU and Dice are both 0.",
+      "zh": "像素准确率是 0.975，但前景 IoU 和 Dice 都是 0。"
+     },
+     "why": {
+      "en": "Right. 390 of 400 pixels are correct background. The prediction selects no pixels, so the intersection is 0 while the union is 10: IoU = 0/10 and Dice = 0/(0 + 10).",
+      "zh": "正确。400 个像素中有 390 个是正确的背景。预测没有选中任何像素，所以交集为 0，而并集为 10：IoU = 0/10，Dice = 0/(0 + 10)。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "The IoU is 0.975, the same as pixel accuracy.",
+      "zh": "IoU 是 0.975，与像素准确率相同。"
+     },
+     "why": {
+      "en": "Wrong. IoU counts only pixels that are foreground in the prediction or the reference, so correctly labelled background pixels earn no credit.",
+      "zh": "错误。IoU 只统计在预测或参考中属于前景的像素，判对的背景像素不会带来分数。"
+     }
+    },
+    {
+     "text": {
+      "en": "IoU is undefined here, so the model cannot be judged.",
+      "zh": "这里 IoU 没有定义，所以无法评价这个模型。"
+     },
+     "why": {
+      "en": "Wrong. The union contains the 10 reference pixels, so the denominator is positive and IoU = 0. It is undefined only when both masks are empty.",
+      "zh": "错误。并集包含 10 个参考像素，分母为正，所以 IoU = 0。只有两个掩码都为空时它才没有定义。"
+     }
+    },
+    {
+     "text": {
+      "en": "Dice is 0.5, because the model is right about the background and wrong about the crack.",
+      "zh": "Dice 是 0.5，因为模型对背景判断正确、对裂纹判断错误。"
+     },
+     "why": {
+      "en": "Wrong. Dice measures overlap of the foreground only: 2 × 0 / (0 + 10) = 0.",
+      "zh": "错误。Dice 只衡量前景的重叠：2 × 0 / (0 + 10) = 0。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "pred = [0] * 400\nref = [1] * 10 + [0] * 390\ninter = sum(p and r for p, r in zip(pred, ref)); union = sum(p or r for p, r in zip(pred, ref))\nprint(sum(p == r for p, r in zip(pred, ref)) / 400, inter / union, 2 * inter / (sum(pred) + sum(ref)))\n",
+   "verify_output": "0.975 0.0 0.0\n"
+  },
+  {
+   "id": "cv-dice-from-counts",
+   "kind": "numeric",
+   "topic": "segmentation-regions",
+   "title": {
+    "en": "Dice and IoU from pixel counts",
+    "zh": "由像素计数求 Dice 与 IoU"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Mia's leaf mask predicts 70 foreground pixels. The checked reference has 90 leaf pixels, and 56 pixels are in both. What is the Dice score? Give 3 decimal places.",
+    "zh": "Mia 的叶片掩码预测了 70 个前景像素。核对过的参考掩码有 90 个叶片像素，其中 56 个像素两者都有。Dice 分数是多少？保留 3 位小数。"
+   },
+   "answer": 0.7,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Dice = 2|P ∩ G| / (|P| + |G|) = 2 × 56 / (70 + 90) = 112 / 160 = 0.700.\n\nCheck with IoU: union = 70 + 90 − 56 = 104, so IoU = 56 / 104 ≈ 0.538, and 2 × 0.538 / (1 + 0.538) ≈ 0.700 agrees.\n\nThe same masks also have 70 − 56 = 14 extra pixels and 90 − 56 = 34 missed leaf pixels. Dice and IoU describe one overlap on two scales; do not compare a Dice of 0.70 with someone else's IoU as if they measured the same thing.",
+    "zh": "Dice = 2|P ∩ G| / (|P| + |G|) = 2 × 56 / (70 + 90) = 112 / 160 = 0.700。\n\n用 IoU 检查：并集 = 70 + 90 − 56 = 104，所以 IoU = 56 / 104 ≈ 0.538，而 2 × 0.538 / (1 + 0.538) ≈ 0.700，结果一致。\n\n同样这对掩码还有 70 − 56 = 14 个多选的像素，以及 90 − 56 = 34 个漏掉的叶片像素。Dice 和 IoU 用两种尺度描述同一个重叠；不要把 0.70 的 Dice 与别人的 IoU 直接比较，好像它们衡量的是同一件事。"
+   },
+   "verify_code": "p, g, both = 70, 90, 56\niou = both / (p + g - both)\nprint(round(iou, 4), round(2 * iou / (1 + iou), 4), p - both, g - both)\nprint(round(2 * both / (p + g), 4))\n"
+  },
+  {
+   "id": "cv-track-gate",
+   "kind": "numeric",
+   "topic": "tracking-identity",
+   "title": {
+    "en": "Predict, then gate a detection",
+    "zh": "先预测，再用门限筛选检测"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Iris tracks one cart along x (pixels). It was at x = 40 in the previous frame and x = 46 in the current frame. Frames are equally spaced. She predicts the next position with constant speed, then accepts the nearest detection only if it is within a gate of 4 pixels of the prediction.\n\nDetections in the next frame: x = 49, 57, 61. Which x does the track accept?",
+    "zh": "Iris 沿 x 方向（像素）跟踪一辆小车。它在上一帧位于 x = 40，在当前帧位于 x = 46。帧间隔相等。她按匀速预测下一个位置，然后只有当最近的检测与预测值相差不超过 4 个像素（门限）时才接受它。\n\n下一帧的检测为：x = 49、57、61。这条轨迹接受哪个 x？"
+   },
+   "answer": 49,
+   "solution": {
+    "en": "Step 1: speed v = 46 − 40 = 6 pixels per frame.\n\nStep 2: prediction = 46 + 6 = 52.\n\nStep 3: distances from 52: |49 − 52| = 3, |57 − 52| = 5, |61 − 52| = 9.\n\nStep 4: the nearest is 49 at distance 3, which is within the gate of 4, so the track accepts x = 49.\n\nNote that 49 is closest to the prediction, not to the last position 46 (which would also choose 49 here, but by a different rule). If the only detection had been 57, the distance 5 would exceed the gate and the track would stay unmatched for this frame rather than jump to a distant box.",
+    "zh": "第 1 步：速度 v = 46 − 40 = 6 像素/帧。\n\n第 2 步：预测值 = 46 + 6 = 52。\n\n第 3 步：到 52 的距离：|49 − 52| = 3，|57 − 52| = 5，|61 − 52| = 9。\n\n第 4 步：最近的是 49，距离 3，在门限 4 之内，所以轨迹接受 x = 49。\n\n注意：49 是离预测值最近，而不是离上一位置 46 最近（这里按后者也会选 49，但依据的是另一条规则）。如果唯一的检测是 57，距离 5 超过门限，这条轨迹在这一帧就保持未匹配，而不是跳到一个很远的框上。"
+   },
+   "verify_code": "prev, cur = 40, 46\npred = cur + (cur - prev)\ndets = [49, 57, 61]\ndist = {d: abs(d - pred) for d in dets}\nbest = min(dets, key=dist.get)\nprint(pred, dist, dist[best] <= 4)\nprint(best)\n"
+  },
+  {
+   "id": "cv-mcq-track-collision",
+   "kind": "mcq",
+   "topic": "tracking-identity",
+   "title": {
+    "en": "Two tracks want the same detection",
+    "zh": "两条轨迹抢同一个检测"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Noah tracks two carts. Their predicted positions for the next frame are T1 at x = 10 and T2 at x = 14. The detections are at x = 11 and x = 20. The gate is 5 pixels. Which statement is correct?",
+    "zh": "Noah 跟踪两辆小车。下一帧的预测位置为 T1 在 x = 10，T2 在 x = 14。检测位于 x = 11 和 x = 20。门限为 5 个像素。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "If each track simply takes its nearest detection, both take 11. With one-to-one assignment and the gate, T1 takes 11 (distance 1) and T2 stays unmatched, because 20 is 6 away.",
+      "zh": "如果每条轨迹各自取最近的检测，两条都会取 11。采用一对一分配并加上门限后，T1 取 11（距离 1），T2 保持未匹配，因为 20 离它有 6。"
+     },
+     "why": {
+      "en": "Right. Independent nearest choices collide on 11. A one-to-one assignment gives 11 to one track only; the cheaper pairing is T1–11, and T2–20 is outside the gate.",
+      "zh": "正确。各自取最近会在 11 上冲突。一对一分配只把 11 给一条轨迹；代价更小的是 T1–11，而 T2–20 超出了门限。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "T2 takes 20, because every track must receive a detection in every frame.",
+      "zh": "T2 取 20，因为每条轨迹在每一帧都必须分到一个检测。"
+     },
+     "why": {
+      "en": "Wrong. A gate exists so that a track can stay unmatched instead of being forced onto a distant detection (6 > 5).",
+      "zh": "错误。设置门限正是为了让轨迹可以保持未匹配，而不是被迫接上一个很远的检测（6 > 5）。"
+     }
+    },
+    {
+     "text": {
+      "en": "Both tracks update with 11, which is fine because the carts are close together.",
+      "zh": "两条轨迹都用 11 更新，这没有问题，因为两辆车离得很近。"
+     },
+     "why": {
+      "en": "Wrong. One detection comes from one object. Updating two tracks with it would merge their identities.",
+      "zh": "错误。一个检测来自一个物体。用它更新两条轨迹会把两个身份混在一起。"
+     }
+    },
+    {
+     "text": {
+      "en": "T2 takes 11 and T1 takes 20, because that uses both detections.",
+      "zh": "T2 取 11，T1 取 20，因为这样两个检测都用上了。"
+     },
+     "why": {
+      "en": "Wrong. 20 is 10 pixels from T1, far outside the gate, so that pairing is not allowed.",
+      "zh": "错误。20 离 T1 有 10 个像素，远远超出门限，这样的配对是不允许的。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "from itertools import permutations\ntracks, dets, gate = {'T1': 10, 'T2': 14}, [11, 20], 5\nprint({t: min(dets, key=lambda d: abs(d - x)) for t, x in tracks.items()})\nbest = None\nfor order in permutations(dets):\n    pairs = [(t, d) for (t, x), d in zip(tracks.items(), order) if abs(d - x) <= gate]\n    key = (-len(pairs), sum(abs(d - tracks[t]) for t, d in pairs))\n    if best is None or key < best[0]:\n        best = (key, pairs)\nprint(best[1])\n",
+   "verify_output": "{'T1': 11, 'T2': 11}\n[('T1', 11)]\n"
+  },
+  {
+   "id": "cv-predict-template-review",
+   "kind": "predict",
+   "topic": "ocr-reading",
+   "title": {
+    "en": "Template matching with a review option",
+    "zh": "带人工复核选项的模板匹配"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Leon reads tiny 3 × 3 binary patterns (row by row) against three templates. A label is accepted only if its mismatch count is at most 2; otherwise the program returns ? for human review. Write the exact output.",
+    "zh": "Leon 把很小的 3 × 3 二值图案（逐行读取）与三个模板比较。只有当不匹配数不超过 2 时才接受该标签，否则程序返回 ?，交给人工复核。请写出程序的准确输出。"
+   },
+   "language": "python",
+   "code": "templates = {\"O\": [1, 1, 1, 1, 0, 1, 1, 1, 1],\n             \"0\": [0, 1, 0, 1, 0, 1, 0, 1, 0],\n             \"L\": [1, 0, 0, 1, 0, 0, 1, 1, 1]}\n\ndef read(observed, limit=2):\n    distances = {label: sum(a != b for a, b in zip(observed, t))\n                 for label, t in templates.items()}\n    best = min(distances, key=distances.get)\n    return (best if distances[best] <= limit else \"?\"), distances\n\nfor observed in ([1, 1, 1, 1, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0]):\n    label, distances = read(observed)\n    print(label, distances)\n",
+   "output": "O {'O': 1, '0': 3, 'L': 4}\n? {'O': 9, '0': 5, 'L': 6}\n",
+   "walk": {
+    "en": [
+     "First pattern against O: it differs only in the last position, so 1. Against 0: positions 0, 2 and 6 differ, so 3. Against L: positions 1, 2, 5 and 8 differ, so 4.",
+     "The smallest distance is 1 for O, which is within the limit of 2, so the label is O. The dictionary prints in insertion order: {'O': 1, '0': 3, 'L': 4}.",
+     "Second pattern has a single 1 in the centre. O has 1s everywhere except the centre, so all 9 positions differ. 0 has 1s at positions 1, 3, 5 and 7, so those 4 plus the centre give 5. L has 1s at positions 0, 3, 6, 7 and 8, so 5 plus the centre give 6.",
+     "The nearest template is 0 at distance 5, but 5 > 2, so the program returns ? instead of a label. The nearest template always exists; the limit is what lets unreadable input go to review."
+    ],
+    "zh": [
+     "第一个图案与 O 比较：只有最后一个位置不同，所以是 1。与 0 比较：位置 0、2、6 不同，所以是 3。与 L 比较：位置 1、2、5、8 不同，所以是 4。",
+     "最小距离是 O 的 1，在上限 2 之内，所以标签是 O。字典按插入顺序打印：{'O': 1, '0': 3, 'L': 4}。",
+     "第二个图案只有中心一个 1。O 除中心外全是 1，所以 9 个位置都不同。0 在位置 1、3、5、7 是 1，这 4 个位置加上中心共 5 个不同。L 在位置 0、3、6、7、8 是 1，这 5 个加上中心共 6 个不同。",
+     "最近的模板是距离为 5 的 0，但 5 > 2，所以程序返回 ? 而不是一个标签。最近的模板总是存在的；正是这个上限让无法辨认的输入能够进入人工复核。"
+    ]
+   }
+  },
+  {
+   "id": "cv-patch-token-pairs",
+   "kind": "numeric",
+   "topic": "visual-tokens",
+   "title": {
+    "en": "Attention pairs for image patches",
+    "zh": "图像块的注意力配对数"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Emma's Vision Transformer cuts a 224 × 224 RGB image into 16 × 16 patches and adds one class token. How many ordered token pairs does one full-attention head compare?",
+    "zh": "Emma 的 Vision Transformer 把一张 224 × 224 的 RGB 图像切成 16 × 16 的图像块，并加入一个类别词元。一个全注意力头要比较多少个有序词元对？"
+   },
+   "answer": 38809,
+   "solution": {
+    "en": "Patches per side: 224 / 16 = 14, so 14 × 14 = 196 patches.\nEach patch holds 16 × 16 × 3 = 768 channel values, which a learned projection turns into one token.\nTokens: L = 196 + 1 = 197.\nOrdered pairs: L × L = 197² = 38,809.\n\nHalving the patch side to 8 would give 28 × 28 = 784 patches, 785 tokens and 616,225 pairs, about 16 times more. This counts comparisons in one attention head; it is not a direct prediction of total runtime.",
+    "zh": "每边的图像块数：224 / 16 = 14，所以共 14 × 14 = 196 个图像块。\n每个图像块有 16 × 16 × 3 = 768 个通道值，由一个可学习的投影变成一个词元。\n词元数：L = 196 + 1 = 197。\n有序配对数：L × L = 197² = 38,809。\n\n如果把图像块边长减半到 8，会得到 28 × 28 = 784 个图像块、785 个词元和 616,225 个配对，约多 16 倍。这只是一个注意力头中的比较次数，并不能直接预测总运行时间。"
+   },
+   "verify_code": "H = W = 224; P = 16; C = 3\npatches = (H // P) * (W // P)\ntokens = patches + 1\nsmall = (H // 8) * (W // 8) + 1\nprint(patches, P * P * C, tokens, small ** 2)\nprint(tokens ** 2)\n"
+  },
+  {
+   "id": "cv-mcq-defect-lighting",
+   "kind": "mcq",
+   "topic": "defect-inspection",
+   "title": {
+    "en": "Three flagged positions after a lamp moved",
+    "zh": "灯移动后被标记的三个位置"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Mia compares an aligned tile photo with a clean reference, position by position. Reference: [20, 20, 20, 20, 20]. Observation: [27, 26, 40, 27, 26]. She flags positions where |observed − reference| > 6. Between sessions the lamp was moved closer. Which conclusion is best supported?",
+    "zh": "Mia 把一张对齐的瓷砖照片与干净的参考图逐位置比较。参考：[20, 20, 20, 20, 20]。观测：[27, 26, 40, 27, 26]。她标记 |观测 − 参考| > 6 的位置。两次拍摄之间，灯被移得更近了。下列哪个结论最有依据？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "A global brightness rise of about 7 lifts every difference, so positions 0 and 3 cross the threshold. After fixing the lighting (or removing the common offset) only position 2 still stands out, and it is a candidate for a person to inspect, not a confirmed defect.",
+      "zh": "整体亮度上升了约 7，抬高了每个差值，所以位置 0 和 3 越过了阈值。修正光照（或去掉共同的偏移）之后，只有位置 2 仍然突出；它是需要人工检查的候选区域，而不是已确认的缺陷。"
+     },
+     "why": {
+      "en": "Right. The differences are [7, 6, 20, 7, 6], so positions 0, 2 and 3 are flagged. Subtracting the typical offset of 7 leaves [0, 1, 13, 0, 1], and only position 2 exceeds 6.",
+      "zh": "正确。差值是 [7, 6, 20, 7, 6]，所以位置 0、2、3 被标记。减去典型偏移 7 之后剩下 [0, 1, 13, 0, 1]，只有位置 2 超过 6。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "There are three chips, at positions 0, 2 and 3.",
+      "zh": "有三处崩口，位于位置 0、2 和 3。"
+     },
+     "why": {
+      "en": "Wrong. Positions 0 and 3 differ by 7, barely more than the unflagged positions 1 and 4 (6 each). A common brightness rise explains all four; only position 2 is far above the rest.",
+      "zh": "错误。位置 0 和 3 的差值是 7，只比未被标记的位置 1 和 4（各为 6）略高。整体亮度上升就能解释这四个位置；只有位置 2 远远高于其他位置。"
+     }
+    },
+    {
+     "text": {
+      "en": "Raise the threshold to 25 so that the tile passes.",
+      "zh": "把阈值提高到 25，让这块瓷砖通过。"
+     },
+     "why": {
+      "en": "Wrong. That would also hide position 2, which differs by 20. Fix the capture first, then choose the threshold on separate normal and defective examples.",
+      "zh": "错误。这也会把差值为 20 的位置 2 藏起来。应先修正拍摄条件，再用单独的正常样本和缺陷样本选择阈值。"
+     }
+    },
+    {
+     "text": {
+      "en": "The image score of 20 proves that the tile has a defect.",
+      "zh": "图像分数 20 证明这块瓷砖有缺陷。"
+     },
+     "why": {
+      "en": "Wrong. A large difference shows something unusual. Whether it is a chip or a harmless variation (a glaze pattern, a reflection) needs inspection.",
+      "zh": "错误。差值大只说明有不寻常的地方。它到底是崩口还是无害的变化（釉面花纹、反光），需要检查才能确定。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "ref = [20] * 5\nobs = [27, 26, 40, 27, 26]\nd = [abs(o - r) for o, r in zip(obs, ref)]\noffset = sorted(o - r for o, r in zip(obs, ref))[2]\nd2 = [abs(o - r - offset) for o, r in zip(obs, ref)]\nprint(d, [i for i, v in enumerate(d) if v > 6], max(d))\nprint(offset, d2, [i for i, v in enumerate(d2) if v > 6])\n",
+   "verify_output": "[7, 6, 20, 7, 6] [0, 2, 3] 20\n7 [0, 1, 13, 0, 1] [2]\n"
+  },
+  {
+   "id": "cv-mcq-burst-split",
+   "kind": "mcq",
+   "topic": "evaluation-shift",
+   "title": {
+    "en": "Testing a filter for a new camera",
+    "zh": "为新相机测试过滤器"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Noah's wildlife club has images from 10 trail cameras. Each trigger records a burst of 5 nearly identical frames. The filter will be installed at a new camera location next season. Which test split answers \"how well will it work at a new location?\" ",
+    "zh": "Noah 的野生动物社有来自 10 台野外相机的图像。每次触发会连拍 5 张几乎相同的照片。这个过滤器下个季节将安装在一个新的相机位置。哪种测试划分能回答「它在新位置上效果如何？」"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Hold out all images from 2 whole cameras for testing (and others for validation), so every burst and every location in the test set is unseen.",
+      "zh": "把 2 台相机的全部图像留作测试（另留几台用于验证），这样测试集中的每一组连拍、每一个位置都是没见过的。"
+     },
+     "why": {
+      "en": "Right. Holding out whole cameras keeps bursts together and matches the future use: a location the model has never seen.",
+      "zh": "正确。按整台相机留出，既能让连拍保持在同一个集合，又符合将来的用途：一个模型从未见过的位置。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Split the files at random, 80% for training and 20% for testing.",
+      "zh": "随机划分文件，80% 用于训练，20% 用于测试。"
+     },
+     "why": {
+      "en": "Wrong. Frames of the same burst land on both sides, so the test images are near copies of training images, and every camera is familiar.",
+      "zh": "错误。同一组连拍的照片会被分到两边，测试图像几乎是训练图像的复制品，而且每台相机都是熟悉的。"
+     }
+    },
+    {
+     "text": {
+      "en": "Within each burst, use frames 1–4 for training and frame 5 for testing.",
+      "zh": "在每组连拍中，用第 1–4 张训练，第 5 张测试。"
+     },
+     "why": {
+      "en": "Wrong. Frame 5 is almost identical to frames 1–4, so this measures memory of near-duplicates, not performance at a new location.",
+      "zh": "错误。第 5 张与第 1–4 张几乎一样，这样测的是对近似重复图像的记忆，而不是在新位置上的表现。"
+     }
+    },
+    {
+     "text": {
+      "en": "Test only on night images from all cameras, because night is the hardest condition.",
+      "zh": "只用所有相机的夜间图像做测试，因为夜间是最难的条件。"
+     },
+     "why": {
+      "en": "Wrong. Reporting night separately is useful, but these cameras are all in training, so it still does not test a new location.",
+      "zh": "错误。单独报告夜间结果很有用，但这些相机都出现在训练中，所以它仍然没有测试新的位置。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "cv-short-camera-evaluation",
+   "kind": "short",
+   "topic": "evaluation-shift",
+   "title": {
+    "en": "Design an evaluation for new camera sites",
+    "zh": "为新的相机位置设计评估"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Jack's club has 9,000 images from 12 trail cameras, all taken in one summer. Cameras shoot bursts of 5 frames. About 15% of images contain an animal, and about a third are taken at night. The filter will flag images with animals, and it will be installed at new camera locations next spring.\n\nDesign the evaluation:\n(a) how to split the data;\n(b) what to report, and what simple baseline to compare against;\n(c) which conditions to check separately, and what the data cannot tell you;\n(d) how to use the validation and test sets.",
+    "zh": "Jack 的社团有来自 12 台野外相机的 9,000 张图像，全部拍摄于同一个夏天。相机每次连拍 5 张。约 15% 的图像中有动物，约三分之一是在夜间拍摄的。这个过滤器要标记出有动物的图像，明年春天将安装在新的相机位置。\n\n请设计评估方案：\n(a) 如何划分数据；\n(b) 报告什么，以及与什么简单基线比较；\n(c) 哪些条件要单独检查，以及这些数据无法告诉你什么；\n(d) 如何使用验证集和测试集。"
+   },
+   "solution": {
+    "en": "(a) Split by camera location: for example 8 cameras for training, 2 for validation and 2 for testing. This keeps every burst within one set and makes the test locations unseen, like next spring's sites. Check that no near-duplicate images cross the sets.\n\n(b) At a fixed threshold, report TP, FP and FN counts with precision and recall for the animal class, plus the number of images and cameras tested. Compare with the \"always empty\" baseline: it already gets about 85% accuracy and finds no animals, so accuracy alone is misleading.\n\n(c) Report day and night separately, and per test camera, with their counts; a good daytime average says little about night. The data come from one summer only, so spring light, vegetation and animal mix are a domain shift the test cannot measure. Say so, and if possible collect a small labelled sample from a new site in spring.\n\n(d) Choose the model and the threshold on the validation cameras only. Evaluate the final choice once on the test cameras and report that result; do not go back and tune after looking at the test.",
+    "zh": "(a) 按相机位置划分：例如 8 台相机用于训练，2 台用于验证，2 台用于测试。这样每组连拍都留在同一个集合中，测试位置也是没见过的，就像明年春天的新位置。还要检查没有近似重复的图像跨越不同集合。\n\n(b) 在固定阈值下，报告动物类的 TP、FP、FN 计数以及精确率和召回率，并写明测试了多少张图像、多少台相机。与「永远判为空」的基线比较：它的准确率已经约有 85%，却一只动物也找不到，所以单看准确率会产生误导。\n\n(c) 分别报告白天和夜间、以及每台测试相机的结果，并附上计数；白天平均表现好，并不能说明夜间的情况。数据只来自一个夏天，所以春天的光照、植被和动物种类构成了测试无法衡量的领域偏移。要明确说明这一点，如果可能，在春天从一个新位置收集少量有标签的样本。\n\n(d) 只在验证相机上选择模型和阈值。对最终选择在测试相机上只评估一次并报告该结果；看过测试结果之后不要再回头调参。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Holds out whole cameras (locations) for test, matching the new-site use.",
+      "zh": "按整台相机（位置）留出测试集，符合新位置的用途。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Keeps bursts or near-duplicates within one set.",
+      "zh": "让连拍或近似重复图像留在同一个集合中。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Reports TP, FP and FN counts with precision and recall at a fixed threshold.",
+      "zh": "在固定阈值下报告 TP、FP、FN 计数以及精确率和召回率。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Compares with the \"always empty\" baseline (about 85% accuracy, zero recall).",
+      "zh": "与「永远判为空」的基线比较（准确率约 85%，召回率为零）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Reports day and night (or per camera) separately with counts, and names the summer-to-spring shift as a limit.",
+      "zh": "分别报告白天和夜间（或每台相机）的结果并附计数，并指出从夏天到春天的偏移是一个局限。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Chooses model and threshold on validation cameras and evaluates once on test cameras.",
+      "zh": "在验证相机上选择模型和阈值，并在测试相机上只评估一次。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Splitting images at random, which puts frames of one burst in both training and test.",
+     "zh": "随机划分图像，导致同一组连拍的照片同时出现在训练集和测试集。"
+    },
+    {
+     "en": "Reporting only accuracy, which the empty baseline already makes look high.",
+     "zh": "只报告准确率，而「全部为空」的基线本身就能让准确率看起来很高。"
+    },
+    {
+     "en": "Tuning the threshold on the test cameras.",
+     "zh": "在测试相机上调整阈值。"
+    }
+   ]
+  },
+  {
+   "id": "cv-quantize-error",
+   "kind": "numeric",
+   "topic": "inference-pipelines",
+   "title": {
+    "en": "Largest error of a simple quantiser",
+    "zh": "简单量化器的最大误差"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Iris tests a zero-offset quantiser with step 0.25: quantized = round(value / step) and restored = quantized × step. The values are 0.37, −0.12, 0.88 and 0.61. What is the largest absolute error |restored − value|?",
+    "zh": "Iris 测试一个步长为 0.25、零偏移的量化器：quantized = round(value / step)，restored = quantized × step。数值为 0.37、−0.12、0.88、0.61。最大的绝对误差 |restored − value| 是多少？"
+   },
+   "answer": 0.12,
+   "tolerance": 0.001,
+   "solution": {
+    "en": "0.37 / 0.25 = 1.48, rounds to 1, restored 0.25, error 0.12.\n−0.12 / 0.25 = −0.48, rounds to 0, restored 0, error 0.12.\n0.88 / 0.25 = 3.52, rounds to 4, restored 1.00, error 0.12.\n0.61 / 0.25 = 2.44, rounds to 2, restored 0.50, error 0.11.\n\nThe largest error is 0.12. With rounding to the nearest level, no error can exceed half a step, 0.125. Small as they are, such changes can move a score across a decision threshold, so the whole pipeline must be re-evaluated after quantisation.",
+    "zh": "0.37 / 0.25 = 1.48，取整为 1，还原为 0.25，误差 0.12。\n−0.12 / 0.25 = −0.48，取整为 0，还原为 0，误差 0.12。\n0.88 / 0.25 = 3.52，取整为 4，还原为 1.00，误差 0.12。\n0.61 / 0.25 = 2.44，取整为 2，还原为 0.50，误差 0.11。\n\n最大误差是 0.12。按最近的量化级取整时，任何误差都不会超过半个步长 0.125。这些变化虽小，却可能让某个分数越过决策阈值，所以量化之后必须重新评估整个流水线。"
+   },
+   "verify_code": "values = [0.37, -0.12, 0.88, 0.61]\nstep = 0.25\nq = [round(v / step) for v in values]\nrestored = [n * step for n in q]\nerr = [abs(r - v) for r, v in zip(restored, values)]\nprint(q, restored, [round(e, 4) for e in err])\nprint(round(max(err), 4))\n"
+  },
+  {
+   "id": "cv-short-pipeline-mismatch",
+   "kind": "short",
+   "topic": "inference-pipelines",
+   "title": {
+    "en": "Laptop and server disagree",
+    "zh": "笔记本与服务器的结果不一致"
+   },
+   "marks": 5,
+   "prompt": {
+    "en": "Leon's detector gives correct boxes on the training server. On the club laptop the boxes are shifted downwards and there are more duplicate boxes. The laptop pipeline letterboxes every image to 640 × 640, runs an 8-bit quantised copy of the model, and then converts boxes back. Timings on the laptop: preprocessing 30 ms, model 12 ms, postprocessing 6 ms.\n\nList the checks you would make to find the cause, linking each symptom to a likely mistake, and say what you would measure before keeping the laptop version.",
+    "zh": "Leon 的检测器在训练服务器上能给出正确的框。在社团的笔记本电脑上，框整体向下偏移，并且重复框更多。笔记本上的流水线把每张图像以加边缩放（letterbox）方式调整为 640 × 640，运行 8 位量化的模型副本，然后再把框转换回原图。笔记本上的耗时：预处理 30 ms，模型 12 ms，后处理 6 ms。\n\n列出你会做哪些检查来找出原因，把每个症状与可能的错误联系起来，并说明在保留笔记本版本之前要测量什么。"
+   },
+   "solution": {
+    "en": "Checks, linked to symptoms.\n- Input contract: same channel order (RGB or BGR) and the same scaling and normalisation as in training. A mismatch changes every score.\n- Letterbox geometry (explains the downward shift): letterboxing scales the image and adds padding, for example 160 pixels at the top and bottom for an 800 × 400 photo. Mapping boxes back must subtract that padding and divide by the same scale. Forgetting the vertical padding shifts every box down.\n- Postprocessing settings (explains the duplicates): compare the score threshold and the NMS IoU threshold with the server's values, and check that NMS is actually applied, per class if needed. A higher NMS threshold or a skipped NMS leaves more duplicates.\n- Model copy: run the float and the quantised model on the same preprocessed checked images and compare outputs, to separate a quantisation effect from a pipeline bug.\n\nBefore keeping it.\n- Accuracy of the whole laptop pipeline on the same checked examples as the server (same metric, same thresholds); keep it only if it passes.\n- Latency per stage and in total (48 ms here). Preprocessing takes 30 ms, so making the model faster alone cannot remove most of the delay.",
+    "zh": "检查项，并与症状对应。\n- 输入约定：通道顺序（RGB 或 BGR）、缩放和归一化必须与训练时相同。不一致会改变每一个分数。\n- 加边缩放的几何关系（解释框向下偏移）：letterbox 会缩放图像并加边，例如一张 800 × 400 的照片上下各加 160 像素。把框映射回原图时，必须减去这段填充并除以同样的缩放比例。忘记竖直方向的填充，每个框都会向下偏移。\n- 后处理设置（解释重复框）：把分数阈值和 NMS 的 IoU 阈值与服务器上的值比较，并检查 NMS 是否真的执行了，需要时是否按类别执行。NMS 阈值更高或跳过 NMS 都会留下更多重复框。\n- 模型副本：在同样预处理过的核对图像上分别运行浮点模型和量化模型并比较输出，把量化的影响与流水线的错误区分开。\n\n保留之前要测量的。\n- 在与服务器相同的核对样本上测量整个笔记本流水线的准确度（同样的指标、同样的阈值）；只有通过才保留。\n- 每个阶段以及总的延迟（这里是 48 ms）。预处理就占了 30 ms，所以单靠让模型更快无法去掉大部分延迟。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Checks the input contract: channel order and normalisation match training.",
+      "zh": "检查输入约定：通道顺序和归一化与训练时一致。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Links the downward shift to letterbox padding or scale not being undone when mapping boxes back.",
+      "zh": "把框向下偏移与映射回原图时没有撤销加边填充或缩放联系起来。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Links the extra duplicates to a different score or NMS threshold, or NMS not being applied.",
+      "zh": "把多出来的重复框与分数阈值或 NMS 阈值不同、或者没有执行 NMS 联系起来。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Compares quantised and float outputs, and re-evaluates the whole pipeline on the same checked examples.",
+      "zh": "比较量化与浮点模型的输出，并在相同的核对样本上重新评估整个流水线。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Measures per-stage latency and notices that preprocessing (30 of 48 ms) dominates.",
+      "zh": "测量各阶段延迟，并注意到预处理（48 ms 中的 30 ms）占了主要部分。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Blaming quantisation for everything without testing the float model through the same pipeline.",
+     "zh": "不把浮点模型放进同一条流水线测试，就把一切都归咎于量化。"
+    },
+    {
+     "en": "Measuring only the model's time and calling that the latency.",
+     "zh": "只测量模型本身的时间，并把它当作延迟。"
+    },
+    {
+     "en": "Fixing the boxes by adding a constant offset found by eye instead of using the saved scale and padding.",
+     "zh": "凭目测加一个常数偏移来修正框，而不是使用保存下来的缩放比例和填充量。"
+    }
+   ]
+  }
+ ],
+ "papers": [
+  {
+   "id": "diag-a",
+   "type": "diagnostic",
+   "title": {
+    "en": "Diagnostic: four stages in 20 minutes",
+    "zh": "诊断卷：用 20 分钟检查四个阶段"
+   },
+   "minutes": 20,
+   "questions": [
+    "cv-standardize-byte",
+    "cv-mcq-bgr-read-as-rgb",
+    "cv-filter-response",
+    "cv-predict-closing-border",
+    "cv-iou-two-boxes",
+    "cv-mcq-pixel-accuracy-trap",
+    "cv-track-gate",
+    "cv-patch-token-pairs",
+    "cv-mcq-burst-split"
+   ],
+   "note": {
+    "en": "An original 20-minute check across the four stages of this guide: seeing the numbers; comparing and locating; measuring, following and reading; and combining and verifying. It is practice written for this site and is not a guide to the format or content of any real exam.\n\nMarks: 20. Every question marks itself. Afterwards, see which stage lost marks and go back to those chapters.\n\nUse pen, paper and a basic calculator (square root, exp and ln). Keep at least 4 decimals in the middle of a calculation and round only at the end; the stated tolerance covers that rounding. Python is for checking your work afterwards, not for the paper.",
+    "zh": "这是一份原创的 20 分钟检查卷，覆盖本指南的四个阶段：看懂数字；比较与定位；测量、跟踪与读字；组合与验证。它是为本站编写的练习，不是任何真实考试的格式或内容指南。\n\n总分：20 分。每道题都会自动评分。做完后看看哪个阶段丢分最多，再回到对应的章节复习。\n\n用笔、纸和一个基础计算器作答（需要平方根、exp 和 ln）。计算过程中至少保留 4 位小数，只在最后一步取舍；题目给出的容差已经包含这种舍入。Python 只用来事后检查，不在答卷时使用。"
+   }
+  },
+  {
+   "id": "mock-a",
+   "type": "mock",
+   "title": {
+    "en": "Mock paper A: 45 minutes, mixed questions",
+    "zh": "模拟卷 A：45 分钟，混合题型"
+   },
+   "minutes": 45,
+   "questions": [
+    "cv-mcq-hwc-chw",
+    "cv-flip-scale-box",
+    "cv-ratio-test",
+    "cv-head-softmax-loss",
+    "cv-trace-nms",
+    "cv-trace-toy-ap",
+    "cv-dice-from-counts",
+    "cv-mcq-track-collision",
+    "cv-predict-template-review",
+    "cv-mcq-defect-lighting",
+    "cv-short-camera-evaluation",
+    "cv-quantize-error",
+    "cv-short-pipeline-mismatch"
+   ],
+   "note": {
+    "en": "An original practice paper written for this site. It is not a guide to the format, length or content of any real exam. The questions follow the four stages of the guide in order.\n\nTime: 45 minutes. Marks: 44. Multiple-choice, calculation, predict-the-output and trace questions mark themselves; mark the two short answers against their rubrics. The two trace tables and the two short answers take longest, so leave about 22 minutes for them.\n\nUse pen, paper and a basic calculator (square root, exp and ln). Keep at least 4 decimals in the middle of a calculation and round only at the end; the stated tolerance covers that rounding. Python is for checking your work afterwards, not for the paper.",
+    "zh": "这是为本站编写的原创练习卷，不是任何真实考试的格式、长度或内容指南。题目按本指南的四个阶段依次排列。\n\n时间：45 分钟。总分：44 分。选择题、计算题、预测输出题和跟踪表会自动评分；两道简答题请对照评分标准自己打分。两张跟踪表和两道简答题最耗时间，大约要留出 22 分钟。\n\n用笔、纸和一个基础计算器作答（需要平方根、exp 和 ln）。计算过程中至少保留 4 位小数，只在最后一步取舍；题目给出的容差已经包含这种舍入。Python 只用来事后检查，不在答卷时使用。"
+   }
+  }
+ ]
+}

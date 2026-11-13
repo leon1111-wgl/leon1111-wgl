@@ -127,8 +127,8 @@
         "zh": "设自拟通道值 v = 153，μ = 0.5，σ = 0.25。先缩放：153 / 255 = 0.6。再中心化：0.6 − 0.5 = 0.1。最后除以标准差，得到 z = 0.4。\n\n如果输入的 0.6 已经完成缩放，却再次除以 255，标准化结果将约为 −1.9906。形状需要单独检查：一张 4×6 的 RGB 图像形状为 (4, 6, 3)，把通道轴移到前面后得到 (3, 4, 6)，两者都包含 72 个数值。这两种操作本身都不会把 BGR 变成 RGB。只有同时检查数值和通道含义，才能判断输入是否正确。"
       },
       "limits": {
-        "en": "The parcel-label analogy explains interface agreement, not colour science. Camera response, gamma encoding and illumination also affect pixels. Correct shapes and ranges cannot prove that an image represents the same physical scene under different capture conditions; they only eliminate a useful class of avoidable errors.",
-        "zh": "包裹标签的类比解释的是接口一致性，并不能代替色彩科学。相机响应、伽马编码与光照也会影响像素。形状和范围正确，不能证明不同拍摄条件下的图像对应相同的物理测量；它只是排除了一类本可避免的错误。"
+        "en": "Maya's colour-order check explains interface agreement, not colour science. Camera response, gamma encoding and illumination also affect pixels. Correct shapes and ranges cannot prove that an image represents the same physical scene under different capture conditions; they only eliminate a useful class of avoidable errors.",
+        "zh": "Maya 对颜色顺序的检查解释的是接口一致性，并不能代替色彩科学。相机响应、伽马编码与光照也会影响像素。形状和范围正确，不能证明不同拍摄条件下的图像对应相同的物理测量；它只是排除了一类本可避免的错误。"
       },
       "takeaway": {
         "en": "Before learning from pixels, establish their axes, colour meaning, scale and normalization contract at every boundary.",
@@ -279,15 +279,16 @@
       },
       "sources": [
         "opencv-colour",
-        "opencv-pixels"
+        "opencv-pixels",
+        "opencv-colour-conversions"
       ],
       "takeaway": {
         "en": "Colour filtering can select markers or prepare regions for later inspection. Check known colours, channel order and lighting before trusting a mask.",
         "zh": "颜色筛选可选择标牌或为后续检查准备区域。信任掩码前要检查已知颜色、通道顺序与光照。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "OpenCV's Basic Operations on Images tutorial shows that reading one pixel of a colour image returns its Blue, Green and Red values, in that order (BGR). The Changing Colorspaces tutorial converts images with cv.cvtColor and the flag cv.COLOR_BGR2GRAY or cv.COLOR_BGR2HSV, and notes that OpenCV stores hue from 0 to 179 while other software uses other scales. OpenCV's colour-conversion reference gives the grey formula Y = 0.299·R + 0.587·G + 0.114·B.\n\nWorked example: OpenCV prints a red marker pixel as [20, 30, 180], so B = 20, G = 30 and R = 180. Grey = 0.299×180 + 0.587×30 + 0.114×20 = 53.82 + 17.61 + 2.28 ≈ 73.7. A green pixel [30, 110, 20] gives 0.299×20 + 0.587×110 + 0.114×30 ≈ 74.0. Two clearly different colours become almost the same grey. Reading the red pixel wrongly as RGB gives 44.1 instead, so channel order changes the answer. A real camera pipeline also deals with white balance, exposure and lighting, which one pixel cannot show.",
+        "zh": "OpenCV 的 Basic Operations on Images 教程说明：读取彩色图像中的一个像素，返回的是蓝、绿、红三个值，顺序为 BGR。Changing Colorspaces 教程用 cv.cvtColor 配合 cv.COLOR_BGR2GRAY 或 cv.COLOR_BGR2HSV 转换颜色空间，并提醒 OpenCV 把色调存成 0 到 179，而其他软件可能使用别的刻度。OpenCV 的颜色转换参考文档给出灰度公式 Y = 0.299·R + 0.587·G + 0.114·B。\n\n算一个例子：OpenCV 把一个红色标记的像素打印为 [20, 30, 180]，所以 B = 20、G = 30、R = 180。灰度 = 0.299×180 + 0.587×30 + 0.114×20 = 53.82 + 17.61 + 2.28 ≈ 73.7。一个绿色像素 [30, 110, 20] 的灰度是 0.299×20 + 0.587×110 + 0.114×30 ≈ 74.0。两种明显不同的颜色，变成了几乎相同的灰度。如果误把这个红色像素按 RGB 顺序读取，灰度会变成 44.1，可见通道顺序会改变结果。真实的相机流程还要处理白平衡、曝光和光照，这些都无法从一个像素看出来。"
       },
       "code_examples": [
         {
@@ -586,8 +587,8 @@
         "zh": "可用这些操作清理扫描文字掩码或检查简单形状。每次清理前后都应比较细小但有用的细节。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "OpenCV's Morphological Transformations tutorial works on binary images with a 5×5 kernel full of ones. Erosion keeps a pixel as 1 only if every pixel under the kernel is 1; dilation makes it 1 if at least one is. Opening (erosion, then dilation) removes small white noise. Closing (dilation, then erosion) fills small holes. The morphological gradient, dilation minus erosion, looks like the object's outline. The Smoothing Images tutorial adds that low-pass filters remove noise but also blur edges, and that a median filter works well on salt-and-pepper noise.\n\nWorked example: take the row [0,0,1,1,1,1,0,0] and a kernel three positions wide. Dilation gives [0,1,1,1,1,1,1,0]. Erosion gives [0,0,0,1,1,0,0,0]. Their difference is [0,1,1,0,0,1,1,0]: two marked positions at each boundary and none in the middle. In a real image a 5×5 kernel checks 25 pixels at once, and its shape (OpenCV also offers elliptical and cross-shaped kernels) changes which details survive.",
+        "zh": "OpenCV 的 Morphological Transformations 教程在二值图像上使用元素全为 1 的 5×5 核。腐蚀时，只有核覆盖的所有像素都是 1，中心像素才保留为 1；膨胀时，只要至少有一个是 1，中心像素就变成 1。开运算（先腐蚀后膨胀）用来去除细小的白色噪点；闭运算（先膨胀后腐蚀）用来填补小孔。形态学梯度等于膨胀结果减去腐蚀结果，看起来像物体的轮廓。Smoothing Images 教程补充说明：低通滤波能去噪，但也会让边缘变模糊；中值滤波对椒盐噪声很有效。\n\n算一个例子：取一行 [0,0,1,1,1,1,0,0]，核宽 3 个位置。膨胀得到 [0,1,1,1,1,1,1,0]，腐蚀得到 [0,0,0,1,1,0,0,0]。两者相减得到 [0,1,1,0,0,1,1,0]：每条边界各标出两个位置，中间部分没有标记。在真实图像中，5×5 的核一次要检查 25 个像素；核的形状（OpenCV 还提供椭圆形和十字形核）也会决定哪些细节被保留。"
       },
       "code_examples": [
         {
@@ -727,8 +728,8 @@
         "zh": "一个自拟工具框的两个对角为 (10, 20) 与 (30, 50)。设 sₓ = sᵧ = 2，tₓ = 5，tᵧ = −3。第一个顶点变为 (2 × 10 + 5, 2 × 20 − 3) = (25, 37)，第二个变为 (65, 97)。宽从 20 变成 40，高从 30 变成 60，因此面积从 600 变成 2400 个平方坐标单位。\n\n平移不会改变宽或面积。如果输出画布只到 y = 80，框就超出画布，需要一致地执行裁剪与对象保留规则。若只更新像素，原标注框就会留在不相关的位置。"
       },
       "limits": {
-        "en": "The moving-stage analogy does not guarantee that identity survives a transformation. Cropping can remove decisive evidence, and interpolation can change small patterns. Augmentation improves robustness only to useful, label-consistent variation; it cannot substitute for representative real images from the intended environment.",
-        "zh": "移动舞台的类比不能保证对象含义在变换后保持不变。裁剪可能移除关键证据，插值也可能改变细小图案。增强只对有用且标签一致的变化有帮助，不能代替来自目标环境的代表性真实图像。"
+        "en": "Eva's moved box does not guarantee that identity survives a transformation. Cropping can remove decisive evidence, and interpolation can change small patterns. Augmentation improves robustness only to useful, label-consistent variation; it cannot substitute for representative real images from the intended environment.",
+        "zh": "Eva 移动后的矩形框不能保证对象含义在变换后保持不变。裁剪可能移除关键证据，插值也可能改变细小图案。增强只对有用且标签一致的变化有帮助，不能代替来自目标环境的代表性真实图像。"
       },
       "takeaway": {
         "en": "Every geometric change must carry its targets along, and every augmentation must justify why the label still means the same thing.",
@@ -886,8 +887,8 @@
         "zh": "局部特征可支持全景对齐或将拍摄物体匹配到参考图。需要检查重复图案和几何一致性。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "OpenCV's SIFT tutorial summarises Lowe's 2004 paper. Candidate points with low contrast (below 0.03 in the paper) or an edge-like shape (edge threshold 10) are removed. Each keypoint gets a direction from a 36-bin histogram covering 360 degrees; any other peak above 80% of the highest creates an extra keypoint with that direction. The descriptor splits a 16×16 neighbourhood into 16 blocks of 4×4 pixels, each with an 8-bin histogram. A match is rejected when the nearest-to-second-nearest distance ratio is above 0.8; the paper reports that this removes about 90% of false matches and only 5% of correct ones.\n\nWorked example: each orientation bin is 360 ÷ 36 = 10 degrees wide. If the highest bin is 50 and another is 42, then 42 ÷ 50 = 0.84 > 0.8, so a second keypoint appears. A bin of 35 gives 0.70 and is ignored. The descriptor holds 16 × 8 = 128 numbers. Real SIFT also searches several image scales and adjusts for lighting changes, which these counts leave out.",
+        "zh": "OpenCV 的 SIFT 教程概括了 Lowe 2004 年的论文。对比度过低（论文中低于 0.03）或形状像边缘（边缘阈值为 10）的候选点会被删除。每个关键点的方向来自一个覆盖 360 度、共 36 个区间的直方图；其他峰值只要超过最高峰的 80%，就会以该方向再生成一个关键点。描述子把关键点周围 16×16 的邻域分成 16 个 4×4 像素的小块，每块计算一个 8 区间的方向直方图。匹配时，如果最近距离与次近距离之比大于 0.8，就拒绝该匹配；论文报告，这一规则约去除 90% 的错误匹配，只丢掉约 5% 的正确匹配。\n\n算一个例子：每个方向区间宽 360 ÷ 36 = 10 度。若最高区间的值为 50，另一区间为 42，则 42 ÷ 50 = 0.84 > 0.8，因此会多出一个关键点；若另一区间为 35，比值为 0.70，就会被忽略。描述子共有 16 × 8 = 128 个数。真实的 SIFT 还要在多个图像尺度上搜索，并对光照变化做调整，这些计数没有包含这些步骤。"
       },
       "code_examples": [
         {
@@ -1027,8 +1028,8 @@
         "zh": "使用特征 [1,2]。第一类权重 [1,0]，分数 1×1+0×2=1；第二类权重 [0,1]，分数 0×1+1×2=2；第三类权重 [0,0]，得 0。所有常数偏移均为零。\n\n对 [1,2,0] 取指数得到约 [2.7183,7.3891,1]，总和 11.1073。各除以总和得到 [0.2447,0.6652,0.0900]。若第二类正确，损失 −ln(0.6652)≈0.4076。模型偏好正确标签，却仍给其他类分配概率。特征是给定的，从像素学到这些特征仍是另一项工作。"
       },
       "limits": {
-        "en": "The experienced-illustrator analogy can overstate what transfers. Pretraining may encode irrelevant shortcuts, and a confident softmax can still choose the wrong class. Frozen features are a useful baseline rather than a universal solution; the appropriate adaptation depends on dataset size, similarity and evaluation evidence.",
-        "zh": "经验丰富的插画师类比，可能夸大能够迁移的能力。预训练可能包含无关捷径，较大的 softmax 值也可能对应错误类别。冻结特征是有用的基线，却不是通用答案；如何调整应依据数据量、相似性与评估证据决定。"
+        "en": "Noor's reused model can suggest more transfer than really happens. Pretraining may encode irrelevant shortcuts, and a confident softmax can still choose the wrong class. Frozen features are a useful baseline rather than a universal solution; the appropriate adaptation depends on dataset size, similarity and evaluation evidence.",
+        "zh": "Noor 复用的模型容易让人高估能够迁移的能力。预训练可能包含无关捷径，较大的 softmax 值也可能对应错误类别。冻结特征是有用的基线，却不是通用答案；如何调整应依据数据量、相似性与评估证据决定。"
       },
       "takeaway": {
         "en": "Transfer a representation, define the new decision carefully, and measure improvement on genuinely separate image groups.",
@@ -1187,8 +1188,8 @@
         "zh": "考虑三个自拟海鸥框：A = (0, 0, 4, 4)、B = (1, 1, 5, 5)、C = (6, 0, 8, 2)，分数分别为 0.9、0.8、0.7。A 与 B 的面积均为 16。它们的交集宽为 3、高为 3，因此面积为 9。并集面积为 16 + 16 − 9 = 23，所以 IoU = 9 / 23，约为 0.3913。\n\n当 τ = 0.3 时，保留 A、抑制 B。C 与 A 没有重叠，因此保留 C，最终剩下两个框。当 τ = 0.5 时，B 也被保留，共有三个框。这些结果说明阈值的作用；没有标注，仍无法判断 A 与 B 指向同一只海鸥，还是两只相互遮挡的海鸥。"
       },
       "limits": {
-        "en": "The pencil-circle analogy explains duplicate proposals, but high overlap does not prove shared identity. Greedy suppression can remove real neighbours, and a high score can belong to an inaccurate box. Different detectors may use other duplicate-handling designs; the rule here describes a common operation, not every detection architecture.",
-        "zh": "铅笔圈的类比解释了重复候选，但高重叠度不能证明它们对应同一对象。贪心抑制可能移除真实邻居，高分框也可能定位不准。不同检测器可能采用其他去重设计；这里介绍的是常见操作，并非所有检测架构都使用的规则。"
+        "en": "Lea's overlap check explains duplicate proposals, but high overlap does not prove shared identity. Greedy suppression can remove real neighbours, and a high score can belong to an inaccurate box. Different detectors may use other duplicate-handling designs; the rule here describes a common operation, not every detection architecture.",
+        "zh": "Lea 的重叠检查解释了重复候选，但高重叠度不能证明它们对应同一对象。贪心抑制可能移除真实邻居，高分框也可能定位不准。不同检测器可能采用其他去重设计；这里介绍的是常见操作，并非所有检测架构都使用的规则。"
       },
       "takeaway": {
         "en": "Treat boxes as candidates, define overlap precisely, and validate duplicate removal separately from the rule used to judge detection quality.",
@@ -1346,8 +1347,8 @@
         "zh": "在明确匹配规则下使用排序评估比较检测器。应同时保存分数、框、类别与参考数量。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "The official COCO evaluation code, cocoeval.py, fixes the protocol: 10 IoU thresholds from 0.50 to 0.95 in steps of 0.05, precision read at 101 recall levels, at most 1, 10 or 100 detections per image, and separate scores for small, medium and large objects (small means an area below 32² = 1,024 pixels). A detection matches a still-unmatched object only if their IoU is at least the threshold. Torchvision's nms, often run before evaluation, removes a lower-scoring box only when its IoU with a kept box is strictly greater than iou_threshold.\n\nWorked example: reference box (0,0,10,10) and prediction (2,0,12,10), written as corners x1,y1,x2,y2, overlap in an 8 × 10 = 80-pixel area. Union = 100 + 100 − 80 = 120, so IoU = 80 ÷ 120 ≈ 0.667. It is a true positive at 0.50, 0.55, 0.60 and 0.65. At the other six thresholds it is a false positive and the object counts as missed. Its 100-pixel area makes it small. COCO repeats this for every image, class and threshold before averaging, so one box shows only the bookkeeping.",
+        "zh": "COCO 官方评估代码 cocoeval.py 规定了评估方案：使用从 0.50 到 0.95、步长 0.05 的 10 个 IoU 阈值；在 101 个召回率水平上读取精确率；每张图最多计入 1、10 或 100 个检测结果；并分别报告小、中、大物体的得分（小物体指面积小于 32² = 1,024 像素）。只有当 IoU 不低于阈值时，一个检测结果才能与尚未匹配的物体配对。torchvision 的 nms 常在评估之前运行；只有当低分框与已保留框的 IoU 严格大于 iou_threshold 时，它才会删除低分框。\n\n算一个例子：参考框 (0,0,10,10) 与预测框 (2,0,12,10)（按角点格式 x1,y1,x2,y2 书写） 的重叠区域为 8 × 10 = 80 像素。并集 = 100 + 100 − 80 = 120，所以 IoU = 80 ÷ 120 ≈ 0.667。在 0.50、0.55、0.60 和 0.65 这四个阈值下，它是真正例；在其余六个阈值下，它是假正例，而该物体被记为漏检。它的面积为 100 像素，属于小物体。COCO 会对每张图像、每个类别和每个阈值重复这一过程再求平均，所以单个框只能展示记账方式。"
       },
       "code_examples": [
         {
@@ -1693,8 +1694,8 @@
         "zh": "跟踪可用于统计移动物体，或在视频中跟随玩具机器人和野生动物。应检查交叉、遮挡与漏检。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "The SORT paper describes each target by its box centre (u, v), area s and aspect ratio r, plus the speeds of u, v and s. A constant-velocity Kalman filter predicts every box in the next frame. The cost of pairing a detection with a track is the IoU distance (1 − IoU) to the predicted box, and the Hungarian algorithm finds the best one-to-one pairing for all of them at once. Pairs with overlap below IOU_min are rejected. A track unseen for T_Lost frames is deleted; the paper uses T_Lost = 1.\n\nWorked example: tracks A and B meet detections 1 and 2 with IoU(A,1) = 0.60, IoU(A,2) = 0.50, IoU(B,1) = 0.55 and IoU(B,2) = 0.10. Choose IOU_min = 0.3. A greedy rule takes A–1 first and leaves B–2 at 0.10, which fails, so B is deleted and detection 2 starts a new identity. The joint assignment A–2, B–1 totals 0.50 + 0.55 = 1.05, more than 0.60 + 0.10 = 0.70, and both pairs pass. The real tracker also corrects velocity estimates and keeps new tracks on probation, which this one-frame table omits.",
+        "zh": "SORT 论文用框的中心 (u, v)、面积 s 和长宽比 r，以及 u、v、s 的变化速度来描述每个目标。匀速模型的卡尔曼滤波器预测每个框在下一帧的位置。检测与轨迹配对的代价是检测框与预测框之间的 IoU 距离（1 − IoU），匈牙利算法一次性为所有轨迹和检测求出最佳的一对一配对。重叠低于 IOU_min 的配对会被拒绝。连续 T_Lost 帧没有被检测到的轨迹会被删除；论文中 T_Lost = 1。\n\n算一个例子：轨迹 A、B 与检测 1、2 的 IoU 分别为 IoU(A,1) = 0.60、IoU(A,2) = 0.50、IoU(B,1) = 0.55、IoU(B,2) = 0.10。我们取 IOU_min = 0.3。贪心规则先选 A–1，剩下的 B–2 只有 0.10，不合格，于是 B 被删除，检测 2 开始一个新身份。整体配对 A–2、B–1 的总和为 0.50 + 0.55 = 1.05，高于 0.60 + 0.10 = 0.70，而且两对都合格。真实的跟踪器还会修正速度估计，并让新轨迹先经过试用期，这张只有一帧的小表没有包含这些步骤。"
       },
       "code_examples": [
         {
@@ -1842,8 +1843,8 @@
         "zh": "OCR 可用于扫描件搜索、标签识别与文档阅读。应保留原图区域及阅读顺序，便于核对不确定文字。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "Tesseract's quality page lists ways to prepare an image before recognition. Tesseract works best on images of at least 300 DPI (dots, here pixels, per inch), so resizing may help. Skewed lines should be rotated until the text is horizontal. A crop should keep a modest white border, about 10 pixels, because a missing or very large border can cause errors. Page segmentation modes tell Tesseract what layout to expect: the default, 3, is fully automatic, while 7 treats the image as one text line. Turning off its dictionaries can help when most text is not ordinary words, such as catalogue codes.\n\nWorked example: a shelf label 2.5 inches wide covers 300 pixels in a photo, so its resolution is 300 ÷ 2.5 = 120 pixels per inch. Reaching 300 needs a scale factor of 300 ÷ 120 = 2.5, giving 750 pixels. A 10-pixel border on each side makes the crop 770 pixels wide. Enlarging cannot add detail the camera never captured, so a sharp, well-lit photo still matters more than resizing.",
+        "zh": "Tesseract 的输出质量页面列出了识别前准备图像的方法。Tesseract 在分辨率至少为 300 DPI（每英寸点数，这里指每英寸像素数）的图像上效果最好，因此放大图像可能有帮助。倾斜的文字行应先旋转到水平。裁剪时应保留约 10 像素的白色边框，因为没有边框或边框过大都可能导致错误。页面分割模式告诉 Tesseract 应预期怎样的版面：默认的模式 3 是全自动分割，模式 7 则把图像当作单行文字。如果大部分文字不是普通单词，例如图书编目代码，关闭词典可能会有帮助。\n\n算一个例子：照片里一张 2.5 英寸宽的书架标签占 300 像素，所以分辨率是 300 ÷ 2.5 = 120 像素每英寸。要达到 300，需要放大 300 ÷ 120 = 2.5 倍，宽度变为 750 像素。左右各加 10 像素边框后，裁剪图宽 770 像素。放大无法补回相机从未拍到的细节，所以清晰、光照良好的照片仍比缩放更重要。"
       },
       "code_examples": [
         {
@@ -1983,8 +1984,8 @@
         "zh": "32×32 的 RGB 图切成 8×8 块，每边四块，共 4×4=16 块。每块有 8×8×3=192 个通道值。学习投影可计算 64 种加权和，将每个 192 数列表转为例如 64 个特征数。\n\n加入一个类别词元后 L=17，全注意力每头有 17×17=289 对。改用 4×4 块时，有 8×8=64 块、65 词元、65²=4225 对。倍率为 4225/289≈14.62。这是注意力部分的比较计数，不表示完整运行时间有相同倍率。"
       },
       "limits": {
-        "en": "The exchange-of-descriptions analogy does not mean tokens reason like people or that attention weights explain every decision. The simplified arithmetic concerns ordinary full attention with fixed embedding width. Other architectures can use windows, pooling or different token designs, and finer patches alone do not guarantee better recognition.",
-        "zh": "交换描述的类比，并不意味着词元像人一样推理，也不意味着注意力权重可以解释每次判断。简化计算针对嵌入宽度固定的普通全注意力。其他架构可以使用窗口、池化或不同词元设计，而更细的图像块本身也不保证识别更好。"
+        "en": "The squares exchanging information in Mateo's display do not mean tokens reason like people or that attention weights explain every decision. The simplified arithmetic concerns ordinary full attention with fixed embedding width. Other architectures can use windows, pooling or different token designs, and finer patches alone do not guarantee better recognition.",
+        "zh": "Mateo 展示中各格交换信息，并不意味着词元像人一样推理，也不意味着注意力权重可以解释每次判断。简化计算针对嵌入宽度固定的普通全注意力。其他架构可以使用窗口、池化或不同词元设计，而更细的图像块本身也不保证识别更好。"
       },
       "takeaway": {
         "en": "Count patches and special tokens explicitly: finer visual units increase possible interactions, while useful detail and actual runtime still require measurement.",
@@ -2152,8 +2153,8 @@
         "zh": "可用异常图辅助检查纹理或物体。必须区分异常外观与已确认缺陷。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "MVTec AD is a research benchmark for anomaly detection in industrial inspection. Its page describes more than 5,000 high-resolution images in fifteen object and texture categories. Each category has defect-free training images and a test set that mixes defective and defect-free images, and every anomaly has a pixel-precise annotation. The data may be used only for non-commercial purposes (CC BY-NC-SA 4.0 licence).\n\nWorked example: pixel annotations let us check where an alert points, not only whether it fired. Suppose a test tile's annotated chip covers 8 pixels. The anomaly map flags 10 pixels, 6 of them inside the chip. Precision, the share of flagged pixels that are truly defective, is 6 ÷ 10 = 0.6. Recall, the share of defective pixels that were flagged, is 6 ÷ 8 = 0.75. The image-level alert is right, yet 4 flagged pixels are false alarms and 2 chip pixels are missed. The page's official evaluation scripts use their own metrics across all categories, so these two ratios illustrate the idea rather than reproduce a benchmark score.",
+        "zh": "MVTec AD 是面向工业检测的异常检测研究基准。其页面介绍，数据集包含 5,000 多张高分辨率图像，分为十五个物体与纹理类别。每个类别都有无缺陷的训练图像，以及混合了缺陷图像和无缺陷图像的测试集；每处异常都有像素级精确标注。数据只允许用于非商业用途（CC BY-NC-SA 4.0 许可）。\n\n算一个例子：有了像素标注，就能检查警报指向的位置，而不只是检查是否报警。假设一块测试瓷砖上标注的缺口占 8 个像素。异常图标出了 10 个像素，其中 6 个落在缺口内。精确率是被标出的像素中真正有缺陷的比例：6 ÷ 10 = 0.6。召回率是缺陷像素中被标出的比例：6 ÷ 8 = 0.75。这张图的整体报警是对的，但有 4 个被标像素是误报，缺口还有 2 个像素被漏掉。页面提供的官方评估脚本在所有类别上使用自己的指标，所以这两个比例只用来说明思路，并不是基准分数。"
       },
       "code_examples": [
         {
@@ -2293,8 +2294,8 @@
         "zh": "假设一个自拟留出组包含 100 张图片，其中 20 张有野生动物，80 张为空场景。在选定阈值下，模型对 25 张图片发出提示，其中 15 张确有动物，因此 TP = 15、FP = 10。它漏掉了 5 张有动物的图片，所以 FN = 5。精确率为 15 / 25 = 0.60，召回率为 15 / 20 = 0.75，F₁ 为 30 / 45，约为 0.6667。\n\n其余 70 张空场景被正确排除。因此总体准确率为 85 / 100 = 85%，但单看这个数字，会掩盖十次误报与五次漏报。这些计数描述的是该抽样组在该阈值下的表现，不能保证模型在未见过的相机地点上也有同样表现。"
       },
       "limits": {
-        "en": "The unfamiliar-photograph analogy helps expose leakage, but novelty has several dimensions. Separate sessions may still share the same camera background, and new locations can change class frequencies. Small evaluation groups produce uncertain estimates; always retain sample counts and avoid interpreting a single split as a universal performance certificate.",
-        "zh": "陌生照片的类比有助于发现泄漏，但陌生程度有多个维度。不同采集时段仍可能共享同一相机背景，新地点也可能改变类别频率。小评估组的估计具有不确定性；应始终保留样本数量，避免把一次划分当成通用性能证明。"
+        "en": "Sam's grouped split helps expose leakage, but novelty has several dimensions. Separate sessions may still share the same camera background, and new locations can change class frequencies. Small evaluation groups produce uncertain estimates; always retain sample counts and avoid interpreting a single split as a universal performance certificate.",
+        "zh": "Sam 按连拍分组的划分有助于发现泄漏，但陌生程度有多个维度。不同采集时段仍可能共享同一相机背景，新地点也可能改变类别频率。小评估组的估计具有不确定性；应始终保留样本数量，避免把一次划分当成通用性能证明。"
       },
       "takeaway": {
         "en": "A trustworthy vision score names its population, separates related captures, and reveals the false positives and missed positives behind the average.",
@@ -2464,8 +2465,8 @@
         "zh": "围绕模型建立可复现的预处理与后处理。用实际预期输入比较输出质量、延迟和内存。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "TorchVision's transforms page recommends keeping images as uint8 (whole numbers 0–255) while resizing, then converting with ToDtype(torch.float32, scale=True), which maps 0–255 to 0–1, and finally applying Normalize with per-channel mean [0.485, 0.456, 0.406] and standard deviation [0.229, 0.224, 0.225]. OpenCV's geometry tutorial says cv.resize uses linear interpolation by default and suggests INTER_AREA for shrinking. ONNX Runtime describes quantization as an 8-bit linear mapping, value = scale × (quantized − zero_point), and warns that it can lower accuracy.\n\nWorked example: a first-channel value of 200 becomes 200 ÷ 255 ≈ 0.784 after scaling, then (0.784 − 0.485) ÷ 0.229 ≈ 1.31 after normalizing. If one computer skips the scaling step, it computes (200 − 0.485) ÷ 0.229 ≈ 871, far outside anything the model saw. Passing OpenCV's BGR array unchanged would also put the blue value where the model may expect red. A real pipeline writes these choices into one shared specification and tests the whole chain, which a single number cannot do.",
+        "zh": "TorchVision 的 transforms 页面建议：缩放图像时保持 uint8 类型（0 到 255 的整数），然后用 ToDtype(torch.float32, scale=True) 把 0–255 映射到 0–1，最后用 Normalize 按通道减去均值 [0.485, 0.456, 0.406]、再除以标准差 [0.229, 0.224, 0.225]。OpenCV 的几何变换教程指出，cv.resize 默认使用线性插值，缩小图像时推荐 INTER_AREA。ONNX Runtime 把量化描述为 8 位线性映射：值 = scale × (量化值 − zero_point)，并提醒量化可能降低准确率。\n\n算一个例子：第一个通道的值 200 经缩放后变成 200 ÷ 255 ≈ 0.784，归一化后为 (0.784 − 0.485) ÷ 0.229 ≈ 1.31。如果某台电脑漏掉了缩放这一步，就会算出 (200 − 0.485) ÷ 0.229 ≈ 871，远远超出模型见过的任何输入。如果把 OpenCV 的 BGR 数组原样传入，模型可能期望红色的位置会收到蓝色的值。真实的流程会把这些选择写进一份共享规范，并测试整条链路，单个数字无法做到这一点。"
       },
       "code_examples": [
         {
@@ -2879,6 +2880,16 @@
       },
       "url": "https://www.cityscapes-dataset.com/benchmarks/",
       "publisher": "Cityscapes",
+      "kind": "Official reference"
+    },
+    {
+      "id": "opencv-colour-conversions",
+      "title": {
+        "en": "Color conversions",
+        "zh": "颜色转换"
+      },
+      "url": "https://docs.opencv.org/4.x/de/d25/imgproc_color_conversions.html",
+      "publisher": "OpenCV",
       "kind": "Official reference"
     }
   ],

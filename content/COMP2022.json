@@ -624,7 +624,7 @@
       "formula": "δ×((p,q),a) = (δ₁(p,a),δ₂(q,a))\nL₁ = L₂ ⇔ (L₁ ∖ L₂) ∪ (L₂ ∖ L₁) = ∅",
       "symbols": "p and q are states of the first and second DFA, and δ₁ and δ₂ are their transition functions. δ× is the product transition. L₁ and L₂ denote the two languages.\n\nSet difference keeps strings in one language but not the other; their union here is the symmetric difference. These formulas assume the same input alphabet. If needed, complete either automaton with a rejecting sink before taking complements or products.",
       "example": "Let machine A accept binary strings ending in 1, and machine B accept binary strings with an odd number of 1s. To compare them, start their product at (not-ending-in-1, even). On input 10, A first moves to its accepting state and then back to rejection; B toggles to odd on 1 and stays odd on 0.\n\nThe final pair has exactly one accepting component. Thus 10 witnesses that the languages differ. A reachability search can discover such a pair and reconstruct its input using predecessor links. One counterexample is sufficient; checking many agreeing strings is not.",
-      "pitfall": "Flipping final states in an incomplete DFA without adding a sink. Missing transitions must become accepting rejection-complement behavior too.",
+      "pitfall": "Flipping final states in an incomplete DFA without adding a sink. A string that dies on a missing transition is rejected, so the complement must accept it; that needs an explicit sink state.",
       "check": {
         "question": "How can a finite search establish agreement on infinitely many strings?",
         "answer": "Every string induces a path in the finite product graph. If no reachable state represents disagreement, no string can be a counterexample."
