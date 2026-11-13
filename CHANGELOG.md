@@ -8,7 +8,7 @@ A scripted walk of four readers through real tasks found where the hub got in th
 
 **What changed**
 - Learner walk: `scripts/learner_walk.mjs` takes four readers through a real task each, at desktop and 375 px, in dark and light. The readers are someone who has never programmed, an exam taker, someone writing C by hand, and an engineer. CI saves every step as a screenshot. Each friction point it found is a check, so it fails if that friction returns.
-- Search finds chapters by what they teach, on the hub and the homepage. On the walk's 21 lookups, 18 had found nothing or the wrong chapter. Examples: 二分查找, 时间复杂度, segfault, race condition, and RAG, which found the Java arrays chapter. Each hit says where it matched.
+- Search finds chapters by what they teach, on the hub and the homepage. On the walk's 21 lookups, 18 had found nothing or the wrong chapter. Examples: 二分查找, 时间复杂度, segfault, race condition, and RAG, which found the Java arrays chapter. Each hit says where it matched. Search also knows the abbreviations and Chinese names students type for ideas the chapters teach under full names: KNN, DP, GD, SGD, UB, OOP/面向对象, PCA/主成分分析, CNN, MLP, BFS, DFS, MST, NMS, ViT, LLM and batch norm. mAP is matched with its capitals, so a lower-case "map" still finds Java's Map.
 - A failed run is explained in plain Chinese or English: the line, the usual cause, and what to try, above the raw message. This covers Python, C and Java in reading pages and paper coding. The Java runner now says whether an error is in the reader's code or in the tests.
 - Every chapter of the five courses and five AI guides (208) asks one question in the middle, marked at once. A wrong choice gets a hint (why that choice is wrong) and another try; the full answer comes after. The mix is 81 multiple choice, 42 numeric, 60 predict-the-output and 25 recall. A miss joins the review queue.
 - Trace tables (118 of the 136 have three or more rows) can be stepped through one row at a time, by button or arrow key.
@@ -23,6 +23,7 @@ A scripted walk of four readers through real tasks found where the hub got in th
 - In CI on the branch: every program, practice answer, guide example, lab and Run button, as before. Also the new checks:
   - `scripts/zh_depth.py check`;
   - `scripts/test_explain.mjs` (13 checks against messages captured from the real runners);
+  - `scripts/test_search.mjs` (66 lookups, including the abbreviations above; 17 of them failed before the fix);
   - the learner walk (80 checks across the four width and theme combinations, including axe-core);
   - the 112 end-to-end checks, now including the four AI exam routes.
 - Fails first: the walk ran in CI on a commit that added only the walk (run 43480146985). It failed on all seven friction points it then fixed, and passed on its timing check for heavy pages.
@@ -35,7 +36,7 @@ A scripted walk of four readers through real tasks found where the hub got in th
 - The Chinese prose of the four AI guides was not measured or deepened. Parts of the multimodal guide read as notes, not sentences.
 - From the review: its note on comma placement in the COMP2123 and COMP3308 Chinese was not applied. The MuRAG "top 4" claim in one multimodal practice section was taken from the paper but not rechecked. One multimodal topic still lists a source its text does not use.
 - C programs that crash at run time get the general explanation, not a specific one.
-- Search is measured on 21 lookups written for the walk. Other wordings can still miss. Topics the site does not teach, such as the pumping lemma, find nothing.
+- Search is measured on the 66 lookups in `scripts/test_search.mjs`. Other wordings can still miss. Topics the site does not teach, such as the pumping lemma, find nothing.
 - Not tested: real iOS Safari, real phones, and screen readers. Keyboard paths and announcements are checked by script only.
 
 ## 2026-11 · Both themes at both widths

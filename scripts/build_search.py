@@ -40,13 +40,31 @@ SYNONYMS = [
     ['cross-validation', 'cross validation', '交叉验证'],
     ['shortest path', 'shortest paths', 'shortest-path', '最短路径', '最短路'],
     ['comprehension', 'list comprehension', '列表推导式', '列表推导', '推导式'],
-    ['gradient descent', '梯度下降'],
+    ['gradient descent', 'gd', '梯度下降'],
+    ['stochastic gradient descent', 'sgd', '随机梯度下降'],
     ['overfitting', 'overfit', '过拟合'],
     ['retrieval-augmented generation', 'rag', '检索增强生成', '检索增强'],
     ['intersection over union', 'iou', '交并比'],
     ['null pointer', '空指针'],
     ['deadlock', '死锁'],
     ['dynamic allocation', 'malloc', '动态分配', '动态内存'],
+    # abbreviations and Chinese names students type; each idea is taught under its full name in the chapters found
+    ['k-nearest neighbours', 'k-nearest neighbors', 'k nearest neighbours', 'k nearest neighbors', 'knn', 'k-nn', 'k 近邻', 'k近邻'],
+    ['dynamic programming', 'dp', '动态规划'],
+    ['undefined behaviour', 'undefined behavior', 'ub', '未定义行为'],
+    ['batch normalization', 'batch normalisation', 'batch norm', 'batchnorm', '批归一化', '批量归一化'],
+    ['principal component analysis', 'principal components', 'pca', '主成分分析', '主成分'],
+    ['object-oriented programming', 'object-oriented', 'object oriented', 'oop', '面向对象编程', '面向对象'],
+    ['convolutional neural network', 'convolutional network', 'cnn', '卷积神经网络', '卷积网络'],
+    ['multilayer perceptron', 'multi-layer perceptron', 'mlp', '多层感知机', '多层感知器'],
+    ['breadth-first search', 'breadth first search', 'bfs', '广度优先搜索', '广度优先'],
+    ['depth-first search', 'depth first search', 'dfs', '深度优先搜索', '深度优先'],
+    ['minimum spanning tree', 'minimum spanning trees', 'mst', '最小生成树'],
+    ['non-maximum suppression', 'nms', '非极大值抑制'],
+    # "=" marks a word matched with its capitals: "mAP" is mean average precision, "map" stays Java's Map
+    ['mean average precision', '=mAP', '平均精度均值'],
+    ['vision transformer', 'vit', '视觉 transformer'],
+    ['large language model', 'llm', '大语言模型'],
 ]
 
 # What readers call a chapter when its own title and terms use other words. Each entry was checked against the
@@ -61,6 +79,19 @@ ALIASES = {
     'info1113/testing-contracts': ['unit test', 'junit', '单元测试'],
     'comp2017/memory-layout': ['segmentation fault', 'segfault', '段错误', 'stack overflow', '栈溢出'],
     'comp2017/parallel-performance': ['thread pool', 'worker pool', '线程池'],
+    # the four parts of object-oriented programming: objects and encapsulation, inheritance, overriding, abstraction
+    'info1113/classes-invariants': ['object-oriented programming', '面向对象编程'],
+    'info1113/inheritance-composition': ['object-oriented programming', '面向对象编程'],
+    'info1113/overload-override': ['object-oriented programming', '面向对象编程'],
+    'info1113/abstractions': ['object-oriented programming', '面向对象编程'],
+    # the parts a large language model is built from (embeddings, attention, the Transformer block) and the chapter that
+    # connects one to images; a chapter that only says it is "not a language model" is left out
+    'dl/dl-token-embeddings': ['large language model', '大语言模型'],
+    'dl/dl-attention': ['large language model', '大语言模型'],
+    'dl/dl-transformer-block': ['large language model', '大语言模型'],
+    'multimodal/visual-instruction-tuning': ['large language model', '大语言模型'],
+    # COCO's AP, which this chapter teaches, is averaged over classes: what readers call mAP
+    'vision/detection-average-precision': ['mean average precision', '平均精度均值'],
 }
 
 STOP = set('''about above after again against also although among another anything around because been before being
@@ -174,7 +205,7 @@ def han_terms(text):
 
 def vocabulary():
     """Terms readers type: every glossary term on the site and every synonym word."""
-    vocab = {fold(w) for group in SYNONYMS for w in group}
+    vocab = {fold(w) for group in SYNONYMS for w in group if not w.startswith('=')}
     for code in COURSES:
         for path in (CONTENT / f'{code}.json', CONTENT / 'translations' / f'{code}.zh.json'):
             vocab |= {fold(g['term']) for t in json.loads(path.read_text())['topics'] for g in t.get('glossary', [])}

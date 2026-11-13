@@ -56,11 +56,19 @@
     return [best, where];
   }
   /* a group of alternatives (synonyms): the best-scoring alternative counts */
-  function scoreAlternatives(alts, ch) {
+  function scoreAlternatives(alts, ch, synonym) {
     let best = 0; let where = '';
     for (const alt of alts) {
       const us = units(alt);
       if (!us.length) continue;
+      // a several-word synonym counts only as a phrase: "language model" is not "regular language" plus "model"
+      if (synonym && us.length > 1) {
+        const phrase = us.join(' ');
+        const k = ['t', 'k', 'l', 'h'].find((x) => ch[x].includes(phrase));
+        const s = k ? WEIGHT[k] * 2 : (` ${ch.b} `.includes(` ${us.join('_')} `) ? 2 : 0);
+        if (s > best) { best = s; where = k || 'b'; }
+        continue;
+      }
       let total = 0; let field = '';
       for (const u of us) {
         const [s, f] = scoreUnit(u, ch);
@@ -79,13 +87,27 @@
   }
   function expand(query, syn) {
     let rest = ` ${fold(query)} `;
+    const raw = ` ${String(query || '').normalize('NFKC')} `;
     const groups = [];
+    // every group the query names, longest match first, so "随机梯度下降" is stochastic gradient descent and not
+    // gradient descent with "随机" left over
+    const found = [];
     for (const group of syn || []) {
-      const words = group.map(fold).sort((a, b) => b.length - a.length);
-      const hit = words.find((w) => (HAN.test(w) ? rest.includes(w) : latinRe(w).test(rest)));
-      if (hit) { groups.push(words); rest = rest.replace(HAN.test(hit) ? hit : latinRe(hit), ' '); }
+      // an entry starting with "=" matches only with its own capitals ("mAP", not "map")
+      const exact = group.filter((w) => w.startsWith('=')).map((w) => w.slice(1));
+      const words = group.filter((w) => !w.startsWith('=')).map(fold).sort((a, b) => b.length - a.length);
+      const cased = exact.find((w) => new RegExp(`(?:^|[^A-Za-z0-9])${escapeRe(w)}(?![A-Za-z0-9])`).test(raw));
+      const hit = cased ? fold(cased) : words.find((w) => (HAN.test(w) ? rest.includes(w) : latinRe(w).test(rest)));
+      if (hit) found.push({ words, hit });
     }
-    for (const u of units(rest.trim())) groups.push([u]);
+    found.sort((a, b) => b.hit.length - a.hit.length);
+    for (const { words, hit } of found) {
+      const present = HAN.test(hit) ? rest.includes(hit) : latinRe(hit).test(rest);
+      if (!present) continue;
+      groups.push({ alts: words, synonym: true });
+      rest = rest.replace(HAN.test(hit) ? hit : latinRe(hit), ' ');
+    }
+    for (const u of units(rest.trim())) groups.push({ alts: [u], synonym: false });
     return groups;
   }
   /* titles and bodies are stored folded; terms, openings and headings keep their case for display, so they are
@@ -103,8 +125,8 @@
     const hits = [];
     folded(index).forEach((ch, order) => {
       let score = 0; let where = '';
-      for (const alts of groups) {
-        const [s, w] = scoreAlternatives(alts, ch);
+      for (const g of groups) {
+        const [s, w] = scoreAlternatives(g.alts, ch, g.synonym);
         if (!s) return;
         score += s; where = where || w;
       }
@@ -120,7 +142,7 @@
   function snippet(index, hit, query, lang) {
     const ch = index.chapters.find((x) => x.c === hit.c && x.i === hit.i);
     if (!ch || !hit.where || hit.where === 't' || hit.where === 'b') return '';
-    const alts = expand(query, index.syn).flat();
+    const alts = expand(query, index.syn).flatMap((g) => g.alts);
     const parts = hit.where === 'l' ? ch.l.split(/(?<=[.。!?！？])\s*/) : ch[hit.where].split(' · ');
     const inLang = (p) => (lang === 'zh' ? HAN.test(p) : !HAN.test(p));
     const has = (p) => alts.some((a) => units(a).every((u) => found(u, p)[0]));

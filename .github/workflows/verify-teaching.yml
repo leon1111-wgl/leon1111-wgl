@@ -59,6 +59,8 @@ jobs:
         run: node scripts/verify_browser_runners.mjs
       - name: Failed runs are explained correctly
         run: node scripts/test_explain.mjs
+      - name: Search finds the chapter for what readers type
+        run: node scripts/test_search.mjs
       - name: Learning features work at desktop and phone width
         run: node scripts/test_study.mjs
       - name: Four readers walk their tasks at desktop and phone width, in both themes
