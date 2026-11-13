@@ -45,11 +45,11 @@ const LOOKUPS = {
     ['最短路径', ['comp2123/dijkstra-relaxation', 'comp2123/bfs-distance']],
     ['哈希表', ['comp2123/hashing-collisions', 'info1113/equality-hashing']],
     ['梯度下降', ['ml/gradient-descent-scaling', 'start/slopes-gradients', 'comp3308/neural-training']],
-    ['内存泄漏', ['info1113/memory-diagrams', 'comp2017/allocation-ownership', 'comp2017/debugging-evidence']],
+    ['内存泄漏', ['info1113/memory-diagrams', 'comp2017/memory-layout', 'comp2017/allocation-ownership', 'comp2017/debugging-evidence']],
     ['段错误', ['comp2017/memory-layout', 'comp2017/pointers-arrays', 'comp2017/allocation-ownership']],
     ['竞态条件', ['comp2017/data-races-mutexes']],
     ['过拟合', ['ml/validation-regularization-shift', 'comp3308/tree-generalization', 'ml/trees-ensembles']],
-    ['列表推导式', ['python/c11']],
+    ['列表推导式', ['python/c10']],
   ],
   en: [
     ['binary search', ['comp2123/recurrences-merge-sort', 'comp2123/bst-range-queries']],
@@ -57,7 +57,7 @@ const LOOKUPS = {
     ['shortest path', ['comp2123/dijkstra-relaxation', 'comp2123/bfs-distance']],
     ['hash table', ['comp2123/hashing-collisions', 'info1113/equality-hashing']],
     ['gradient descent', ['ml/gradient-descent-scaling', 'start/slopes-gradients', 'comp3308/neural-training']],
-    ['memory leak', ['info1113/memory-diagrams', 'comp2017/allocation-ownership', 'comp2017/debugging-evidence']],
+    ['memory leak', ['info1113/memory-diagrams', 'comp2017/memory-layout', 'comp2017/allocation-ownership', 'comp2017/debugging-evidence']],
     ['segfault', ['comp2017/memory-layout', 'comp2017/pointers-arrays', 'comp2017/allocation-ownership']],
     ['race condition', ['comp2017/data-races-mutexes']],
     ['cross validation', ['comp3308/evaluation-design', 'ml/framing-splits-leakage', 'ml/validation-regularization-shift']],
@@ -97,7 +97,7 @@ for (const { theme, width, viewport, label } of MATRIX) {
     const learn = async (hash) => { await page.goto(`${origin}/learn/${hash}`); await settle(); };
     await page.goto(`${origin}/learn/`);
     await page.evaluate(([l, th]) => { localStorage.clear(); localStorage.setItem('guoliang-language', l); localStorage.setItem('guoliang-theme', th); }, [language, theme]);
-    const zh = language === 'zh';
+    await page.reload();
 
     /* the hub's search box, as typed */
     const hubSearch = async (query) => {
@@ -205,21 +205,27 @@ for (const { theme, width, viewport, label } of MATRIX) {
       await check('W4', 'an algorithm trace can be stepped through one row at a time', async () => {
         await page.goto(`${origin}/courses/comp2123.zh.html#dijkstra-relaxation`);
         const trace = page.locator('#dijkstra-relaxation .trace-wrap').first();
+        // the trace sits with the program's output, folded until the reader opens it
+        await trace.evaluate((el) => { const d = el.closest('details'); if (d) d.open = true; });
         await trace.scrollIntoViewIfNeeded();
-        const next = trace.locator('[data-step="next"]');
-        assert.equal(await next.count(), 1, 'the trace has no step control');
+        const start = trace.locator('[data-step="start"]');
+        assert.equal(await start.count(), 1, 'the trace has no step control');
         const rows = await trace.locator('tbody tr').count();
-        assert.ok(rows >= 2);
+        assert.ok(rows >= 3);
         const shown = () => trace.locator('tbody tr:not(.step-hidden)').count();
+        assert.equal(await shown(), rows, 'rows are hidden before the reader asks to step');
+        await start.click();
         assert.equal(await shown(), 1, 'stepping does not start at the first row');
+        const next = trace.locator('[data-step="next"]');
         await next.click();
         assert.equal(await shown(), 2);
         assert.equal(await trace.locator('tbody tr.step-current').count(), 1, 'no current row is marked');
-        await trace.locator('tbody').focus().catch(() => {});
         await trace.press('ArrowRight');
-        assert.equal(await shown(), Math.min(3, rows), 'the arrow key does not step');
-        assert.match(await trace.locator('[data-step-status]').innerText(), new RegExp(`${Math.min(3, rows)}\\s*/\\s*${rows}`), 'the step counter is missing');
+        assert.equal(await shown(), 3, 'the arrow key does not step');
+        assert.match(await trace.locator('[data-step-status]').innerText(), new RegExp(`3\\s*/\\s*${rows}`), 'the step counter is missing');
         await shot('trace-stepper');
+        await trace.locator('[data-step="all"]').click();
+        assert.equal(await shown(), rows, '"show all" does not bring every row back');
       });
       await check('W2', 'a Chinese reader finds the chapter for what they type', async () => { await lookups(LOOKUPS.zh); await shot('search'); });
       await check('W7', 'my-learning shows route, review and practice at a glance', async () => {
@@ -314,7 +320,7 @@ for (const { theme, width, viewport, label } of MATRIX) {
             await page.goto(`${origin}${url}`);
             await page.waitForTimeout(500);
             await page.addScriptTag({ content: axeSource });
-            const v = await page.evaluate(async () => (await window.axe.run(document, { resultTypes: ['violations'] })).violations.filter((x) => ['serious', 'critical'].includes(x.impact)).map((x) => `${x.id} (${x.nodes.length})`));
+            const v = await page.evaluate(async () => (await window.axe.run(document, { resultTypes: ['violations'] })).violations.filter((x) => ['serious', 'critical'].includes(x.impact)).map((x) => `${x.id} at ${x.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(', ')}`));
             found.push(...v.map((x) => `${url}: ${x}`));
           }
           report.axe = report.axe || {};

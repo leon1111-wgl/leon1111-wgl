@@ -70,7 +70,7 @@ for (const { theme, width, viewport, label } of MATRIX) {
   await flow('every route step leads to a page that exists', async () => {
     for (const language of ['en', 'zh']) {
       await inLanguage(language);
-      for (const route of ['zero', 'exam/comp2022', 'paper/comp2017', 'paper/info1113', 'paper/python', 'engineer/comp2017', 'engineer/info1113', 'engineer/ml']) {
+      for (const route of ['zero', 'exam/comp2022', 'exam/ml', 'exam/dl', 'exam/vision', 'exam/multimodal', 'paper/comp2017', 'paper/info1113', 'paper/python', 'engineer/comp2017', 'engineer/info1113', 'engineer/ml']) {
         await go(`#/goal/${route}`);
         await page.waitForSelector('.route-step');
         const links = await page.locator('.route-step .btn.primary, .route-step a.btn').evaluateAll((els) => els.map((a) => a.getAttribute('href')));

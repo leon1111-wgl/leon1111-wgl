@@ -29,7 +29,7 @@ def validate_study():
     manifest |= {e['path'] for e in json.loads((ROOT / 'site' / 'bridges' / 'examples.json').read_text())}
     totals = {'cards': 0, 'questions': 0, 'papers': 0, 'labs': 0}
     for f in sorted(DATA.glob('*.json')):
-        if f.name in ('keywords.json', 'summary.json') or f.name.startswith('terms-'):
+        if f.name in ('keywords.json', 'summary.json', 'search.json') or f.name.startswith(('terms-', 'checks-')):
             continue
         d = json.loads(f.read_text())
         cid = d['course']
@@ -113,6 +113,27 @@ def validate_study():
         totals['questions'] += len(d['questions'])
         totals['papers'] += len(d['papers'])
         totals['labs'] += len(d['labs'])
+    # every chapter of every course and guide has a check its reading page asks mid-chapter
+    for cid, c in courses.items():
+        if cid == 'python':
+            continue
+        checks = json.loads((DATA / f'checks-{cid}.json').read_text())
+        missing = [ch['id'] for ch in c['chapters'] if ch['id'] not in checks]
+        if missing:
+            errors.append(f'checks-{cid}: chapters without an in-chapter check: {missing}')
+        totals.setdefault('checks', {})
+        for tid, q in checks.items():
+            totals['checks'][q['kind']] = totals['checks'].get(q['kind'], 0) + 1
+            where = f'checks-{cid}/{tid}'
+            if q['kind'] == 'mcq' and sum(o['right'] for o in q['options']) != 1:
+                errors.append(f'{where}: needs exactly one right option')
+            if q['kind'] == 'predict':
+                pages = [ROOT / 'site' / u for u in c['read'].values()]
+                if not all(f'id="{q["anchor"]}"' in p.read_text() for p in pages):
+                    errors.append(f'{where}: no program {q["anchor"]} on the reading page')
+            for field in ('title', 'prompt', 'solution', 'q', 'a'):
+                if q.get(field) is not None:
+                    two(q[field], f'{where} {field}', errors)
     runnable = json.loads((ROOT / 'content' / 'browser-runnable.json').read_text())
     errors.extend(f'browser-runnable.json lists an unknown example: {p}' for p in runnable if p not in manifest)
     return errors, totals

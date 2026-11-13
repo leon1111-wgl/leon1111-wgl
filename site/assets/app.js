@@ -274,6 +274,50 @@
     }).catch(() => {});
   }
 
+  /* ---------- step through a trace table: one row at a time, by button or arrow key ---------- */
+  document.querySelectorAll('.trace-wrap').forEach((wrap) => {
+    const rows = [...wrap.querySelectorAll('tbody tr')];
+    if (rows.length < 3) return;
+    const T = chinese
+      ? { start: '逐步看', prev: '上一步', next: '下一步', all: '全部显示', status: (k, n) => `第 ${k} / ${n} 步`, keys: '也可以按 ← → 键' }
+      : { start: 'Step through', prev: 'Back', next: 'Next', all: 'Show all', status: (k, n) => `Step ${k} / ${n}`, keys: 'or use the ← → keys' };
+    const bar = document.createElement('div');
+    bar.className = 'trace-steps';
+    const button = (key, text) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.step = key; b.textContent = text; bar.append(b); return b; };
+    const start = button('start', T.start);
+    const prev = button('prev', T.prev);
+    const next = button('next', T.next);
+    const all = button('all', T.all);
+    const status = document.createElement('span');
+    status.dataset.stepStatus = '';
+    status.setAttribute('aria-live', 'polite');
+    bar.append(status);
+    wrap.prepend(bar);
+    let at = 0; // 0: every row shown; k: the first k rows shown, row k current
+    const show = () => {
+      rows.forEach((row, i) => {
+        row.classList.toggle('step-hidden', at > 0 && i >= at);
+        row.classList.toggle('step-current', at > 0 && i === at - 1);
+        if (at > 0 && i === at - 1) row.setAttribute('aria-current', 'step'); else row.removeAttribute('aria-current');
+      });
+      start.hidden = at > 0;
+      [prev, next, all].forEach((b) => { b.hidden = at === 0; });
+      prev.disabled = at <= 1;
+      next.disabled = at >= rows.length;
+      status.textContent = at ? `${T.status(at, rows.length)} · ${T.keys}` : '';
+    };
+    start.addEventListener('click', () => { at = 1; show(); next.focus(); });
+    prev.addEventListener('click', () => { at = Math.max(1, at - 1); show(); });
+    next.addEventListener('click', () => { at = Math.min(rows.length, at + 1); show(); });
+    all.addEventListener('click', () => { at = 0; show(); start.focus(); });
+    wrap.addEventListener('keydown', (event) => {
+      if (!at || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { at = Math.min(rows.length, at + 1); show(); event.preventDefault(); }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { at = Math.max(1, at - 1); show(); event.preventDefault(); }
+    });
+    show();
+  });
+
   /* ---------- pick up where you stopped ---------- */
   if (courseId && chapters.length && !location.hash) {
     let saved;

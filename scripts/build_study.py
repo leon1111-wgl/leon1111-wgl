@@ -174,6 +174,42 @@ def labs_for(cid):
     return found
 
 
+def quick_checks(cid, data, all_cards):
+    """One check per chapter for its reading page, asked mid-chapter and marked at once: an authored multiple-choice
+    or numeric question where the chapter has one, else predicting the output of the chapter's own short program
+    before it is unfolded, else recalling the answer to one of its questions. Written to checks-<course>.json."""
+    by_topic = {}
+    for q in data['questions']:
+        by_topic.setdefault(q['topic'], []).append(q)
+    topics = list(dict.fromkeys([c['topic'] for c in data['cards']] + [q['topic'] for q in data['questions']]))
+    out = {}
+    for topic in topics:
+        qs = by_topic.get(topic, [])
+        pick = next((q for q in qs if q['kind'] == 'mcq' and not q['id'].startswith(('p-', 'w-'))), None) \
+            or next((q for q in qs if q['kind'] == 'numeric'), None)
+        if pick and pick['kind'] == 'mcq':
+            out[topic] = {'kind': 'mcq', 'id': pick['id'], 'title': pick['title'], 'prompt': pick.get('prompt'), 'code': pick.get('code'),
+                          'options': [{'text': o['text'], 'right': bool(o.get('correct')), 'why': o.get('why')} for o in pick['options']],
+                          'solution': pick.get('solution')}
+            continue
+        if pick:
+            out[topic] = {'kind': 'numeric', 'id': pick['id'], 'title': pick['title'], 'prompt': pick.get('prompt'), 'answer': pick['answer'],
+                          'tolerance': pick.get('tolerance', 0), 'unit': pick.get('unit'), 'solution': pick.get('solution')}
+            continue
+        predict = next((q for q in qs if q['kind'] == 'predict' and q['id'].startswith('p-') and q['output'].count('\n') <= 6), None)
+        if predict:
+            example = predict['id'][len(f'p-{topic}-'):]
+            out[topic] = {'kind': 'predict', 'id': predict['id'], 'anchor': f'lab-{topic}-{example}', 'output': predict['output'], 'walk': predict.get('walk')}
+            continue
+        # a card left out of review because it needs its chapter still works inside the chapter; it is just not queued
+        card = next((c for c in data['cards'] if c['topic'] == topic and not c['id'].endswith('-check')), None) \
+            or next((c for c in all_cards if c['topic'] == topic), None)
+        if card:
+            out[topic] = {'kind': 'recall', 'id': card['id'], 'q': card['q'], 'a': card['a'], 'queue': card in data['cards']}
+    (OUT / f'checks-{cid}.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')))
+    return out
+
+
 def build():
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'keywords.json').write_text(json.dumps(keywords(), ensure_ascii=False, separators=(',', ':')))
@@ -182,16 +218,21 @@ def build():
     practice = CONTENT / 'practice'
     # the Python handbook keeps its own exercises; its practice here is authored only
     for cid, source in [(c.lower(), lambda c=c: from_course(c)) for c in COURSES] + [(g, lambda g=g: from_guide(g)) for g in GUIDES] + [('python', lambda: ([], [], []))]:
-        cards, predict, worked = source()
-        cards = [c for c in cards if f'{cid}/{c["id"]}' not in EXCLUDED]
+        every_card, predict, worked = source()
+        cards = [c for c in every_card if f'{cid}/{c["id"]}' not in EXCLUDED]
         pack = json.loads((practice / f'{cid}.json').read_text()) if (practice / f'{cid}.json').exists() else {}
         data = {'course': cid, 'cards': cards, 'questions': predict + worked + pack.get('questions', []), 'papers': pack.get('papers', []), 'labs': labs_for(cid)}
         (OUT / f'{cid}.json').write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
+        if cid != 'python':
+            quick_checks(cid, data, every_card)
         kinds = {}
         for q in data['questions']:
             kinds[q['kind']] = kinds.get(q['kind'], 0) + 1
         summary[cid] = {'cards': len(cards), 'kinds': kinds, 'papers': len(data['papers']), 'labs': len(data['labs'])}
     (OUT / 'summary.json').write_text(json.dumps(summary, separators=(',', ':')))
+    # the search index reads keywords.json, written above
+    from build_search import build as build_search
+    build_search()
     print('study data:', {k: (v['cards'], sum(v['kinds'].values()), v['papers']) for k, v in summary.items()})
     return summary
 

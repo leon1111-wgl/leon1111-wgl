@@ -40,7 +40,10 @@ window.LeonStudyInit = (hub) => {
       reviewTitle: '复习队列', reviewSub: '每天做一点。系统用 FSRS-6 算法（默认参数）安排下一次复习的时间，快要忘的时候再问你。', dueNow: '现在到期', newCards: '新卡片', allCards: '全部卡片', startReview: '开始复习', nothingDue: '现在没有到期的卡片。', addDeck: '加入复习', addRead: '加入已读章节', addAll: '加入全部', inDeck: (a, b) => `已加入 ${a} / ${b} 张`, missedInDeck: (n) => `另有 ${n} 道错题`, showAnswer: '看答案', again: '忘了', hard: '有点难', good: '记得', easy: '很轻松', days: (d) => (d <= 0 ? '今天' : d === 1 ? '1 天后' : d < 30 ? `${d} 天后` : d < 365 ? `${Math.round(d / 30)} 个月后` : `${(d / 365).toFixed(1)} 年后`), sessionDone: '这一轮复习完了', sessionStats: (n) => `复习了 ${n} 张。明天再来。`, cardOf: (a, n) => `第 ${a} / ${n} 张`, newLimit: (n) => `每天最多 ${n} 张新卡片`, reviewEmpty: '还没有卡片。从下面加入一门课，或者读完一章后再加。',
       backupTitle: '备份进度', backupSub: '进度只在这个浏览器里。换设备前可以导出成文件，再导入。', exportB: '导出', importB: '导入', importedOk: '已导入，页面将刷新。', importBad: '这个文件无法读取。', stageName: '章节',
       chineseChapters: '题目有中英文；章节是中文', loading: '加载中…', loadFail: '题库没有加载成功。检查网络后再试。', tryAgain: '再试一次',
-      resumeRoute: '接着走你的路线', chooseGoal: '先选一个目标', chooseGoalSub: '告诉我们你想做什么，给你一条具体路线。',
+      resumeRoute: '接着走你的路线', reviewToday: '今天的复习', cardsReady: (n) => `${n} 张卡片可以复习`,
+      glance: '一眼看清进度', glanceRoute: '路线', glanceReview: '复习', glanceDue: (n, all) => `今天到期 ${n} 张 · 队列里共 ${all} 张`, glancePractice: '练习',
+      glanceScore: (q, pct) => `做过 ${q} 题 · 得分率 ${pct}%`, glanceRead: '阅读', glanceReadN: (a, n) => `读完 ${a} / ${n} 章`, glanceEmpty: '还没有记录。做完一道题、读完一章或者选一条路线后，这里会显示进度。', glanceOpen: '打开',
+      chooseGoal: '先选一个目标', chooseGoalSub: '告诉我们你想做什么，给你一条具体路线。',
       labsTitle: '工程实验', labsSub: '每个实验都在持续集成里实际跑过，页面上是当时的输出。', labSteps: '步骤', labScenario: '场景', labReview: '代码审查清单', labTrade: '生产环境的取舍', labCheck: '做到这些才算完成', labCaptured: '实际输出',
     },
     en: {
@@ -68,7 +71,10 @@ window.LeonStudyInit = (hub) => {
       reviewTitle: 'Review queue', reviewSub: 'A little each day. The FSRS-6 algorithm with its default parameters schedules each card for when you are about to forget it.', dueNow: 'Due now', newCards: 'New', allCards: 'All cards', startReview: 'Start reviewing', nothingDue: 'Nothing is due right now.', addDeck: 'Add to review', addRead: 'Add chapters I read', addAll: 'Add all', inDeck: (a, b) => `${a} of ${b} cards added`, missedInDeck: (n) => `plus ${n} missed question${n === 1 ? '' : 's'}`, showAnswer: 'Show answer', again: 'Forgot', hard: 'Hard', good: 'Good', easy: 'Easy', days: (d) => (d <= 0 ? 'today' : d === 1 ? 'in 1 day' : d < 30 ? `in ${d} days` : d < 365 ? `in ${Math.round(d / 30)} mo` : `in ${(d / 365).toFixed(1)} yr`), sessionDone: 'Round finished', sessionStats: (n) => `You reviewed ${n} card${n === 1 ? '' : 's'}. Come back tomorrow.`, cardOf: (a, n) => `Card ${a} of ${n}`, newLimit: (n) => `At most ${n} new cards a day`, reviewEmpty: 'No cards yet. Add a course below, or add chapters as you finish them.',
       backupTitle: 'Back up your progress', backupSub: 'Progress lives in this browser only. Export it to a file before you change device, then import it.', exportB: 'Export', importB: 'Import', importedOk: 'Imported. The page will reload.', importBad: 'That file could not be read.', stageName: 'Chapter',
       chineseChapters: 'Questions in both languages; its chapters are in Chinese', loading: 'Loading…', loadFail: 'The question bank did not load. Check your connection and try again.', tryAgain: 'Try again',
-      resumeRoute: 'Continue your route', chooseGoal: 'Choose a goal first', chooseGoalSub: 'Tell us what you want to do and get a concrete route.',
+      resumeRoute: 'Continue your route', reviewToday: "Today's review", cardsReady: (n) => `${n} card${n === 1 ? '' : 's'} ready to review`,
+      glance: 'Progress at a glance', glanceRoute: 'Route', glanceReview: 'Review', glanceDue: (n, all) => `${n} due today · ${all} in the queue`, glancePractice: 'Practice',
+      glanceScore: (q, pct) => `${q} question${q === 1 ? '' : 's'} tried · ${pct}% of marks`, glanceRead: 'Reading', glanceReadN: (a, n) => `${a} of ${n} chapters read`, glanceEmpty: 'Nothing yet. Answer a question, finish a chapter or choose a route, and your progress shows here.', glanceOpen: 'Open',
+      chooseGoal: 'Choose a goal first', chooseGoalSub: 'Tell us what you want to do and get a concrete route.',
       labsTitle: 'Engineering labs', labsSub: 'Every lab is run in continuous integration, and the page shows the output of that run.', labSteps: 'Steps', labScenario: 'Scenario', labReview: 'Code review checklist', labTrade: 'Production trade-offs', labCheck: 'Done when', labCaptured: 'Actual output',
     },
   };
@@ -262,6 +268,48 @@ window.LeonStudyInit = (hub) => {
     };
     if (course) return withCourse(course, 'start', render);
     return render(null);
+  }
+  /* the hub's front page: the next step of the route in one click, and today's review */
+  function resumeRoute() {
+    const g = goalState();
+    if (!g || !t('goals')[g.goal]) return '';
+    const data = g.course ? ready(g.course) : null;
+    if (g.course && !BY_ID[g.course]) return '';
+    if (g.course && !data) { loadCourse(g.course).then(() => hub.refreshResume?.(), () => {}); return ''; }
+    const steps = stepsFor(g, data);
+    const done = routeDone(g.goal, g.course);
+    const next = steps.find((x) => !done[x.key]);
+    const name = `${t('goals')[g.goal][0]}${g.course ? ` · ${BY_ID[g.course].code}` : ''}`;
+    const count = t('stepsDone')(steps.filter((x) => done[x.key]).length, steps.length);
+    const route = next
+      ? `<a class="resume resume-route" data-resume-route href="${esc(next.url)}"><small>${esc(t('resumeRoute'))} · ${esc(name)} · ${esc(count)}</small><b>${esc(t('nextStep'))}: ${esc(L(next.title))}</b>${icon('arrow')}</a>`
+      : `<a class="resume resume-route" data-resume-route href="#/goal/${g.goal}${g.course ? `/${g.course}` : ''}"><small>${esc(name)}</small><b>${esc(t('routeDone'))}</b>${icon('arrow')}</a>`;
+    const st = dueStats();
+    const review = st.ready ? `<a class="resume resume-review" href="#/review"><small>${esc(t('reviewToday'))}</small><b>${esc(t('cardsReady')(st.ready))}</b>${icon('arrow')}</a>` : '';
+    return route + review;
+  }
+  /* my learning: route, review, practice and reading in one panel */
+  function glancePanel() {
+    const rows = [];
+    const g = goalState();
+    if (g && t('goals')[g.goal] && (!g.course || BY_ID[g.course])) {
+      const data = g.course ? ready(g.course) : null;
+      if (g.course && !data) loadCourse(g.course).then(() => hub.refreshGlance?.(), () => {});
+      const steps = stepsFor(g, data);
+      const finished = steps.filter((x) => routeDone(g.goal, g.course)[x.key]).length;
+      rows.push({ label: t('glanceRoute'), main: `${t('goals')[g.goal][0]}${g.course ? ` · ${BY_ID[g.course].code}` : ''}`, sub: steps.length ? t('stepsDone')(finished, steps.length) : '', rate: steps.length ? finished / steps.length : 0, href: `#/goal/${g.goal}${g.course ? `/${g.course}` : ''}` });
+    }
+    const st = dueStats();
+    const review = { label: t('glanceReview'), main: t('glanceDue')(st.ready, st.all), sub: '', rate: null, href: '#/review' };
+    const tried = {};
+    Object.entries(attempts()).forEach(([key, a]) => { const cid = key.split('/')[0]; if (!BY_ID[cid]) return; tried[cid] ??= { n: 0, best: 0, marks: 0 }; tried[cid].n += 1; tried[cid].best += a.best ?? a.score ?? 0; tried[cid].marks += a.marks || 0; });
+    Object.entries(tried).forEach(([cid, v]) => { const pct = v.marks ? Math.round((v.best / v.marks) * 100) : 0; rows.push({ label: t('glancePractice'), main: BY_ID[cid].code, sub: t('glanceScore')(v.n, pct), rate: v.marks ? v.best / v.marks : 0, href: `#/practice/${cid}` }); });
+    const progress = store.get('leon-learn-progress', { courses: {} });
+    Object.entries(progress.courses || {}).forEach(([cid, v]) => { const c = BY_ID[cid]; if (!c || !v.read?.length) return; rows.push({ label: t('glanceRead'), main: c.code, sub: t('glanceReadN')(v.read.length, c.chapters.length), rate: v.read.length / c.chapters.length, href: SITE + v.url }); });
+    // review always shows once there is anything else to show, so "0 due" reads as news, not as a gap
+    if (rows.length || st.all) rows.splice(g ? 1 : 0, 0, review);
+    const list = rows.length ? `<ul class="glance-list">${rows.map((r) => `<li><span class="glance-label">${esc(r.label)}</span><span class="glance-main"><b>${esc(r.main)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span>${r.rate == null ? '<span class="glance-bar empty"></span>' : `<span class="glance-bar" role="img" aria-label="${Math.round(r.rate * 100)}%"><i style="width:${Math.round(r.rate * 100)}%"></i></span>`}<a class="btn ghost sm" href="${r.href}">${esc(t('glanceOpen'))}</a></li>`).join('')}</ul>` : `<div class="empty">${esc(t('glanceEmpty'))}</div>`;
+    return `<section class="panel glance" data-glance aria-labelledby="glance-title"><div class="panel-head"><h2 id="glance-title">${esc(t('glance'))}</h2></div>${list}</section>`;
   }
   /* the one-line prompt shown on the course list and my-learning pages */
   function goalBanner() {
@@ -522,6 +570,11 @@ window.LeonStudyInit = (hub) => {
         const { run } = await import(`${SITE}assets/runner/run.js`);
         const r = await run({ language: q.language, code: q.code });
         runBox(box, `<h4>${t('ranOut')}</h4><pre class="study-code">${esc(r.stdout + (r.stderr || ''))}</pre>`);
+        if (r.status !== 'ok') {
+          const { explainNode } = await import(`${SITE}assets/runner/explain.js`);
+          const note = explainNode(r, { language: q.language, lang: lang() });
+          if (note) box.querySelector('h4').after(note);
+        }
         return;
       }
       const runT = e.target.closest('[data-run-tests]');
@@ -529,9 +582,16 @@ window.LeonStudyInit = (hub) => {
         const box = root.querySelector('[data-run-out]');
         runBox(box, `<p>${t('running')}</p>`);
         const { run } = await import(`${SITE}assets/runner/run.js`);
-        const r = await run({ language: q.language, code: qs.typed ?? qs.answer ?? '', tests: q.tests });
+        const typed = qs.typed ?? qs.answer ?? '';
+        const r = await run({ language: q.language, code: typed, tests: q.tests });
         const pass = r.status === 'ok' && (q.expected == null || r.stdout.replace(/\n$/, '') === q.expected.replace(/\n$/, ''));
         runBox(box, `<div class="q-result ${pass ? 'pass' : 'fail'}"><strong>${t(pass ? 'testsPass' : 'testsFail')}</strong></div><pre class="study-code">${esc((r.stdout || '') + (r.stderr || ''))}</pre>`);
+        // what went wrong, in plain words, with the line in what the reader typed (the tests are appended after it)
+        if (!pass) {
+          const { explainNode } = await import(`${SITE}assets/runner/explain.js`);
+          const note = explainNode(r, { language: q.language, lang: lang(), ownLines: typed.split('\n').length });
+          if (note) box.querySelector('.q-result').after(note);
+        }
       }
     });
   }
@@ -877,6 +937,8 @@ window.LeonStudyInit = (hub) => {
   return {
     t,
     goalBanner,
+    resumeRoute,
+    glancePanel,
     backupPanel,
     wireBackup,
     dueStats,
