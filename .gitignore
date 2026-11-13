@@ -12,3 +12,4 @@ output/previews/
 !content/labs/*/files/*.log
 # scratch archive that site/python-zero-to-practice/tools/package.py writes while checking; the download is site/downloads/
 site/Python-Zero-to-Practice.zip
+walk/
