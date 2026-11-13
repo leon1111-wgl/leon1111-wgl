@@ -886,7 +886,7 @@ m̂ₜ = mₜ/(1−β₁ᵗ), v̂ₜ = vₜ/(1−β₂ᵗ)
 
 ### 06 / Work through the numbers
 
-Consider two scalar targets, 2 and 4, with predictions θ and per example loss ½(θ−y)². At θ₀ = 0, the gradients are −2 and −4, so g₁ = −3. SGD with η = 0.1 gives θ₁ = 0.3 and mean loss 4.145, down from 5. For Adam, independently restart at zero with β₁ = 0.9, β₂ = 0.999, and ε = 10⁻⁸. Its first moments are m₁ = −0.3 and v₁ = 0.009. Bias correction gives m̂₁ = −3 and v̂₁ = 9. The update is approximately +0.1, producing mean loss approximately 4.705. Equal learning rates thus need not mean equal steps. This single batch calculation compares update mechanics, not eventual generalization or which optimizer is better.
+Consider two scalar targets, 2 and 4, with predictions θ and per example loss ½(θ−y)². At θ₀ = 0, the gradients are −2 and −4, so g₁ = −3. SGD with η = 0.1 gives θ₁ = 0.3 and mean loss 4.145, down from 5. For Adam, independently restart at zero with β₁ = 0.9, β₂ = 0.999, and ε = 10⁻⁸. After the first step its moment estimates are m₁ = −0.3 and v₁ = 0.009. Bias correction gives m̂₁ = −3 and v̂₁ = 9. The update is approximately +0.1, producing mean loss approximately 4.705. Equal learning rates thus need not mean equal steps. This single batch calculation compares update mechanics, not eventual generalization or which optimizer is better.
 
 ### Words to know
 

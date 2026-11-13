@@ -71,6 +71,14 @@
         const text = result.status === 'ok' ? (same ? T.same : T.differs) : (T[result.status] || T.error);
         const merged = [result.stdout, result.stderr].filter(Boolean).join(result.stdout.endsWith('\n') ? '' : '\n');
         show(result.status === 'ok' ? (same ? 'good' : 'plain') : 'bad', text, merged);
+        // a beginner's first error message: say in plain words what it means and what to try, above the raw text
+        if (result.status !== 'ok') {
+          try {
+            const { explainNode } = await import(new URL('runner/explain.js', base).href);
+            const note = explainNode(result, { language, lang: zh ? 'zh' : 'en' });
+            if (note) panel.querySelector('.run-status').after(note);
+          } catch (_) { /* the raw message is still shown */ }
+        }
         runButton.textContent = T.again;
       } catch (error) {
         show('bad', T.unavailable);

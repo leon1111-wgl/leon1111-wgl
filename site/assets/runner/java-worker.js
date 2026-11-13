@@ -17,7 +17,7 @@ function ready() {
       const c = teavm.exports.createCompiler();
       c.setSdk(sdk);
       c.setTeaVMClasslib(runtime);
-      c.onDiagnostic((d) => { if (d.severity === 'error') diagnostics.push(`Main.java:${d.lineNumber}: ${d.message}`); });
+      c.onDiagnostic((d) => { if (d.severity === 'error') diagnostics.push(`${d.fileName || 'Main.java'}:${d.lineNumber}: ${d.message}`); });
       return c;
     })();
   }

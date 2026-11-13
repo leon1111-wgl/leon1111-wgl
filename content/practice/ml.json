@@ -1,0 +1,1077 @@
+{
+ "course": "ml",
+ "questions": [
+  {
+   "id": "ml-majority-baseline-test",
+   "kind": "numeric",
+   "topic": "features-labels-baselines",
+   "title": {
+    "en": "Majority baseline on a different test mix",
+    "zh": "测试集比例变化时的多数类基线"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Mia sorts club emails into \"event\" notices and \"other\" messages. Her training set has 20 emails: 14 other and 6 event. Her test set has 12 emails: 5 other and 7 event.\n\nBefore training any model, she builds the majority-label baseline from the training labels and scores it on the test set. What is its test accuracy? Give a decimal to 3 places.",
+    "zh": "Mia 把社团邮件分成「活动通知」（event）和「其他消息」（other）两类。训练集有 20 封邮件：14 封 other，6 封 event。测试集有 12 封邮件：5 封 other，7 封 event。\n\n在训练任何模型之前，她先用训练标签建立多数类基线，再在测试集上给它打分。这个基线的测试准确率是多少？答案用小数表示，保留 3 位小数。"
+   },
+   "answer": 0.417,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Step 1: choose the rule from the training labels. other appears 14 times and event 6 times, so c* = other.\n\nStep 2: apply it to every test email. The baseline predicts other for all 12 test emails.\n\nStep 3: count the correct predictions. Only the 5 emails that really are other are correct, so accuracy = 5 / 12 = 0.417.\n\nMeaning: 70% of the training emails were other, but this test set has a different mix, so the baseline is right only 41.7% of the time. Every later model must beat 0.417 on these same 12 emails.\n\nA common slip is to pick the majority from the test labels (event, giving 7 / 12 = 0.583). That uses the test answers to build the rule.",
+    "zh": "第 1 步：用训练标签选择规则。other 出现 14 次，event 出现 6 次，所以 c* = other。\n\n第 2 步：把规则用到每一封测试邮件上。基线对全部 12 封测试邮件都预测 other。\n\n第 3 步：数出预测正确的数量。只有真正属于 other 的 5 封是对的，所以准确率 = 5 / 12 = 0.417。\n\n含义：训练集中 70% 的邮件是 other，但测试集的比例不同，所以这个基线只有 41.7% 的时候是对的。之后的每个模型都必须在同样这 12 封邮件上超过 0.417。\n\n常见错误是按测试标签选多数类（选 event，得到 7 / 12 = 0.583）。这等于用测试答案来制定规则。"
+   },
+   "verify_code": "from collections import Counter\ntrain = ['other'] * 14 + ['event'] * 6\ntest = ['other'] * 5 + ['event'] * 7\ncounts = Counter(train)\nbaseline = max(counts, key=counts.get)\ncorrect = sum(label == baseline for label in test)\nprint(baseline, correct, len(test))\nprint(round(correct / len(test), 4))\n"
+  },
+  {
+   "id": "ml-mean-baseline-mse",
+   "kind": "numeric",
+   "topic": "features-labels-baselines",
+   "title": {
+    "en": "Mean baseline for a regression target",
+    "zh": "回归目标的均值基线"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Leon predicts how many minutes a delivery takes. Before fitting anything, he uses the regression baseline that always predicts the training mean.\n\nTraining times (minutes): 12, 15, 18, 15.\nTest times (minutes): 14, 20, 11.\n\nWhat is the baseline's mean squared error (MSE) on the test set, in squared minutes?",
+    "zh": "Leon 要预测一次送货需要多少分钟。在拟合任何模型之前，他先使用回归基线：永远预测训练目标的均值。\n\n训练时间（分钟）：12、15、18、15。\n测试时间（分钟）：14、20、11。\n\n这个基线在测试集上的均方误差（MSE）是多少？单位是「分钟的平方」。"
+   },
+   "answer": 14,
+   "solution": {
+    "en": "Step 1: the training mean is (12 + 15 + 18 + 15) / 4 = 60 / 4 = 15 minutes. The baseline predicts 15 for every test delivery.\n\nStep 2: test errors (prediction minus measurement) are 15 − 14 = 1, 15 − 20 = −5 and 15 − 11 = 4.\n\nStep 3: squared errors are 1, 25 and 16. Their sum is 42.\n\nStep 4: MSE = 42 / 3 = 14 squared minutes. The RMSE is √14 ≈ 3.74 minutes, which is in the same unit as the target.\n\nTwo traps: the mean must come from the training times, not the test times (the test mean is 15 here by coincidence, but you may not use it); and the MSE is averaged over the 3 test deliveries, not the 4 training ones.",
+    "zh": "第 1 步：训练均值是 (12 + 15 + 18 + 15) / 4 = 60 / 4 = 15 分钟。基线对每一次测试送货都预测 15。\n\n第 2 步：测试误差（预测减实测）分别是 15 − 14 = 1、15 − 20 = −5、15 − 11 = 4。\n\n第 3 步：平方误差是 1、25、16，总和为 42。\n\n第 4 步：MSE = 42 / 3 = 14（分钟的平方）。RMSE 是 √14 ≈ 3.74 分钟，单位与目标相同。\n\n两个陷阱：均值必须来自训练时间，而不是测试时间（这里测试均值碰巧也是 15，但不能拿来用）；MSE 要对 3 次测试送货求平均，而不是对 4 条训练记录求平均。"
+   },
+   "verify_code": "train = [12, 15, 18, 15]\ntest = [14, 20, 11]\nmean = sum(train) / len(train)\nsquares = [(mean - y) ** 2 for y in test]\nprint('mean', mean, 'squares', squares)\nprint(sum(squares) / len(test))\n"
+  },
+  {
+   "id": "ml-mcq-new-device-split",
+   "kind": "mcq",
+   "topic": "framing-splits-leakage",
+   "title": {
+    "en": "A split for machines nobody has seen",
+    "zh": "面向从未见过的机器的数据划分"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Iris wants to warn before a vending machine fails. Her table has 300 rows: 15 service sessions from each of 20 machines. Columns: temperature, vibration, hours since last service, technician_note (typed by the technician after a failure has been repaired), and the label failed_next_session.\n\nHer question: will the warning work on machines that are installed next year and are not in the table? Which evaluation answers that question?",
+    "zh": "Iris 想在自动售货机出故障之前发出预警。她的表格有 300 行：20 台机器，每台 15 次维护记录。列包括：温度、振动、距上次维护的小时数、technician_note（技术员在故障修好之后填写的说明），以及标签 failed_next_session。\n\n她的问题是：预警对明年才安装、表格里没有的机器是否有效？哪种评估方式能回答这个问题？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Split by machine: put all sessions of 14 machines in training, 3 in validation and 3 in test, and drop technician_note.",
+      "zh": "按机器划分：14 台机器的全部记录放进训练集，3 台放进验证集，3 台放进测试集，并删除 technician_note。"
+     },
+     "why": {
+      "en": "Right. Whole machines are held out, so the test machines are unfamiliar, like next year's machines. The note is written after a failure, so it is not available when the warning must be made.",
+      "zh": "正确。整台机器被留出，测试机器对模型是陌生的，正像明年的新机器。说明文字是在故障之后才写的，发出预警时还拿不到。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Random 70/15/15 row split, keeping every column, because random splits are unbiased.",
+      "zh": "按行随机 70/15/15 划分，保留所有列，因为随机划分是无偏的。"
+     },
+     "why": {
+      "en": "Wrong. Sessions of the same machine land in both training and test, so the test machines are not new. The note also leaks the answer, because it exists only after a failure.",
+      "zh": "错误。同一台机器的记录会同时出现在训练集和测试集，测试机器并不是新的。说明文字也会泄漏答案，因为它只在故障之后才存在。"
+     }
+    },
+    {
+     "text": {
+      "en": "Split by machine, but keep technician_note because it raises validation accuracy.",
+      "zh": "按机器划分，但保留 technician_note，因为它能提高验证准确率。"
+     },
+     "why": {
+      "en": "Wrong. A higher score from a column that is written after the failure is leakage. At prediction time the note does not exist yet.",
+      "zh": "错误。来自故障后才填写的列的高分就是泄漏。预测的时候这条说明还不存在。"
+     }
+    },
+    {
+     "text": {
+      "en": "Time split: the first 10 sessions of every machine for training, the last 5 for testing.",
+      "zh": "按时间划分：每台机器前 10 次记录用于训练，后 5 次用于测试。"
+     },
+     "why": {
+      "en": "Wrong for this question. It answers \"later sessions on machines we already know\". Every test machine was seen in training, so it says little about new machines.",
+      "zh": "对这个问题来说是错的。它回答的是「已知机器的后续记录」。每台测试机器都在训练中出现过，所以几乎说明不了新机器的情况。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "ml-short-leakage-loans",
+   "kind": "short",
+   "topic": "framing-splits-leakage",
+   "title": {
+    "en": "Find the leaks in a library-loan model",
+    "zh": "找出图书借阅模型中的泄漏"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Noah wants to predict, on the day an item is borrowed, whether the loan will be returned late. His table has one row per loan from the last three years. Columns:\n\nmember_id, item_type, branch, loan_date, member_loans_last_year, days_overdue (filled in when the item comes back), and the label late (1 if returned after the due date).\n\nMany members have dozens of loans. He fills missing values with medians computed over the whole table, makes a random 80/20 row split, and reports accuracy 0.98.\n\n(a) Name two things in this setup that leak information the model would not have on the day of borrowing.\n(b) The library will run the model on next month's loans, mostly by the same members. Propose a split that matches this use and say why.\n(c) Give two things he should report besides a single accuracy figure.",
+    "zh": "Noah 想在物品被借出的当天预测：这笔借阅会不会逾期归还。他的表格每行是一笔借阅，覆盖过去三年。列包括：\n\nmember_id、item_type、branch、loan_date、member_loans_last_year、days_overdue（在物品归还时才填写），以及标签 late（逾期归还记为 1）。\n\n很多读者有几十笔借阅。他用整张表计算的中位数填补缺失值，按行随机做 80/20 划分，并报告准确率 0.98。\n\n(a) 指出这个设置中两处泄漏：模型在借出当天本来不可能拥有的信息。\n(b) 图书馆会把模型用在下个月的借阅上，借阅者大多是同一批读者。请提出一种符合这种用途的划分方式，并说明原因。\n(c) 除了一个准确率数字之外，他还应该报告哪两样东西？"
+   },
+   "solution": {
+    "en": "(a) Leaks.\n- days_overdue is filled in only when the item comes back. It almost defines the label (late means days_overdue > 0), so the 0.98 mostly measures this column. Drop it.\n- The medians were computed over the whole table, so test rows helped set the training inputs. Fit the fill values on training rows only and reuse them.\n- Also check member_loans_last_year: it must count only loans before loan_date. If it was computed over the full history, it uses the future.\n\n(b) Split by time. Train on the oldest loans (for example the first two years), validate on the next few months, and test on the most recent months. Compute every feature and fill value from earlier data only. This copies the real use: the model is trained on the past and predicts the next month. The same members can appear in training and test, because the real use is also mostly known members. If new members matter, report them as a separate group.\n\n(c) Report:\n- a baseline on the same test months, such as \"never late\" (late loans may be rare, so its accuracy can already be high);\n- the confusion counts, or precision and recall for the late class, because accuracy alone hides missed late loans;\n- the split rule, the prediction time (day of borrowing) and the number of test loans.",
+    "zh": "(a) 泄漏。\n- days_overdue 只有在物品归还时才填写。它几乎直接定义了标签（逾期就意味着 days_overdue > 0），所以 0.98 主要是在衡量这一列。应删除它。\n- 中位数是用整张表算的，测试行参与了训练输入的设定。应只用训练行拟合填补值，再在其他数据上重复使用。\n- 还要检查 member_loans_last_year：它只能统计 loan_date 之前的借阅。如果它是用全部历史算的，就用到了未来的信息。\n\n(b) 按时间划分。用最早的借阅训练（例如前两年），用接下来几个月验证，用最近几个月测试。每个特征和填补值都只用更早的数据计算。这样模拟了真实用途：模型用过去训练，预测下个月。同一批读者可以同时出现在训练集和测试集，因为真实用途也主要面对已知读者。如果新读者也很重要，就把他们作为单独的一组报告。\n\n(c) 应报告：\n- 在同样测试月份上的基线，例如「永不逾期」（逾期借阅可能很少，所以基线的准确率本身就可能很高）；\n- 混淆矩阵的计数，或逾期类的精确率和召回率，因为单看准确率会掩盖漏掉的逾期借阅；\n- 划分规则、预测时刻（借出当天）以及测试借阅的数量。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names days_overdue as leakage because it is known only after the item is returned.",
+      "zh": "指出 days_overdue 是泄漏，因为它只有在物品归还后才知道。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Names a preprocessing or feature leak: medians fitted on the whole table (or counts that include later loans); says to fit on training rows only.",
+      "zh": "指出预处理或特征泄漏：用整张表拟合中位数（或计数包含了以后的借阅）；说明应只用训练行拟合。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Proposes a time-ordered train / validation / test split (older loans for training, most recent months for testing).",
+      "zh": "提出按时间顺序的训练 / 验证 / 测试划分（较早借阅用于训练，最近几个月用于测试）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Justifies the split by the real use: predicting next month from the past, with features computed only from earlier data.",
+      "zh": "用真实用途说明划分的理由：用过去预测下个月，特征只用更早的数据计算。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Reports a simple baseline (for example \"never late\") on the same test loans.",
+      "zh": "在同样的测试借阅上报告一个简单基线（例如「永不逾期」）。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Reports confusion counts or precision and recall for the late class, not only accuracy.",
+      "zh": "报告混淆矩阵计数或逾期类的精确率和召回率，而不只是准确率。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Keeping days_overdue because it is \"the most predictive feature\".",
+     "zh": "因为 days_overdue 是「预测力最强的特征」就保留它。"
+    },
+    {
+     "en": "Proposing only a split by member. That answers a different question (brand-new members), not next month's loans.",
+     "zh": "只提出按读者分组划分。这回答的是另一个问题（全新的读者），而不是下个月的借阅。"
+    },
+    {
+     "en": "Recomputing the median separately on the test rows instead of reusing the training median.",
+     "zh": "在测试行上重新计算中位数，而不是重复使用训练中位数。"
+    }
+   ]
+  },
+  {
+   "id": "ml-median-error-code",
+   "kind": "numeric",
+   "topic": "missing-data-eda",
+   "title": {
+    "en": "Fill a gap after spotting an error code",
+    "zh": "识别错误代码后再填补缺口"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Emma's training column of room temperatures (°C) is:\n21, 999, 19, missing, 24, 18\n\nThe sensor guide says 999 means \"read error\". Her test column is: missing, 23.\n\nShe marks error codes as missing, uses the median of the observed training values as the fill value, and keeps a separate missing flag. What value fills the missing test reading?",
+    "zh": "Emma 的训练列记录了室温（°C）：\n21、999、19、缺失、24、18\n\n传感器说明书写明 999 表示「读取错误」。她的测试列是：缺失、23。\n\n她把错误代码标记为缺失，用训练集中观测值的中位数作为填补值，并单独保留一个缺失标记。测试列中缺失的那个读数应填入什么值？"
+   },
+   "answer": 20,
+   "unit": {
+    "en": "°C",
+    "zh": "°C"
+   },
+   "solution": {
+    "en": "Step 1: mark the error code. The training column becomes 21, missing, 19, missing, 24, 18. Two of six values are missing, so r = 2 / 6 = 0.333.\n\nStep 2: take the observed training values and sort them: 18, 19, 21, 24. There is an even number of values, so the median is the mean of the middle two: (19 + 21) / 2 = 20.\n\nStep 3: fill training as 21, 20, 19, 20, 24, 18 with flags 0, 1, 0, 1, 0, 0.\n\nStep 4: reuse the same median for the test set. The test column becomes 20, 23 with flags 1, 0. The answer is 20 °C.\n\nWrong paths and what they give: keeping 999 as a real reading gives the median of 18, 19, 21, 24, 999, which is 21; recomputing a median on the test values gives 23; filling with zero gives 0 °C, a temperature nobody measured.",
+    "zh": "第 1 步：标记错误代码。训练列变成 21、缺失、19、缺失、24、18。六个值中有两个缺失，所以 r = 2 / 6 = 0.333。\n\n第 2 步：取出训练集中的观测值并排序：18、19、21、24。值的个数是偶数，所以中位数是中间两个值的平均：(19 + 21) / 2 = 20。\n\n第 3 步：训练列填补为 21、20、19、20、24、18，缺失标记为 0、1、0、1、0、0。\n\n第 4 步：测试集重复使用同一个中位数。测试列变成 20、23，缺失标记为 1、0。答案是 20 °C。\n\n错误做法及其结果：把 999 当作真实读数，中位数变成 18、19、21、24、999 的中位数 21；在测试值上重新算中位数得到 23；用零填补得到 0 °C，这是谁也没有测到的温度。"
+   },
+   "verify_code": "import numpy as np\ntrain = np.array([21, 999, 19, np.nan, 24, 18], float)\ntrain[train == 999] = np.nan\ntest = np.array([np.nan, 23.])\nflag = np.isnan(train)\nmedian = np.median(train[~flag])\nprint('missing fraction', round(float(flag.mean()), 4), 'flags', flag.astype(int).tolist())\nprint('filled test', np.where(np.isnan(test), median, test).tolist())\nprint(float(median))\n"
+  },
+  {
+   "id": "ml-predict-onehot-vocab",
+   "kind": "predict",
+   "topic": "categorical-preprocessing",
+   "title": {
+    "en": "One-hot columns with an unknown slot",
+    "zh": "带「未知」列的独热编码"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Leon builds the vocabulary for a transport-mode column from the training values, then encodes two values. Write the exact output.",
+    "zh": "Leon 用训练集中的值为「交通方式」这一列建立词表，然后对两个值进行编码。请写出程序的准确输出。"
+   },
+   "language": "python",
+   "code": "train = ['tram', 'bus', 'ferry', 'bus', 'tram']\nvocab = sorted(set(train))\n\ndef encode(value):\n    return [int(value == name) for name in vocab] + [int(value not in vocab)]\n\nprint(vocab)\nfor value in ['ferry', 'bike']:\n    print(value, encode(value))\nprint(len(encode('bus')), sum(encode('bike')))\n",
+   "output": "['bus', 'ferry', 'tram']\nferry [0, 1, 0, 0]\nbike [0, 0, 0, 1]\n4 1\n",
+   "walk": {
+    "en": [
+     "set(train) removes the repeats and keeps tram, bus and ferry. sorted puts them in alphabetical order, so the vocabulary and column order is ['bus', 'ferry', 'tram'].",
+     "encode('ferry') compares ferry with bus, ferry and tram, giving [0, 1, 0]. ferry is in the vocabulary, so the unknown flag is 0. The row is [0, 1, 0, 0].",
+     "encode('bike') matches none of the three names, giving [0, 0, 0], and bike is not in the vocabulary, so the unknown flag is 1: [0, 0, 0, 1].",
+     "Every encoded row has 3 + 1 = 4 entries, so len(encode('bus')) is 4. Each row has exactly one 1, so sum(encode('bike')) is 1. The line is 4 1."
+    ],
+    "zh": [
+     "set(train) 去掉重复值，只留下 tram、bus、ferry。sorted 按字母顺序排列，所以词表和列顺序是 ['bus', 'ferry', 'tram']。",
+     "encode('ferry') 把 ferry 依次与 bus、ferry、tram 比较，得到 [0, 1, 0]。ferry 在词表中，所以未知标记是 0，整行是 [0, 1, 0, 0]。",
+     "encode('bike') 与三个名字都不相同，得到 [0, 0, 0]；bike 不在词表中，未知标记为 1，整行是 [0, 0, 0, 1]。",
+     "每一行编码都有 3 + 1 = 4 个元素，所以 len(encode('bus')) 是 4。每一行恰好有一个 1，所以 sum(encode('bike')) 是 1。这一行输出 4 1。"
+    ]
+   }
+  },
+  {
+   "id": "ml-mcq-integer-codes",
+   "kind": "mcq",
+   "topic": "categorical-preprocessing",
+   "title": {
+    "en": "Integer codes for colours",
+    "zh": "用整数给颜色编码"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Leon has a column \"bin colour\" with the values red, green and blue. He codes them red = 1, green = 2, blue = 3 and feeds the code to a k-nearest-neighbours model. Which statement is correct?",
+    "zh": "Leon 有一列「垃圾桶颜色」，取值为 red、green、blue。他把它们编码为 red = 1、green = 2、blue = 3，然后把这个编码交给 k 近邻模型。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The codes invent an order and a spacing: blue is now 2 away from red but green is only 1 away. With one-hot columns every pair of different colours is the same distance apart, √2.",
+      "zh": "这种编码凭空制造了顺序和间距：blue 与 red 相距 2，而 green 只相距 1。改用独热编码后，任意两种不同颜色之间的距离都相同，都是 √2。"
+     },
+     "why": {
+      "en": "Right. red = [1, 0, 0] and blue = [0, 0, 1] differ in two places, so their squared distance is 2 and their distance is √2, the same as for any other pair.",
+      "zh": "正确。red = [1, 0, 0] 与 blue = [0, 0, 1] 有两处不同，平方距离为 2，距离为 √2，与其他任何一对颜色相同。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Integer codes are harmless for k-NN, because it only ranks distances and never uses their size.",
+      "zh": "整数编码对 k 近邻无害，因为它只对距离排序，从不使用距离的大小。"
+     },
+     "why": {
+      "en": "Wrong. The ranking is built from those invented distances, so the invented spacing changes which neighbours are chosen.",
+      "zh": "错误。排序正是由这些凭空制造的距离决定的，所以虚构的间距会改变选出的邻居。"
+     }
+    },
+    {
+     "text": {
+      "en": "One-hot encoding adds new rows, one for each colour.",
+      "zh": "独热编码会增加新的行，每种颜色一行。"
+     },
+     "why": {
+      "en": "Wrong. It adds columns (one indicator per known colour). The number of examples does not change.",
+      "zh": "错误。它增加的是列（每种已知颜色一个指示列），样本的行数不变。"
+     }
+    },
+    {
+     "text": {
+      "en": "Build the vocabulary from the training and test data together, so that no test colour is ever unknown.",
+      "zh": "把训练数据和测试数据合在一起建立词表，这样测试中就不会出现未知颜色。"
+     },
+     "why": {
+      "en": "Wrong. The vocabulary must be fitted on training data only. A colour first seen in testing needs an explicit rule, such as an unknown column.",
+      "zh": "错误。词表只能用训练数据拟合。测试中第一次出现的颜色需要明确的规则，例如一个未知列。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "ml-mcq-mse-one-big-miss",
+   "kind": "mcq",
+   "topic": "linear-regression-mse",
+   "title": {
+    "en": "One big miss under squared error",
+    "zh": "平方误差下的一次大偏差"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Emma compares two lines that predict bus travel time on the same four held-out trips. Their residuals (prediction minus measurement, in minutes) are:\n\nLine A: 1, −1, 1, −1\nLine B: 0, 0, 0, 3\n\nWhich statement is correct?",
+    "zh": "Emma 在同样四次留出的行程上比较两条预测公交行驶时间的直线。它们的残差（预测减实测，单位：分钟）是：\n\n直线 A：1、−1、1、−1\n直线 B：0、0、0、3\n\n下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Line A has the lower MSE: 1 against 2.25. Squaring makes B's single 3-minute miss cost 9.",
+      "zh": "直线 A 的 MSE 更低：1 对 2.25。平方使 B 那一次 3 分钟的偏差贡献了 9。"
+     },
+     "why": {
+      "en": "Right. A: (1 + 1 + 1 + 1) / 4 = 1. B: (0 + 0 + 0 + 9) / 4 = 2.25.",
+      "zh": "正确。A：(1 + 1 + 1 + 1) / 4 = 1。B：(0 + 0 + 0 + 9) / 4 = 2.25。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Line B has the lower MSE, because three of its four predictions are exact.",
+      "zh": "直线 B 的 MSE 更低，因为它四个预测中有三个完全准确。"
+     },
+     "why": {
+      "en": "Wrong. MSE does not count exact hits. It averages squared residuals, and one large residual dominates.",
+      "zh": "错误。MSE 不统计「完全命中」的次数，它平均的是残差的平方，一个大的残差会占主导。"
+     }
+    },
+    {
+     "text": {
+      "en": "Line A has MSE 0, because its residuals cancel out: 1 − 1 + 1 − 1 = 0.",
+      "zh": "直线 A 的 MSE 为 0，因为它的残差相互抵消：1 − 1 + 1 − 1 = 0。"
+     },
+     "why": {
+      "en": "Wrong. That is the mean signed residual. Squaring each residual first is exactly what stops positive and negative errors from cancelling.",
+      "zh": "错误。那是带符号残差的平均值。先把每个残差平方，恰恰就是为了不让正负误差相互抵消。"
+     }
+    },
+    {
+     "text": {
+      "en": "RMSE would rank the lines the other way, because the square root shrinks B's large error.",
+      "zh": "如果用 RMSE，排序会反过来，因为平方根会缩小 B 的大误差。"
+     },
+     "why": {
+      "en": "Wrong. The square root is applied to the whole MSE and keeps the order: RMSE is 1 for A and 1.5 for B.",
+      "zh": "错误。平方根作用在整个 MSE 上，不会改变顺序：A 的 RMSE 是 1，B 的是 1.5。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "import math\na = [1, -1, 1, -1]\nb = [0, 0, 0, 3]\nfor name, r in [('A', a), ('B', b)]:\n    mse = sum(x * x for x in r) / len(r)\n    print(name, 'mean residual', sum(r) / len(r), 'MSE', mse, 'RMSE', math.sqrt(mse))\n",
+   "verify_output": "A mean residual 0.0 MSE 1.0 RMSE 1.0\nB mean residual 0.75 MSE 2.25 RMSE 1.5\n"
+  },
+  {
+   "id": "ml-rmse-print-times",
+   "kind": "numeric",
+   "topic": "linear-regression-mse",
+   "title": {
+    "en": "RMSE of a print-time line",
+    "zh": "打印耗时直线的 RMSE"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Mia models print time in seconds from page count with the line ŷ = 5 + 2x. On four held-out jobs:\n\npages x: 2, 4, 6, 8\nmeasured seconds y: 9, 13, 20, 22\n\nWhat is the RMSE of the line on these jobs, in seconds? Give 3 decimal places.",
+    "zh": "Mia 用直线 ŷ = 5 + 2x 根据页数预测打印耗时（秒）。四个留出的打印任务如下：\n\n页数 x：2、4、6、8\n实测秒数 y：9、13、20、22\n\n这条直线在这些任务上的 RMSE 是多少秒？保留 3 位小数。"
+   },
+   "answer": 1.581,
+   "tolerance": 0.002,
+   "unit": {
+    "en": "seconds",
+    "zh": "秒"
+   },
+   "solution": {
+    "en": "Step 1: predictions. ŷ = 5 + 2 × 2 = 9, then 13, 17 and 21.\n\nStep 2: residuals ŷ − y: 9 − 9 = 0, 13 − 13 = 0, 17 − 20 = −3, 21 − 22 = −1.\n\nStep 3: squares are 0, 0, 9 and 1. Their sum is 10, so MSE = 10 / 4 = 2.5 squared seconds.\n\nStep 4: RMSE = √2.5 = 1.581 seconds.\n\nMeaning: a typical miss is about 1.6 seconds, and most of it comes from the 6-page job. For comparison, always predicting the mean of these targets (16 seconds) gives squared errors 49, 9, 16 and 36, MSE 27.5 and RMSE 5.244, so the line is far better here. Only the RMSE is in seconds; the MSE is in squared seconds.",
+    "zh": "第 1 步：预测值。ŷ = 5 + 2 × 2 = 9，接着是 13、17、21。\n\n第 2 步：残差 ŷ − y：9 − 9 = 0，13 − 13 = 0，17 − 20 = −3，21 − 22 = −1。\n\n第 3 步：平方分别是 0、0、9、1，总和为 10，所以 MSE = 10 / 4 = 2.5（秒的平方）。\n\n第 4 步：RMSE = √2.5 = 1.581 秒。\n\n含义：典型偏差约为 1.6 秒，主要来自 6 页的那个任务。作为对比，始终预测这些目标的均值（16 秒）时，平方误差为 49、9、16、36，MSE 为 27.5，RMSE 为 5.244，所以这里直线要好得多。只有 RMSE 的单位是秒；MSE 的单位是秒的平方。"
+   },
+   "verify_code": "import math\nx = [2, 4, 6, 8]\ny = [9, 13, 20, 22]\npred = [5 + 2 * v for v in x]\nres = [p - t for p, t in zip(pred, y)]\nmse = sum(r * r for r in res) / len(res)\nprint('pred', pred, 'res', res, 'mse', mse)\nprint(round(math.sqrt(mse), 4))\n"
+  },
+  {
+   "id": "ml-gd-step-loss",
+   "kind": "numeric",
+   "topic": "gradient-descent-scaling",
+   "title": {
+    "en": "One gradient step on standardised inputs",
+    "zh": "在标准化输入上走一步梯度下降"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "Jack fits ŷ = w·z + b with mean squared loss L = (1/n) Σ (w zᵢ + b − yᵢ)², where z is the standardised input.\n\nRaw training inputs x: 1, 1, 5, 5\nTargets y: 1, 3, 5, 7\n\nStandardise x with the training mean and population standard deviation. Start at w = 0 and b = 0 with learning rate η = 0.1. Compute both gradients at the old values, update both parameters, and give the new training loss.",
+    "zh": "Jack 用均方损失 L = (1/n) Σ (w zᵢ + b − yᵢ)² 拟合 ŷ = w·z + b，其中 z 是标准化后的输入。\n\n原始训练输入 x：1、1、5、5\n目标 y：1、3、5、7\n\n用训练均值和总体标准差把 x 标准化。从 w = 0、b = 0 出发，学习率 η = 0.1。先在旧参数处同时计算两个梯度，再更新两个参数，求更新后的训练损失。"
+   },
+   "answer": 13.8,
+   "tolerance": 0.01,
+   "solution": {
+    "en": "Standardise. The mean of x is (1 + 1 + 5 + 5) / 4 = 3. Deviations are −2, −2, 2, 2, so the population standard deviation is √((4 + 4 + 4 + 4) / 4) = 2. z = −1, −1, 1, 1.\n\nStart. All predictions are 0, so the errors ŷ − y are −1, −3, −5, −7 and L = (1 + 9 + 25 + 49) / 4 = 84 / 4 = 21.\n\nGradients (n = 4, so 2/n = 0.5):\ng_w = 0.5 × [(−1)(−1) + (−3)(−1) + (−5)(1) + (−7)(1)] = 0.5 × (1 + 3 − 5 − 7) = 0.5 × (−8) = −4.\ng_b = 0.5 × (−1 − 3 − 5 − 7) = 0.5 × (−16) = −8.\n\nUpdate together: w = 0 − 0.1 × (−4) = 0.4 and b = 0 − 0.1 × (−8) = 0.8.\n\nNew loss. For z = −1 the prediction is −0.4 + 0.8 = 0.4; for z = 1 it is 0.4 + 0.8 = 1.2. Errors are 0.4 − 1 = −0.6, 0.4 − 3 = −2.6, 1.2 − 5 = −3.8 and 1.2 − 7 = −5.8. Squares: 0.36, 6.76, 14.44, 33.64. Sum 55.2, so L = 55.2 / 4 = 13.8.\n\nOne step cut the training loss from 21 to 13.8. That checks the update rule; it says nothing yet about new data.",
+    "zh": "标准化。x 的均值是 (1 + 1 + 5 + 5) / 4 = 3。偏差为 −2、−2、2、2，所以总体标准差是 √((4 + 4 + 4 + 4) / 4) = 2。z = −1、−1、1、1。\n\n起点。所有预测都是 0，误差 ŷ − y 为 −1、−3、−5、−7，L = (1 + 9 + 25 + 49) / 4 = 84 / 4 = 21。\n\n梯度（n = 4，所以 2/n = 0.5）：\ng_w = 0.5 × [(−1)(−1) + (−3)(−1) + (−5)(1) + (−7)(1)] = 0.5 × (1 + 3 − 5 − 7) = 0.5 × (−8) = −4。\ng_b = 0.5 × (−1 − 3 − 5 − 7) = 0.5 × (−16) = −8。\n\n同时更新：w = 0 − 0.1 × (−4) = 0.4，b = 0 − 0.1 × (−8) = 0.8。\n\n新的损失。z = −1 时预测为 −0.4 + 0.8 = 0.4；z = 1 时预测为 0.4 + 0.8 = 1.2。误差为 0.4 − 1 = −0.6、0.4 − 3 = −2.6、1.2 − 5 = −3.8、1.2 − 7 = −5.8。平方为 0.36、6.76、14.44、33.64，总和 55.2，所以 L = 55.2 / 4 = 13.8。\n\n一步就把训练损失从 21 降到 13.8。这只验证了更新规则，还不能说明模型在新数据上的表现。"
+   },
+   "verify_code": "import numpy as np\nx = np.array([1., 1., 5., 5.]); y = np.array([1., 3., 5., 7.])\nz = (x - x.mean()) / x.std()\nw, b, rate = 0., 0., 0.1\nerr = w * z + b - y\nprint('z', z.tolist(), 'start loss', np.mean(err ** 2))\ngw = 2 * np.mean(err * z); gb = 2 * np.mean(err)\nw, b = w - rate * gw, b - rate * gb\nprint('grads', gw, gb, 'params', round(w, 4), round(b, 4))\nprint(round(float(np.mean((w * z + b - y) ** 2)), 4))\n"
+  },
+  {
+   "id": "ml-threshold-cost",
+   "kind": "numeric",
+   "topic": "logistic-thresholds",
+   "title": {
+    "en": "Choose a threshold by validation cost",
+    "zh": "按验证集代价选择阈值"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Iris's fixed model gives the probability p that a clip contains a bird call, for 8 validation clips (table). A false alarm costs 1 (a person listens for nothing) and a missed bird call costs 3. She predicts \"call\" when p ≥ τ.\n\nCandidate thresholds: τ = 0.25, 0.4, 0.5, 0.7. Which τ gives the lowest total cost on these clips? Enter the value of τ.",
+    "zh": "Iris 的模型（参数已固定）对 8 个验证片段给出了包含鸟叫的概率 p（见表）。一次误报的代价是 1（有人白听一次），一次漏报的代价是 3。当 p ≥ τ 时，她预测「有鸟叫」。\n\n候选阈值：τ = 0.25、0.4、0.5、0.7。哪个 τ 在这些片段上的总代价最低？请填写 τ 的值。"
+   },
+   "code": "clip    p      call?\n1      0.10     0\n2      0.30     0\n3      0.35     0\n4      0.45     1\n5      0.55     0\n6      0.60     1\n7      0.75     1\n8      0.90     1",
+   "answer": 0.4,
+   "solution": {
+    "en": "Count false positives (FP) and false negatives (FN) at each threshold. Cost = 1 × FP + 3 × FN.\n\nτ = 0.25: clips 2–8 are flagged. Calls found: 4, 6, 7, 8 (TP = 4). False alarms: 2, 3, 5 (FP = 3). Missed: none. Cost = 3 + 0 = 3.\nτ = 0.4: clips 4–8 are flagged. TP = 4, FP = 1 (clip 5), FN = 0. Cost = 1.\nτ = 0.5: clips 5–8 are flagged. TP = 3, FP = 1, FN = 1 (clip 4). Cost = 1 + 3 = 4.\nτ = 0.7: clips 7 and 8 are flagged. TP = 2, FP = 0, FN = 2 (clips 4 and 6). Cost = 6.\n\nThe lowest cost is 1, at τ = 0.4.\n\nThe probabilities never changed; only the decision rule moved. Choose τ on validation clips like these, then report one result on a separate test set. Choosing τ on the test set would make that final score optimistic.",
+    "zh": "在每个阈值下数出误报（FP）和漏报（FN）。代价 = 1 × FP + 3 × FN。\n\nτ = 0.25：片段 2–8 被标记。找到的鸟叫：4、6、7、8（TP = 4）。误报：2、3、5（FP = 3）。漏报：无。代价 = 3 + 0 = 3。\nτ = 0.4：片段 4–8 被标记。TP = 4，FP = 1（片段 5），FN = 0。代价 = 1。\nτ = 0.5：片段 5–8 被标记。TP = 3，FP = 1，FN = 1（片段 4）。代价 = 1 + 3 = 4。\nτ = 0.7：片段 7 和 8 被标记。TP = 2，FP = 0，FN = 2（片段 4 和 6）。代价 = 6。\n\n最低代价是 1，对应 τ = 0.4。\n\n概率从头到尾没有变，变的只是决策规则。应像这样在验证片段上选 τ，再在独立的测试集上报告一次结果。在测试集上选 τ 会让最终分数偏乐观。"
+   },
+   "verify_code": "p = [0.10, 0.30, 0.35, 0.45, 0.55, 0.60, 0.75, 0.90]\ny = [0, 0, 0, 1, 0, 1, 1, 1]\ncosts = {}\nfor t in [0.25, 0.4, 0.5, 0.7]:\n    fp = sum(s >= t and l == 0 for s, l in zip(p, y))\n    fn = sum(s < t and l == 1 for s, l in zip(p, y))\n    costs[t] = fp + 3 * fn\n    print(t, 'FP', fp, 'FN', fn, 'cost', costs[t])\nprint(min(costs, key=costs.get))\n"
+  },
+  {
+   "id": "ml-mcq-raise-threshold",
+   "kind": "mcq",
+   "topic": "logistic-thresholds",
+   "title": {
+    "en": "What raising a threshold changes",
+    "zh": "提高阈值会改变什么"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Leon's logistic-regression model is trained and fixed. He raises the decision threshold from 0.5 to 0.7 and scores the same validation set again. Which statement must be true?",
+    "zh": "Leon 的逻辑回归模型已经训练好并固定下来。他把决策阈值从 0.5 提高到 0.7，并在同一个验证集上重新评分。下列哪项说法一定成立？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The predicted probabilities are unchanged, and the number of predicted positives cannot go up.",
+      "zh": "预测概率不变，并且被预测为正类的数量不会增加。"
+     },
+     "why": {
+      "en": "Right. The threshold is a separate decision rule. Any example with p ≥ 0.7 also had p ≥ 0.5, so the positive set can only shrink or stay the same.",
+      "zh": "正确。阈值是独立的决策规则。凡是 p ≥ 0.7 的样本也满足 p ≥ 0.5，所以正类集合只能缩小或保持不变。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Every predicted probability rises by 0.2.",
+      "zh": "每个预测概率都上升 0.2。"
+     },
+     "why": {
+      "en": "Wrong. Moving the threshold does not touch the weights or the probabilities, only the cut applied to them.",
+      "zh": "错误。移动阈值不会改变权重或概率，只改变作用在概率上的分界线。"
+     }
+    },
+    {
+     "text": {
+      "en": "Precision must go up.",
+      "zh": "精确率一定会上升。"
+     },
+     "why": {
+      "en": "Wrong. It often does, but not always: if the examples dropped (scores from 0.5 up to 0.7) contain a higher share of true positives than the ones that remain, precision falls. With no positives left it is undefined.",
+      "zh": "错误。它常常会上升，但并非总是如此：如果被去掉的那些 0.5 到 0.7 之间的样本中，真正例的比例高于留下的样本，精确率反而下降；如果一个正类预测都不剩，精确率就无法定义。"
+     }
+    },
+    {
+     "text": {
+      "en": "The model must be retrained, because its weights were fitted for a 0.5 threshold.",
+      "zh": "必须重新训练模型，因为它的权重是针对 0.5 的阈值拟合的。"
+     },
+     "why": {
+      "en": "Wrong. The weights are fitted to the training loss, not to a threshold. The same probabilities can be cut at any threshold.",
+      "zh": "错误。权重是根据训练损失拟合的，与阈值无关。同一组概率可以用任何阈值来切分。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "ml-f1-scratch-detector",
+   "kind": "numeric",
+   "topic": "metrics-imbalance",
+   "title": {
+    "en": "F1 for a rare-defect detector",
+    "zh": "稀有缺陷检测器的 F1"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Emma tests a scratch detector on 200 parts: 16 are scratched and 184 are clean. The detector flags 20 parts, and 12 of the flagged parts really are scratched.\n\nTreat \"scratched\" as the positive class. What is the detector's F1 score? Give 3 decimal places.",
+    "zh": "Emma 在 200 个零件上测试一个划痕检测器：16 个有划痕，184 个完好。检测器标记了 20 个零件，其中 12 个确实有划痕。\n\n把「有划痕」当作正类。这个检测器的 F1 分数是多少？保留 3 位小数。"
+   },
+   "answer": 0.667,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Build the counts first.\nTP = 12 (flagged and scratched). FP = 20 − 12 = 8 (flagged but clean). FN = 16 − 12 = 4 (scratched but missed). TN = 184 − 8 = 176.\n\nPrecision = 12 / 20 = 0.60. Recall = 12 / 16 = 0.75.\nF1 = 2 TP / (2 TP + FP + FN) = 24 / (24 + 8 + 4) = 24 / 36 = 0.667.\n\nFor comparison, accuracy is (12 + 176) / 200 = 0.94, while the \"always clean\" baseline already reaches 184 / 200 = 0.92 with recall 0. Accuracy hides most of the story here; the counts and F1 show how many scratches are found and how many clean parts are sent for review.",
+    "zh": "先列出计数。\nTP = 12（被标记且有划痕）。FP = 20 − 12 = 8（被标记但完好）。FN = 16 − 12 = 4（有划痕却漏掉）。TN = 184 − 8 = 176。\n\n精确率 = 12 / 20 = 0.60。召回率 = 12 / 16 = 0.75。\nF1 = 2 TP / (2 TP + FP + FN) = 24 / (24 + 8 + 4) = 24 / 36 = 0.667。\n\n作为对比，准确率是 (12 + 176) / 200 = 0.94，而「全部判为完好」的基线已经达到 184 / 200 = 0.92，召回率却为 0。在这里准确率掩盖了大部分情况；计数和 F1 才能说明找到了多少划痕、又有多少完好零件被送去复查。"
+   },
+   "verify_code": "tp, fp, fn = 12, 20 - 12, 16 - 12\ntn = 184 - fp\nprint('counts', tp, fp, fn, tn)\nprint('precision', tp / (tp + fp), 'recall', tp / (tp + fn), 'accuracy', (tp + tn) / 200, 'baseline', 184 / 200)\nprint(round(2 * tp / (2 * tp + fp + fn), 4))\n"
+  },
+  {
+   "id": "ml-trace-threshold-sweep",
+   "kind": "trace",
+   "topic": "metrics-imbalance",
+   "title": {
+    "en": "Sweep a threshold: counts, precision, recall",
+    "zh": "扫描阈值：计数、精确率与召回率"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Noah's bird-call detector scored 10 validation clips, already sorted by score. 4 clips contain a call (label 1). The program predicts \"call\" when score ≥ t, for four thresholds.\n\nFill in TP, FP, FN, precision and recall for each threshold. Write precision and recall with 2 decimal places, exactly as the program prints them (for example 0.50 or 1.00). The first row is done for you.",
+    "zh": "Noah 的鸟叫检测器给 10 个验证片段打了分，片段已按分数排好序。其中 4 个片段含有鸟叫（标签为 1）。程序在 score ≥ t 时预测「有鸟叫」，共尝试四个阈值。\n\n请为每个阈值填写 TP、FP、FN、精确率和召回率。精确率和召回率按程序的打印格式保留 2 位小数（例如 0.50 或 1.00）。第一行已经填好。"
+   },
+   "code": "scores = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05]\nlabels = [1,    0,    1,    1,    0,    0,    1,    0,    0,    0]\nfor t in [0.9, 0.7, 0.5, 0.3]:\n    pred = [int(s >= t) for s in scores]\n    tp = sum(p == 1 and y == 1 for p, y in zip(pred, labels))\n    fp = sum(p == 1 and y == 0 for p, y in zip(pred, labels))\n    fn = sum(p == 0 and y == 1 for p, y in zip(pred, labels))\n    print(t, tp, fp, fn, f'{tp / (tp + fp):.2f}', f'{tp / (tp + fn):.2f}')\n",
+   "columns": {
+    "en": [
+     "Threshold t",
+     "TP",
+     "FP",
+     "FN",
+     "Precision",
+     "Recall"
+    ],
+    "zh": [
+     "阈值 t",
+     "TP",
+     "FP",
+     "FN",
+     "精确率",
+     "召回率"
+    ]
+   },
+   "rows": [
+    [
+     "0.9",
+     "1",
+     "0",
+     "3",
+     "1.00",
+     "0.25"
+    ],
+    [
+     "0.7",
+     "2",
+     "1",
+     "2",
+     "0.67",
+     "0.50"
+    ],
+    [
+     "0.5",
+     "3",
+     "2",
+     "1",
+     "0.60",
+     "0.75"
+    ],
+    [
+     "0.3",
+     "4",
+     "3",
+     "0",
+     "0.57",
+     "1.00"
+    ]
+   ],
+   "given": [
+    "0,1",
+    "0,2",
+    "0,3",
+    "0,4",
+    "0,5"
+   ],
+   "solution": {
+    "en": "Read down the sorted list: lowering t only adds clips to the flagged set.\n\nt = 0.7 flags the top three clips (labels 1, 0, 1): TP = 2, FP = 1, FN = 4 − 2 = 2. Precision = 2/3 = 0.67, recall = 2/4 = 0.50.\nt = 0.5 adds 0.65 (call) and 0.55 (no call): TP = 3, FP = 2, FN = 1. Precision = 3/5 = 0.60, recall = 3/4 = 0.75.\nt = 0.3 adds 0.45 (no call) and 0.35 (call): TP = 4, FP = 3, FN = 0. Precision = 4/7 = 0.571, printed 0.57; recall = 4/4 = 1.00.\n\nWhat it shows: recall can only rise as t falls, while precision here falls from 1.00 to 0.57. F1 is 0.40, 0.57, 0.67 and 0.73, so it prefers t = 0.3, but that sends 7 clips to a listener to find 4 calls. Which threshold is right depends on the listening budget and on what a missed call costs, decided on validation data.",
+    "zh": "沿着排好序的列表往下读：降低 t 只会往被标记集合里增加片段。\n\nt = 0.7 标记前三个片段（标签为 1、0、1）：TP = 2，FP = 1，FN = 4 − 2 = 2。精确率 = 2/3 = 0.67，召回率 = 2/4 = 0.50。\nt = 0.5 增加 0.65（有鸟叫）和 0.55（无鸟叫）：TP = 3，FP = 2，FN = 1。精确率 = 3/5 = 0.60，召回率 = 3/4 = 0.75。\nt = 0.3 增加 0.45（无鸟叫）和 0.35（有鸟叫）：TP = 4，FP = 3，FN = 0。精确率 = 4/7 = 0.571，打印为 0.57；召回率 = 4/4 = 1.00。\n\n这张表说明：t 降低时召回率只会上升，而这里的精确率从 1.00 降到 0.57。F1 依次为 0.40、0.57、0.67、0.73，所以 F1 偏向 t = 0.3，但那样要让人听 7 个片段才能找到 4 个鸟叫。哪个阈值合适，取决于收听的工作量和漏掉一次鸟叫的代价，并且要在验证数据上决定。"
+   },
+   "verify_language": "python",
+   "verify_code": "scores = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05]\nlabels = [1, 0, 1, 1, 0, 0, 1, 0, 0, 0]\nfor t in [0.9, 0.7, 0.5, 0.3]:\n    pred = [int(s >= t) for s in scores]\n    tp = sum(p == 1 and y == 1 for p, y in zip(pred, labels))\n    fp = sum(p == 1 and y == 0 for p, y in zip(pred, labels))\n    fn = sum(p == 0 and y == 1 for p, y in zip(pred, labels))\n    print('\\t'.join([str(t), str(tp), str(fp), str(fn), f'{tp / (tp + fp):.2f}', f'{tp / (tp + fn):.2f}']))\n"
+  },
+  {
+   "id": "ml-mcq-knn-scaling",
+   "kind": "mcq",
+   "topic": "nearest-neighbours",
+   "title": {
+    "en": "3-NN before and after standardising",
+    "zh": "标准化前后的 3 近邻"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Jack predicts whether a delivery will be late (1) or on time (0) with 3-nearest neighbours and squared Euclidean distance. The table gives five training deliveries and one query.\n\nFirst he uses the raw numbers. Then he standardises both features with the training means (600 m and 4 items) and population standard deviations (200 m and 2 items). What does 3-NN predict for the query each time?",
+    "zh": "Jack 用 3 近邻和平方欧氏距离预测一次送货会迟到（1）还是准时（0）。表格给出五次训练送货和一个查询。\n\n他先直接使用原始数值。然后用训练均值（600 米、4 件）和总体标准差（200 米、2 件）把两个特征都标准化。两种情况下，3 近邻对查询分别预测什么？"
+   },
+   "code": "Delivery  distance (m)  items  late?\nD1            300          3      0\nD2            500          5      1\nD3            700          7      1\nD4            900          1      0\nD5            600          4      0\nQuery         620          1      ?",
+   "options": [
+    {
+     "text": {
+      "en": "Raw: late (1). Standardised: on time (0).",
+      "zh": "原始数值：迟到（1）。标准化后：准时（0）。"
+     },
+     "why": {
+      "en": "Right. Raw distances are dominated by metres, so the neighbours are D5, D3 and D2 (labels 0, 1, 1). After standardising they are D4, D5 and D1 (labels 0, 0, 0).",
+      "zh": "正确。原始距离被「米」主导，邻居是 D5、D3、D2（标签 0、1、1）。标准化后邻居是 D4、D5、D1（标签 0、0、0）。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Raw: on time (0). Standardised: late (1).",
+      "zh": "原始数值：准时（0）。标准化后：迟到（1）。"
+     },
+     "why": {
+      "en": "Wrong. This reverses the two results. Work out the raw neighbours first: the items column adds at most 36 to a squared distance in the tens of thousands.",
+      "zh": "错误。这把两个结果弄反了。先算原始邻居：件数一列最多只给以万计的平方距离增加 36。"
+     }
+    },
+    {
+     "text": {
+      "en": "Late (1) both times. Standardising only changes the units, so the neighbours cannot change.",
+      "zh": "两次都是迟到（1）。标准化只是换了单位，邻居不会变。"
+     },
+     "why": {
+      "en": "Wrong. Each feature is divided by a different number (200 and 2), which changes how much each feature counts in the distance, and so changes the neighbours.",
+      "zh": "错误。每个特征除以的数不同（200 和 2），这改变了各特征在距离中的分量，因此邻居也会改变。"
+     }
+    },
+    {
+     "text": {
+      "en": "On time (0) both times, because the nearest delivery D5 is on time and the nearest one decides.",
+      "zh": "两次都是准时（0），因为最近的 D5 是准时的，由最近的那个决定。"
+     },
+     "why": {
+      "en": "Wrong. That is the 1-NN rule. With k = 3 the three nearest labels vote, and in the raw case two of them are late.",
+      "zh": "错误。那是 1 近邻的规则。k = 3 时由最近三个标签投票，原始数值下其中两个是迟到。"
+     }
+    }
+   ],
+   "solution": {
+    "en": "Raw squared distances to the query (620 m, 1 item):\nD1: 320² + 2² = 102404. D2: 120² + 4² = 14416. D3: 80² + 6² = 6436. D4: 280² + 0² = 78400. D5: 20² + 3² = 409.\nNearest three: D5, D3, D2 with labels 0, 1, 1. Mean 2/3 > 1/2, so the prediction is late.\n\nStandardised. Subtracting a mean cancels inside a difference, so divide the raw differences by 200 and by 2:\nD1: (320/200)² + (2/2)² = 2.56 + 1 = 3.56. D2: 0.6² + 2² = 4.36. D3: 0.4² + 3² = 9.16. D4: 1.4² + 0² = 1.96. D5: 0.1² + 1.5² = 2.26.\nNearest three: D4, D5, D1 with labels 0, 0, 0, so the prediction is on time.\n\nWhich map is \"right\" is a modelling choice, but the raw one silently ignores the number of items. Fit the scaling on training data and choose k on validation data.",
+    "zh": "查询（620 米，1 件）的原始平方距离：\nD1：320² + 2² = 102404。D2：120² + 4² = 14416。D3：80² + 6² = 6436。D4：280² + 0² = 78400。D5：20² + 3² = 409。\n最近的三个是 D5、D3、D2，标签为 0、1、1。平均值 2/3 > 1/2，所以预测为迟到。\n\n标准化后。减去均值在差值中会相互抵消，所以只需把原始差值分别除以 200 和 2：\nD1：(320/200)² + (2/2)² = 2.56 + 1 = 3.56。D2：0.6² + 2² = 4.36。D3：0.4² + 3² = 9.16。D4：1.4² + 0² = 1.96。D5：0.1² + 1.5² = 2.26。\n最近的三个是 D4、D5、D1，标签为 0、0、0，所以预测为准时。\n\n哪种「地图」更合理是建模选择，但原始数值实际上悄悄忽略了件数。缩放要用训练数据拟合，k 要用验证数据选择。"
+   },
+   "verify_language": "python",
+   "verify_code": "import numpy as np\nx = np.array([[300, 3], [500, 5], [700, 7], [900, 1], [600, 4]], float)\ny = np.array([0, 1, 1, 0, 0])\nq = np.array([620, 1.])\nmean, sd = x.mean(axis=0), x.std(axis=0)\nprint('mean', mean.tolist(), 'sd', sd.tolist())\nfor name, a, b in [('raw', x, q), ('scaled', (x - mean) / sd, (q - mean) / sd)]:\n    d = ((a - b) ** 2).sum(axis=1)\n    near = np.argsort(d, kind='stable')[:3]\n    print(name, np.round(d, 4).tolist(), (near + 1).tolist(), int(y[near].mean() > 0.5))\n",
+   "verify_output": "mean [600.0, 4.0] sd [200.0, 2.0]\nraw [102404.0, 14416.0, 6436.0, 78400.0, 409.0] [5, 3, 2] 1\nscaled [3.56, 4.36, 9.16, 1.96, 2.26] [4, 5, 1] 0\n"
+  },
+  {
+   "id": "ml-naive-bayes-priors",
+   "kind": "numeric",
+   "topic": "text-naive-bayes",
+   "title": {
+    "en": "Naive Bayes with smoothing and unequal priors",
+    "zh": "带平滑与不等先验的朴素贝叶斯"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "Emma's spam filter uses multinomial naive Bayes over the vocabulary [win, prize, meeting], so V = 3. Training word counts:\n\nspam: win 4, prize 3, meeting 0 (7 words in total)\nordinary: win 1, prize 0, meeting 5 (6 words in total)\n\nClass priors: P(spam) = 0.3, P(ordinary) = 0.7. A new message is \"win prize\". Using add-one smoothing, what is the model's P(spam | message)? Give 3 decimal places.",
+    "zh": "Emma 的垃圾消息过滤器在词表 [win, prize, meeting] 上使用多项式朴素贝叶斯，所以 V = 3。训练中的词计数为：\n\nspam：win 4，prize 3，meeting 0（共 7 个词）\nordinary：win 1，prize 0，meeting 5（共 6 个词）\n\n类别先验：P(spam) = 0.3，P(ordinary) = 0.7。一条新消息是「win prize」。使用加一平滑，模型给出的 P(spam | 消息) 是多少？保留 3 位小数。"
+   },
+   "answer": 0.776,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Smoothed word probabilities θ = (count + 1) / (class total + V).\nspam: win (4 + 1) / (7 + 3) = 0.5; prize (3 + 1) / 10 = 0.4; meeting 1 / 10 = 0.1.\nordinary: win (1 + 1) / (6 + 3) = 2/9 ≈ 0.2222; prize (0 + 1) / 9 = 1/9 ≈ 0.1111; meeting 6/9.\n\nUnnormalised scores for \"win prize\" (each word once):\nspam: 0.3 × 0.5 × 0.4 = 0.06.\nordinary: 0.7 × 2/9 × 1/9 = 0.7 × 2/81 ≈ 0.01728.\n\nNormalise: P(spam | message) = 0.06 / (0.06 + 0.01728) = 0.06 / 0.07728 ≈ 0.776.\n\nThe same in logs: spam ln 0.3 + ln 0.5 + ln 0.4 = −1.204 − 0.693 − 0.916 = −2.813; ordinary ln 0.7 + ln(2/9) + ln(1/9) = −0.357 − 1.504 − 2.197 = −4.058. exp(−2.813) / (exp(−2.813) + exp(−4.058)) gives the same 0.776.\n\nWithout smoothing, prize has probability 0 in ordinary messages, so P(spam) would be exactly 1: one unseen word would wipe out the other class. The prior of 0.7 for ordinary pulls the answer down from what equal priors would give (0.890).",
+    "zh": "平滑后的词概率 θ = (计数 + 1) / (类别词总数 + V)。\nspam：win (4 + 1) / (7 + 3) = 0.5；prize (3 + 1) / 10 = 0.4；meeting 1 / 10 = 0.1。\nordinary：win (1 + 1) / (6 + 3) = 2/9 ≈ 0.2222；prize (0 + 1) / 9 = 1/9 ≈ 0.1111；meeting 6/9。\n\n「win prize」的未归一化得分（每个词出现一次）：\nspam：0.3 × 0.5 × 0.4 = 0.06。\nordinary：0.7 × 2/9 × 1/9 = 0.7 × 2/81 ≈ 0.01728。\n\n归一化：P(spam | 消息) = 0.06 / (0.06 + 0.01728) = 0.06 / 0.07728 ≈ 0.776。\n\n用对数计算结果相同：spam 为 ln 0.3 + ln 0.5 + ln 0.4 = −1.204 − 0.693 − 0.916 = −2.813；ordinary 为 ln 0.7 + ln(2/9) + ln(1/9) = −0.357 − 1.504 − 2.197 = −4.058。exp(−2.813) / (exp(−2.813) + exp(−4.058)) 同样得到 0.776。\n\n如果不做平滑，prize 在 ordinary 中的概率是 0，P(spam) 就会恰好等于 1：一个没见过的词就能抹掉另一个类别。ordinary 的先验 0.7 把答案往下拉了；如果两个先验相等，结果会是 0.890。"
+   },
+   "verify_code": "from math import log\ncounts = {'spam': [4, 3, 0], 'ordinary': [1, 0, 5]}\nprior = {'spam': 0.3, 'ordinary': 0.7}\nquery = [1, 1, 0]\nscore = {}\nfor c, n in counts.items():\n    theta = [(k + 1) / (sum(n) + 3) for k in n]\n    score[c] = prior[c]\n    for t, q in zip(theta, query):\n        score[c] *= t ** q\n    print(c, [round(t, 4) for t in theta], round(score[c], 5), round(log(score[c]), 3))\nequal = {c: s / prior[c] for c, s in score.items()}\nprint('equal priors', round(equal['spam'] / sum(equal.values()), 4))\nprint(round(score['spam'] / sum(score.values()), 4))\n"
+  },
+  {
+   "id": "ml-gini-gain",
+   "kind": "numeric",
+   "topic": "trees-ensembles",
+   "title": {
+    "en": "Gini reduction of one split",
+    "zh": "一次划分的基尼不纯度下降量"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Noah's decision-tree node holds 12 kite flights: 6 stayed up (positive) and 6 fell. The split \"wind below 4 m/s?\" sends 5 flights left (4 positive, 1 not) and 7 flights right (2 positive, 5 not).\n\nUse binary Gini impurity G(p) = 2p(1 − p). What is the impurity reduction ΔG of this split? Give 3 decimal places.",
+    "zh": "Noah 的决策树节点里有 12 次风筝放飞记录：6 次保持在空中（正类），6 次掉落。划分「风速低于 4 m/s？」把 5 次放飞分到左边（4 次正类，1 次不是），7 次分到右边（2 次正类，5 次不是）。\n\n使用二分类基尼不纯度 G(p) = 2p(1 − p)。这次划分的不纯度下降量 ΔG 是多少？保留 3 位小数。"
+   },
+   "answer": 0.129,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Parent: p = 6/12 = 0.5, so G = 2 × 0.5 × 0.5 = 0.5.\n\nLeft child: p = 4/5 = 0.8, so G = 2 × 0.8 × 0.2 = 0.32.\nRight child: p = 2/7 ≈ 0.2857, so G = 2 × (2/7) × (5/7) = 20/49 ≈ 0.4082.\n\nWeighted child impurity = (5/12) × 0.32 + (7/12) × 0.4082 = 0.1333 + 0.2381 = 0.3714.\n\nΔG = 0.5 − 0.3714 = 0.1286, which rounds to 0.129.\n\nMeaning: on average the children are purer than the parent by 0.129. The weights matter: the larger right child counts for 7/12 of the result. A positive ΔG is a local improvement on training data, not proof that the tree will do better on new flights.",
+    "zh": "父节点：p = 6/12 = 0.5，所以 G = 2 × 0.5 × 0.5 = 0.5。\n\n左子节点：p = 4/5 = 0.8，所以 G = 2 × 0.8 × 0.2 = 0.32。\n右子节点：p = 2/7 ≈ 0.2857，所以 G = 2 × (2/7) × (5/7) = 20/49 ≈ 0.4082。\n\n加权子节点不纯度 = (5/12) × 0.32 + (7/12) × 0.4082 = 0.1333 + 0.2381 = 0.3714。\n\nΔG = 0.5 − 0.3714 = 0.1286，四舍五入为 0.129。\n\n含义：子节点平均比父节点纯 0.129。权重很重要：较大的右子节点占结果的 7/12。ΔG 为正只是训练数据上的局部改进，并不能证明这棵树在新的放飞记录上会表现更好。"
+   },
+   "verify_code": "def gini(pos, n):\n    p = pos / n\n    return 2 * p * (1 - p)\nparent = gini(6, 12)\nleft, right = gini(4, 5), gini(2, 7)\nchild = 5 / 12 * left + 7 / 12 * right\nprint(parent, left, round(right, 4), round(child, 4))\nprint(round(parent - child, 4))\n"
+  },
+  {
+   "id": "ml-mcq-forest-average-vs-vote",
+   "kind": "mcq",
+   "topic": "trees-ensembles",
+   "title": {
+    "en": "Average probabilities or count votes?",
+    "zh": "平均概率还是统计投票？"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Five trees in Jack's forest give these positive-class probabilities for one new flight:\n\n0.45, 0.45, 0.45, 0.90, 0.95\n\nThe decision threshold is 0.5. Which statement is correct?",
+    "zh": "Jack 的随机森林中有五棵树，它们对一次新的放飞给出的正类概率是：\n\n0.45、0.45、0.45、0.90、0.95\n\n决策阈值是 0.5。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "Averaging gives 0.64, so the forest says positive; a majority vote of the five thresholded labels says negative (2 of 5). The combination rule must be stated.",
+      "zh": "取平均得 0.64，所以森林判为正类；而对五棵树先按阈值判定再多数投票，结果是负类（5 票中 2 票）。必须说明采用哪种组合规则。"
+     },
+     "why": {
+      "en": "Right. (0.45 × 3 + 0.90 + 0.95) / 5 = 3.2 / 5 = 0.64 ≥ 0.5. Only two trees are above 0.5 on their own, so a vote gives 2 against 3.",
+      "zh": "正确。(0.45 × 3 + 0.90 + 0.95) / 5 = 3.2 / 5 = 0.64 ≥ 0.5。单独看只有两棵树高于 0.5，所以投票结果是 2 对 3。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Both rules always agree, because they use the same five trees.",
+      "zh": "两种规则总是一致的，因为它们用的是同样五棵树。"
+     },
+     "why": {
+      "en": "Wrong. Here they disagree: averaging keeps how confident each tree is, while a vote throws that away.",
+      "zh": "错误。这里两者就不一致：取平均保留了每棵树的把握程度，而投票把它丢掉了。"
+     }
+    },
+    {
+     "text": {
+      "en": "Averaging gives 0.45, the middle value, so the forest says negative.",
+      "zh": "取平均得 0.45，也就是中间的那个值，所以森林判为负类。"
+     },
+     "why": {
+      "en": "Wrong. 0.45 is the median. The forest rule in the chapter is the mean of the probabilities, 0.64.",
+      "zh": "错误。0.45 是中位数。本章的森林规则是概率的平均值，即 0.64。"
+     }
+    },
+    {
+     "text": {
+      "en": "Both rules say positive, because the two very confident trees outweigh the other three in a vote too.",
+      "zh": "两种规则都判为正类，因为在投票中，两棵把握很大的树同样能压过另外三棵。"
+     },
+     "why": {
+      "en": "Wrong. In a vote each tree has one equal vote, whatever its confidence, so the result is 2 positive against 3 negative.",
+      "zh": "错误。投票时每棵树不论把握多大都只有一票，所以结果是 2 票正类对 3 票负类。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "p = [0.45, 0.45, 0.45, 0.90, 0.95]\nmean = sum(p) / len(p)\nvotes = sum(x >= 0.5 for x in p)\nprint(round(mean, 4), int(mean >= 0.5), votes, int(votes > len(p) / 2))\n",
+   "verify_output": "0.64 1 2 0\n"
+  },
+  {
+   "id": "ml-boosting-two-rounds",
+   "kind": "numeric",
+   "topic": "boosting-residuals",
+   "title": {
+    "en": "Two rounds of residual boosting",
+    "zh": "两轮残差提升"
+   },
+   "marks": 4,
+   "prompt": {
+    "en": "Mia predicts robot task durations (minutes). Four training tasks have x = 1, 2, 3, 4 and targets y = 2, 4, 6, 12.\n\nStart with F₀ = the training mean. Each round fits a stump to the residuals r = y − F (each leaf predicts the mean residual of its rows) and adds η = 0.5 times the stump's output.\nRound 1 splits x ≤ 2 from x ≥ 3. Round 2 splits x ≤ 3 from x = 4.\n\nWhat is the training MSE after round 2? Give 4 decimal places.",
+    "zh": "Mia 要预测机器人任务的耗时（分钟）。四个训练任务的 x = 1、2、3、4，目标 y = 2、4、6、12。\n\n从 F₀ = 训练均值开始。每一轮用一个树桩拟合残差 r = y − F（每片叶子预测该叶子中各行残差的平均值），再把树桩输出的 η = 0.5 倍加到预测上。\n第 1 轮把 x ≤ 2 与 x ≥ 3 分开。第 2 轮把 x ≤ 3 与 x = 4 分开。\n\n第 2 轮之后的训练 MSE 是多少？保留 4 位小数。"
+   },
+   "answer": 2.1875,
+   "tolerance": 0.001,
+   "solution": {
+    "en": "Start. F₀ = (2 + 4 + 6 + 12) / 4 = 6. Residuals r = −4, −2, 0, 6. MSE = (16 + 4 + 0 + 36) / 4 = 14.\n\nRound 1. Left leaf (x ≤ 2): (−4 − 2) / 2 = −3. Right leaf: (0 + 6) / 2 = 3.\nF₁ = 6 + 0.5 × (−3, −3, 3, 3) = 4.5, 4.5, 7.5, 7.5.\nNew residuals y − F₁ = −2.5, −0.5, −1.5, 4.5. MSE = (6.25 + 0.25 + 2.25 + 20.25) / 4 = 29 / 4 = 7.25.\n\nRound 2. Left leaf (x ≤ 3): (−2.5 − 0.5 − 1.5) / 3 = −1.5. Right leaf (x = 4): 4.5.\nF₂ = F₁ + 0.5 × (−1.5, −1.5, −1.5, 4.5) = 3.75, 3.75, 6.75, 9.75.\n\nErrors F₂ − y: 1.75, −0.25, 0.75, −2.25. Squares: 3.0625, 0.0625, 0.5625, 5.0625. Sum 8.75, so MSE = 8.75 / 4 = 2.1875.\n\nTraining MSE fell 14 → 7.25 → 2.1875. Each round repaired part of what was left. The 12-minute task pulls hard on every round because squared error weights it heavily. A falling training loss does not choose the number of rounds; watch validation error for that.",
+    "zh": "起点。F₀ = (2 + 4 + 6 + 12) / 4 = 6。残差 r = −4、−2、0、6。MSE = (16 + 4 + 0 + 36) / 4 = 14。\n\n第 1 轮。左叶（x ≤ 2）：(−4 − 2) / 2 = −3。右叶：(0 + 6) / 2 = 3。\nF₁ = 6 + 0.5 × (−3, −3, 3, 3) = 4.5、4.5、7.5、7.5。\n新的残差 y − F₁ = −2.5、−0.5、−1.5、4.5。MSE = (6.25 + 0.25 + 2.25 + 20.25) / 4 = 29 / 4 = 7.25。\n\n第 2 轮。左叶（x ≤ 3）：(−2.5 − 0.5 − 1.5) / 3 = −1.5。右叶（x = 4）：4.5。\nF₂ = F₁ + 0.5 × (−1.5, −1.5, −1.5, 4.5) = 3.75、3.75、6.75、9.75。\n\n误差 F₂ − y：1.75、−0.25、0.75、−2.25。平方：3.0625、0.0625、0.5625、5.0625。总和 8.75，所以 MSE = 8.75 / 4 = 2.1875。\n\n训练 MSE 依次为 14 → 7.25 → 2.1875。每一轮都修复了剩余误差的一部分。12 分钟的那个任务在每一轮都拉得很用力，因为平方误差给它很大的权重。训练损失下降并不能决定轮数，轮数要看验证误差。"
+   },
+   "verify_code": "import numpy as np\ny = np.array([2., 4., 6., 12.])\nF = np.full(4, y.mean())\nprint('MSE0', np.mean((F - y) ** 2))\nfor left in ([True, True, False, False], [True, True, True, False]):\n    left = np.array(left)\n    r = y - F\n    stump = np.where(left, r[left].mean(), r[~left].mean())\n    F = F + 0.5 * stump\n    print('residual', r.tolist(), 'F', F.tolist(), 'MSE', np.mean((F - y) ** 2))\nprint(np.mean((F - y) ** 2))\n"
+  },
+  {
+   "id": "ml-kmeans-objective",
+   "kind": "numeric",
+   "topic": "clustering-pca",
+   "title": {
+    "en": "One k-means round and its objective",
+    "zh": "一轮 k 均值及其目标函数"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Iris clusters six stone lengths (cm): 1, 2, 4, 9, 10, 12. She runs k-means with k = 2, starting centres 2 and 10.\n\nDo one assignment step and one update step. Then compute J, the sum of squared distances from each point to its assigned, updated centre. Give 3 decimal places.",
+    "zh": "Iris 对六块石头的长度（厘米）做聚类：1、2、4、9、10、12。她用 k = 2 运行 k 均值，初始中心为 2 和 10。\n\n先做一次分配步骤和一次更新步骤，然后计算 J：每个点到其所属（更新后的）中心的平方距离之和。保留 3 位小数。"
+   },
+   "answer": 9.333,
+   "tolerance": 0.005,
+   "solution": {
+    "en": "Assignment. Each point goes to the nearer centre. 1 and 2 are nearer 2. For 4: |4 − 2| = 2 and |4 − 10| = 6, so it joins centre 2. 9, 10 and 12 join centre 10.\n\nUpdate. c₁ = (1 + 2 + 4) / 3 = 7/3 ≈ 2.333. c₂ = (9 + 10 + 12) / 3 = 31/3 ≈ 10.333.\n\nObjective.\nGroup 1: (1 − 2.333)² + (2 − 2.333)² + (4 − 2.333)² = 1.778 + 0.111 + 2.778 = 4.667.\nGroup 2: (9 − 10.333)² + (10 − 10.333)² + (12 − 10.333)² = 1.778 + 0.111 + 2.778 = 4.667.\nJ = 4.667 + 4.667 = 9.333 (exactly 28/3).\n\nFor scale: one centre at the overall mean 38/6 ≈ 6.333 gives J ≈ 105.333. Two groups reduce J a lot, but J always falls when k grows, so a small J alone does not prove there are two kinds of stone.",
+    "zh": "分配。每个点归入较近的中心。1 和 2 离 2 更近。对于 4：|4 − 2| = 2，|4 − 10| = 6，所以它归入中心 2。9、10、12 归入中心 10。\n\n更新。c₁ = (1 + 2 + 4) / 3 = 7/3 ≈ 2.333。c₂ = (9 + 10 + 12) / 3 = 31/3 ≈ 10.333。\n\n目标函数。\n第 1 组：(1 − 2.333)² + (2 − 2.333)² + (4 − 2.333)² = 1.778 + 0.111 + 2.778 = 4.667。\n第 2 组：(9 − 10.333)² + (10 − 10.333)² + (12 − 10.333)² = 1.778 + 0.111 + 2.778 = 4.667。\nJ = 4.667 + 4.667 = 9.333（精确值为 28/3）。\n\n作为参照：只用一个中心（总体均值 38/6 ≈ 6.333）时 J ≈ 105.333。分成两组让 J 大幅下降，但 k 增大时 J 总会下降，所以仅凭 J 小并不能证明石头真的有两种。"
+   },
+   "verify_code": "pts = [1, 2, 4, 9, 10, 12]\ncentres = [2, 10]\ngroups = [[p for p in pts if abs(p - centres[0]) <= abs(p - centres[1])],\n          [p for p in pts if abs(p - centres[0]) > abs(p - centres[1])]]\nnew = [sum(g) / len(g) for g in groups]\nJ = sum((p - c) ** 2 for g, c in zip(groups, new) for p in g)\none = sum((p - sum(pts) / 6) ** 2 for p in pts)\nprint(groups, [round(c, 4) for c in new], round(one, 4))\nprint(round(J, 4))\n"
+  },
+  {
+   "id": "ml-mcq-pca-units",
+   "kind": "mcq",
+   "topic": "clustering-pca",
+   "title": {
+    "en": "PCA after a change of units",
+    "zh": "换单位之后的 PCA"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Leon runs PCA on stones described by length and mass. On the training stones, the variance of length is 4 cm² and the variance of mass is 0.09 kg², with almost no covariance between them. He then records mass in grams instead of kilograms. Which statement is correct?",
+    "zh": "Leon 对用长度和质量描述的石头做 PCA。在训练石头上，长度的方差是 4 cm²，质量的方差是 0.09 kg²，两者之间几乎没有协方差。随后他改用克而不是千克记录质量。下列哪项说法正确？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "In kilograms the first component points along length (about 98% of the variance). In grams the mass variance becomes 90,000 g², so the first component switches to mass. Choose and state a scaling rule before PCA.",
+      "zh": "以千克为单位时，第一主成分沿长度方向（约占方差的 98%）。改用克之后，质量的方差变成 90,000 g²，第一主成分就转到质量方向。做 PCA 之前要选定并写明缩放规则。"
+     },
+     "why": {
+      "en": "Right. Variance scales with the square of the unit: 0.09 × 1000² = 90,000. Shares: 4 / 4.09 ≈ 0.978 in kilograms, and 90,000 / 90,004 ≈ 1.000 for mass in grams.",
+      "zh": "正确。方差随单位的平方变化：0.09 × 1000² = 90,000。方差占比：千克时为 4 / 4.09 ≈ 0.978；改用克后质量占 90,000 / 90,004 ≈ 1.000。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "PCA does not depend on units, because it subtracts the mean before anything else.",
+      "zh": "PCA 与单位无关，因为它先减去均值。"
+     },
+     "why": {
+      "en": "Wrong. Centring removes the offset, not the scale. The spread of each coordinate still depends on its unit.",
+      "zh": "错误。中心化去掉的是偏移，而不是尺度。每个坐标的离散程度仍然取决于它的单位。"
+     }
+    },
+    {
+     "text": {
+      "en": "The first component always points along the feature that best separates the rock types.",
+      "zh": "第一主成分总是指向最能区分岩石类型的那个特征。"
+     },
+     "why": {
+      "en": "Wrong. PCA never sees rock-type labels. It finds the direction of largest spread, which may be nuisance variation.",
+      "zh": "错误。PCA 根本看不到岩石类型的标签。它找的是离散程度最大的方向，而那可能只是无关的变化。"
+     }
+    },
+    {
+     "text": {
+      "en": "Changing units changes the covariance between the features but leaves each variance the same.",
+      "zh": "换单位会改变特征之间的协方差，但每个特征的方差保持不变。"
+     },
+     "why": {
+      "en": "Wrong. Multiplying mass by 1000 multiplies its variance by 1000² and the covariance by 1000.",
+      "zh": "错误。质量乘以 1000，其方差乘以 1000²，协方差乘以 1000。"
+     }
+    }
+   ],
+   "verify_language": "python",
+   "verify_code": "for name, mass_var in [('kg', 0.09), ('g', 0.09 * 1000 ** 2)]:\n    total = 4 + mass_var\n    first = 'length' if 4 > mass_var else 'mass'\n    print(name, round(mass_var, 2), first, round(max(4, mass_var) / total, 4))\n",
+   "verify_output": "kg 0.09 length 0.978\ng 90000.0 mass 1.0\n"
+  },
+  {
+   "id": "ml-cosine-rank",
+   "kind": "numeric",
+   "topic": "content-recommendations",
+   "title": {
+    "en": "Cosine similarity changes the ranking",
+    "zh": "余弦相似度改变了排序"
+   },
+   "marks": 3,
+   "prompt": {
+    "en": "Emma's viewer profile is u = [2, 1, 0] over the features (astronomy, robotics, chemistry). Three videos have feature vectors:\n\nA = [1, 0, 0]\nB = [2, 1, 2]\nC = [0, 1, 0]\n\nWhat is the cosine similarity between B and the profile? Give 3 decimal places. (Then compare the ranking by dot product with the ranking by cosine.)",
+    "zh": "Emma 的观众画像是 u = [2, 1, 0]，三个特征依次为（天文、机器人、化学）。三个视频的特征向量是：\n\nA = [1, 0, 0]\nB = [2, 1, 2]\nC = [0, 1, 0]\n\nB 与画像之间的余弦相似度是多少？保留 3 位小数。（然后比较按点积排序与按余弦排序的结果。）"
+   },
+   "answer": 0.745,
+   "tolerance": 0.002,
+   "solution": {
+    "en": "Length of the profile: ‖u‖ = √(4 + 1 + 0) = √5 ≈ 2.236.\n\nB: u·B = 2×2 + 1×1 + 0×2 = 5. ‖B‖ = √(4 + 1 + 4) = 3. cos = 5 / (2.236 × 3) = 5 / 6.708 ≈ 0.745.\n\nThe other two, for the ranking:\nA: u·A = 2, ‖A‖ = 1, cos = 2 / 2.236 ≈ 0.894.\nC: u·C = 1, ‖C‖ = 1, cos = 1 / 2.236 ≈ 0.447.\n\nBy dot product the order is B (5), A (2), C (1). By cosine it is A (0.894), B (0.745), C (0.447). B's large chemistry tag makes it long, which helps its dot product, but it also points away from the profile, which cosine penalises. Neither score is a probability that the viewer will enjoy the video.",
+    "zh": "画像的长度：‖u‖ = √(4 + 1 + 0) = √5 ≈ 2.236。\n\nB：u·B = 2×2 + 1×1 + 0×2 = 5。‖B‖ = √(4 + 1 + 4) = 3。cos = 5 / (2.236 × 3) = 5 / 6.708 ≈ 0.745。\n\n另外两个视频，用于排序：\nA：u·A = 2，‖A‖ = 1，cos = 2 / 2.236 ≈ 0.894。\nC：u·C = 1，‖C‖ = 1，cos = 1 / 2.236 ≈ 0.447。\n\n按点积排序是 B（5）、A（2）、C（1）。按余弦排序是 A（0.894）、B（0.745）、C（0.447）。B 的化学标签很大，向量很长，这抬高了它的点积；但它的方向也偏离了画像，余弦会惩罚这一点。两种分数都不是观众喜欢该视频的概率。"
+   },
+   "verify_code": "import math\nu = [2, 1, 0]\nitems = {'A': [1, 0, 0], 'B': [2, 1, 2], 'C': [0, 1, 0]}\nnorm = lambda v: math.sqrt(sum(x * x for x in v))\ncos = {}\nfor name, v in items.items():\n    dot = sum(a * b for a, b in zip(u, v))\n    cos[name] = dot / (norm(u) * norm(v))\n    print(name, dot, round(cos[name], 4))\nprint(round(cos['B'], 4))\n"
+  },
+  {
+   "id": "ml-short-shift-validation",
+   "kind": "short",
+   "topic": "validation-regularization-shift",
+   "title": {
+    "en": "Repair a validation plan for café sales",
+    "zh": "修正一份咖啡店销量的验证方案"
+   },
+   "marks": 6,
+   "prompt": {
+    "en": "Jack predicts a café's daily sales from weather, weekday and holiday flags, using linear regression with an L2 penalty. He has two years of daily rows (730 days). His plan:\n\n1. Standardise every feature with the mean and standard deviation of all 730 days.\n2. Run 5-fold cross-validation with folds drawn at random from all days, trying 20 values of the penalty strength λ.\n3. Report the best mean cross-validation error as the final result.\n\nNext month the café starts a new menu and longer opening hours.\n\n(a) Name three problems with this plan.\n(b) Describe a corrected protocol.\n(c) What should Jack do after the menu change?",
+    "zh": "Jack 用带 L2 惩罚的线性回归，根据天气、星期几和节假日标记预测一家咖啡店的每日销量。他有两年的逐日数据（730 天）。他的方案是：\n\n1. 用全部 730 天的均值和标准差把每个特征标准化。\n2. 从全部日期中随机抽取，做 5 折交叉验证，尝试 20 个惩罚强度 λ。\n3. 把最好的交叉验证平均误差作为最终结果报告。\n\n下个月，咖啡店将推出新菜单并延长营业时间。\n\n(a) 指出这个方案的三个问题。\n(b) 描述一个修正后的方案。\n(c) 菜单改变之后，Jack 应该做什么？"
+   },
+   "solution": {
+    "en": "(a) Problems.\n- Scaling leak: the means and standard deviations come from all 730 days, including the days used for validation. They must be fitted inside each training portion only.\n- Random folds ignore time: daily sales have seasons and trends. Training on later days to predict earlier ones answers an easier question than \"tomorrow\", so the error is optimistic.\n- No untouched final test: the same folds chose λ out of 20 candidates, so the best cross-validation error is a selection score, not an honest final estimate.\n\n(b) Corrected protocol.\n- Reserve the most recent period (for example the last two months) as the final test and do not look at it.\n- On the earlier data, use time-ordered validation: train on months 1 to k, validate on month k + 1, and repeat for several k. Fit the scaler inside each training portion.\n- Choose λ by the mean validation error. Refit the chosen setting on all development data, then evaluate once on the final period. Compare with a simple baseline, such as \"same weekday last week\".\n\n(c) After the change.\n- Treat the new menu and opening hours as a distribution shift: the old test score is no longer a promise.\n- Watch the inputs (for example new opening hours or fields that start going missing) and, above all, collect fresh labelled days and compare the error on them with the old error, broken down by weekday.\n- Retrain or adapt when there is enough new data, and validate the update on later days before trusting it. Regularisation alone does not protect against this change.",
+    "zh": "(a) 问题。\n- 缩放泄漏：均值和标准差来自全部 730 天，其中包括用于验证的日期。它们只能在每个训练部分内部拟合。\n- 随机折忽略了时间：每日销量有季节和趋势。用较晚的日期训练、预测较早的日期，回答的问题比「预测明天」容易，所以误差偏乐观。\n- 没有未动过的最终测试：同样的折从 20 个候选值中选出了 λ，所以最好的交叉验证误差只是选择用的分数，而不是诚实的最终估计。\n\n(b) 修正后的方案。\n- 把最近的一段时间（例如最后两个月）留作最终测试，并且不去看它。\n- 在较早的数据上做按时间顺序的验证：用第 1 到第 k 个月训练，用第 k + 1 个月验证，对几个不同的 k 重复。缩放器在每个训练部分内部拟合。\n- 按平均验证误差选择 λ。用全部开发数据重新拟合选定的设置，然后在最终时间段上只评估一次。并与简单基线比较，例如「上周同一天的销量」。\n\n(c) 菜单改变之后。\n- 把新菜单和营业时间看作分布偏移：旧的测试分数不再是保证。\n- 监控输入（例如新的营业时间，或开始出现缺失的字段），更重要的是收集新的有标签日期，把它们上的误差与旧误差比较，并按星期几分开看。\n- 有了足够的新数据后再重新训练或调整，并且先在更晚的日期上验证这次更新，然后才信任它。仅靠正则化并不能抵御这种变化。"
+   },
+   "rubric": [
+    {
+     "marks": 1,
+     "text": {
+      "en": "Identifies the scaling leak: statistics from all days, including validation days; fit inside each training portion.",
+      "zh": "指出缩放泄漏：统计量来自全部日期（包括验证日期）；应在每个训练部分内部拟合。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Identifies that random folds ignore time order, making the estimate optimistic for forecasting.",
+      "zh": "指出随机折忽略了时间顺序，使预测未来的误差估计偏乐观。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Identifies that the best of 20 cross-validation scores is a selection score, not a final test result.",
+      "zh": "指出 20 个交叉验证分数中的最好值只是选择用的分数，而不是最终测试结果。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Proposes time-ordered validation (training before validation period) with preprocessing fitted inside each training portion.",
+      "zh": "提出按时间顺序的验证（训练期在验证期之前），预处理在每个训练部分内部拟合。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "Reserves an untouched final period, refits the chosen λ on development data and evaluates once.",
+      "zh": "保留一段未动过的最终时间段，用开发数据重新拟合选定的 λ，并只评估一次。"
+     }
+    },
+    {
+     "marks": 1,
+     "text": {
+      "en": "After the menu change: treats it as a shift, collects fresh labelled days and re-evaluates before trusting the old score.",
+      "zh": "菜单改变后：把它当作分布偏移，收集新的有标签日期，在信任旧分数之前重新评估。"
+     }
+    }
+   ],
+   "mistakes": [
+    {
+     "en": "Claiming that a stronger L2 penalty will protect the model against the menu change.",
+     "zh": "声称更强的 L2 惩罚能让模型抵御菜单变化。"
+    },
+    {
+     "en": "Using the final test period to choose λ.",
+     "zh": "用最终测试时间段来选择 λ。"
+    },
+    {
+     "en": "Shuffling the days \"so that every fold sees every season\", which is exactly the leak to avoid.",
+     "zh": "为了「让每一折都覆盖每个季节」而打乱日期，而这恰恰是要避免的泄漏。"
+    }
+   ]
+  },
+  {
+   "id": "ml-mcq-drift-vs-accuracy",
+   "kind": "mcq",
+   "topic": "calibration-monitoring",
+   "title": {
+    "en": "An input change is not an accuracy measurement",
+    "zh": "输入变化不等于准确率测量"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Noah monitors a message classifier. After an update to the email importer, the share of messages with a missing \"sender domain\" field rose from 2% to 30% within a week. No new labels have been collected yet. Which conclusion is best supported?",
+    "zh": "Noah 在监控一个消息分类器。邮件导入程序更新后的一周内，缺少「发件人域名」字段的消息比例从 2% 上升到 30%。目前还没有收集任何新的标签。下列哪个结论最有依据？"
+   },
+   "options": [
+    {
+     "text": {
+      "en": "The inputs have changed. Inspect the importer first, and collect fresh labels before claiming that accuracy has fallen.",
+      "zh": "输入发生了变化。应先检查导入程序，并在断言准确率下降之前先收集新的标签。"
+     },
+     "why": {
+      "en": "Right. A rise in missing values is a warning about the inputs, and a parsing fault is the first suspect. Only fresh labels can show whether the predictions got worse.",
+      "zh": "正确。缺失值上升是关于输入的警告，解析故障是首要嫌疑。只有新的标签才能说明预测是否变差。"
+     },
+     "correct": true
+    },
+    {
+     "text": {
+      "en": "Accuracy has fallen by 28 percentage points.",
+      "zh": "准确率下降了 28 个百分点。"
+     },
+     "why": {
+      "en": "Wrong. 28 points is the change in the missing-field rate, not in accuracy. Without labels the accuracy change is unknown.",
+      "zh": "错误。28 个百分点是字段缺失率的变化，而不是准确率的变化。没有标签就不知道准确率变了多少。"
+     }
+    },
+    {
+     "text": {
+      "en": "Nothing important changed, because the average predicted probability is still 0.4.",
+      "zh": "没有发生重要变化，因为平均预测概率仍然是 0.4。"
+     },
+     "why": {
+      "en": "Wrong. A stable summary of the outputs does not guarantee that individual predictions, or the input–label relationship, are unchanged.",
+      "zh": "错误。输出的汇总值稳定，并不能保证单个预测或输入与标签之间的关系没有变化。"
+     }
+    },
+    {
+     "text": {
+      "en": "Recalibrate the probabilities on the final test set straight away.",
+      "zh": "立即在最终测试集上重新校准概率。"
+     },
+     "why": {
+      "en": "Wrong. Recalibration needs separate data, and fitting it on the final test set contaminates the evaluation. The importer fault may also be the real problem.",
+      "zh": "错误。重新校准需要单独的数据，在最终测试集上拟合会污染评估。而且真正的问题可能是导入程序的故障。"
+     }
+    }
+   ]
+  },
+  {
+   "id": "ml-brier-overconfident",
+   "kind": "numeric",
+   "topic": "calibration-monitoring",
+   "title": {
+    "en": "Brier score of an over-confident bin",
+    "zh": "一个过度自信分箱的布里尔分数"
+   },
+   "marks": 2,
+   "prompt": {
+    "en": "Iris's filter gave five recently labelled messages the same spam probability, 0.9. Their true labels are 1, 1, 1, 0, 0 (1 = spam). What is the Brier score on these five messages?",
+    "zh": "Iris 的过滤器给最近五条已标注的消息都打出了相同的垃圾消息概率 0.9。它们的真实标签是 1、1、1、0、0（1 表示垃圾消息）。这五条消息上的布里尔分数是多少？"
+   },
+   "answer": 0.33,
+   "tolerance": 0.001,
+   "solution": {
+    "en": "The bin's mean prediction is 0.9, but the observed spam fraction is 3/5 = 0.6, so the filter is over-confident here by 0.3.\n\nSquared errors (p − y)²: for the three spam messages (0.9 − 1)² = 0.01 each, total 0.03; for the two ordinary ones (0.9 − 0)² = 0.81 each, total 1.62.\n\nBrier = (0.03 + 1.62) / 5 = 1.65 / 5 = 0.33. Lower is better.\n\nFor comparison, predicting 0.6 for all five would give (3 × 0.16 + 2 × 0.36) / 5 = 0.24 on these labels. But five messages are far too few for a precise calibration claim, and any recalibration must be fitted on data separate from the final test.",
+    "zh": "这个分箱的平均预测是 0.9，而观测到的垃圾消息比例是 3/5 = 0.6，所以过滤器在这里过度自信了 0.3。\n\n平方误差 (p − y)²：三条垃圾消息每条为 (0.9 − 1)² = 0.01，合计 0.03；两条普通消息每条为 (0.9 − 0)² = 0.81，合计 1.62。\n\n布里尔分数 = (0.03 + 1.62) / 5 = 1.65 / 5 = 0.33。越低越好。\n\n作为对比，如果对五条消息都预测 0.6，在这些标签上会得到 (3 × 0.16 + 2 × 0.36) / 5 = 0.24。不过五条消息远远不足以得出精确的校准结论，而且任何重新校准都必须在独立于最终测试的数据上拟合。"
+   },
+   "verify_code": "p = [0.9] * 5\ny = [1, 1, 1, 0, 0]\nprint('mean p', sum(p) / 5, 'observed', sum(y) / 5)\nprint('constant 0.6', round(sum((0.6 - t) ** 2 for t in y) / 5, 4))\nprint(round(sum((a - b) ** 2 for a, b in zip(p, y)) / 5, 4))\n"
+  }
+ ],
+ "papers": [
+  {
+   "id": "diag-a",
+   "type": "diagnostic",
+   "title": {
+    "en": "Diagnostic: four stages in 20 minutes",
+    "zh": "诊断卷：用 20 分钟检查四个阶段"
+   },
+   "minutes": 20,
+   "questions": [
+    "ml-majority-baseline-test",
+    "ml-mcq-new-device-split",
+    "ml-predict-onehot-vocab",
+    "ml-mcq-mse-one-big-miss",
+    "ml-f1-scratch-detector",
+    "ml-mcq-knn-scaling",
+    "ml-gini-gain",
+    "ml-brier-overconfident"
+   ],
+   "note": {
+    "en": "An original 20-minute check across the four stages of this guide: a reliable table, fitting and measuring predictions, choosing a useful method, and structure, ranking and reliability. It is practice written for this site and is not a guide to the format or content of any real exam.\n\nMarks: 20. Every question marks itself. Afterwards, see which stage lost marks and go back to those chapters.\n\nUse pen, paper and a basic calculator (square root, exp and ln). Keep at least 4 decimals in the middle of a calculation and round only at the end; the stated tolerance covers that rounding. Python is for checking your work afterwards, not for the paper.",
+    "zh": "这是一份原创的 20 分钟检查卷，覆盖本指南的四个阶段：准备可信表格、拟合并衡量预测、选择有用方法，以及结构、排序与可靠性。它是为本站编写的练习，不是任何真实考试的格式或内容指南。\n\n总分：20 分。每道题都会自动评分。做完后看看哪个阶段丢分最多，再回到对应的章节复习。\n\n用笔、纸和一个基础计算器作答（需要平方根、exp 和 ln）。计算过程中至少保留 4 位小数，只在最后一步取舍；题目给出的容差已经包含这种舍入。Python 只用来事后检查，不在答卷时使用。"
+   }
+  },
+  {
+   "id": "mock-a",
+   "type": "mock",
+   "title": {
+    "en": "Mock paper A: 60 minutes, mixed questions",
+    "zh": "模拟卷 A：60 分钟，混合题型"
+   },
+   "minutes": 60,
+   "questions": [
+    "ml-mean-baseline-mse",
+    "ml-short-leakage-loans",
+    "ml-median-error-code",
+    "ml-mcq-integer-codes",
+    "ml-rmse-print-times",
+    "ml-gd-step-loss",
+    "ml-threshold-cost",
+    "ml-mcq-raise-threshold",
+    "ml-trace-threshold-sweep",
+    "ml-naive-bayes-priors",
+    "ml-mcq-forest-average-vs-vote",
+    "ml-boosting-two-rounds",
+    "ml-kmeans-objective",
+    "ml-mcq-pca-units",
+    "ml-cosine-rank",
+    "ml-short-shift-validation",
+    "ml-mcq-drift-vs-accuracy"
+   ],
+   "note": {
+    "en": "An original practice paper written for this site. It is not a guide to the format, length or content of any real exam. The questions follow the four stages of the guide in order.\n\nTime: 60 minutes. Marks: 58. Multiple-choice, calculation and trace questions mark themselves; mark the two short answers against their rubrics. The short answers and the trace table take longest, so leave about 20 minutes for them.\n\nUse pen, paper and a basic calculator (square root, exp and ln). Keep at least 4 decimals in the middle of a calculation and round only at the end; the stated tolerance covers that rounding. Python is for checking your work afterwards, not for the paper.",
+    "zh": "这是为本站编写的原创练习卷，不是任何真实考试的格式、长度或内容指南。题目按本指南的四个阶段依次排列。\n\n时间：60 分钟。总分：58 分。选择题、计算题和跟踪表会自动评分；两道简答题请对照评分标准自己打分。简答题和跟踪表最耗时间，大约要留出 20 分钟。\n\n用笔、纸和一个基础计算器作答（需要平方根、exp 和 ln）。计算过程中至少保留 4 位小数，只在最后一步取舍；题目给出的容差已经包含这种舍入。Python 只用来事后检查，不在答卷时使用。"
+   }
+  }
+ ]
+}

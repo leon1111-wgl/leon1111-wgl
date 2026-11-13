@@ -179,7 +179,7 @@ Change bgr to [0, 0, 255]. RGB should become [255, 0, 0], a red pixel. Explain w
 
 A 2 by 5 RGB image has 10 pixels and 30 channel values. Change the final multiplication and check both counts separately.
 
-**Where the analogy stops:** The parcel-label analogy explains interface agreement, not colour science. Camera response, gamma encoding and illumination also affect pixels. Correct shapes and ranges cannot prove that an image represents the same physical scene under different capture conditions; they only eliminate a useful class of avoidable errors.
+**Where the analogy stops:** Maya's colour-order check explains interface agreement, not colour science. Camera response, gamma encoding and illumination also affect pixels. Correct shapes and ranges cannot prove that an image represents the same physical scene under different capture conditions; they only eliminate a useful class of avoidable errors.
 
 **Keep this idea:** Before learning from pixels, establish their axes, colour meaning, scale and normalization contract at every boundary.
 
@@ -211,7 +211,9 @@ Colour filtering can select markers or prepare regions for later inspection. Che
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+OpenCV's Basic Operations on Images tutorial shows that reading one pixel of a colour image returns its Blue, Green and Red values, in that order (BGR). The Changing Colorspaces tutorial converts images with cv.cvtColor and the flag cv.COLOR_BGR2GRAY or cv.COLOR_BGR2HSV, and notes that OpenCV stores hue from 0 to 179 while other software uses other scales. OpenCV's colour-conversion reference gives the grey formula Y = 0.299·R + 0.587·G + 0.114·B.
+
+Worked example: OpenCV prints a red marker pixel as [20, 30, 180], so B = 20, G = 30 and R = 180. Grey = 0.299×180 + 0.587×30 + 0.114×20 = 53.82 + 17.61 + 2.28 ≈ 73.7. A green pixel [30, 110, 20] gives 0.299×20 + 0.587×110 + 0.114×30 ≈ 74.0. Two clearly different colours become almost the same grey. Reading the red pixel wrongly as RGB gives 44.1 instead, so channel order changes the answer. A real camera pipeline also deals with white balance, exposure and lighting, which one pixel cannot show.
 
 ### 05 / The formula, unpacked
 
@@ -298,6 +300,8 @@ Add a pixel from a red wall. The colour rule cannot tell it from a marker; an ad
 - [OpenCV: Changing Colorspaces](https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html)
 
 - [OpenCV: Basic Operations on Images](https://docs.opencv.org/4.x/d3/df2/tutorial_py_basic_ops.html)
+
+- [OpenCV: Color conversions](https://docs.opencv.org/4.x/de/d25/imgproc_color_conversions.html)
 
 <a id="filters-neighborhoods"></a>
 
@@ -437,7 +441,9 @@ Use these operations to clean scanned text masks or inspect simple shapes. Compa
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+OpenCV's Morphological Transformations tutorial works on binary images with a 5×5 kernel full of ones. Erosion keeps a pixel as 1 only if every pixel under the kernel is 1; dilation makes it 1 if at least one is. Opening (erosion, then dilation) removes small white noise. Closing (dilation, then erosion) fills small holes. The morphological gradient, dilation minus erosion, looks like the object's outline. The Smoothing Images tutorial adds that low-pass filters remove noise but also blur edges, and that a median filter works well on salt-and-pepper noise.
+
+Worked example: take the row [0,0,1,1,1,1,0,0] and a kernel three positions wide. Dilation gives [0,1,1,1,1,1,1,0]. Erosion gives [0,0,0,1,1,0,0,0]. Their difference is [0,1,1,0,0,1,1,0]: two marked positions at each boundary and none in the middle. In a real image a 5×5 kernel checks 25 pixels at once, and its shape (OpenCV also offers elliptical and cross-shaped kernels) changes which details survive.
 
 ### 05 / The formula, unpacked
 
@@ -635,7 +641,7 @@ Set the scale to 1 and keep the shifts. The new corners are (15, 17) and (35, 47
 
 Sketch a left arrow, then flip it horizontally. Change the target to right arrow or reject that augmentation. A valid image shape alone does not preserve a label.
 
-**Where the analogy stops:** The moving-stage analogy does not guarantee that identity survives a transformation. Cropping can remove decisive evidence, and interpolation can change small patterns. Augmentation improves robustness only to useful, label-consistent variation; it cannot substitute for representative real images from the intended environment.
+**Where the analogy stops:** Eva's moved box does not guarantee that identity survives a transformation. Cropping can remove decisive evidence, and interpolation can change small patterns. Augmentation improves robustness only to useful, label-consistent variation; it cannot substitute for representative real images from the intended environment.
 
 **Keep this idea:** Every geometric change must carry its targets along, and every augmentation must justify why the label still means the same thing.
 
@@ -669,7 +675,9 @@ Local features can support panorama alignment or matching a photographed object 
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+OpenCV's SIFT tutorial summarises Lowe's 2004 paper. Candidate points with low contrast (below 0.03 in the paper) or an edge-like shape (edge threshold 10) are removed. Each keypoint gets a direction from a 36-bin histogram covering 360 degrees; any other peak above 80% of the highest creates an extra keypoint with that direction. The descriptor splits a 16×16 neighbourhood into 16 blocks of 4×4 pixels, each with an 8-bin histogram. A match is rejected when the nearest-to-second-nearest distance ratio is above 0.8; the paper reports that this removes about 90% of false matches and only 5% of correct ones.
+
+Worked example: each orientation bin is 360 ÷ 36 = 10 degrees wide. If the highest bin is 50 and another is 42, then 42 ÷ 50 = 0.84 > 0.8, so a second keypoint appears. A bin of 35 gives 0.70 and is ignored. The descriptor holds 16 × 8 = 128 numbers. Real SIFT also searches several image scales and adjusts for lighting changes, which these counts leave out.
 
 ### 05 / The formula, unpacked
 
@@ -871,7 +879,7 @@ Swap features to [2, 1]. The first two probabilities swap, showing how the same 
 
 Imagine showing a bicycle to a cup/book/ball classifier. Add an explicit review route for weak evidence; softmax alone cannot add a bicycle label.
 
-**Where the analogy stops:** The experienced-illustrator analogy can overstate what transfers. Pretraining may encode irrelevant shortcuts, and a confident softmax can still choose the wrong class. Frozen features are a useful baseline rather than a universal solution; the appropriate adaptation depends on dataset size, similarity and evaluation evidence.
+**Where the analogy stops:** Noor's reused model can suggest more transfer than really happens. Pretraining may encode irrelevant shortcuts, and a confident softmax can still choose the wrong class. Frozen features are a useful baseline rather than a universal solution; the appropriate adaptation depends on dataset size, similarity and evaluation evidence.
 
 **Keep this idea:** Transfer a representation, define the new decision carefully, and measure improvement on genuinely separate image groups.
 
@@ -993,7 +1001,7 @@ Move B to (6, 0, 8, 2). Shared width becomes zero, so IoU is zero and B survives
 
 Draw two overlapping birds. NMS can remove a genuine second bird if its box overlaps too much; inspect crowded cases separately.
 
-**Where the analogy stops:** The pencil-circle analogy explains duplicate proposals, but high overlap does not prove shared identity. Greedy suppression can remove real neighbours, and a high score can belong to an inaccurate box. Different detectors may use other duplicate-handling designs; the rule here describes a common operation, not every detection architecture.
+**Where the analogy stops:** Lea's overlap check explains duplicate proposals, but high overlap does not prove shared identity. Greedy suppression can remove real neighbours, and a high score can belong to an inaccurate box. Different detectors may use other duplicate-handling designs; the rule here describes a common operation, not every detection architecture.
 
 **Keep this idea:** Treat boxes as candidates, define overlap precisely, and validate duplicate removal separately from the rule used to judge detection quality.
 
@@ -1025,7 +1033,9 @@ Use a ranked evaluation to compare detectors under a stated matching protocol. K
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+The official COCO evaluation code, cocoeval.py, fixes the protocol: 10 IoU thresholds from 0.50 to 0.95 in steps of 0.05, precision read at 101 recall levels, at most 1, 10 or 100 detections per image, and separate scores for small, medium and large objects (small means an area below 32² = 1,024 pixels). A detection matches a still-unmatched object only if their IoU is at least the threshold. Torchvision's nms, often run before evaluation, removes a lower-scoring box only when its IoU with a kept box is strictly greater than iou_threshold.
+
+Worked example: reference box (0,0,10,10) and prediction (2,0,12,10), written as corners x1,y1,x2,y2, overlap in an 8 × 10 = 80-pixel area. Union = 100 + 100 − 80 = 120, so IoU = 80 ÷ 120 ≈ 0.667. It is a true positive at 0.50, 0.55, 0.60 and 0.65. At the other six thresholds it is a false positive and the object counts as missed. Its 100-pixel area makes it small. COCO repeats this for every image, class and threshold before averaging, so one box shows only the bookkeeping.
 
 ### 05 / The formula, unpacked
 
@@ -1354,7 +1364,9 @@ Tracking supports counting moving objects and following toy robots or wildlife t
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+The SORT paper describes each target by its box centre (u, v), area s and aspect ratio r, plus the speeds of u, v and s. A constant-velocity Kalman filter predicts every box in the next frame. The cost of pairing a detection with a track is the IoU distance (1 − IoU) to the predicted box, and the Hungarian algorithm finds the best one-to-one pairing for all of them at once. Pairs with overlap below IOU_min are rejected. A track unseen for T_Lost frames is deleted; the paper uses T_Lost = 1.
+
+Worked example: tracks A and B meet detections 1 and 2 with IoU(A,1) = 0.60, IoU(A,2) = 0.50, IoU(B,1) = 0.55 and IoU(B,2) = 0.10. Choose IOU_min = 0.3. A greedy rule takes A–1 first and leaves B–2 at 0.10, which fails, so B is deleted and detection 2 starts a new identity. The joint assignment A–2, B–1 totals 0.50 + 0.55 = 1.05, more than 0.60 + 0.10 = 0.70, and both pairs pass. The real tracker also corrects velocity estimates and keeps new tracks on probation, which this one-frame table omits.
 
 ### 05 / The formula, unpacked
 
@@ -1466,7 +1478,9 @@ OCR supports searchable scans, labels and document reading. Preserve the image r
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+Tesseract's quality page lists ways to prepare an image before recognition. Tesseract works best on images of at least 300 DPI (dots, here pixels, per inch), so resizing may help. Skewed lines should be rotated until the text is horizontal. A crop should keep a modest white border, about 10 pixels, because a missing or very large border can cause errors. Page segmentation modes tell Tesseract what layout to expect: the default, 3, is fully automatic, while 7 treats the image as one text line. Turning off its dictionaries can help when most text is not ordinary words, such as catalogue codes.
+
+Worked example: a shelf label 2.5 inches wide covers 300 pixels in a photo, so its resolution is 300 ÷ 2.5 = 120 pixels per inch. Reaching 300 needs a scale factor of 300 ÷ 120 = 2.5, giving 750 pixels. A 10-pixel border on each side makes the crop 770 pixels wide. Enlarging cannot add detail the camera never captured, so a sharp, well-lit photo still matters more than resizing.
 
 ### 05 / The formula, unpacked
 
@@ -1663,7 +1677,7 @@ Consider a small sign that fits inside one large patch. Smaller patches may pres
 
 Remove the +1 to model a variant that pools patch outputs instead. For P=8 there are 16 tokens and 256 pairs. This is a different design.
 
-**Where the analogy stops:** The exchange-of-descriptions analogy does not mean tokens reason like people or that attention weights explain every decision. The simplified arithmetic concerns ordinary full attention with fixed embedding width. Other architectures can use windows, pooling or different token designs, and finer patches alone do not guarantee better recognition.
+**Where the analogy stops:** The squares exchanging information in Mateo's display do not mean tokens reason like people or that attention weights explain every decision. The simplified arithmetic concerns ordinary full attention with fixed embedding width. Other architectures can use windows, pooling or different token designs, and finer patches alone do not guarantee better recognition.
 
 **Keep this idea:** Count patches and special tokens explicitly: finer visual units increase possible interactions, while useful detail and actual runtime still require measurement.
 
@@ -1697,7 +1711,9 @@ Use anomaly maps as inspection aids for textures or objects. Keep a distinction 
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+MVTec AD is a research benchmark for anomaly detection in industrial inspection. Its page describes more than 5,000 high-resolution images in fifteen object and texture categories. Each category has defect-free training images and a test set that mixes defective and defect-free images, and every anomaly has a pixel-precise annotation. The data may be used only for non-commercial purposes (CC BY-NC-SA 4.0 licence).
+
+Worked example: pixel annotations let us check where an alert points, not only whether it fired. Suppose a test tile's annotated chip covers 8 pixels. The anomaly map flags 10 pixels, 6 of them inside the chip. Precision, the share of flagged pixels that are truly defective, is 6 ÷ 10 = 0.6. Recall, the share of defective pixels that were flagged, is 6 ÷ 8 = 0.75. The image-level alert is right, yet 4 flagged pixels are false alarms and 2 chip pixels are missed. The page's official evaluation scripts use their own metrics across all categories, so these two ratios illustrate the idea rather than reproduce a benchmark score.
 
 ### 05 / The formula, unpacked
 
@@ -1896,7 +1912,7 @@ Put morning-A in the test set too. The shared-session count becomes one. Remove 
 
 Report separate day and night counts. An excellent daytime average cannot establish night-time reliability when few night images were tested.
 
-**Where the analogy stops:** The unfamiliar-photograph analogy helps expose leakage, but novelty has several dimensions. Separate sessions may still share the same camera background, and new locations can change class frequencies. Small evaluation groups produce uncertain estimates; always retain sample counts and avoid interpreting a single split as a universal performance certificate.
+**Where the analogy stops:** Sam's grouped split helps expose leakage, but novelty has several dimensions. Separate sessions may still share the same camera background, and new locations can change class frequencies. Small evaluation groups produce uncertain estimates; always retain sample counts and avoid interpreting a single split as a universal performance certificate.
 
 **Keep this idea:** A trustworthy vision score names its population, separates related captures, and reveals the false positives and missed positives behind the average.
 
@@ -1930,7 +1946,9 @@ Build reproducible preprocessing and postprocessing around a model. Compare outp
 
 ### 04 / How others use it
 
-Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.
+TorchVision's transforms page recommends keeping images as uint8 (whole numbers 0–255) while resizing, then converting with ToDtype(torch.float32, scale=True), which maps 0–255 to 0–1, and finally applying Normalize with per-channel mean [0.485, 0.456, 0.406] and standard deviation [0.229, 0.224, 0.225]. OpenCV's geometry tutorial says cv.resize uses linear interpolation by default and suggests INTER_AREA for shrinking. ONNX Runtime describes quantization as an 8-bit linear mapping, value = scale × (quantized − zero_point), and warns that it can lower accuracy.
+
+Worked example: a first-channel value of 200 becomes 200 ÷ 255 ≈ 0.784 after scaling, then (0.784 − 0.485) ÷ 0.229 ≈ 1.31 after normalizing. If one computer skips the scaling step, it computes (200 − 0.485) ÷ 0.229 ≈ 871, far outside anything the model saw. Passing OpenCV's BGR array unchanged would also put the blue value where the model may expect red. A real pipeline writes these choices into one shared specification and tests the whole chain, which a single number cannot do.
 
 ### 05 / The formula, unpacked
 
@@ -2232,3 +2250,5 @@ Original stories, explanations and examples by Leon. The linked tutorials and re
 - [Quantize ONNX models](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html) — ONNX Runtime
 
 - [Benchmark suite: pixel-level IoU and ignored labels](https://www.cityscapes-dataset.com/benchmarks/) — Cityscapes
+
+- [Color conversions](https://docs.opencv.org/4.x/de/d25/imgproc_color_conversions.html) — OpenCV

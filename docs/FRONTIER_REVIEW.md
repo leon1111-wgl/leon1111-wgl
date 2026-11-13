@@ -19,6 +19,18 @@ Each adopted item has a check that fails without it. Where I read only an abstra
 | A tutor running on a small browser model | **Skip** | Trust is the blocker. See below. | n/a |
 | Full LLVM in the browser, CheerpJ, remote judges | **Skip** | See below. | n/a |
 
+## Added after the learner walk (November 2026)
+
+The walk in `docs/LEARNER_WALK.md` found where real tasks stalled. Four changes rest on evidence, so they are recorded here.
+
+| Change | Decision | Evidence and its limits | How it is checked |
+| --- | --- | --- | --- |
+| Failed runs explained in plain words | **Adopt, with the raw message kept** | The evidence is mixed. Becker (SIGCSE 2016) gave CS1 students enhanced Java compiler messages and found fewer errors and fewer repeated errors overall, with eight specific messages showing a significant effect. Denny, Luxton-Reilly and Carpenter (ITiCSE 2014) ran a controlled study of enhanced syntax-error messages and found no significant effect. So the explanations stay short and name the line, the original message stays visible beside them, and the site does not claim they speed learning. | Learner walk W5 |
+| A marked question in the middle of each chapter, with a hint before the answer | **Adopt** | This is practice testing with feedback, the technique the reviews above rate highest, plus attempt-first. The hint is the reason a chosen wrong option is wrong, so the reader tries again before seeing the solution. | Learner walk W3; `scripts/validate_study.py` requires a check for every chapter |
+| Step-through for every trace table | **Adopt** | Step-by-step execution, as in Python Tutor and the site's own diagrams, now reaches the 118 trace tables with three or more rows, which were static. No new research claim. | Learner walk W4 |
+| Search by what a chapter teaches | **Adopt** | Not a learning-science claim. It is a usability fix, measured on 21 lookups the walk's readers typed. | Learner walk W2 |
+| A tutor running on a small browser model | **Still skipped** | The reasons below are unchanged. | n/a |
+
 ## Learning science
 
 **Spacing and testing.** Dunlosky et al. (2013) rated practice testing and distributed practice the only two high-utility techniques of ten, and rated rereading, highlighting and summarising low. Donoghue and Hattie's 2021 meta-analysis of the same ten techniques (242 studies, 169,179 participants) again found distributed practice and practice testing most effective. A 2024 field study of spaced quizzing across nine STEM courses is a useful caution: the benefit was not uniform, and the pooled spacing effect disappeared once calculus was excluded (read as an abstract). So the queue is offered as a habit, and the site does not promise exam gains.
@@ -82,4 +94,6 @@ Real outputs, verified answers and rubrics are more honest. If a tutor is revisi
 - Kestin et al. 2025, Scientific Reports: [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC12179260/)
 - Bastani et al. 2025, PNAS: [abstract](https://econpapers.repec.org/RePEc:nas:journl:v:122:y:2025:p:e2422633122)
 - FSRS: [py-fsrs](https://github.com/open-spaced-repetition/py-fsrs), [srs-benchmark](https://github.com/open-spaced-repetition/srs-benchmark), Ye, Su and Cao, KDD 2022 ([record](https://dblp1.uni-trier.de/rec/conf/kdd/YeSC22.html))
+- Becker 2016, SIGCSE: [doi:10.1145/2839509.2844584](https://doi.org/10.1145/2839509.2844584)
+- Denny, Luxton-Reilly and Carpenter 2014, ITiCSE: [doi:10.1145/2591708.2591748](https://doi.org/10.1145/2591708.2591748)
 - Browser compilers: [xcc](https://github.com/tyfkda/xcc), [teavm-javac](https://github.com/konsoletyper/teavm-javac), [CheerpJ licensing](https://cheerpj.com/docs/licensing), [@yowasp/clang](https://github.com/YoWASP/clang)

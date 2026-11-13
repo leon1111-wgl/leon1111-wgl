@@ -131,6 +131,25 @@ svg.i { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentCo
 .resume b { grid-column: 1; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .resume svg.i { grid-column: 2; grid-row: 1 / span 2; color: var(--accent); }
 .resume:hover { border-color: var(--accent); }
+.resume-slot .resume { margin-top: 10px; }
+.resume-slot .resume:first-child { margin-top: 20px; }
+/* my learning: progress at a glance */
+.glance { margin-bottom: 16px; }
+.glance-list { list-style: none; margin: 0; padding: 4px 0; }
+.glance-list li { display: grid; grid-template-columns: 5.5em minmax(0, 1fr) minmax(60px, 140px) auto; align-items: center; gap: 12px; padding: 10px 18px; border-top: 1px solid var(--line); }
+.glance-list li:first-child { border-top: 0; }
+.glance-label { font-size: 12px; color: var(--muted); }
+.glance-main b { display: block; font-size: 14px; font-weight: 600; }
+.glance-main small { display: block; font-size: 12.5px; color: var(--muted); }
+.glance-bar { display: block; height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
+.glance-bar.empty { background: transparent; }
+.glance-bar i { display: block; height: 100%; background: var(--brand); }
+@media (max-width: 560px) {
+  .glance-list li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+  .glance-label { grid-column: 1 / -1; }
+  .glance-bar { grid-column: 1; grid-row: 3; }
+  .glance-bar.empty { display: none; }
+}
 
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1160px; margin: 0 auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .stats div { padding: 26px 28px; border-left: 1px solid var(--line); }
@@ -487,6 +506,8 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
 .hit-list em { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
 .hit-list a > svg.i { color: var(--faint); }
 .hits-more { padding: 4px 18px 16px; font-size: 12.5px; color: var(--muted); }
+.hit-why { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.hit-why mark, .hit-list mark { background: color-mix(in srgb, var(--brand) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 2px; }
 .progress-line.wide, .route-card .progress-line { width: 100%; margin-top: 10px; }
 .route-link { display: block; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); }
 .route-link:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
@@ -708,3 +729,9 @@ mark { color: inherit; background: rgb(30 107 255 / 32%); border-radius: 3px; }
 .study-code ins { color: #3ecf8e; text-decoration: none; }
 :root[data-theme=light] .study-code del { color: #b4322a; }
 :root[data-theme=light] .study-code ins { color: #137a4c; }
+/* a failed run in practice, explained */
+.run-explain { margin: 10px 0; padding: 10px 12px; border-radius: 8px; background: color-mix(in srgb, #ef6a5e 9%, transparent); }
+.run-explain p { margin: 0 0 6px; font-size: 14px; line-height: 1.65; }
+.run-explain p:last-child { margin-bottom: 0; }
+.run-explain .run-explain-title { font-weight: 650; }
+

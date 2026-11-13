@@ -135,8 +135,8 @@
         "zh": "使用图文搜索或语言模型前，先区分 ID、特征向量与整个输入的编码。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "Hugging Face's tokenizer guide describes byte-pair encoding (BPE). It starts from single characters and repeatedly merges the most frequent neighbouring pair, until the vocabulary reaches a chosen size: the base characters plus the number of merges. A character missing from the base vocabulary becomes an unknown token such as <unk>. Byte-level BPE avoids this by starting from all 256 byte values; GPT-2 has 256 + 50,000 merges + 1 end-of-text token = 50,257 entries.\n\nWorked example: count the words kite ×6, kit ×4 and bite ×3. The base vocabulary is b, e, i, k, t (5 symbols). The pair i+t appears 6 + 4 + 3 = 13 times, more than k+i (10), t+e (9) or b+i (3), so merge 'it'. Next, k+it appears 10 times, it+e 9 and b+it 3, so merge 'kit'. The vocabulary now has 5 + 2 = 7 entries, and 'kite' becomes [kit, e]. 'kites' would still need s, which is missing, so this small tokenizer would output <unk>. Real tokenizers learn tens of thousands of merges from far more text.",
+        "zh": "Hugging Face 的分词指南介绍了字节对编码（BPE）。它从单个字符开始，反复合并出现次数最多的相邻符号对，直到词表达到设定大小，即基础字符数加上合并次数。不在基础词表中的字符会变成 <unk> 之类的未知词元。字节级 BPE 以全部 256 个字节值作为起点，从而避免这一问题；GPT-2 的词表为 256 + 50,000 次合并 + 1 个文本结束词元 = 50,257 项。\n\n算一个例子：统计词频 kite ×6、kit ×4、bite ×3。基础词表是 b、e、i、k、t，共 5 个符号。i+t 出现 6 + 4 + 3 = 13 次，多于 k+i（10 次）、t+e（9 次）和 b+i（3 次），所以先合并成 it。接着 k+it 出现 10 次，it+e 出现 9 次，b+it 出现 3 次，于是合并成 kit。词表现在有 5 + 2 = 7 项，kite 被切成 [kit, e]。kites 还需要字符 s，而它不在词表中，所以这个小分词器会输出 <unk>。真实的分词器要从多得多的文本中学习数以万计的合并规则。"
       },
       "code_examples": [
         {
@@ -286,8 +286,8 @@
         "zh": "假设教学示例中的图像编码器输出 (3, 4)。其长度为 √(9 + 16) = 5，因此归一化后的图像向量为 (0.6, 0.8)。说明 A 的嵌入是 (0, 2)，归一化后得到 (0, 1)。相似度为 0.6 × 0 + 0.8 × 1 = 0.8。说明 B 的嵌入是 (2, 0)，归一化坐标为 (1, 0)，相似度为 0.6。\n\n因此检索系统把 A 排在 B 前面。把 A 的原始嵌入加倍为 (0, 4)，只会改变向量大小，归一化分数仍是 0.8。这些数字并不表示 A 有百分之八十的概率在事实层面正确。它们只说明在特定表征下的排序；用户仍须检查匹配说明是否确实指向实际物件。"
       },
       "limits": {
-        "en": "The archive analogy treats meanings as tidy categories, whereas learned coordinates can encode tangled correlations. A close match may reflect background scenery rather than the intended object. Alignment does not recover missing observations, establish object identity, or guarantee that every word in a description is supported by the image.",
-        "zh": "档案类比把含义看作整齐的类别，而学习得到的坐标可能编码交织的相关关系。高度相似可能来自背景，而非目标物件。对齐不能恢复缺失的观察、确认物件身份，也不能保证说明中的每一个词都有图像依据。"
+        "en": "The museum club's matching treats meanings as tidy categories, whereas learned coordinates can encode tangled correlations. A close match may reflect background scenery rather than the intended object. Alignment does not recover missing observations, establish object identity, or guarantee that every word in a description is supported by the image.",
+        "zh": "博物馆社的匹配把含义看作整齐的类别，而学习得到的坐标可能编码交织的相关关系。高度相似可能来自背景，而非目标物件。对齐不能恢复缺失的观察、确认物件身份，也不能保证说明中的每一个词都有图像依据。"
       },
       "takeaway": {
         "en": "A shared representation makes observations comparable only when training establishes useful correspondence; similarity remains a task-dependent score that requires evidence checks.",
@@ -454,8 +454,8 @@
         "zh": "可用简单融合作为组合独立线索的基线。添加复杂交互模型前，先测试模态缺失与分歧。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "Ngiam and colleagues (ICML 2011) classified spoken letters and digits from audio and mouth video. Audio used 10 spectrogram frames, each compressed to 100 numbers; video used 4 frames of a 60×80-pixel mouth region, each compressed to 32 numbers, covering about the same time. They report that a shallow model trained on simply concatenated features learned hidden units tied mostly to one modality, with few linking both. On CUAVE digits they also tested audio with white noise at 0 dB SNR, meaning the noise was as strong as the speech.\n\nWorked example from their Table 2: audio features alone score 95.8% clean and 75.8% noisy, a drop of 20.0 points. Concatenated audio and video features score 87.0% clean, 8.8 points below audio alone, and 76.6% noisy. Audio plus their learned bimodal features score 94.4% and 82.2%, beating audio alone by 6.4 points under noise. These are one study's results for feature-level (early) fusion; the paper does not test score averaging.",
+        "zh": "Ngiam 等人（ICML 2011）利用音频和嘴部视频来识别口语字母和数字。音频使用 10 个频谱图帧，每帧压缩成 100 个数；视频使用 4 帧 60×80 像素的嘴部区域，每帧压缩成 32 个数，两者覆盖的时间大致相同。他们报告：在直接拼接的特征上训练浅层模型时，学到的隐藏单元大多只连接一种模态，很少有单元同时连接两者。在 CUAVE 数字数据上，他们还测试了加入 0 dB 信噪比白噪声的音频，即噪声与语音一样强。\n\n用他们表 2 的数字算一算：仅用音频特征时，干净音频的准确率为 95.8%，加噪后为 75.8%，下降 20.0 个百分点。直接拼接音频与视频特征时，干净条件下为 87.0%，比只用音频低 8.8 个百分点；加噪后为 76.6%。音频特征加上他们学习到的双模态特征后，得分为 94.4% 和 82.2%，在噪声条件下比只用音频高 6.4 个百分点。这只是一项研究中特征层（早期）融合的结果；论文没有测试分数平均。"
       },
       "code_examples": [
         {
@@ -595,8 +595,8 @@
         "zh": "一段四秒的单声道录音，如果每秒采样 48,000 次，就包含 192,000 个采样点。正确地重新采样为每秒 16,000 次后，它会有 64,000 个采样点，同时保持四秒时长。若只是把原始采样点的标签改为 16,000，则会被解释为十二秒，因此这种捷径改变了信号的含义。再假设检索编码器输出单位音频向量 (0.8, 0.6)。\n\n某个候选说明的单位向量为 (0.6, 0.8)，相似度为 0.48 + 0.48 = 0.96。另一个说明的向量是 (0, 1)，相似度为 0.6。在这两个候选的比较中，第一个排名更高。但高分不能定位片段中两种声音各自发生的位置，不能识别说出的词，也不能证明描述中的每个事件都发生过；这些结论需要额外证据或针对任务的输出。"
       },
       "limits": {
-        "en": "Emil can listen again and separate the requested events, while a global embedding can merge simultaneous sources or discard their order. A semantic match does not imply a faithful transcript, speaker identity, or precise timing. The simple sample-count equation also omits stereo channels, compression, windowing, and the spectral processing used by particular encoders.",
-        "zh": "埃米尔可以重听录音并区分所需事件，但全局嵌入可能合并同时发生的声源，或丢弃其顺序。语义匹配不意味着忠实转录、说话者身份或精确时间。简单的采样点数公式也省略了立体声声道、压缩、加窗，以及具体编码器采用的频谱处理。"
+        "en": "Luis can listen again and separate the requested events, while a global embedding can merge simultaneous sources or discard their order. A semantic match does not imply a faithful transcript, speaker identity, or precise timing. The simple sample-count equation also omits stereo channels, compression, windowing, and the spectral processing used by particular encoders.",
+        "zh": "Luis 可以重听录音并区分所需事件，但全局嵌入可能合并同时发生的声源，或丢弃其顺序。语义匹配不意味着忠实转录、说话者身份或精确时间。简单的采样点数公式也省略了立体声声道、压缩、加窗，以及具体编码器采用的频谱处理。"
       },
       "takeaway": {
         "en": "Match the audio objective to the question: retrieving a described sound, transcribing speech, and locating an event require different evidence and evaluation.",
@@ -1057,8 +1057,8 @@
         "zh": "可在图库与视觉档案中使用文本找图。保留原图，并评估歧义、重复项与查询的实际意图。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "OpenAI's CLIP repository shows the retrieval step. encode_image and encode_text return feature vectors. Its zero-shot example divides each vector by its length, then multiplies the dot products by 100, giving cosine similarity times 100. Candidate texts follow the template 'a photo of a {label}', which the CLIP paper reports raised ImageNet accuracy by 1.3% over the bare label. Hugging Face's CLIP documentation describes both encoders projecting into a space of the same size (512 dimensions by default), where the dot product gives the similarity.\n\nWorked example: query q = [2,1,2], image A = [6,0,0], image B = [1,2,2]. Raw dot products are 12 and 8, so A looks better. The lengths are 3, 6 and 3, so the cosines are 12 ÷ 18 ≈ 0.667 and 8 ÷ 9 ≈ 0.889: B ranks first. Times 100 they become 66.7 and 88.9, and a softmax over the two gives B a probability of about 0.9999999998. Real CLIP vectors have hundreds of learned dimensions, so their ranking depends on training, not hand-picked numbers.",
+        "zh": "OpenAI 的 CLIP 代码库展示了检索步骤：encode_image 和 encode_text 返回特征向量。它的零样本示例先把每个向量除以自身长度，再把点积乘以 100，得到乘以 100 的余弦相似度。候选文本使用模板 “a photo of a {label}”；CLIP 论文报告，与只写类别名相比，这一模板让 ImageNet 准确率提高了 1.3%。Hugging Face 的 CLIP 文档说明：两个编码器投影到相同大小的空间（默认 512 维），点积就是相似度。\n\n算一个例子：查询 q = [2,1,2]，图像 A = [6,0,0]，图像 B = [1,2,2]。原始点积分别是 12 和 8，看起来 A 更好。三个向量的长度分别是 3、6 和 3，所以余弦值为 12 ÷ 18 ≈ 0.667 和 8 ÷ 9 ≈ 0.889：B 排在第一。乘以 100 后分别是 66.7 和 88.9；对这两个分数做 softmax，B 的概率约为 0.9999999998。真实 CLIP 向量有数百个学习得到的维度，排序取决于训练，而不是手选的数字。"
       },
       "code_examples": [
         {
@@ -1244,8 +1244,8 @@
         "zh": "假设一个简化的教学分词器把经过检查的回答表示为三个词元：one、handle 与结束词元。在教师强制条件下，这三个参考词元的概率分别是 0.4、0.5 与 0.9。完整回答的概率为 0.4 × 0.5 × 0.9 = 0.18。负对数似然总和为 −ln(0.18) ≈ 1.7148，平均损失为 1.7148/3 ≈ 0.5716。现在设想错误序列 two、handles 与结束词元的条件概率是 0.5、0.7 与 0.9，其序列概率为 0.315，高于 0.18。\n\n两个首词元的概率之和为 0.9，因此它们是可以共存的候选。解码器可能更偏好错误序列。似然衡量的是模型的预测，而视觉正确性必须独立确认。因此，在熟悉的参考文本上损失较低，不能证明模型会准确回答新图像的问题。"
       },
       "limits": {
-        "en": "Jules can deliberately distinguish visible evidence from hidden surfaces; a decoder may still complete a familiar linguistic pattern. The story therefore illustrates a desired workflow rather than an automatic guarantee of uncertainty awareness. Caption agreement, token likelihood, and answer fluency each measure something different from whether a particular visual claim is true.",
-        "zh": "朱尔斯能够主动区分可见证据与被遮挡的表面，但解码器仍可能补全熟悉的语言模式。因此，这个故事说明的是期望的工作流程，而不是模型会自动意识到不确定性的保证。描述一致性、词元似然与答案流畅度，衡量的都不是某项具体视觉陈述是否真实。"
+        "en": "Ren can deliberately distinguish visible evidence from hidden surfaces; a decoder may still complete a familiar linguistic pattern. The story therefore illustrates a desired workflow rather than an automatic guarantee of uncertainty awareness. Caption agreement, token likelihood, and answer fluency each measure something different from whether a particular visual claim is true.",
+        "zh": "Ren 能够主动区分可见证据与被遮挡的表面，但解码器仍可能补全熟悉的语言模式。因此，这个故事说明的是期望的工作流程，而不是模型会自动意识到不确定性的保证。描述一致性、词元似然与答案流畅度，衡量的都不是某项具体视觉陈述是否真实。"
       },
       "takeaway": {
         "en": "Conditional generation explains how an answer is produced; checking the conditioning evidence explains whether that answer deserves to be believed.",
@@ -1403,8 +1403,8 @@
         "zh": "扫描活动表、表单与文档问答应同时使用文字和布局。返回支持答案的页码与区域，便于核查。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "The LayoutLM paper treats a page as a coordinate system with its origin at the top left. Each word has a box (x0, y0, x1, y1), the upper-left and lower-right corners. To handle different page sizes, coordinates are scaled to a 'virtual' range from 0 to 1,000. x0 and x1 are looked up in one embedding table (a list of learned vectors), X, and y0 and y1 in another, Y. The authors ran Tesseract OCR on scanned documents to get words and positions for pre-training. Tesseract's quality page notes known trouble with tables without separate layout analysis.\n\nWorked example: a scan is 1,700 × 2,200 pixels and a word's box is (340, 660, 510, 704). Scaling x by 1,000 ÷ 1,700 and y by 1,000 ÷ 2,200 gives (200, 300, 300, 320). The value 300 appears twice, but x1 = 300 is looked up in table X and y0 = 300 in table Y, so the model can tell horizontal from vertical position. A full system still needs accurate OCR, reading order and table structure, which four numbers per word cannot supply.",
+        "zh": "LayoutLM 论文把页面看作一个以左上角为原点的坐标系。每个词都有一个框 (x0, y0, x1, y1)，分别是左上角和右下角的坐标。由于页面大小不同，坐标会被缩放到 0 到 1,000 的“虚拟”范围。x0 和 x1 在嵌入表 X（一组学习得到的向量）中查找，y0 和 y1 在另一张表 Y 中查找。预训练时，作者用 Tesseract OCR 处理扫描文档，得到词语及其位置。Tesseract 的质量页面指出：如果没有单独的版面分析，它识别表格存在已知困难。\n\n算一个例子：扫描图大小为 1,700 × 2,200 像素，某个词的框是 (340, 660, 510, 704)。x 乘以 1,000 ÷ 1,700，y 乘以 1,000 ÷ 2,200，得到 (200, 300, 300, 320)。数值 300 出现了两次，但 x1 = 300 在表 X 中查找，y0 = 300 在表 Y 中查找，所以模型能区分水平位置和垂直位置。完整系统仍需要准确的 OCR、阅读顺序和表格结构，每个词四个数字无法提供这些信息。"
       },
       "code_examples": [
         {
@@ -1553,8 +1553,8 @@
         "zh": "ASR 可用于字幕与录音搜索，再按任务评估文字与时间戳。翻译与说话人标签应分开处理。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "Hugging Face's ASR guide fine-tunes Wav2Vec2 on the MInDS-14 dataset. The recordings use 8,000 samples per second (8,000 Hz), so the guide resamples them to 16,000 Hz to match the pretrained model, converts transcripts to uppercase to match its tokenizer, and evaluates with word error rate. The Whisper paper trains on 680,000 hours of audio cut into 30-second segments. All audio is resampled to 16,000 Hz and turned into an 80-channel log-Mel spectrogram (a picture of sound energy over time and pitch bands), using 25-millisecond windows every 10 milliseconds. A small convolution stem, whose second layer has stride two (it moves two steps at a time), feeds the encoder.\n\nWorked example: a 30-second segment holds 30 × 16,000 = 480,000 samples. One spectrogram frame every 0.010 seconds gives about 30 ÷ 0.010 = 3,000 frames of 80 numbers each. Stride two halves this to about 1,500 encoder positions. Real systems also handle recordings longer than 30 seconds and normalize text before scoring, which this count leaves out.",
+        "zh": "Hugging Face 的语音识别指南在 MInDS-14 数据集上微调 Wav2Vec2。这些录音每秒有 8,000 个采样点（8,000 Hz），所以指南把它们重采样到 16,000 Hz，以匹配预训练模型；同时把转写文本改成大写，以匹配分词器；并用词错误率评估。Whisper 论文用 680,000 小时、切成 30 秒片段的音频进行训练。所有音频都重采样到 16,000 Hz，再转成 80 通道的对数梅尔频谱图（表示声音能量随时间和音高频带变化的图），每 10 毫秒计算一个 25 毫秒的窗口。一个小型卷积前端把结果送入编码器，其中第二层的步幅为 2（每次移动两步）。\n\n算一个例子：30 秒的片段含有 30 × 16,000 = 480,000 个采样点。每 0.010 秒一个频谱帧，约得到 30 ÷ 0.010 = 3,000 帧，每帧 80 个数。步幅为 2 使位置数减半，约为 1,500 个编码器位置。真实系统还要处理超过 30 秒的录音，并在评分前规范化文本，这个计数没有包含这些步骤。"
       },
       "code_examples": [
         {
@@ -1712,8 +1712,8 @@
         "zh": "视频剪辑或音画检索中，组合嘴部、动作与声音前先检查同步。应使用多个事件验证偏移。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "The SyncNet project page offers a network for removing time lags between audio and video and for finding which visible face is speaking. Its paper feeds the network 0.2-second clips: 20 steps of MFCC audio features (compact sound-frequency features) at 100 per second, and 5 greyscale mouth frames at 25 frames per second. To find the offset, it compares one video feature with all audio features within ±1 second, picks the shift with the smallest distance, and averages many samples because silent moments say little. It cites viewer detection limits of about 125 ms when audio lags and 45 ms when it leads.\n\nWorked example: at 25 frames per second one frame lasts 1 ÷ 25 = 0.04 s = 40 ms, so ±1 second covers ±25 frames, or 51 whole-frame shifts. If the best shift has the audio 4 frames late, the lag is 4 × 40 = 160 ms, beyond the 125 ms limit, so it needs correcting; a 1-frame lag of 40 ms is within it. The real network learns its features from large speech datasets; this arithmetic only converts frames to time.",
+        "zh": "SyncNet 项目页面提供的网络可用于消除音频与视频之间的时间差，以及判断画面中哪张脸在说话。其论文给网络输入 0.2 秒的片段：音频是每秒 100 步的 MFCC 特征（一种紧凑的声音频率特征），共 20 步；视频是每秒 25 帧的 5 帧灰度嘴部图像。为了找出偏移量，它把一个视频特征与 ±1 秒范围内的所有音频特征比较，选出距离最小的偏移；由于静音片段提供的信息很少，还要对许多样本求平均。论文引用的观众察觉阈值约为：音频滞后 125 毫秒、音频超前 45 毫秒。\n\n算一个例子：每秒 25 帧时，一帧持续 1 ÷ 25 = 0.04 秒 = 40 毫秒，所以 ±1 秒覆盖 ±25 帧，共 51 个整帧偏移。如果最佳偏移显示音频晚了 4 帧，滞后就是 4 × 40 = 160 毫秒，超过 125 毫秒的阈值，需要校正；滞后 1 帧即 40 毫秒，则在阈值之内。真实网络从大型语音数据集中学习特征；这里的计算只是把帧数换算成时间。"
       },
       "code_examples": [
         {
@@ -1899,8 +1899,8 @@
         "zh": "对于 D = 12 秒、Δ = 2 秒，采样规则保留的时间戳是 0、2、4、6、8 和 10。若某个动作只发生在 5.2 到 5.7 秒之间，它就没有出现在这六个采样时刻中的任何一个；模型无法通过这种表征检查那些缺失帧。再考虑另一个较长的参考区间 [4, 8] 与预测区间 [5, 9]。它们的交集时长是 min(9, 8) − max(5, 4) = 3 秒。\n\n两个区间各长四秒，所以并集时长是 4 + 4 − 3 = 5 秒。时间交并比为 3/5 = 0.6。该分数衡量边界重叠，却不能证明预测描述了正确动作，也不能证明选用的采样捕捉到了区间内部更短的事件。"
       },
       "limits": {
-        "en": "Rina can revisit the original recording, while a model given only cached sparse frames cannot recover discarded visual evidence. Temporal overlap also treats seconds geometrically: two intervals can overlap well yet refer to different events. The example ignores audio cues and motion inside clips, both of which can materially change what observations are available.",
-        "zh": "丽娜可以重新查看原始录像，而只获得缓存稀疏帧的模型无法恢复已经丢弃的视觉证据。时间重叠也只是从几何上处理秒数：两个区间可能重叠良好，却指向不同事件。本例忽略了音频线索与片段内部的运动，两者都可能显著改变可用观察。"
+        "en": "Zoe can revisit the original recording, while a model given only cached sparse frames cannot recover discarded visual evidence. Temporal overlap also treats seconds geometrically: two intervals can overlap well yet refer to different events. The example ignores audio cues and motion inside clips, both of which can materially change what observations are available.",
+        "zh": "Zoe 可以重新查看原始录像，而只获得缓存稀疏帧的模型无法恢复已经丢弃的视觉证据。时间重叠也只是从几何上处理秒数：两个区间可能重叠良好，却指向不同事件。本例忽略了音频线索与片段内部的运动，两者都可能显著改变可用观察。"
       },
       "takeaway": {
         "en": "Video understanding depends on retained evidence and temporal order; locating an interval requires different outputs and checks from labeling an entire clip.",
@@ -2211,8 +2211,8 @@
         "zh": "多模态检索可用于含图说明书、课堂笔记与文档集合。应保留来源区域并逐条核查生成陈述。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "The RAG paper pairs a dense retriever with a BART text generator. Its knowledge source is a December 2018 Wikipedia dump split into 21 million 100-word chunks. The retriever scores each chunk by the inner product (dot product) of query and document vectors and keeps the top K (5 or 10 in training). RAG-Sequence then sums, over those documents, the retrieval probability times the generator's probability of the answer given that document. MuRAG extends retrieval to a memory of image–text pairs and uses the top 4 items when fine-tuning.\n\nWorked example: two retrieved pages score 2.0 and 1.0. Their retrieval probabilities are e² ÷ (e² + e¹) ≈ 0.731 and 0.269. If the generator gives the answer 'arrow side up' probability 0.8 using page A and 0.1 using page B, the total is 0.731 × 0.8 + 0.269 × 0.1 ≈ 0.585 + 0.027 = 0.612. The weaker page pulls the total down. Real systems sum over more documents and many answer tokens, and a high probability still does not prove the answer is supported.",
+        "zh": "RAG 论文把稠密检索器与 BART 文本生成器结合起来。它的知识来源是 2018 年 12 月的维基百科转储，被切成 2,100 万个 100 词的文本块。检索器用查询向量与文档向量的内积（点积）给每个文本块打分，并保留前 K 个（训练时为 5 或 10 个）。RAG-Sequence 再对这些文档求和：每个文档的检索概率乘以生成器在该文档条件下给出答案的概率。MuRAG 把检索扩展到由图文对组成的记忆库，微调时取前 4 项。\n\n算一个例子：检索到的两页得分分别为 2.0 和 1.0，它们的检索概率是 e² ÷ (e² + e¹) ≈ 0.731 和 0.269。如果生成器根据 A 页给出答案“箭头一侧朝上”的概率为 0.8，根据 B 页为 0.1，那么总概率为 0.731 × 0.8 + 0.269 × 0.1 ≈ 0.585 + 0.027 = 0.612。较弱的一页拉低了总概率。真实系统要对更多文档和许多答案词元求和；而且概率高，也不能证明答案有证据支持。"
       },
       "code_examples": [
         {
@@ -2352,8 +2352,8 @@
         "zh": "假设十条描述包含四十次计入统计的物体提及。审核员发现六次无依据提及，分布在四条描述中。实例级 CHAIR 为 6/40 = 0.15，句子级 CHAIR 为 4/10 = 0.40。两个数回答不同问题：多少提及是错误的，以及一条描述含有这类错误的频率有多高。假设共有五十个已标注目标物体，而剩下的三十四次提及都是互不重复的正确目标，则覆盖率为 34/50 = 0.68。\n\n较短的修订版本只有二十次提及，其中一次没有依据，出现在十条描述中的一条。它的 CHAIR 值改善为 0.05 与 0.10，但覆盖率下降为 19/50 = 0.38。只有同时报告这三个量，才能看见这种取舍。这些算术结果描述的是虚构审核案例，并不是对某个具体模型结果的预期。"
       },
       "limits": {
-        "en": "Bea's audit assumes reviewers can determine object presence reliably, which becomes difficult with occlusion, small regions, and incomplete annotations. A low object-hallucination rate does not verify relations, identity, or reasoning. Coverage depends on the chosen target inventory, and the simplified counting rules here must not be mistaken for a complete implementation of the published evaluation protocols.",
-        "zh": "贝娅的审核假设审核员能够可靠判断物体是否存在，但在遮挡、区域很小或标注不完整时，这会变得困难。较低的物体幻觉率并不能验证关系、身份或推理。覆盖率依赖选定的目标清单，这里的简化计数规则也不能被当作已发表评估规范的完整实现。"
+        "en": "Hana's audit assumes reviewers can determine object presence reliably, which becomes difficult with occlusion, small regions, and incomplete annotations. A low object-hallucination rate does not verify relations, identity, or reasoning. Coverage depends on the chosen target inventory, and the simplified counting rules here must not be mistaken for a complete implementation of the published evaluation protocols.",
+        "zh": "Hana 的审核假设审核员能够可靠判断物体是否存在，但在遮挡、区域很小或标注不完整时，这会变得困难。较低的物体幻觉率并不能验证关系、身份或推理。覆盖率依赖选定的目标清单，这里的简化计数规则也不能被当作已发表评估规范的完整实现。"
       },
       "takeaway": {
         "en": "Evaluate both unsupported claims and retained useful evidence; reliable multimodal output must be grounded, informative, and honest about what the observations cannot establish.",
@@ -2513,8 +2513,8 @@
         "zh": "通过复用兼容特征、测量端到端成本、明确证据不足回答，构建高效多模态搜索与问答。"
       },
       "practice": {
-        "en": "Use the original calculation and Python below to inspect the mechanism. The linked primary sources explain how full systems extend it. The story is an invented teaching scenario.",
-        "zh": "用下面的原创计算与 Python 代码观察机制。所链接的一手资料解释完整系统怎样扩展这些机制。故事是虚构的教学情境。"
+        "en": "The listed sources make several efficiency choices explicit. CLIP's repository encodes images and text separately, so image features can be computed once and stored. MuRAG retrieves the top 4 memory items and reports that a larger Top-K did not help; it notes that each image costs 196 tokens in its reader, and attention cost grows with the square of input length. ONNX Runtime's 8-bit quantization can lower accuracy, and its speed gain depends on hardware. POPE then checks a model for invented objects with balanced yes/no questions.\n\nWorked example: with Top-K = 4 the reader sees 4 × 196 = 784 image tokens; with Top-K = 8 it sees 1,568. Attention compares every pair of tokens, so pairs grow from 784² = 614,656 to 1,568² = 2,458,624: four times the work for twice the evidence. Storing 10,000 cached vectors of 512 numbers takes 20,480,000 bytes at 4 bytes per number, or 5,120,000 bytes at 1 byte. Real costs also include text tokens, memory traffic and hardware, so these counts are only a first estimate.",
+        "zh": "列出的资料明确展示了几种提高效率的选择。CLIP 代码库分别编码图像和文本，所以图像特征可以只算一次并保存下来。MuRAG 从记忆库中检索前 4 项，并报告更大的 Top-K 没有带来提升；论文还指出，在阅读阶段每张图像要占 196 个词元，而注意力的计算量随输入长度的平方增长。ONNX Runtime 的 8 位量化可能降低准确率，提速效果也取决于硬件。POPE 则用正反样本各半的“是/否”问题，检查模型是否说出图中并不存在的物体。\n\n算一个例子：Top-K = 4 时，阅读阶段看到 4 × 196 = 784 个图像词元；Top-K = 8 时为 1,568 个。注意力要比较每一对词元，所以配对数从 784² = 614,656 增加到 1,568² = 2,458,624：证据翻倍，计算量变为四倍。保存 10,000 个各含 512 个数的缓存向量，每个数占 4 字节时需要 20,480,000 字节，每个数占 1 字节时需要 5,120,000 字节。真实成本还包括文本词元、内存传输和硬件因素，所以这些计数只是初步估算。"
       },
       "code_examples": [
         {

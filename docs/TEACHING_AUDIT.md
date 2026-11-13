@@ -13,9 +13,9 @@ An independent read of the site at commit 611d4c9 as four people: someone who ha
 | 7 | C and Java setup is a sentence, not steps | beginner, paper | First-steps guides have setup per OS, a check command and common errors (not tried on real Windows machines) |
 | 8 | Code runs in the browser only in the handbook | beginner, exam, phone | Run buttons for Python, C and Java |
 | 9 | No revision list, no body search; "malloc" found nothing | exam, returning readers | Score-rate list; chapter keywords |
-| 10 | Chinese edition thinned in COMP2022, COMP2123, COMP3308 | beginner, exam (Chinese) | Open: new chapters and practice are full length; the older chapters still need retranslating |
+| 10 | Chinese edition thinned in COMP2022, COMP2123, COMP3308 | beginner, exam (Chinese) | Done in the learner-walk release: every chapter of all five courses carries the full English text in Chinese; `scripts/zh_depth.py check` gates it |
 | 11 | Engineering stops at COMP2017's projects; no tool commands | engineer | Labs with captured output |
-| 12 | AI guide code is toy-scale; repeated filler in "how others use it" | engineer, beginner | Partly: machine-learning labs with scikit-learn; the filler remains |
+| 12 | AI guide code is toy-scale; repeated filler in "how others use it" | engineer, beginner | Machine-learning labs with scikit-learn; in the learner-walk release the filler in 16 vision and multimodal chapters became sourced, worked practice, and the four guides got authored questions and mock papers |
 | 13 | "Common mistakes" is one sentence, with no wrong-and-fixed pair | beginner, exam, paper | Mistakes on paper questions; find-the-bug |
 | 14 | No goal picker; reading orders conflict | all | Goal picker with routes |
 | 15 | One course measured 424 screens at 375 px | phone | One chapter at a time on phones |
@@ -27,3 +27,8 @@ An independent read of the site at commit 611d4c9 as four people: someone who ha
 - COMP2017's six passes and its three complete projects.
 - Worked problems with "choose the method" and "check the reasoning", and every program's exact verified output.
 - Honest limits throughout, such as analogy limits and "a clean run does not prove".
+
+## Later: the learner walk
+
+A scripted walk of four readers through real tasks, run in CI, found seven more friction points and checked an eighth. See `docs/LEARNER_WALK.md`.
+

@@ -73,7 +73,8 @@
       listSub: (n, ch) => `${n} 门课程与学习路线 · 共 ${ch} 章`,
       all: '全部', search: '搜索课程、章节或编号', colCourse: '课程',
       chapterHits: '匹配的章节', hitCount: (n) => `${n} 个章节`, chapterNo: (n) => `第 ${n} 章`,
-      hitsMore: (n) => `只显示前 ${n} 个。换一个更具体的词可以缩小范围。`, noChapter: '没有章节包含这个词。',
+      hitsMore: (n) => `只显示前 ${n} 个。换一个更具体的词可以缩小范围。`, noChapter: '没有章节讲到这个词。可以换一个说法，或者用英文再搜一次。',
+      foundIn: { t: '标题', k: '术语', l: '开篇', h: '例题和程序', b: '正文' },
       status: (a, b) => `${a} 门课程、${b} 个章节匹配`,
       onRoute: '在学习路线上', routeStop: (k, n) => `第 ${k} / ${n} 站`, prevCourse: '上一站', nextCourse: '下一站',
       sameStage: (s) => `同在「${s}」阶段`, seeRoute: '查看完整路线', progressOf: (a, n) => `读到第 ${a} 章 · 共 ${n} 章`,
@@ -133,7 +134,8 @@
       listSub: (n, ch) => `${n} courses and guides · ${ch} chapters`,
       all: 'All', search: 'Search courses, chapters or codes', colCourse: 'Course',
       chapterHits: 'Matching chapters', hitCount: (n) => `${n} chapter${n === 1 ? '' : 's'}`, chapterNo: (n) => `Chapter ${n}`,
-      hitsMore: (n) => `Showing the first ${n}. A more specific word narrows the list.`, noChapter: 'No chapter contains this word.',
+      hitsMore: (n) => `Showing the first ${n}. A more specific word narrows the list.`, noChapter: 'No chapter teaches this. Try another name for it, or search in Chinese.',
+      foundIn: { t: 'title', k: 'defined term', l: 'opening', h: 'worked problem or program', b: 'text' },
       status: (a, b) => `${a} course${a === 1 ? '' : 's'} and ${b} chapter${b === 1 ? '' : 's'} match`,
       onRoute: 'On the learning route', routeStop: (k, n) => `Stop ${k} of ${n}`, prevCourse: 'Before this', nextCourse: 'Next',
       sameStage: (s) => `Also in ${s}`, seeRoute: 'See the whole route', progressOf: (a, n) => `At chapter ${a} of ${n}`,
@@ -243,6 +245,7 @@
           <p class="lead reveal d1">${t('lead')}</p>
           <div class="cta reveal d2"><a class="btn primary lg" href="${href.list}">${t('enter')} ${icon('arrow')}</a><a class="btn ghost lg" href="#/start">${t('notSure')}</a></div>
           ${resume}
+          <div class="resume-slot" data-resume-slot>${study.resumeRoute()}</div>
           <label class="skip-intro reveal d2"><input type="checkbox" data-skip ${store.get('leon-learn-skip-intro', false) ? 'checked' : ''}>${t('skip')}</label>
           <div class="chips reveal d3">${t('chips').map((c) => `<span>${icon('check')}${c}</span>`).join('')}</div>
         </div>
@@ -349,12 +352,14 @@
   }
 
   /* ------------------------------------------------------------ list */
-  const ui = { filter: 'all', q: '', keywords: null };
-  // chapter keywords (glossary terms and the functions a chapter's programs call) load with the first search
+  const ui = { filter: 'all', q: '', keywords: null, index: null };
+  // what every chapter teaches (data/search.json, ranked by assets/find.js) loads with the first search;
+  // until it arrives, or if it cannot load, titles and defined terms are searched as before
   const loadKeywords = (done) => {
     if (ui.keywords || ui.keywordsLoading) return;
     ui.keywordsLoading = true;
     fetch('data/keywords.json').then((r) => r.json()).then((k) => { ui.keywords = k; done(); }).catch(() => {});
+    fetch('data/search.json').then((r) => r.json()).then((x) => { ui.index = x; done(); }).catch(() => {});
   };
   const matches = (c) => {
     if (ui.filter !== 'all' && c.track !== ui.filter) return false;
@@ -386,6 +391,13 @@
   const chapterHits = () => {
     const q = ui.q.trim().toLowerCase();
     if (!q) return [];
+    if (ui.index && window.LeonFind) {
+      const shown = new Set(DATA.courses.filter((c) => ui.filter === 'all' || c.track === ui.filter).map((c) => c.id));
+      return window.LeonFind.search(ui.index, q, 400).filter((h) => shown.has(h.c)).map((h) => {
+        const c = BY_ID[h.c]; const i = c.chapters.findIndex((x) => x.id === h.i);
+        return i < 0 ? null : { c, ch: c.chapters[i], i, where: h.where, snip: window.LeonFind.snippet(ui.index, h, q, lang) };
+      }).filter(Boolean);
+    }
     return DATA.courses.filter((c) => ui.filter === 'all' || c.track === ui.filter).flatMap((c) =>
       c.chapters.map((ch, i) => ({ c, ch, i })).filter(({ ch }) => [ch.title.zh, ch.title.en, ui.keywords?.[c.id]?.[ch.id]].some((s) => String(s || '').toLowerCase().includes(q))));
   };
@@ -397,7 +409,8 @@
   function hitsHtml() {
     if (!ui.q.trim()) return '';
     const hits = chapterHits(); const shown = hits.slice(0, 40);
-    const list = shown.length ? `<ul class="hit-list">${shown.map(({ c, ch, i }) => `<li><a href="${readUrl(c, ch.id)}" style="--accent:${c.color}">${tile(c)}<span><small><span class="code">${esc(c.code)}</span> · ${t('chapterNo')(i + 1)}</small><b>${highlight(L(ch.title))}</b><em>${highlight(other(ch.title) || '')}</em></span>${icon('arrow')}</a></li>`).join('')}</ul>` +
+    const found = (where, snip) => (where && where !== 't' ? `<span class="hit-why">${esc(t('foundIn')[where])}${snip ? ` · ${highlight(snip)}` : ''}</span>` : '');
+    const list = shown.length ? `<ul class="hit-list">${shown.map(({ c, ch, i, where, snip }) => `<li><a href="${readUrl(c, ch.id)}" style="--accent:${c.color}">${tile(c)}<span><small><span class="code">${esc(c.code)}</span> · ${t('chapterNo')(i + 1)}</small><b>${highlight(L(ch.title))}</b><em>${highlight(other(ch.title) || '')}</em>${found(where, snip)}</span>${icon('arrow')}</a></li>`).join('')}</ul>` +
       (hits.length > shown.length ? `<p class="hits-more">${t('hitsMore')(shown.length)}</p>` : '') : `<div class="empty">${t('noChapter')}</div>`;
     return `<section class="panel hits" aria-labelledby="hits-title"><div class="panel-head"><h2 id="hits-title">${t('chapterHits')}</h2><span class="muted">${t('hitCount')(hits.length)}</span></div>${list}</section>`;
   }
@@ -583,6 +596,7 @@
     const rc = recent();
     const rec = rc.length ? `<ul class="mini-list">${rc.map((id) => item(BY_ID[id], L(BY_ID[id].subtitle), href.course(id))).join('')}</ul>` : `<div class="empty">${t('emptyRecent')}</div>`;
     return frame('mine', `<div class="page-head"><div><h1>${t('mine')}</h1><p>${t('mineSub')}</p></div><button type="button" class="btn ghost sm" data-clear>${t('clear')}</button></div>
+      <div data-glance-slot>${study.glancePanel()}</div>
       <div class="mine-grid reveal"><section class="panel"><div class="panel-head"><h2>${t('last')}</h2></div>${last}</section>
       <section class="panel"><div class="panel-head"><h2>${t('starred')}</h2></div>${starred}</section>
       <section class="panel"><div class="panel-head"><h2>${t('recentT')}</h2></div>${rec}</section></div>${study.backupPanel()}`);
@@ -598,6 +612,8 @@
     app, store, esc, icon, frame, BY_ID, DATA, SITE, href, lang: () => lang,
     render: () => render(), notFound: () => notFoundView(), onLeave: (fn) => leaving.push(fn),
     refreshBanner: () => { const slot = app.querySelector('[data-goal-banner]'); if (slot) slot.innerHTML = study.goalBanner(); },
+    refreshResume: () => { const slot = app.querySelector('[data-resume-slot]'); if (slot) slot.innerHTML = study.resumeRoute(); },
+    refreshGlance: () => { const slot = app.querySelector('[data-glance-slot]'); if (slot) slot.innerHTML = study.glancePanel(); },
   });
 
   /* ------------------------------------------------------------ router */

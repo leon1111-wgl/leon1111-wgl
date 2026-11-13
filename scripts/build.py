@@ -61,7 +61,7 @@ def search_index():
   en=c['read'].get('en');zh=c['read'].get('zh')
   items.append(dict(k='course',en=c['title']['en'],zh=c['title']['zh'],sub=c['code'],url=en or zh,urlZh=zh or en,kw=c['code']+' '+c['subtitle']['en'],color=c['color']))
   for n,ch in enumerate(c['chapters'],1):
-   items.append(dict(k='chapter',en=ch['title']['en'],zh=ch['title']['zh'],sub=f"{c['code']} · {n}",url=(en or zh)+'#'+ch['id'],urlZh=(zh or en)+'#'+ch['id'],kw=words.get(c['id'],{}).get(ch['id'],''),color=c['color']))
+   items.append(dict(k='chapter',id=f"{c['id']}/{ch['id']}",en=ch['title']['en'],zh=ch['title']['zh'],sub=f"{c['code']} · {n}",url=(en or zh)+'#'+ch['id'],urlZh=(zh or en)+'#'+ch['id'],kw=words.get(c['id'],{}).get(ch['id'],''),color=c['color']))
  (SITE/'assets'/'search-index.json').write_text(json.dumps(items,ensure_ascii=False,separators=(',',':')))
 def hub_panel():
  from build_learn import catalogue
@@ -97,7 +97,7 @@ def home(courses,guides):
  description=f"Leon Wang, MSc student at HKU: {count} applied AI projects{demos} ({', '.join(p['tag'] for p in PROJECTS)}), {r['venue']} research on long-video grounding, and a free bilingual coding and AI learning hub."
  tags=seo.head('',title,description,'en',image=seo.OG_HOME,image_alt='Leon Wang: applied AI projects, research and a bilingual learning hub',data=person_data(),site_name='Leon Wang')
  search_index()
- tags+=f'<script defer src="assets/home.js?v={asset_version("home.js")}"></script>'
+ tags+=f'<script defer src="assets/find.js?v={asset_version("find.js")}"></script><script defer src="assets/home.js?v={asset_version("home.js")}"></script>'
  (SITE/'index.html').write_text(shell(title,body,description=description,head=tags))
 from build_courses import course
 def readme(courses,guides):

@@ -30,12 +30,14 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq clang llvm gcc make gdb valgrind
           sudo sysctl -q vm.mmap_rnd_bits=28
           scripts/fetch_lab_tools.sh "$LAB_TOOLS"
-          npm install --no-save --silent playwright-core@1.62.1
+          npm install --no-save --silent playwright-core@1.62.1 axe-core@4.10.3
           npx playwright-core install --with-deps chromium
       - name: Study data is consistent
         run: python3 scripts/validate_study.py
       - name: Pages, links and courses are consistent
         run: python3 scripts/validate.py
+      - name: Chinese chapters carry the full English text
+        run: python3 scripts/zh_depth.py check
       - name: Every program compiles, runs and prints what the page says
         run: python3 scripts/verify_examples.py
       - name: Every practice answer and guide example is right
@@ -55,5 +57,18 @@ jobs:
         run: python3 scripts/verify_fsrs.py
       - name: Run buttons work in a real browser
         run: node scripts/verify_browser_runners.mjs
+      - name: Failed runs are explained correctly
+        run: node scripts/test_explain.mjs
+      - name: Search finds the chapter for what readers type
+        run: node scripts/test_search.mjs
       - name: Learning features work at desktop and phone width
         run: node scripts/test_study.mjs
+      - name: Four readers walk their tasks at desktop and phone width, in both themes
+        run: WALK_SHOTS=walk/shots WALK_REPORT=walk/report.json node scripts/learner_walk.mjs
+      - name: Save the walk's screenshots and timings
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: learner-walk
+          path: walk/
+          if-no-files-found: ignore

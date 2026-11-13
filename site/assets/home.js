@@ -69,12 +69,28 @@
     if (en.includes(q) || zh.includes(q)) return 2;
     return 3;
   };
+  /* chapters are ranked by what they teach (learn/data/search.json, assets/find.js) once that has loaded;
+     projects, courses and the paper are matched by name as before and come first */
+  let chapters = null;
+  const loadChapters = () => {
+    if (chapters || !window.LeonFind) return;
+    chapters = 'loading';
+    fetch('learn/data/search.json').then((r) => r.json()).then((index) => {
+      chapters = index;
+      // the project list may still be loading; it renders with the chapters once it arrives
+      if (items && dialog.open && input.value.trim()) render();
+    }, () => { chapters = null; });
+  };
   const search = (raw) => {
     const q = raw.trim().toLowerCase();
     if (!q) return items.filter((x) => x.k === 'project' || x.k === 'research' || x.k === 'course');
     const words = q.split(/\s+/);
-    return items.filter((x) => { const h = x.h ?? (x.h = haystack(x)); return words.every((w) => h.includes(w)); })
+    const ranked = chapters && chapters !== 'loading';
+    const named = items.filter((x) => (!ranked || x.k !== 'chapter') && (() => { const h = x.h ?? (x.h = haystack(x)); return words.every((w) => h.includes(w)); })())
       .sort((a, b) => score(a, q) - score(b, q) || RANK[a.k] - RANK[b.k]);
+    if (!ranked) return named;
+    const byId = new Map(items.filter((x) => x.k === 'chapter').map((x) => [x.id, x]));
+    return [...named.filter((x) => x.k !== 'chapter'), ...window.LeonFind.search(chapters, q, 40).map((h) => byId.get(`${h.c}/${h.i}`)).filter(Boolean)];
   };
   const render = () => {
     const raw = input.value;
@@ -98,6 +114,7 @@
     dialog.showModal();
     input.focus();
     input.select();
+    loadChapters();
     if (!items) {
       foot.textContent = 'Loading…';
       try {

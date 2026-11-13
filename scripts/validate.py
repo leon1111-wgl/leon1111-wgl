@@ -59,7 +59,7 @@ for f in list(SITE.rglob('*'))+list((ROOT/'notes').rglob('*.md'))+[ROOT/'README.
  check(not re.search(r'BUSS|assignment|exam.?solutions',f.name,re.I),'Excluded filename '+str(f))
  if f.suffix in ['.html','.md','.css','.js','.svg']:
   s=f.read_text();check(not re.search(r'BUSS[0-9]{4}',s,re.I),'Excluded course content '+str(f))
-  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn','bridges','practice','labs') for part in f.relative_to(ROOT).parts) or f.name in ('app.js','home.js','run-ui.js','run.js','study.js','viz.js'))
+  bilingual=(any(part in ('ai','courses','cheatsheets','notes','maps','projects','project-code','python-zero-to-practice','learn','bridges','practice','labs') for part in f.relative_to(ROOT).parts) or f.name in ('app.js','home.js','run-ui.js','run.js','study.js','viz.js','check.js','find.js','explain.js'))
   # The README, the profile cards and the homepage carry Chinese labels at the author's request.
   bilingual=bilingual or f.name=='README.md' or f.name.startswith('profile-') or f==SITE/'index.html'
   if not bilingual:check(not re.search('[\u4e00-\u9fff]',s),'Non-English original course text '+str(f))

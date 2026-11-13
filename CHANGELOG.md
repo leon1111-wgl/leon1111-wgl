@@ -2,6 +2,43 @@
 
 One entry per release. Main is the release: a push to it deploys the public site.
 
+## 2026-11 · Learner walk: search, feedback and full Chinese
+
+A scripted walk of four readers through real tasks found where the hub got in the way. This release fixes what it found and closes the content gaps the teaching release left open. `docs/LEARNER_WALK.md` has the walk, its findings and their ranking.
+
+**What changed**
+- Learner walk: `scripts/learner_walk.mjs` takes four readers through a real task each, at desktop and 375 px, in dark and light. The readers are someone who has never programmed, an exam taker, someone writing C by hand, and an engineer. CI saves every step as a screenshot. Each friction point it found is a check, so it fails if that friction returns.
+- Search finds chapters by what they teach, on the hub and the homepage. On the walk's 21 lookups, 18 had found nothing or the wrong chapter. Examples: 二分查找, 时间复杂度, segfault, race condition, and RAG, which found the Java arrays chapter. Each hit says where it matched. Search also knows the abbreviations and Chinese names students type for ideas the chapters teach under full names: KNN, DP, GD, SGD, UB, OOP/面向对象, PCA/主成分分析, CNN, MLP, BFS, DFS, MST, NMS, ViT, LLM and batch norm. mAP is matched with its capitals, so a lower-case "map" still finds Java's Map.
+- A failed run is explained in plain Chinese or English: the line, the usual cause, and what to try, above the raw message. This covers Python, C and Java in reading pages and paper coding. The Java runner now says whether an error is in the reader's code or in the tests.
+- Every chapter of the five courses and five AI guides (208) asks one question in the middle, marked at once. A wrong choice gets a hint (why that choice is wrong) and another try; the full answer comes after. The mix is 81 multiple choice, 42 numeric, 60 predict-the-output and 25 recall. A miss joins the review queue.
+- Trace tables (118 of the 136 have three or more rows) can be stepped through one row at a time, by button or arrow key.
+- The hub's front page shows the next step of your route, one click away, and today's review. My learning opens with route, review, practice score and chapters read in one panel.
+- In light, the "← All courses" chip on guide pages had too little contrast. axe-core found it; it is fixed.
+- Chinese: every chapter of COMP2022, COMP2123, COMP3308, COMP2017 and INFO1113 (136) now carries the full English text, in full sentences. 121 chapters were rewritten. Measured as Chinese characters over English characters of reader prose, the course means rose from 0.28–0.34 to 0.40–0.41. `scripts/zh_depth.py check` now fails any chapter below 0.37.
+- AI guides: 93 authored questions with worked answers across machine learning, deep learning, vision and multimodal, covering all 64 chapters. There are two papers per guide, a diagnostic and a mock, so their exam route now opens.
+- The repeated "use the original calculation" filler in 16 vision and multimodal chapters is replaced. Each one now says what its linked primary source documents and works a fresh example with numbers.
+- Corrected 12 stale references in the guides: names not in the story, and analogies that had been removed. Also corrected the Adam "first moments" wording, one Dijkstra trace row that left out a step, and a garbled English sentence in the Dijkstra notes.
+
+**What was checked**
+- In CI on the branch: every program, practice answer, guide example, lab and Run button, as before. Also the new checks:
+  - `scripts/zh_depth.py check`;
+  - `scripts/test_explain.mjs` (13 checks against messages captured from the real runners);
+  - `scripts/test_search.mjs` (66 lookups, including the abbreviations above; 17 of them failed before the fix);
+  - the learner walk (80 checks across the four width and theme combinations, including axe-core);
+  - the 112 end-to-end checks, now including the four AI exam routes.
+- Fails first: the walk ran in CI on a commit that added only the walk (run 43480146985). It failed on all seven friction points it then fixed, and passed on its timing check for heavy pages.
+- The 93 new questions run: model answers, verify code and intermediate numbers were compared line by line. Every number in the 16 new practice sections was recomputed with a script.
+- One independent read-only review (Fable). It sampled 13 rewritten chapters, 6 new practice sections, the machine-learning pack in full, the vision and multimodal question packs, and the error explanations. It found one P0: the "error is in the tests" note said the code ran when it had not compiled. It found eight P1s: four translation and term problems, three gaps in the error explanations and one unlinked source. All are fixed, the explanations with tests that fail on the old logic. Of fifteen P2s, thirteen were fixed in full and two in part; what remains is listed below.
+- By eye, from the walk's screenshots: the quick check, trace stepper, explained errors, resume link, search reasons and at-a-glance panel at desktop and 375 px.
+
+**What was left out**
+- Heavy pages were measured, not changed. The heaviest chapter was readable in 0.24–0.29 s at desktop and 1.09–1.26 s with the CPU slowed four times. Its page still has about 30,700 elements.
+- The Chinese prose of the four AI guides was not measured or deepened. Parts of the multimodal guide read as notes, not sentences.
+- From the review: its note on comma placement in the COMP2123 and COMP3308 Chinese was not applied. The MuRAG "top 4" claim in one multimodal practice section was taken from the paper but not rechecked. One multimodal topic still lists a source its text does not use.
+- C programs that crash at run time get the general explanation, not a specific one.
+- Search is measured on the 66 lookups in `scripts/test_search.mjs`. Other wordings can still miss. Topics the site does not teach, such as the pumping lemma, find nothing.
+- Not tested: real iOS Safari, real phones, and screen readers. Keyboard paths and announcements are checked by script only.
+
 ## 2026-11 · Both themes at both widths
 
 **What changed**
